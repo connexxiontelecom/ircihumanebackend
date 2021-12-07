@@ -50,5 +50,6 @@ try {
 
 module.exports = {
     // Db,
-    sequelize
+    sequelize,
+    Sequelize
 }

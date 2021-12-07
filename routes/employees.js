@@ -1,16 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
-//const { sequelize } = require('./db');
+const { sequelize, Sequelize } = require('../services/db');
 const employees = require('../services/employeeService');
-const { test, }= require('../models/test');
+const test = require("../models/test")(sequelize, Sequelize.DataTypes)
+
 
 /* GET employees. */
 router.get('/', async function(req, res, next) {
     try {
+        test.save({
+
+        })
         await test.findAll().then((data)=>{
-            [result, metadata] = data
-            res.send(result);
+
+            res.send(data);
+            res.status(200)
         });
 
      // await employees.getAllEmployee().then((data)=>{
