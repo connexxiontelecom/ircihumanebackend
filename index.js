@@ -13,7 +13,7 @@
     dotenv.config();
 
     const employeeRouter = require('./routes/employees')
-    const departRouter = require('./routes/department');
+    //const departRouter = require('./routes/department');
 
    app.use('/employees', employeeRouter);
 
