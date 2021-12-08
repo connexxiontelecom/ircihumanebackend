@@ -16,7 +16,7 @@ router.post('/add-user', auth,  async function(req, res, next) {
     await users.findUserByEmail(user.user_email).then((data) =>{
             if(data){
 
-               return res.status(403).json(req.user)
+               return res.status(403).json('Email Already taken')
 
             }else{
                  users.findUserByUsername(user.user_username).then((data) =>{
@@ -35,6 +35,28 @@ router.post('/add-user', auth,  async function(req, res, next) {
         })
     } catch (err) {
         console.error(`Error while adding user `, err.message);
+        next(err);
+    }
+});
+
+/* UpdateUser */
+router.patch('/update-user', auth,  async function(req, res, next) {
+    try {
+
+        const user = req.body
+        await users.findUserByUserId(user.user_id).then((data) =>{
+            if(data){
+
+
+
+                return res.status(403).json('Email Already taken')
+
+            }else{
+
+            }
+        })
+    } catch (err) {
+        console.error(`Error while updating user `, err.message);
         next(err);
     }
 });

@@ -6,7 +6,7 @@ const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 const helper  =require('../helper');
 
 
-async function addUser(user){
+export async function addUser(user){
 
 
     const salt = await bcrypt.genSalt(10);
@@ -24,28 +24,37 @@ async function addUser(user){
     });
 }
 
-async function findUserByEmail(email){
+export async function updateUser(user){
+  return  await User.update({
+                user_username: user.user_username,
+                user_name: user.user_name,
+                user_email: user.user_email,
+                user_password: user.user_password,
+                user_type: user.user_type,
+                user_token: user.user_token,
+                user_status: user.user_status,
+            },{
+                where:{
+                    user_id:user.user_id
+                } });
+}
+
+export async function findUserByEmail(email){
     return await User.findOne({ where: { user_email: email } })
 }
 
-async function findUserByUsername(username){
+export async function findUserByUsername(username){
     return await User.findOne({ where: { user_username: username } })
 }
 
-
-
-// async function getAllEmployee(){
-//
-//     return await test.findAll();
-// }
-
-async function getOneEmployee(employee_id){
-    return await test.findOne({
-        'test_id': employee_id
-    })
+export async function findUserByUserId(userId){
+    return await User.findOne({ where: { user_id: userId } })
 }
-module.exports = {
-   addUser,
-   findUserByEmail,
-   findUserByUsername
-    }
+
+
+// module.exports = {
+//    addUser,
+//    findUserByEmail,
+//    findUserByUsername,
+//    findUserByUserId
+//     }
