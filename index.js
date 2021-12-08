@@ -18,6 +18,9 @@
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
 
+    const paymentDefinitionRouter = require('./routes/paymentDefinitions')
+    app.use('/payment-definitions', paymentDefinitionRouter)
+
 
 
     /* Error handler middleware */

@@ -5,7 +5,7 @@ const {parse, stringify, toJSON, fromJSON} = require('flatted');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
-const users = require('../services/userService');
+const paymentDefinition =  require('../services/paymentDefinitionService');
 
 
 
@@ -13,145 +13,110 @@ const users = require('../services/userService');
 router.post('/add-payment-definition', auth,  async function(req, res, next) {
     try {
         const schema = Joi.object( {
-
-            pd_payment_code: pd.pd_payment_code,
-            pd_payment_name: pd.pd_payment_name,
-            pd_payment_type: pd.pd_payment_type,
-            pd_payment_variant: pd.pd_payment_variant,
-            pd_payment_taxable: pd.pd_payment_taxable,
-            pd_desc: pd.pd_desc,
-            pd_basic: pd.pd_basic,
-            pd_tie_number: pd.pd_tie_number,
-
-            user_username: Joi.string().min(5).required(),
-            user_name: Joi.string().min(5).required(),
-            user_email: Joi.string().email().required(),
-            user_password: Joi.string().min(5).required(),
-            user_password_repeat: Joi.ref('user_password'),
-            user_type: Joi.number().required(),
-            user_token: Joi.string().min(2),
-            user_status: Joi.number().required(),
+            pd_payment_code: Joi.string().required(),
+            pd_payment_name: Joi.string().required(),
+            pd_payment_type: Joi.number().required(),
+            pd_payment_variant: Joi.number().required(),
+            pd_payment_taxable: Joi.number().required(),
+            pd_desc: Joi.number(),
+            pd_basic: Joi.number().required(),
+            pd_tie_number: Joi.string(),
         })
 
-        const user = req.body
-        const validationResult = schema.validate(user)
+        const paymentDefinitionRequest = req.body
+        const validationResult = schema.validate(paymentDefinitionRequest)
 
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        delete user.user_password_repeat;
-        await users.findUserByEmail(user.user_email).then((data) =>{
+
+        await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
             if(data){
 
-                return res.status(400).json('Email Already taken')
+                return res.status(400).json('Payment Code Already Exist')
 
             }else{
-                users.findUserByUsername(user.user_username).then((data) =>{
-                    if(data){
+               paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
 
-                        return res.status(400).json('Username Already taken')
-
-                    }else{
-                        users.addUser(user).then((data)=>{
-
-                            return  res.status(200).json(data)
-                        })
-                    }
+                    return  res.status(200).json(data)
                 })
             }
         })
     } catch (err) {
-        console.error(`Error while adding user `, err.message);
+        console.error(`Error while adding payment definition `, err.message);
         next(err);
     }
 });
 
 /* UpdateUser */
-router.patch('/update-user/:user_id', auth,  async function(req, res, next) {
+router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res, next) {
     try {
 
-        const schemaWithoutPassword = Joi.object( {
-            user_username: Joi.string().min(5).required(),
-            user_name: Joi.string().min(5).required(),
-            user_email: Joi.string().email().required(),
-            user_type: Joi.number().required(),
-            user_token: Joi.string().min(2),
-            user_status: Joi.number().required(),
+        const schema = Joi.object( {
+            pd_payment_code: Joi.string().required(),
+            pd_payment_name: Joi.string().required(),
+            pd_payment_type: Joi.number().required(),
+            pd_payment_variant: Joi.number().required(),
+            pd_payment_taxable: Joi.number().required(),
+            pd_desc: Joi.number(),
+            pd_basic: Joi.number().required(),
+            pd_tie_number: Joi.string()
         })
 
-        const schemaWithPassword = Joi.object( {
-            user_username: Joi.string().min(5).required(),
-            user_name: Joi.string().min(5).required(),
-            user_email: Joi.string().email().required(),
-            user_password: Joi.string().min(5).required(),
-            user_password_repeat: Joi.ref('user_password'),
-            user_type: Joi.number().required(),
-            user_token: Joi.string().min(2),
-            user_status: Joi.number().required(),
-        })
+        const paymentDefinitionRequest = req.body
 
-        const user = req.body
-
-        let validationResult;
-        if(user.user_password){
-            validationResult = schemaWithPassword.validate(user)
-        }else{
-            validationResult = schemaWithoutPassword.validate(user)
-        }
+        const validationResult = schema.validate(paymentDefinitionRequest)
 
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-
-
-        await users.findUserByUserId(req.params['user_id']).then((data) =>{
+        await paymentDefinition.findPaymentById(req.params['pd_id']).then((data) =>{
             if(data){
-                users.updateUser(user, req.params['user_id']).then((data)=>{
-                    return res.status(200).json(`User updated ${data}`)
+
+
+                paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data)=>{
+                    if(data){
+                        if(data.pd_id === parseInt(req.params['pd_id'])){
+                            paymentDefinition.updatePaymentDefinition(paymentDefinitionRequest, req.params['pd_id']).then((data)=>{
+                                return res.status(200).json(`Payment updated ${data}`)
+                            })
+                        }else{
+                            return res.status(400).json('payment code already exist')
+                        }
+                    }else{
+                        paymentDefinition.updatePaymentDefinition(paymentDefinitionRequest, req.params['pd_id']).then((data)=>{
+                            return res.status(200).json(`Payment updated ${data}`)
+                        })
+                    }
                 })
 
 
+
             }else{
-                return res.status(404).json('User does not exist in database')
+                return res.status(404).json(`Payment Definition doesn't exist`)
             }
         })
     } catch (err) {
 
-        console.error(`Error while updating user `, err.message);
+        console.error(`Error while updating payment definitions `, err.message);
         next(err);
     }
 });
 
 /* Login User */
-router.post('/login', async function(req, res, next) {
+router.get('/', auth, async function(req, res, next) {
     try {
-        const user = req.body
-        await users.findUserByUsername(user.user_username).then((data) =>{
-            if(data){
-                bcrypt.compare(user.user_password, data.user_password,  function(err, response){
-                    if(err){
-                        return res.status(400).json(`${err} occurred while logging in`)
-                    }
-                    if(response){
-                        let token = generateAccessToken(data)
-                        return res.status(200).json(token);
-                    }else{
-                        return res.status(400).json('Incorrect Password')
-                    }
-                })
-            }
-            else{
-                return res.status(404).json('Invalid Username')
-            }
+
+        await paymentDefinition.findAllCodes().then((data) =>{
+            return res.status(200).json(data);
+
         })
     } catch (err) {
-        return res.status(400).json(`Error while logging user ${err.message}`)
+        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
     }
 });
 
-function generateAccessToken(username) {
-    return jwt.sign({username},  process.env.TOKEN_SECRET, { expiresIn: '18000s' });
-}
+
 
 
 module.exports = router;
