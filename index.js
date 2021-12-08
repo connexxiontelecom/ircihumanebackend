@@ -12,10 +12,12 @@
     app.use(express.json());
     dotenv.config();
 
+    //Routes
     const employeeRouter = require('./routes/employees')
-    //const departRouter = require('./routes/department');
+    const bankRouter = require('./routes/bank');
 
    app.use('/employees', employeeRouter);
+   app.use('/banks', bankRouter);
 
 
     /* Error handler middleware */

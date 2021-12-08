@@ -2,29 +2,14 @@ const express = require('express');
 const router = express.Router();
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
 
-const bank = require('../services/bankSetup');
+const bank = require('../services/bankSetupService');
 
+/* GET banks. */
 
+router.get('/', bank.getBanks);
+router.post('/', bank.setNewBank);
+router.get('/:id', bank.getBankById);
+router.patch('/:id', bank.updateBank);
 
-/* GET employees. */
-router.get('/', async function(req, res, next) {
-    try {
-        await bank.getBanks().then((data)=>{
-            res.send(data);
-        });
-
-        await employees.getOneEmployee(9).then((data)=>{
-
-        });
-
-    } catch (err) {
-        console.error(`Error while getting banks `, err.message);
-        next(err);
-    }
-});
-
-router.get('/banks', async function(req, res, next){
-
-})
 
 module.exports = router;

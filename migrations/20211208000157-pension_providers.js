@@ -8,17 +8,14 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable('banks', {
-      bank_id: {
+    await queryInterface.createTable('pension_providers',{
+      pension_provider_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      bank_name: {
-        type: Sequelize.STRING
-      },
-      bank_code: {
+      provider_name: {
         type: Sequelize.STRING
       },
       created_at: {
@@ -29,7 +26,7 @@ module.exports = {
         allowNull: true,
         type: Sequelize.DATE
       }
-    });
+    })
   },
 
   down: async (queryInterface, Sequelize) => {
