@@ -15,9 +15,13 @@
     //Routes
     const employeeRouter = require('./routes/employees')
     const bankRouter = require('./routes/bank');
+    const pensionProviderRouter = require('./routes/pension-provider');
+    const hmoRouter = require('./routes/hmo');
 
    app.use('/employees', employeeRouter);
    app.use('/banks', bankRouter);
+   app.use('/pension-providers', pensionProviderRouter);
+   app.use('/hmos', hmoRouter);
 
 
     /* Error handler middleware */
