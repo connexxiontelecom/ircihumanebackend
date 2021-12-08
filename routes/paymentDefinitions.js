@@ -13,23 +13,11 @@ const logs = require('../services/logService')
 router.get('/', auth, async function(req, res, next) {
     try {
 
+       // return res.status(200).json(req.user.username);
+
         await paymentDefinition.findAllCodes().then((data) =>{
-          const logData = {
-              "log_user_id": req.user.user_id,
-              "log_description": "user viewed payment definition",
-              "log_date": new Date()
-          }
-
-          const logResponse = logs.addLog(logData)
-
-            if(logResponse){
-                return res.status(200).json(data);
-            }else{
-                return res.status(200).json(logResponse);
-            }
-
-
-        })
+            return res.status(200).json(data);
+               })
     } catch (err) {
         return res.status(400).json(`Error while fetching payment definition ${err.message}`)
     }
@@ -63,8 +51,16 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
 
             }else{
                paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
+                   const logData = {
+                       "log_user_id": req.user.username.user_id,
+                       "log_description": "Added new payment definition",
+                       "log_date": new Date()
+                   }
+                   logs.addLog(logData).then((logRes)=>{
+                       //return res.status(200).json(logRes);
+                       return  res.status(200).json(data)
+                   })
 
-                    return  res.status(200).json(data)
                 })
             }
         })
@@ -104,7 +100,16 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
                     if(data){
                         if(data.pd_id === parseInt(req.params['pd_id'])){
                             paymentDefinition.updatePaymentDefinition(paymentDefinitionRequest, req.params['pd_id']).then((data)=>{
-                                return res.status(200).json(`Payment updated ${data}`)
+                                const logData = {
+                                    "log_user_id": req.user.username.user_id,
+                                    "log_description": "Updated payment definition",
+                                    "log_date": new Date()
+                                }
+                                logs.addLog(logData).then((logRes)=>{
+                                    //return res.status(200).json(logRes);
+                                    return  res.status(200).json(`Payment Definition Updated`)
+                                })
+
                             })
                         }else{
                             return res.status(400).json('payment code already exist')

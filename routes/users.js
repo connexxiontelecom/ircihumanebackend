@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
 const users = require('../services/userService');
+const logs = require("../services/logService");
 
 
 /* Get All Payment Definitions */
@@ -56,8 +57,17 @@ router.post('/add-user', auth,  async function(req, res, next) {
 
                     }else{
                         users.addUser(user).then((data)=>{
+                            const logData = {
+                                "log_user_id": req.user.username.user_id,
+                                "log_description": "Added new user",
+                                "log_date": new Date()
+                            }
+                            logs.addLog(logData).then((logRes)=>{
+                                //return res.status(200).json(logRes);
+                                return  res.status(200).json(data)
+                            })
 
-                           return  res.status(200).json(data)
+                          // return  res.status(200).json(data)
                         })
                     }
                 })
@@ -110,7 +120,16 @@ router.patch('/update-user/:user_id', auth,  async function(req, res, next) {
             await users.findUserByUserId(req.params['user_id']).then((data) =>{
                 if(data){
                     users.updateUser(user, req.params['user_id']).then((data)=>{
-                        return res.status(200).json(`User updated ${data}`)
+                        const logData = {
+                            "log_user_id": req.user.username.user_id,
+                            "log_description": "Added new user",
+                            "log_date": new Date()
+                        }
+                        logs.addLog(logData).then((logRes)=>{
+                            //return res.status(200).json(logRes);
+                            return res.status(200).json(`User updated`)
+                        })
+
                     })
 
 
@@ -138,6 +157,16 @@ router.post('/login', async function(req, res, next) {
                         }
                         if(response){
                             let token = generateAccessToken(data)
+
+                            const logData = {
+                                "log_user_id": data.user_id,
+                                "log_description": "logged in",
+                                "log_date": new Date()
+                            }
+                            logs.addLog(logData).then((logRes)=>{
+                                //return res.status(200).json(logRes);
+                                return res.status(200).json(`User updated`)
+                            })
                             return res.status(200).json(token);
                         }else{
                             return res.status(400).json('Incorrect Password')

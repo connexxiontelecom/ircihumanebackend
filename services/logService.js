@@ -14,23 +14,23 @@ async function findAllLogs(){
 
      try {
          const schema = Joi.object( {
-             log_user_id: Joi.string().required(),
+             log_user_id: Joi.number().required(),
              log_description: Joi.string().required(),
              log_date: Joi.string().required(),
          })
+
+         log.log_date = String(log.log_date)
 
           const validationResult = schema.validate(log)
 
          if(validationResult.error){
              return validationResult.error.details[0].message
          }
-         await Log.create({
+       return  await Log.create({
              log_user_id: log.log_user_id,
              log_description: log.log_description,
              log_date: log.log_date,
 
-         }).then((data)=>{
-             return data
          })
 
 
