@@ -12,32 +12,21 @@
     app.use(express.json());
     dotenv.config();
 
+    //Routes
     const employeeRouter = require('./routes/employees')
-
-
-    // app.use(bodyParser.json());
-    // app.use(
-    //     bodyParser.urlencoded({
-    //         extended: true,
-    //     })
-    // );
-
-
-
-    //const logger = require('./logger');
-
+    const bankRouter = require('./routes/bank');
 
    app.use('/employees', employeeRouter);
+   app.use('/banks', bankRouter);
+
 
     /* Error handler middleware */
-    // app.use((err, req, res, next) => {
-    //     const statusCode = err.statusCode || 500;
-    //     console.error(err.message, err.stack);
-    //     res.status(statusCode).json({'message': err.message});
-    //
-    //
-    //     return;
-    // });
+    app.use((err, req, res, next) => {
+        const statusCode = err.statusCode || 500;
+        console.error(err.message, err.stack);
+        res.status(statusCode).json({'message': err.message});
+        return;
+    });
 
 
     app.get('/', (req, res)=>{
