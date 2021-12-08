@@ -6,6 +6,9 @@ const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 
 const helper  = require('../helper');
 
+async function findAllUsers(){
+    return await User.findAll()
+}
 
  async function addUser(user){
 
@@ -66,5 +69,6 @@ module.exports = {
    findUserByEmail,
    findUserByUsername,
    findUserByUserId,
-    updateUser
+    updateUser,
+    findAllUsers
     }

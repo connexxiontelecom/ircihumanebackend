@@ -6,10 +6,36 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
 const paymentDefinition =  require('../services/paymentDefinitionService');
+const logs = require('../services/logService')
 
 
+/* Get All Payment Definitions */
+router.get('/', auth, async function(req, res, next) {
+    try {
 
-/* Add User */
+        await paymentDefinition.findAllCodes().then((data) =>{
+          const logData = {
+              "log_user_id": req.user.user_id,
+              "log_description": "user viewed payment definition",
+              "log_date": new Date()
+          }
+
+          const logResponse = logs.addLog(logData)
+
+            if(logResponse){
+                return res.status(200).json(data);
+            }else{
+                return res.status(200).json(logResponse);
+            }
+
+
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
+    }
+});
+
+/* Add Payment Definition */
 router.post('/add-payment-definition', auth,  async function(req, res, next) {
     try {
         const schema = Joi.object( {
@@ -48,7 +74,7 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
     }
 });
 
-/* UpdateUser */
+/* Update Payment Definition */
 router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res, next) {
     try {
 
@@ -102,21 +128,6 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
         next(err);
     }
 });
-
-/* Login User */
-router.get('/', auth, async function(req, res, next) {
-    try {
-
-        await paymentDefinition.findAllCodes().then((data) =>{
-            return res.status(200).json(data);
-
-        })
-    } catch (err) {
-        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
-    }
-});
-
-
 
 
 module.exports = router;

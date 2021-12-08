@@ -5,14 +5,14 @@ const {parse, stringify, toJSON, fromJSON} = require('flatted');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
-const users = require('../services/userService');
+const logs = require('../services/logService');
 
 
-/* Get All Payment Definitions */
+/* Get All Logs */
 router.get('/', auth, async function(req, res, next) {
     try {
 
-        await users.findAllUsers().then((data) =>{
+        await logs.findAllLogs().then((data) =>{
             return res.status(200).json(data);
 
         })
@@ -23,48 +23,27 @@ router.get('/', auth, async function(req, res, next) {
 
 
 /* Add User */
-router.post('/add-user', auth,  async function(req, res, next) {
+router.post('/add-log', auth,  async function(req, res, next) {
     try {
         const schema = Joi.object( {
-            user_username: Joi.string().min(5).required(),
-            user_name: Joi.string().min(5).required(),
-            user_email: Joi.string().email().required(),
-            user_password: Joi.string().min(5).required(),
-            user_password_repeat: Joi.ref('user_password'),
-            user_type: Joi.number().required(),
-            user_token: Joi.string().min(2),
-            user_status: Joi.number().required(),
+            log_user_id: Joi.string().required(),
+            log_description: Joi.string().required(),
+            log_date: Joi.string().required(),
         })
 
-        const user = req.body
-        const validationResult = schema.validate(user)
+        const log = req.body
+        const validationResult = schema.validate(log)
 
         if(validationResult.error){
           return res.status(400).json(validationResult.error.details[0].message)
         }
-        delete user.user_password_repeat;
-        await users.findUserByEmail(user.user_email).then((data) =>{
-            if(data){
 
-               return res.status(400).json('Email Already taken')
-
-            }else{
-                 users.findUserByUsername(user.user_username).then((data) =>{
-                    if(data){
-
-                        return res.status(400).json('Username Already taken')
-
-                    }else{
-                        users.addUser(user).then((data)=>{
-
-                           return  res.status(200).json(data)
-                        })
-                    }
-                })
-            }
+        await logs.addLog(log).then((data)=>{
+            return res.status(200).json(data)
         })
+
     } catch (err) {
-        console.error(`Error while adding user `, err.message);
+        console.error(`Error while log user `, err.message);
         next(err);
     }
 });
