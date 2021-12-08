@@ -2,7 +2,7 @@
     const dotenv = require("dotenv");
     const bodyParser = require('body-parser');
     const cors = require('cors');
-   // const db = require("./services/db")
+
     const app = express();
     app.use(cors());
     app.use(express.json());
@@ -27,9 +27,6 @@
         return res.status(statusCode).json({'message': err.message});
 
     });
-
-
-
 
 
 
