@@ -17,7 +17,7 @@ router.get('/', auth, async function(req, res, next) {
 
         })
     } catch (err) {
-        return res.status(400).json(`Error while fetching users ${err.message}`)
+        return res.status(400).json(`Error while fetching logs ${err.message}`)
     }
 });
 

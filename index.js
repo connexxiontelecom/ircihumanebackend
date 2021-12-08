@@ -21,6 +21,9 @@
     const paymentDefinitionRouter = require('./routes/paymentDefinitions')
     app.use('/payment-definitions', paymentDefinitionRouter)
 
+    const logRouter = require('./routes/logs')
+    app.use('/logs', logRouter)
+
 
 
     /* Error handler middleware */
