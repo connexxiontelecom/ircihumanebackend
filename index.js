@@ -8,11 +8,16 @@
     app.use(express.json());
     dotenv.config();
 
+    //Routes
     const employeeRouter = require('./routes/employees')
     app.use('/employees', employeeRouter);
+   
+   const bankRouter = require('./routes/bank');
+   app.use('/banks', bankRouter);
 
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
+
 
 
     /* Error handler middleware */
