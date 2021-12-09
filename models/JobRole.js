@@ -3,7 +3,7 @@ const {
     Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class PensionProvider extends Model {
+    class JobRole extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -13,13 +13,15 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
     };
-    PensionProvider.init({
-        pension_provider_id: {
+    JobRole.init({
+        job_role_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
-        provider_name: DataTypes.STRING,
+        job_role: DataTypes.STRING,
+        description: DataTypes.STRING,
+        department_id: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
@@ -30,8 +32,8 @@ module.exports = (sequelize, DataTypes) => {
         },
     }, {
         sequelize,
-        modelName: 'PensionProvider',
-        tableName: 'pension_providers'
+        modelName: 'JobRole',
+        tableName: 'job_roles'
     });
-    return PensionProvider;
+    return JobRole;
 };
