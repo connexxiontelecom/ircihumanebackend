@@ -1,6 +1,6 @@
 const { QueryTypes } = require('sequelize')
 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { sequelize, Sequelize } = require('./db');
 const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 
