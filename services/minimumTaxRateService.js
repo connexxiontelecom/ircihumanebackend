@@ -1,6 +1,6 @@
 const { QueryTypes } = require('sequelize')
 
-const bcrypt = require("bcrypt");
+
 const { sequelize, Sequelize } = require('./db');
 const MinimumTaxRate = require("../models/minimumtaxrate")(sequelize, Sequelize.DataTypes)
 

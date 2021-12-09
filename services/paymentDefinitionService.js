@@ -1,6 +1,4 @@
 const { QueryTypes } = require('sequelize')
-
-const bcrypt = require("bcrypt");
 const { sequelize, Sequelize } = require('./db');
 const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
 

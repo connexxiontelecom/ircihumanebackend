@@ -1,6 +1,6 @@
 const { QueryTypes } = require('sequelize')
 const Joi = require('joi')
-const bcrypt = require("bcrypt");
+
 const { sequelize, Sequelize } = require('./db');
 const Log = require("../models/log")(sequelize, Sequelize.DataTypes)
 
