@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
@@ -35,9 +36,7 @@ router.post('/add-minimum-tax-rate', auth,  async function(req, res, next) {
         }
 
         await minimumTaxRate.findAllMinimumTaxRate().then((data) =>{
-            if(data){
-                return  res.status(403).json('Minimum Tax Rate Set Up Already')
-            }else{
+            if(_.isEmpty(data)){
                 minimumTaxRate.addMinimumTaxRate(minimumTaxRateRequest).then((data)=>{
                     const logData = {
                         "log_user_id": req.user.username.user_id,
@@ -50,6 +49,9 @@ router.post('/add-minimum-tax-rate', auth,  async function(req, res, next) {
                     })
 
                 })
+
+            }else{
+                return  res.status(403).json('Minimum Tax Rate Set Up Already')
             }
         })
 
@@ -77,8 +79,10 @@ router.patch('/update-minimum-tax-rate/:mtr_id', auth,  async function(req, res,
             return res.status(400).json(validationResult.error.details[0].message)
         }
         await minimumTaxRate.findMinimumTaxRateById(req.params['mtr_id']).then((data) =>{
-            if(data){
-                minimumTaxRate.updateMinimumTaxRate(minimumTaxRateRequest, req.params['tr_id']).then((data)=>{
+            if(_.isEmpty(data)){
+                return res.status(404).json(`Minimum Tax Rate doesn't exist`)
+            }else{
+                minimumTaxRate.updateMinimumTaxRate(minimumTaxRateRequest, req.params['mtr_id']).then((data)=>{
                     const logData = {
                         "log_user_id": req.user.username.user_id,
                         "log_description": "Updated Tax Rate",
@@ -89,8 +93,6 @@ router.patch('/update-minimum-tax-rate/:mtr_id', auth,  async function(req, res,
                         return  res.status(200).json(`Minimum Tax Rate Updated`)
                     })
                 })
-            }else{
-                return res.status(404).json(`Minimum Tax Rate doesn't exist`)
             }
         })
     } catch (err) {
