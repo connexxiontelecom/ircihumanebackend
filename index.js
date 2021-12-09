@@ -20,6 +20,9 @@
     const gradeRouter = require('./routes/grade');
     const jobRoleRouter = require('./routes/job-role');
     const locationRouter = require('./routes/location');
+    const qualificationRouter = require('./routes/qualification');
+    const subsidiaryRouter = require('./routes/subsidiary');
+    const leaveTypeRouter = require('./routes/leave-type');
 
    app.use('/employees', employeeRouter);
    app.use('/banks', bankRouter);
@@ -29,6 +32,9 @@
    app.use('/grades', gradeRouter);
    app.use('/job-roles', jobRoleRouter);
    app.use('/locations', locationRouter);
+   app.use('/qualifications', qualificationRouter);
+   app.use('/subsidiaries', subsidiaryRouter);
+   app.use('/leave-types', leaveTypeRouter);
 
 
     /* Error handler middleware */
