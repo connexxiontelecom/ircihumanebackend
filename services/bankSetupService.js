@@ -8,6 +8,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getBanks = async (req, res)=>{
+    return res.send("hello");
     const banks =  await bank.findAll({attributes: ['bank_name', 'bank_id', 'bank_code']});
     return res.status(200).json(banks)
 
