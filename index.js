@@ -53,6 +53,10 @@
     app.use('/minimum-tax-rate', minimumTaxRateRouter)
 
 
+    app.get('/',  async function(req, res) {
+
+        res.send('you got here. so get out')
+    });
 
     /* Error handler middleware */
     app.use((err, req, res, next) => {
