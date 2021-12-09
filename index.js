@@ -46,6 +46,9 @@
     const logRouter = require('./routes/logs')
     app.use('/logs', logRouter)
 
+    const taxRateRouter = require('./routes/taxRates')
+    app.use('/tax-rates', taxRateRouter)
+
 
 
     /* Error handler middleware */
