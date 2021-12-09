@@ -3,17 +3,13 @@
     const bodyParser = require('body-parser');
     const cors = require('cors');
    // const db = require("./services/db")
-
-
-
     const app = express();
-
     app.use(cors());
     app.use(express.json());
     dotenv.config();
-
     //Routes
-    const employeeRouter = require('./routes/employees')
+    const employeeRouter = require('./routes/employees');
+    app.use('/employees', employeeRouter);
     const bankRouter = require('./routes/bank');
     const pensionProviderRouter = require('./routes/pension-provider');
     const hmoRouter = require('./routes/hmo');
@@ -25,11 +21,16 @@
     const subsidiaryRouter = require('./routes/subsidiary');
     const leaveTypeRouter = require('./routes/leave-type');
 
-   app.use('/employees', employeeRouter);
-    app.use('/employees', employeeRouter);
-
-   const bankRouter = require('./routes/bank');
    app.use('/banks', bankRouter);
+   app.use('/pension-providers', pensionProviderRouter);
+   app.use('/hmos', hmoRouter);
+   app.use('/departments', departmentRouter);
+   app.use('/grades', gradeRouter);
+   app.use('/job-roles', jobRoleRouter);
+   app.use('/locations', locationRouter);
+   app.use('/qualifications', qualificationRouter);
+   app.use('/subsidiaries', subsidiaryRouter);
+   app.use('/leave-types', leaveTypeRouter);
 
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
@@ -40,19 +41,15 @@
     app.use((err, req, res, next) => {
         const statusCode = err.statusCode || 500;
         console.error(err.message, err.stack);
-        res.status(statusCode).json({'message': err.message});
-        return;
+        return res.status(statusCode).json({'message': err.message});
+
     });
 
 
-    app.get('/', (req, res)=>{
 
-        res.send('Hello World')
-    });
 
-    app.get('/api/courses', (req, res)=>{
-        res.send([1, 2, 3]);
-    })
+
+
     const port = process.env.PORT || 9500
 
     app.listen(port, ()=>{
