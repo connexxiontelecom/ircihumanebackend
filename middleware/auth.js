@@ -8,6 +8,6 @@ module.exports = (req, res, next) => {
         req.user = jwt.verify(token, process.env.TOKEN_SECRET);
         next();
     } catch (error) {
-        res.status(400).send("Invalid token");
+        res.status(403).send("Invalid token");
     }
 };

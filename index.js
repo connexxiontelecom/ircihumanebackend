@@ -2,7 +2,7 @@
     const dotenv = require("dotenv");
     const bodyParser = require('body-parser');
     const cors = require('cors');
-   // const db = require("./services/db")
+
     const app = express();
     app.use(cors());
     app.use(express.json());
@@ -18,6 +18,12 @@
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
 
+    const paymentDefinitionRouter = require('./routes/paymentDefinitions')
+    app.use('/payment-definitions', paymentDefinitionRouter)
+
+    const logRouter = require('./routes/logs')
+    app.use('/logs', logRouter)
+
 
 
     /* Error handler middleware */
@@ -27,9 +33,6 @@
         return res.status(statusCode).json({'message': err.message});
 
     });
-
-
-
 
 
 
