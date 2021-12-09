@@ -57,8 +57,5 @@ module.exports = {
     findPaymentById,
     findAllCodes,
     updatePaymentDefinition
-    // findUserByEmail,
-    // findUserByUsername,
-    // findUserByUserId,
-    // updateUser
+
 }
