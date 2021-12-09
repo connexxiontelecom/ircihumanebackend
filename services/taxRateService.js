@@ -1,6 +1,4 @@
 const { QueryTypes } = require('sequelize')
-
-const bcrypt = require("bcrypt");
 const { sequelize, Sequelize } = require('./db');
 const TaxRate = require("../models/taxrate")(sequelize, Sequelize.DataTypes)
 
