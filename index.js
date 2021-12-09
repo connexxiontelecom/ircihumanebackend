@@ -11,6 +11,7 @@
     app.use(cors());
     app.use(express.json());
     dotenv.config();
+
     //Routes
     const employeeRouter = require('./routes/employees')
     const bankRouter = require('./routes/bank');
@@ -25,16 +26,14 @@
     const leaveTypeRouter = require('./routes/leave-type');
 
    app.use('/employees', employeeRouter);
+    app.use('/employees', employeeRouter);
+
+   const bankRouter = require('./routes/bank');
    app.use('/banks', bankRouter);
-   app.use('/pension-providers', pensionProviderRouter);
-   app.use('/hmos', hmoRouter);
-   app.use('/departments', departmentRouter);
-   app.use('/grades', gradeRouter);
-   app.use('/job-roles', jobRoleRouter);
-   app.use('/locations', locationRouter);
-   app.use('/qualifications', qualificationRouter);
-   app.use('/subsidiaries', subsidiaryRouter);
-   app.use('/leave-types', leaveTypeRouter);
+
+    const userRouter = require('./routes/users')
+    app.use('/users', userRouter);
+
 
 
     /* Error handler middleware */
