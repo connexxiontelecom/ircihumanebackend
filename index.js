@@ -49,6 +49,9 @@
     const taxRateRouter = require('./routes/taxRates')
     app.use('/tax-rates', taxRateRouter)
 
+    const minimumTaxRateRouter = require('./routes/minimumTaxRates')
+    app.use('/minimum-tax-rate', minimumTaxRateRouter)
+
 
 
     /* Error handler middleware */
