@@ -18,6 +18,10 @@ module.exports = {
       department_name: {
         type: Sequelize.STRING
       },
+      d_t3_code:{
+        type: Sequelize.STRING,
+        allowNull:true
+      },
       created_at: {
         allowNull: true,
         type: Sequelize.DATE

@@ -3,7 +3,7 @@ const {
     Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class Location extends Model {
+    class State extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -13,15 +13,13 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
     };
-    Location.init({
-        location_id: {
+    State.init({
+        s_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
-        location_name: DataTypes.STRING,
-        l_state_id: DataTypes.INTEGER,
-        l_t6_code: DataTypes.STRING,
+        s_name: DataTypes.STRING,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
@@ -32,8 +30,8 @@ module.exports = (sequelize, DataTypes) => {
         },
     }, {
         sequelize,
-        modelName: 'Location',
-        tableName: 'locations'
+        modelName: 'State',
+        tableName: 'states'
     });
-    return Location;
+    return State;
 };

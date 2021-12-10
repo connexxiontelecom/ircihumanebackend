@@ -21,6 +21,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         leave_name: DataTypes.STRING,
         leave_duration: DataTypes.INTEGER,
+        lt_mode: DataTypes.INTEGER,
+        lt_rate: DataTypes.DOUBLE,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
