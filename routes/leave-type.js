@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {parse, stringify, toJSON, fromJSON} = require('flatted');
-
 const leaveService = require('../services/leaveTypeService');
 
-/* Pension provider routes. */
+/* leave routes. */
 
 router.get('/', leaveService.getLeaveTypes);
 router.post('/', leaveService.setNewLeaveType);
