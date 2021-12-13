@@ -1,9 +1,6 @@
 const Joi = require('joi')
 const express = require('express');
 const router = express.Router();
-const {parse, stringify, toJSON, fromJSON} = require('flatted');
-
-const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
 const taxRate =  require('../services/taxRateService');
 const logs = require('../services/logService')

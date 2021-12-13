@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const {parse, stringify, toJSON, fromJSON} = require('flatted');
 
 const qualificationService = require('../services/qualificationService');
 

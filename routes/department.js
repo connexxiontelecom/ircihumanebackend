@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const {parse, stringify, toJSON, fromJSON} = require('flatted');
-
 const departmentService = require('../services/departmentService');
 
 /* Pension provider routes. */
