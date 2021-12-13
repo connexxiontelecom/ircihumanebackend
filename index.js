@@ -52,6 +52,9 @@
     const minimumTaxRateRouter = require('./routes/minimumTaxRates')
     app.use('/minimum-tax-rate', minimumTaxRateRouter)
 
+    const locationAllowanceRouter = require('./routes/locationAllowances')
+    app.use('/location-allowance',locationAllowanceRouter)
+
 
     app.get('/',  async function(req, res) {
 

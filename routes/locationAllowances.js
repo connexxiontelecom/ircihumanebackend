@@ -110,7 +110,7 @@ router.patch('/update-location-allowance/:la_id', auth,  async function(req, res
                         })
                     })
                 }else{
-                    return res.status(400).json(`Cannot Update Location Allowance`)
+                    return res.status(400).json(`Location Allowance Update Not Allowed`)
                 }
             }
         })

@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'locationAllowance',
-    tableName: 'location_allowance'
+    tableName: 'location_allowances'
   });
   return locationAllowance;
 };
