@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getJobRoles = async (req, res)=>{
     const roles =  await jobRole.findAll({attributes: ['job_role','department_id', 'job_role_id', 'description']});
-    res.send(roles)
+    res.status(200).json(roles)
 }
 const setNewJobRole = async (req, res)=>  {
     await jobRole.create({job_role: req.body.job_role,department_id:req.body.department_id,description:req.body.description})
         .catch(errHandler);
-    res.send(`New job role :  ${req.body.job_role} was successfully saved in the database`)
+    res.status(200).json(`New job role :  ${req.body.job_role} was successfully saved in the database`)
 }
 const getJobRoleById = async (req, res) =>{
     const role_id  = req.params.id;
     const role =  await jobRole.findAll({where:{job_role_id: role_id}});
-    res.send(role);
+    res.status(200).json(role);
 }
 const updateJobRole = async (req, res)=>{
     const role_id = req.params.id;
