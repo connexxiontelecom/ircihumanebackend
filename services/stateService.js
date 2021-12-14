@@ -43,7 +43,7 @@ const setNewState = async (req, res, next)=>  {
 }
 const getStateById = async (req, res) =>{
     const state_id  = req.params.id;
-    const sta =  await state.findAll({where:{state_id: state_id}});
+    const sta =  await state.findAll({where:{s_id: state_id}});
     return res.status(200).json(sta);
 }
 const updateState = async (req, res, next)=>{
@@ -59,8 +59,7 @@ const updateState = async (req, res, next)=>{
         }
         const state_id = req.params.id;
         const stat = await state.update({
-            s_name: req.body.state_name,
-            d_t3_code:req.body.t3_code
+            s_name: req.body.state_name
         },{
             where:{
                 s_id:state_id
@@ -69,11 +68,11 @@ const updateState = async (req, res, next)=>{
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": `Log on state: Made changes on (${req.body.s_name})`,
+            "log_description": `Log on state: Made changes on (${req.body.state_name})`,
             "log_date": new Date()
         }
         logs.addLog(logData).then((logRes)=>{
-            return res.status(200).json(`Your changes on   ${req.body.s_name} were saved successfully.`);
+            return res.status(200).json(`Your changes on   ${req.body.state_name} were saved successfully.`);
         });
     }catch (e) {
         console.error(`Error while updating state `, e.message);

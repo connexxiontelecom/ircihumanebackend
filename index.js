@@ -21,6 +21,7 @@
     const subsidiaryRouter = require('./routes/subsidiary');
     const leaveTypeRouter = require('./routes/leave-type');
     const stateRouter = require('./routes/state');
+    const employeeCategoryRouter = require('./routes/employee-category');
 
    app.use('/banks', bankRouter);
    app.use('/pension-providers', pensionProviderRouter);
@@ -33,6 +34,7 @@
    app.use('/subsidiaries', subsidiaryRouter);
    app.use('/leave-types', leaveTypeRouter);
    app.use('/states', stateRouter);
+   app.use('/employee-categories', employeeCategoryRouter);
 
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
