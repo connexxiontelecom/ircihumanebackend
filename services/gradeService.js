@@ -13,7 +13,7 @@ const errHandler = (err) =>{
 }
 const getGrades = async (req, res)=>{
     const grades =  await grade.findAll({attributes: ['grade_name','grade_id']});
-    res.send(grades)
+    res.status(200).json(grades)
 }
 const setNewGrade = async (req, res)=>  {
     try{

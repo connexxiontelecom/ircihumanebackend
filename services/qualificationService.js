@@ -9,7 +9,7 @@ const errHandler = (err) =>{
 }
 const getQualifications = async (req, res)=>{
     const qualifications =  await qualification.findAll({attributes: ['qualification_name','qualification_id']});
-    res.send(qualifications)
+    res.status(200).json(qualifications)
 }
 const setNewQualification = async (req, res, next)=>  {
     try{
@@ -42,7 +42,7 @@ const setNewQualification = async (req, res, next)=>  {
 const getQualificationById = async (req, res) =>{
     const qualification_id  = req.params.id;
     const qualifi =  await qualification.findAll({where:{qualification_id: qualification_id}});
-    res.send(qualifi);
+    res.status(200).json(qualifi);
 }
 const updateQualification = async (req, res)=>{
     try{

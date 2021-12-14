@@ -12,7 +12,7 @@ const errHandler = (err) =>{
 }
 const getHmos = async (req, res)=>{
     const hmos =  await hmo.findAll({attributes: ['hmo_name','hmo_id']});
-    res.send(hmos)
+    res.status(200).json(hmos)
 }
 const setNewHmo = async (req, res)=>  {
     try{

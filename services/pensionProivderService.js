@@ -9,7 +9,7 @@ const errHandler = (err) =>{
 }
 const getPensionProviders = async (req, res)=>{
     const providers =  await pension.findAll({attributes: ['provider_name','pension_provider_id']});
-    res.send(providers)
+    res.status(200).json(providers)
 }
 const setNewPensionProvider = async (req, res, next)=>  {
     try{
@@ -41,7 +41,7 @@ const setNewPensionProvider = async (req, res, next)=>  {
 const getPensionProviderById = async (req, res) =>{
     const provider_id  = req.params.id;
     const p =  await pension.findAll({where:{pension_provider_id: provider_id}});
-    res.send(p);
+    res.status(200).json(p);
 }
 const updatePensionProvider = async (req, res)=>{
     try{

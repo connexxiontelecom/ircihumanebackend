@@ -1,7 +1,13 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
 const {
   Model
 } = require('sequelize');
+
+
+const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
+
 module.exports = (sequelize, DataTypes) => {
   class locationAllowance extends Model {
     /**
@@ -13,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   };
+
+
   locationAllowance.init({
     la_id: {
       type: DataTypes.INTEGER,
@@ -27,5 +35,13 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'locationAllowance',
     tableName: 'location_allowances'
   });
+
+  Location.belongsTo(locationAllowance, { foreignKey: 'la_location_id' })
+  locationAllowance.hasMany(Location, { foreignKey: 'location_id' })
+
+  Pd.belongsTo(locationAllowance, {foreignKey: 'la_payment_id'})
+  locationAllowance.hasMany(Pd, {foreignKey: 'pd_id'})
+
+
   return locationAllowance;
 };

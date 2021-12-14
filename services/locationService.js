@@ -8,8 +8,8 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getLocations = async (req, res)=>{
-    const locations =  await location.findAll({attributes: ['location_name','location_id', 'l_state_id', 'l_t6_code']});
-    res.send(locations)
+    const locations =  await location.findAll({attributes: ['location_name','location_id']});
+    res.status(200).json(locations)
 }
 const setNewLocation = async (req, res, next)=>  {
     try{
@@ -47,7 +47,7 @@ const setNewLocation = async (req, res, next)=>  {
 const getLocationById = async (req, res) =>{
     const location_id  = req.params.id;
     const loc =  await location.findAll({where:{location_id: location_id}});
-    res.send(loc);
+    res.status(200).json(loc);
 }
 const updateLocation = async (req, res, next)=>{
     try{

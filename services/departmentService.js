@@ -1,4 +1,3 @@
-const Joi = require('joi');
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const department = require("../models/Department")(sequelize, Sequelize.DataTypes);
@@ -11,8 +10,8 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getDepartments = async (req, res)=>{
-    const departments =  await department.findAll({attributes: ['department_name','department_id', 'd_t3_code']});
-    res.send(departments)
+    const departments =  await department.findAll({attributes: ['department_name','department_id']});
+    res.status(200).json(departments)
 }
 const setNewDepartment = async (req, res, next)=>  {
     try{

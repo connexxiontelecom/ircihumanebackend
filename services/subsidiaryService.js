@@ -9,7 +9,7 @@ const errHandler = (err) =>{
 }
 const getSubsidiaries = async (req, res)=>{
     const subsidiaries =  await subsidiary.findAll({attributes: ['subsidiary_name','subsidiary_id']});
-    res.send(subsidiaries)
+    res.status(200).json(subsidiaries)
 }
 const setNewSubsidiary = async (req, res, next)=>  {
     try{
@@ -23,6 +23,7 @@ const setNewSubsidiary = async (req, res, next)=>  {
     }
     await subsidiary.create({subsidiary_name: req.body.subsidiary_name})
         .catch(errHandler);
+    res.status(200).json(`New subsidiary :  ${req.body.subsidiary_name} was successfully saved in the database`)
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,
