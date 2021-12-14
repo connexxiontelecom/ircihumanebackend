@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
+const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class log extends Model {
     /**
@@ -26,5 +28,8 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'log',
   });
+
+  User.belongsTo(log, { foreignKey: 'log_user_id' })
+  log.hasMany(User, { foreignKey: 'user_id' })
   return log;
 };
