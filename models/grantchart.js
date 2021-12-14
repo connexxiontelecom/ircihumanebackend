@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
 const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
 const Donor = require("../models/donor")(sequelize, Sequelize.DataTypes)
