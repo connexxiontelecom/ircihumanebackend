@@ -38,9 +38,6 @@
 
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
-
-<<<<<<< HEAD
-=======
     const paymentDefinitionRouter = require('./routes/paymentDefinitions')
     app.use('/payment-definitions', paymentDefinitionRouter)
 
@@ -49,7 +46,6 @@
 
     const taxRateRouter = require('./routes/taxRates')
     app.use('/tax-rates', taxRateRouter)
->>>>>>> 08d0d01a918c75f48e6a47ab298b22e039144bc4
 
     const minimumTaxRateRouter = require('./routes/minimumTaxRates')
     app.use('/minimum-tax-rate', minimumTaxRateRouter)

@@ -24,7 +24,6 @@
       <change afterPath="$PROJECT_DIR$/models/EmployeeCategories.js" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/routes/employee-category.js" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/services/employeeCategoryService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/stateService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/stateService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -61,7 +60,7 @@
       <updated>1638879540371</updated>
       <workItem from="1638879570919" duration="23643000" />
       <workItem from="1638951806940" duration="37316000" />
-      <workItem from="1639127117291" duration="7400000" />
+      <workItem from="1639127117291" duration="8265000" />
     </task>
     <servers />
   </component>
