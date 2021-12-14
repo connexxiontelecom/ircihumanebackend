@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
         location_name: DataTypes.STRING,
+        l_state_id: DataTypes.INTEGER,
+        l_t6_code: DataTypes.STRING,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

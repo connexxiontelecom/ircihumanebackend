@@ -10,10 +10,7 @@ const employees = require('../services/employeeService');
 router.get('/', async function(req, res, next) {
     try {
 
-
-
-     await employees.getAllEmployee().then((data)=>{
-          // [result, metadata] = data
+        await employees.getAllEmployee().then((data)=>{
          res.send(data);
       });
 
@@ -30,5 +27,6 @@ router.get('/', async function(req, res, next) {
 router.get('/getemployee', async function(req, res, next){
 
 })
+router.post('/employee-enrollment', employees.createNewEmployee);
 
 module.exports = router;

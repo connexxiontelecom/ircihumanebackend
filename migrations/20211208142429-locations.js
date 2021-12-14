@@ -18,6 +18,14 @@ module.exports = {
       location_name: {
         type: Sequelize.STRING
       },
+      l_state_id:{
+        type: Sequelize.INTEGER,
+        allowNull:true
+      },
+      l_t6_code:{
+        type: Sequelize.STRING,
+        allowNull:true
+      },
       created_at: {
         allowNull: true,
         type: Sequelize.DATE
