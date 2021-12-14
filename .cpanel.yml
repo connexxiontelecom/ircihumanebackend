@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/ihumane/irc-api/
+    - /bin/cp -R * $DEPLOYPATH

@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
+<<<<<<< HEAD
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
 const auth = require('../middleware/auth');
+=======
+>>>>>>> 08d0d01a918c75f48e6a47ab298b22e039144bc4
 const locationService = require('../services/locationService');
 
-/* Pension provider routes. */
+/* location provider routes. */
 
 router.get('/',auth, locationService.getLocations);
 router.post('/',auth, locationService.setNewLocation);

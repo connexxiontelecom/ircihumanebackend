@@ -2,14 +2,16 @@
     const dotenv = require("dotenv");
     const bodyParser = require('body-parser');
     const cors = require('cors');
-   // const db = require("./services/db")
+
     const app = express();
     app.use(cors());
     app.use(express.json());
     dotenv.config();
     //Routes
-    const employeeRouter = require('./routes/employees');
-    app.use('/employees', employeeRouter);
+    const employeeRouter = require('./routes/employees')
+     app.use('/employees', employeeRouter);
+    
+
     const bankRouter = require('./routes/bank');
     const pensionProviderRouter = require('./routes/pension-provider');
     const hmoRouter = require('./routes/hmo');
@@ -20,8 +22,9 @@
     const qualificationRouter = require('./routes/qualification');
     const subsidiaryRouter = require('./routes/subsidiary');
     const leaveTypeRouter = require('./routes/leave-type');
-    const stateRouter = require('./routes/state');
-    const employeeCategoryRouter = require('./routes/employee-category');
+
+   
+
 
    app.use('/banks', bankRouter);
    app.use('/pension-providers', pensionProviderRouter);
@@ -33,14 +36,10 @@
    app.use('/qualifications', qualificationRouter);
    app.use('/subsidiaries', subsidiaryRouter);
    app.use('/leave-types', leaveTypeRouter);
-   app.use('/states', stateRouter);
-   app.use('/employee-categories', employeeCategoryRouter);
 
     const userRouter = require('./routes/users')
     app.use('/users', userRouter);
 
-<<<<<<< HEAD
-=======
     const paymentDefinitionRouter = require('./routes/paymentDefinitions')
     app.use('/payment-definitions', paymentDefinitionRouter)
 
@@ -49,13 +48,13 @@
 
     const taxRateRouter = require('./routes/taxRates')
     app.use('/tax-rates', taxRateRouter)
->>>>>>> 08d0d01a918c75f48e6a47ab298b22e039144bc4
 
     const minimumTaxRateRouter = require('./routes/minimumTaxRates')
     app.use('/minimum-tax-rate', minimumTaxRateRouter)
 
     const locationAllowanceRouter = require('./routes/locationAllowances')
     app.use('/location-allowance',locationAllowanceRouter)
+
 
 
     app.get('/',  async function(req, res) {
@@ -70,9 +69,6 @@
         return res.status(statusCode).json({'message': err.message});
 
     });
-
-
-
 
 
 

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -7,13 +8,14 @@
     "flatted": "^3.2.4",
     "joi": "^17.5.0",
     "jsonwebtoken": "^8.5.1",
+    "loadash": "^1.0.0",
+    "lodash": "^4.17.21",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.15",
     "sequelize": "*"
   },
   "devDependencies": {
-    "bcrypt": "^5.0.1",
     "sequelize-cli": "^6.3.0"
   }
 }

@@ -1,15 +1,14 @@
 const Joi = require('joi')
 const express = require('express');
 const router = express.Router();
-const {parse, stringify, toJSON, fromJSON} = require('flatted');
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
 const users = require('../services/userService');
 const logs = require("../services/logService");
 
 
-/* Get All Payment Definitions */
+/* Get All Users */
 router.get('/', auth, async function(req, res, next) {
     try {
 
@@ -156,6 +155,7 @@ router.post('/login', async function(req, res, next) {
                             return res.status(400).json(`${err} occurred while logging in`)
                         }
                         if(response){
+                            delete data.user_password;
                             let token = generateAccessToken(data)
 
                             const logData = {
@@ -164,10 +164,18 @@ router.post('/login', async function(req, res, next) {
                                 "log_date": new Date()
                             }
                             logs.addLog(logData).then((logRes)=>{
-                                //return res.status(200).json(logRes);
-                                return res.status(200).json(`User updated`)
+                                data.user_password = null;
+                                const responseData = {
+                                    "token" : token,
+                                    "userData": data
+
+
+                                }
+                                return res.status(200).json(responseData);
+
+
                             })
-                            return res.status(200).json(token);
+
                         }else{
                             return res.status(400).json('Incorrect Password')
                         }

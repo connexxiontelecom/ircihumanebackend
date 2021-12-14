@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class TaxRate extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,24 +13,18 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   };
-  User.init({
-    user_id: {
+  TaxRate.init({
+    tr_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
-    user_username:  DataTypes.STRING,
-    user_name:  DataTypes.STRING,
-    user_email: DataTypes.STRING,
-    user_password: DataTypes.STRING,
-    user_type: DataTypes.INTEGER,
-    user_token: DataTypes.STRING,
-    user_status: DataTypes.INTEGER,
-
+    tr_band: DataTypes.DECIMAL,
+    tr_rate: DataTypes.DECIMAL
   }, {
     sequelize,
-    modelName: 'User',
-    tableName: 'users'
+    modelName: 'TaxRate',
+    tableName: 'tax_rates'
   });
-  return User;
+  return TaxRate;
 };
