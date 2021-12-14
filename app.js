@@ -56,6 +56,8 @@
     app.use('/location-allowance',locationAllowanceRouter)
 
 
+    const donorRouter = require('./routes/donor')
+    app.use('/donor',donorRouter)
 
     app.get('/',  async function(req, res) {
 
