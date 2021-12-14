@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getQualifications = async (req, res)=>{
     const qualifications =  await qualification.findAll({attributes: ['qualification_name','qualification_id']});
-    res.send(qualifications)
+    res.status(200).json(qualifications)
 }
 const setNewQualification = async (req, res)=>  {
     await qualification.create({qualification_name: req.body.qualification_name})
         .catch(errHandler);
-    res.send(`New qualification :  ${req.body.qualification_name} was successfully saved in the database`)
+    res.status(200).json(`New qualification :  ${req.body.qualification_name} was successfully saved in the database`)
 }
 const getQualificationById = async (req, res) =>{
     const qualification_id  = req.params.id;
     const qualifi =  await qualification.findAll({where:{qualification_id: qualification_id}});
-    res.send(qualifi);
+    res.status(200).json(qualifi);
 }
 const updateQualification = async (req, res)=>{
     const qualification_id = req.params.id;
@@ -29,7 +29,7 @@ const updateQualification = async (req, res)=>{
             qualification_id:qualification_id
         }
     });
-    res.send(`Your changes were saved successfully.`)
+    res.status(200).json(`Your changes were saved successfully.`)
 }
 
 module.exports = {

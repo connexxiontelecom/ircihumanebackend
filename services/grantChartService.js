@@ -22,11 +22,11 @@ async function addGrantChart(grantChartData){
 }
 
 async function findGrantChartByCode(code){
-    return await GrantChart.findOne({ where: { gc_account_code: code } })
+    return await GrantChart.findOne({ where: { gc_account_code: code }, include: [Location, Department, Donor]  })
 }
 
 async function findGrantChartById(id){
-    return await GrantChart.findOne({ where: { gc_id: id } })
+    return await GrantChart.findOne({ where: { gc_id: id }, include: [Location, Department, Donor]  })
 }
 
 async function updateGrantChart(grantChartData, gc_id){
@@ -46,14 +46,14 @@ async function updateGrantChart(grantChartData, gc_id){
 }
 
 async function findAllCodes(){
-    return await Pd.findAll()
+    return await GrantChart.findAll( {include: [Location, Department, Donor] })
 }
 
 module.exports = {
-    addPaymentDefinition,
-    findPaymentByCode,
-    findPaymentById,
+    addGrantChart,
     findAllCodes,
-    updatePaymentDefinition
+    findGrantChartByCode,
+    findGrantChartById,
+    updateGrantChart
 
 }

@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getSubsidiaries = async (req, res)=>{
     const subsidiaries =  await subsidiary.findAll({attributes: ['subsidiary_name','subsidiary_id']});
-    res.send(subsidiaries)
+    res.status(200).json(subsidiaries)
 }
 const setNewSubsidiary = async (req, res)=>  {
     await subsidiary.create({subsidiary_name: req.body.subsidiary_name})
         .catch(errHandler);
-    res.send(`New subsidiary :  ${req.body.subsidiary_name} was successfully saved in the database`)
+    res.status(200).json(`New subsidiary :  ${req.body.subsidiary_name} was successfully saved in the database`)
 }
 const getSubsidiaryById = async (req, res) =>{
     const subsidiary_id  = req.params.id;
     const sub =  await subsidiary.findAll({where:{subsidiary_id: subsidiary_id}});
-    res.send(sub);
+    res.status(200).json(sub);
 }
 const updateSubsidiary = async (req, res)=>{
     const subsidiary_id = req.params.id;
@@ -29,7 +29,7 @@ const updateSubsidiary = async (req, res)=>{
             subsidiary_id:subsidiary_id
         }
     });
-    res.send(`Your changes were saved successfully.`)
+    res.status(200).json(`Your changes were saved successfully.`)
 }
 
 module.exports = {

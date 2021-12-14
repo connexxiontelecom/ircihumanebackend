@@ -59,6 +59,9 @@
     const donorRouter = require('./routes/donor')
     app.use('/donor',donorRouter)
 
+    const grantChartRouter = require('./routes/grantChart')
+    app.use('/grant-chart',grantChartRouter)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')

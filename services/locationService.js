@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getLocations = async (req, res)=>{
     const locations =  await location.findAll({attributes: ['location_name','location_id']});
-    res.send(locations)
+    res.status(200).json(locations)
 }
 const setNewLocation = async (req, res)=>  {
     await location.create({location_name: req.body.location_name})
         .catch(errHandler);
-    res.send(`New location :  ${req.body.location_name} was successfully saved in the database`)
+    res.status(200).json(`New location :  ${req.body.location_name} was successfully saved in the database`)
 }
 const getLocationById = async (req, res) =>{
     const location_id  = req.params.id;
     const loc =  await location.findAll({where:{location_id: location_id}});
-    res.send(loc);
+    res.status(200).json(loc);
 }
 const updateLocation = async (req, res)=>{
     const location_id = req.params.id;
@@ -29,7 +29,7 @@ const updateLocation = async (req, res)=>{
             location_id:location_id
         }
     });
-    res.send(`Your changes were saved successfully.`)
+    res.status(200).json(`Your changes were saved successfully.`)
 }
 
 module.exports = {

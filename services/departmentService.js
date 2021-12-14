@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getDepartments = async (req, res)=>{
     const departments =  await department.findAll({attributes: ['department_name','department_id']});
-    res.send(departments)
+    res.status(200).json(departments)
 }
 const setNewDepartment = async (req, res)=>  {
     await department.create({department_name: req.body.department_name})
         .catch(errHandler);
-    res.send(`New department :  ${req.body.department_name} was successfully saved in the database`)
+    res.status(200).json(`New department :  ${req.body.department_name} was successfully saved in the database`)
 }
 const getDepartmentById = async (req, res) =>{
     const department_id  = req.params.id;
     const depart =  await department.findAll({where:{department_id: department_id}});
-    res.send(depart);
+    res.status(200).json(depart);
 }
 const updateDepartment = async (req, res)=>{
     const department_id = req.params.id;
@@ -29,7 +29,7 @@ const updateDepartment = async (req, res)=>{
             department_id:department_id
         }
     });
-    res.send(`Your changes were saved successfully.`)
+    res.status(200).json(`Your changes were saved successfully.`)
 }
 
 module.exports = {

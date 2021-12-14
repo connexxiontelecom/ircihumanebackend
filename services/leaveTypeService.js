@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getLeaveTypes = async (req, res)=>{
     const leaves =  await leaveType.findAll({attributes: ['leave_name','leave_type_id', 'leave_duration']});
-    res.send(leaves)
+    res.status(200).json(leaves)
 }
 const setNewLeaveType = async (req, res)=>  {
     await leaveType.create({leave_name: req.body.leave_name, leave_duration:req.body.leave_duration})
         .catch(errHandler);
-    res.send(`New leave :  ${req.body.leave_name} was successfully saved in the database`)
+    res.status(200).json(`New leave :  ${req.body.leave_name} was successfully saved in the database`)
 }
 const getLeaveTypeById = async (req, res) =>{
     const leave_type_id  = req.params.id;
     const leave =  await leaveType.findAll({where:{leave_type_id: leave_type_id}});
-    res.send(leave);
+    res.status(200).json(leave);
 }
 const updateLeaveType = async (req, res)=>{
     const leave_id = req.params.id;
@@ -30,7 +30,7 @@ const updateLeaveType = async (req, res)=>{
             leave_type_id:leave_id
         }
     });
-    res.send(`Your changes were saved successfully.`)
+    res.status(200).json(`Your changes were saved successfully.`)
 }
 
 module.exports = {

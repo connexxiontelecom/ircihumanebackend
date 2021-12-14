@@ -8,17 +8,17 @@ const errHandler = (err) =>{
 }
 const getHmos = async (req, res)=>{
     const hmos =  await hmo.findAll({attributes: ['hmo_name','hmo_id']});
-    res.send(hmos)
+    res.status(200).json(hmos)
 }
 const setNewHmo = async (req, res)=>  {
     await hmo.create({hmo_name: req.body.hmo_name})
         .catch(errHandler);
-    res.send(`New HMO :  ${req.body.hmo_name} was successfully saved in the database`)
+    res.status(200).json(`New HMO :  ${req.body.hmo_name} was successfully saved in the database`)
 }
 const getHmoById = async (req, res) =>{
     const hmo_id  = req.params.id;
     const h =  await hmo.findAll({where:{hmo_id: hmo_id}});
-    res.send(h);
+    res.status(200).json(h);
 }
 const updateHmo = async (req, res)=>{
     const hmo_id = req.params.id;
@@ -29,7 +29,7 @@ const updateHmo = async (req, res)=>{
             hmo_id:hmo_id
         }
     });
-    res.send(`Your changes were saved successfully.`)
+    res.status(200).json(`Your changes were saved successfully.`)
 }
 
 module.exports = {
