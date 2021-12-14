@@ -9,7 +9,6 @@
     dotenv.config();
     //Routes
     const employeeRouter = require('./routes/employees');
-    app.use('/employees', employeeRouter);
     const bankRouter = require('./routes/bank');
     const pensionProviderRouter = require('./routes/pension-provider');
     const hmoRouter = require('./routes/hmo');
@@ -23,8 +22,9 @@
     const stateRouter = require('./routes/state');
     const employeeCategoryRouter = require('./routes/employee-category');
 
+    app.use('/employees', employeeRouter);
    app.use('/banks', bankRouter);
-   app.use('/pension-providers', pensionProviderRouter);
+    app.use('/pension-providers', pensionProviderRouter);
    app.use('/hmos', hmoRouter);
    app.use('/departments', departmentRouter);
    app.use('/grades', gradeRouter);

@@ -4,7 +4,7 @@ const leaveType = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
 const Joi = require('joi');
 const auth = require("../middleware/auth");
 const logs = require('../services/logService');
-const bcrypt = require("bcrypt");
+//const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
 const helper  =require('../helper');

@@ -2,7 +2,7 @@ const Joi = require('joi');
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const employeeCategory = require("../models/EmployeeCategories")(sequelize, Sequelize.DataTypes);
-const bcrypt = require("bcrypt");
+//const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const logs = require('../services/logService')
 

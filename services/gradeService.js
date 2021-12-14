@@ -3,7 +3,7 @@ const { sequelize, Sequelize } = require('./db');
 const grade = require("../models/Grade")(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 const logs = require('../services/logService');
-const bcrypt = require("bcrypt");
+//const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
 

@@ -20,10 +20,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a588f2a-b6f4-4120-aba0-51767a680d30" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/models/Employee.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/EmployeeCategories.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/employee-category.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/employeeCategoryService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/Employee.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Employee.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/department.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/department.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/employees.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employees.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/grade.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/grade.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/job-role.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/job-role.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/leave-type.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leave-type.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/location.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/location.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/qualification.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/qualification.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/subsidiary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/subsidiary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/departmentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/departmentService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/employeeCategoryService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/employeeCategoryService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/employeeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/employeeService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/gradeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/gradeService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/hmoService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/hmoService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/jobRoleService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/jobRoleService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/leaveTypeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/leaveTypeService.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/stateService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/stateService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -44,8 +58,9 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../React/cryptoverse" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../React/mern" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2020.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="SvnConfiguration">
@@ -60,7 +75,8 @@
       <updated>1638879540371</updated>
       <workItem from="1638879570919" duration="23643000" />
       <workItem from="1638951806940" duration="37316000" />
-      <workItem from="1639127117291" duration="8265000" />
+      <workItem from="1639127117291" duration="11877000" />
+      <workItem from="1639485020442" duration="8568000" />
     </task>
     <servers />
   </component>
@@ -80,10 +96,10 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="549" y="167" key="FileChooserDialogImpl" timestamp="1639131783864">
+    <state x="549" y="167" key="FileChooserDialogImpl" timestamp="1639492772114">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="549" y="167" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1639131783864" />
+    <state x="549" y="167" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1639492772114" />
     <state x="0" y="65" key="MergeDialog" timestamp="1639045677191">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -92,6 +108,10 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="257" y="280" width="621" height="263" key="MultipleFileMergeDialog/0.0.1536.824@0.0.1536.824" timestamp="1639045677199" />
+    <state x="277" y="57" key="SettingsEditor" timestamp="1639485282084">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="277" y="57" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1639485282084" />
     <state x="578" y="326" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1638967382117">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
