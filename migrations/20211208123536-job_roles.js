@@ -21,7 +21,7 @@ module.exports = {
       description:{
         type:Sequelize.STRING
       },
-      department_id:{
+      jb_department_id:{
         type:Sequelize.INTEGER
       },
       created_at: {
