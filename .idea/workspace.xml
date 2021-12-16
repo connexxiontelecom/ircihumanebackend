@@ -20,19 +20,47 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a588f2a-b6f4-4120-aba0-51767a680d30" name="Default Changelist" comment="">
+
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/paymentDefinitions.test.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/taxtRates.test.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/test.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/ttst.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/paymentDefinitions.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/paymentDefinitions.js" afterDir="false" />
+
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/JobRole.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/JobRole.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/departmentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/departmentService.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/gradeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/gradeService.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/jobRoleService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/jobRoleService.js" afterDir="false" />
+
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="JsFlowSettings">
+    <service-enabled>true</service-enabled>
+    <exe-path />
+    <other-services-enabled>true</other-services-enabled>
+    <auto-save>true</auto-save>
   </component>
   <component name="ProjectId" id="21xOzukOagfvAWZw2gAbiKLSBJX" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -43,12 +71,29 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../React/mern" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/routes" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs.jest.jest_package" value="$PROJECT_DIR$/node_modules/jest" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2020.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
   </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\express\ircihumanebackend\tests" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\express\ircihumanebackend\routes" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -62,12 +107,17 @@
       <workItem from="1638879570919" duration="23643000" />
       <workItem from="1638951806940" duration="37316000" />
       <workItem from="1639127117291" duration="11877000" />
+
+      <workItem from="1639485020442" duration="9260000" />
+      <workItem from="1639578307985" duration="13389000" />
+
       <workItem from="1639485020442" duration="23614000" />
+
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="2" />
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
