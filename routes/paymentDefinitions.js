@@ -113,7 +113,7 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
                         }
                     }else{
                         paymentDefinition.updatePaymentDefinition(paymentDefinitionRequest, req.params['pd_id']).then((data)=>{
-                            return res.status(200).json(`Payment updated ${data}`)
+                            return res.status(200).json(`Payment Definition Updated`)
                         })
                     }
                 })
