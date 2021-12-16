@@ -20,30 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a588f2a-b6f4-4120-aba0-51767a680d30" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/migrations/20211214112037-create-donor.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/20211214130759-create-grant-chart.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/donor.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/grantchart.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/donor.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/grantChart.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/donorService.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/grantChartService.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/locationallowance.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/locationallowance.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/log.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/log.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/employees.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employees.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/departmentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/departmentService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/gradeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/gradeService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/hmoService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/hmoService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/jobRoleService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/jobRoleService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/leaveTypeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/leaveTypeService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/locationAllowanceService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/locationAllowanceService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/locationService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/locationService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/logService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/logService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/pensionProivderService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/pensionProivderService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/qualificationService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/qualificationService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/subsidiaryService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/subsidiaryService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/employeeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/employeeService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +45,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../React/mern" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2020.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="SvnConfiguration">
@@ -81,7 +61,7 @@
       <workItem from="1638879570919" duration="23643000" />
       <workItem from="1638951806940" duration="37316000" />
       <workItem from="1639127117291" duration="11877000" />
-      <workItem from="1639485020442" duration="9260000" />
+      <workItem from="1639485020442" duration="17756000" />
     </task>
     <servers />
   </component>
@@ -105,18 +85,18 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="549" y="167" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1639492772114" />
-    <state x="0" y="65" key="MergeDialog" timestamp="1639045677191">
+    <state x="0" y="65" key="MergeDialog" timestamp="1639497873255">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="0" y="65" key="MergeDialog/0.0.1536.824@0.0.1536.824" timestamp="1639045677191" />
-    <state x="257" y="280" width="621" height="263" key="MultipleFileMergeDialog" timestamp="1639045677199">
+    <state x="0" y="65" key="MergeDialog/0.0.1536.824@0.0.1536.824" timestamp="1639497873255" />
+    <state x="257" y="280" width="621" height="267" key="MultipleFileMergeDialog" timestamp="1639497873360">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="257" y="280" width="621" height="263" key="MultipleFileMergeDialog/0.0.1536.824@0.0.1536.824" timestamp="1639045677199" />
-    <state x="277" y="57" key="SettingsEditor" timestamp="1639485282084">
+    <state x="257" y="280" width="621" height="267" key="MultipleFileMergeDialog/0.0.1536.824@0.0.1536.824" timestamp="1639497873360" />
+    <state x="277" y="57" key="SettingsEditor" timestamp="1639644431146">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="277" y="57" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1639485282084" />
+    <state x="277" y="57" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1639644431146" />
     <state x="578" y="326" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1638967382117">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
