@@ -74,10 +74,24 @@ const userRouter = require('./routes/users')
 
     });
 
+        let port;
 
 
-    const port = process.env.PORT || 9500
+    if(process.env.NODE_ENV === 'DEVELOPMENT'){
+        port = process.env.PORT || 9500
+    }
 
-    app.listen(port, ()=>{
+    //let port = process.env.PORT || 9500
+
+    if(process.env.NODE_ENV === 'TEST'){
+        port = 0
+    }
+
+
+
+    const server =   app.listen(port, ()=>{
         console.log(`Listening on ${port}`);
     })
+
+
+    module.exports = server

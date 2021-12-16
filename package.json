@@ -1,5 +1,14 @@
 {
+  "name": "ircihumanebackend",
+  "version": "0.2.0",
+  "description": "IRC Ihumane Backend",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "jest --watchAll"
+  },
   "dependencies": {
+    "@jest/globals": "^27.4.4",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -16,6 +25,8 @@
     "sequelize": "*"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.3.0"
+    "jest": "^27.4.5",
+    "sequelize-cli": "^6.3.0",
+    "supertest": "^6.1.6"
   }
 }
