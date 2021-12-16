@@ -3,6 +3,7 @@ const { sequelize, Sequelize } = require('./db');
 const department = require("../models/Department")(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
 const logs = require('../services/logService')
 
 const helper  =require('../helper');
