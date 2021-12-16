@@ -1,6 +1,8 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const jobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes);
+const Department = require("../models/Department")(sequelize, Sequelize.DataTypes);
+
 const Joi = require('joi');
 const auth = require("../middleware/auth");
 const logs = require('../services/logService');
@@ -13,7 +15,8 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getJobRoles = async (req, res)=>{
-    const roles =  await jobRole.findAll({attributes: ['job_role','department_id', 'job_role_id', 'description']});
+    const roles =  await jobRole.findAll({attributes: ['job_role','department_id', 'job_role_id', 'description'], include:[Department]});
+    //return await jobRole.findAll({ include: [Location, Pd] })
     res.status(200).json(roles)
 }
 const setNewJobRole = async (req, res)=>  {

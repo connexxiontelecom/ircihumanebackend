@@ -44,10 +44,10 @@ const setNewGrade = async (req, res)=>  {
 }
 const getGradeById = async (req, res) =>{
     const grade_id  = req.params.id;
-    const grade =  await grade.findAll({where:{grade_id: grade_id}});
-    res.send(grade);
+    const gra =  await grade.findAll({where:{grade_id: grade_id}});
+    res.status(200).json(gra);
 }
-const updateGrade = async (req, res)=>{
+const updateGrade = async (req, res, next)=>{
     try{
         const schema = Joi.object( {
             grade_name: Joi.string().required(),
@@ -58,7 +58,7 @@ const updateGrade = async (req, res)=>{
             return res.status(400).json(validationResult.error.details[0].message);
         }
         const grade_id = req.params.id;
-        const grade = await grade.update({
+         await grade.update({
             grade_name: req.body.grade_name,
         },{
             where:{
