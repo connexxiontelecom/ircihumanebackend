@@ -11,7 +11,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getDepartments = async (req, res)=>{
-    const departments =  await department.findAll({attributes: ['department_name','department_id']});
+    const departments =  await department.findAll({attributes: ['department_name','department_id', 'd_t3_code']});
     res.status(200).json(departments)
 }
 const setNewDepartment = async (req, res, next)=>  {
