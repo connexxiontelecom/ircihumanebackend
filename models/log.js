@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'log',
   });
 
-  User.belongsTo(log, { foreignKey: 'log_user_id' })
+  log.belongsTo(User, { foreignKey: 'log_user_id' })
   log.hasMany(User, { foreignKey: 'user_id' })
   return log;
 };
