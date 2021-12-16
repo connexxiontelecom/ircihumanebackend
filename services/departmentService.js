@@ -3,6 +3,7 @@ const { sequelize, Sequelize } = require('./db');
 const department = require("../models/Department")(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
 const logs = require('../services/logService')
 
 const helper  =require('../helper');
@@ -10,7 +11,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getDepartments = async (req, res)=>{
-    const departments =  await department.findAll({attributes: ['department_name','department_id']});
+    const departments =  await department.findAll({attributes: ['department_name','department_id', 'd_t3_code']});
     res.status(200).json(departments)
 }
 const setNewDepartment = async (req, res, next)=>  {

@@ -29,25 +29,24 @@ const createNewEmployee = async (req, res, next)=>  {
             phone_no: Joi.string().required().messages({'any.required':'Enter employee phone number'}),
             qualification: Joi.string().required().messages({'any.required':'Enter employee qualification'}),
             address: Joi.string().required().messages({'any.required':'Enter employee residential address'}),
-            location: Joi.string().required().messages({'any.required':'Select employee location from the list provided'}),
-            subsidiary: Joi.string().required().messages({'any.required':'Which of the subsidiaries does this employee belongs to?'}),
-            job_role: Joi.string().required().messages({"any.required":"What's this employee's job role?"}),
-            grade_level: Joi.string().required().messages({"any.required":"What's this employee's grade level?"}),
+            location: Joi.number().required().messages({'any.required':'Select employee location from the list provided'}),
+            subsidiary: Joi.number().required().messages({'any.required':'Which of the subsidiaries does this employee belongs to?'}),
+            job_role: Joi.number().required().messages({"any.required":"What's this employee's job role?"}),
+            grade_level: Joi.number().required().messages({"any.required":"What's this employee's grade level?"}),
             account_no: Joi.string().required().messages({"any.required":"Enter employee's account number"}),
-            bank: Joi.string().required().messages({"any.required":"Choose the bank associated with the account number you entered?"}),
+            bank: Joi.number().required().messages({"any.required":"Choose the bank associated with the account number you entered?"}),
             hmo_no: Joi.string().required().messages({"any.required":"Enter employee's HMO number"}),
-            hmo_id: Joi.string().required().messages({"any.required":"What's the HMO associated with the HMO number you entered?"}),
-            pensionable: Joi.string().required().messages({"any.required":"Is this employee pensionable?"}),
+            hmo_id: Joi.number().required().messages({"any.required":"What's the HMO associated with the HMO number you entered?"}),
+            pensionable: Joi.number().required().messages({"any.required":"Is this employee pensionable?"}),
             pension_no: Joi.string().required().messages({"any.required":"Enter pension number"}),
-            pension_id: Joi.string().required().messages({"any.required":"Select the pension body associated with the pension number you entered"}),
+            pension_id: Joi.number().required().messages({"any.required":"Select the pension body associated with the pension number you entered"}),
             paye_no: Joi.string().required().messages({"any.required":"Enter PAYE number"}),
             passport: Joi.string().required().messages({"any.required":"Enter employee passport"}),
             nysc_details: Joi.string().required().messages({"any.required":"Enter employee NYSC details"}),
             nysc_document: Joi.string().required().messages({"any.required":"Enter employee NYSC document"}),
-            nysc_document: Joi.string().required().messages({"any.required":"Enter employee NYSC document"}),
-            state: Joi.string().required().messages({"any.required":"What's employee's state of origin?"}),
-            lga: Joi.string().required().messages({"any.required":"What's employee's Local Govt. Area?"}),
-            marital_status: Joi.string().required().messages({"any.required":"What's employee's marital status?"}),
+            state: Joi.number().required().messages({"any.required":"What's employee's state of origin?"}),
+            lga: Joi.number().required().messages({"any.required":"What's employee's Local Govt. Area?"}),
+            marital_status: Joi.number().required().messages({"any.required":"What's employee's marital status?"}),
             spouse_name: Joi.string().required().messages({"any.required":"Enter employee's spouse name"}),
             spouse_phone_no: Joi.string().required().messages({"any.required":"Enter employee's spouse phone number"}),
             next_of_kin_name: Joi.string().required().messages({"any.required":"Enter employee's next of kin name"}),
@@ -60,8 +59,8 @@ const createNewEmployee = async (req, res, next)=>  {
             emergency_contact: Joi.string().required().messages({"any.required":"Enter emergency contact"}),
             employment_date: Joi.date().required().messages({"any.required":"Enter date of employment"}),
             employment_status: Joi.number().required().messages({"any.required":"What's the mode of employment?(Probationary,etc) "}),
-            salary_structure: Joi.date().required().messages({"any.required":"Select salary structure "}),
-            salary_structure_category: Joi.date().required().messages({"any.required":"Select salary structure category"}),
+            salary_structure: Joi.number().required().messages({"any.required":"Select salary structure "}),
+            salary_structure_category: Joi.number().required().messages({"any.required":"Select salary structure category"}),
             tax_amount: Joi.date().required().messages({"any.required":"Enter tax amount"}),
         })
         const employeeRequest = req.body
@@ -76,7 +75,7 @@ const createNewEmployee = async (req, res, next)=>  {
             emp_unique_id:req.body.unique_id,
             emp_dob:req.body.birth_date,
             emp_personal_email:req.body.personal_email,
-            emp_official_email:req.body.office_email,
+            emp_office_email:req.body.office_email,
             emp_phone_no:req.body.phone_no,
             emp_qualification:req.body.qualification,
             //emp_:req.body.address,
@@ -114,18 +113,18 @@ const createNewEmployee = async (req, res, next)=>  {
             emp_salary_structure_category:req.body.salary_structure_category,
             emp_tax_amount:req.body.tax_amount,
         }).catch(errHandler);
-        /*
+
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": `Log on department: Added a new department(${req.body.department_name})`,
+            "log_description": `Log on employee enrollment: Added a new employee(${req.body.first_name} ${req.body.last_name})`,
             "log_date": new Date()
         }
         logs.addLog(logData).then((logRes)=>{
-            return res.status(200).json(`New department :  ${req.body.department_name} was successfully saved in the database`);
-        })*/
+            return res.status(201).json(`New employee(${req.body.first_name}) enrollment was done successfully.`);
+        })
     }catch (e) {
-        console.error(`Error while adding payment definition `, e.message);
+        console.error(`Error: Could not enrol employee `, e.message);
         next(e);
     }
 }
