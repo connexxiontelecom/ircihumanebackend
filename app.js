@@ -8,10 +8,7 @@
     app.use(express.json());
     dotenv.config();
     //Routes
-    const employeeRouter = require('./routes/employees')
-     app.use('/employees', employeeRouter);
-    
-
+    const employeeRouter = require('./routes/employees');
     const bankRouter = require('./routes/bank');
     const pensionProviderRouter = require('./routes/pension-provider');
     const hmoRouter = require('./routes/hmo');
@@ -22,12 +19,12 @@
     const qualificationRouter = require('./routes/qualification');
     const subsidiaryRouter = require('./routes/subsidiary');
     const leaveTypeRouter = require('./routes/leave-type');
+    const stateRouter = require('./routes/state');
+    const employeeCategoryRouter = require('./routes/employee-category');
 
-   
-
-
+    app.use('/employees', employeeRouter);
    app.use('/banks', bankRouter);
-   app.use('/pension-providers', pensionProviderRouter);
+    app.use('/pension-providers', pensionProviderRouter);
    app.use('/hmos', hmoRouter);
    app.use('/departments', departmentRouter);
    app.use('/grades', gradeRouter);
@@ -36,8 +33,10 @@
    app.use('/qualifications', qualificationRouter);
    app.use('/subsidiaries', subsidiaryRouter);
    app.use('/leave-types', leaveTypeRouter);
-
-    const userRouter = require('./routes/users')
+   app.use('/states', stateRouter);
+   app.use('/employee-categories', employeeCategoryRouter);
+   
+const userRouter = require('./routes/users')
     app.use('/users', userRouter);
 
     const paymentDefinitionRouter = require('./routes/paymentDefinitions')
