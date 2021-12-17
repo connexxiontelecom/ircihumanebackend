@@ -1,7 +1,9 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
 const {
     Model
 } = require('sequelize');
+//const LocationAllowance = require("../models/locationallowance")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
     class Location extends Model {
         /**
@@ -35,5 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'Location',
         tableName: 'locations'
     });
+
+    //Location.belongsTo(LocationAllowance, { foreignKey: 'la_location_id' })
     return Location;
 };
