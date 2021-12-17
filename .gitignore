@@ -80,7 +80,7 @@ web_modules/
 .env
 
 # workspace xml
-.idea/workspace.xml
+.idea/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
