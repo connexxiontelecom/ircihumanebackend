@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         job_role: DataTypes.STRING,
         description: DataTypes.STRING,
-        department_id: DataTypes.INTEGER,
+        jb_department_id: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
