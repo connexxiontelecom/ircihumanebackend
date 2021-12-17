@@ -1,11 +1,11 @@
-const { describe, it } = require("@jest/globals")
+const { describe, it, xit } = require("@jest/globals")
 const dotenv = require('dotenv');
 dotenv.config();
 let token = process.env.LOGIN_TOKEN
 const request = require('supertest')
 const app = require('../app');
 describe('IrcIhumane Api', () => {
-    it('GET /tax rates --> array tax rates', ()=> {
+    xit('GET /tax rates --> array tax rates', ()=> {
         return request(app)
             .get('/tax-rates')
             .set('x-auth-token', token)
@@ -28,7 +28,7 @@ describe('IrcIhumane Api', () => {
     })
 
 
-    it('POST /tax-rates/add-tax-rate --> array tax rate', ()=> {
+    xit('POST /tax-rates/add-tax-rate --> array tax rate', ()=> {
         return request(app)
             .post('/tax-rates/add-tax-rate')
             .set({
