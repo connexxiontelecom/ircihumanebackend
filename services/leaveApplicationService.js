@@ -4,7 +4,7 @@ const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const LeaveApplication = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes)
 const Leave = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
-c
+
 
 const helper  = require('../helper');
 
@@ -33,28 +33,28 @@ async function addLeaveApplication(leaveApplicationData){
 
 
 async function findAllLeaveApplication(){
-    return await LeaveApplication.findAll({ include: [] })
+    return await LeaveApplication.findAll({ include: [Leave, 'verify', 'recommend', 'approve' ] })
 }
 
-async function findLocationAllowanceById(la_id){
-    return await LocationAllowance.findOne({ where: { la_id: la_id }, include: [Location, Pd]  })
-}
-
-async function updateLocationAllowance(locationAllowanceData, la_id){
-
-    return  await LocationAllowance.update({
-        la_payment_id: locationAllowanceData.la_payment_id,
-        la_location_id: locationAllowanceData.la_location_id,
-        la_amount: locationAllowanceData.la_amount
-    },{
-        where:{
-            la_id:la_id
-        } })
-}
-
-async function findLocationAllowanceByPaymentIdLocationId(payment_id, location_id){
-    return await LocationAllowance.findOne({ where: { la_payment_id: payment_id, la_location_id: location_id }, include: [Location, Pd] })
-}
+// async function findLocationAllowanceById(la_id){
+//     return await LocationAllowance.findOne({ where: { la_id: la_id }, include: [Location, Pd]  })
+// }
+//
+// async function updateLocationAllowance(locationAllowanceData, la_id){
+//
+//     return  await LocationAllowance.update({
+//         la_payment_id: locationAllowanceData.la_payment_id,
+//         la_location_id: locationAllowanceData.la_location_id,
+//         la_amount: locationAllowanceData.la_amount
+//     },{
+//         where:{
+//             la_id:la_id
+//         } })
+// }
+//
+// async function findLocationAllowanceByPaymentIdLocationId(payment_id, location_id){
+//     return await LocationAllowance.findOne({ where: { la_payment_id: payment_id, la_location_id: location_id }, include: [Location, Pd] })
+// }
 
 
 module.exports = {

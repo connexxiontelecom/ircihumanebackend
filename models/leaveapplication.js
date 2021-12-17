@@ -6,6 +6,7 @@ const {
 
 const {sequelize, Sequelize} = require("../services/db");
 const LeaveType = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class leaveApplication extends Model {
     /**
@@ -46,6 +47,15 @@ module.exports = (sequelize, DataTypes) => {
 
   leaveApplication.belongsTo(LeaveType, { foreignKey: 'leapp_leave_type'})
   leaveApplication.hasMany(LeaveType, { foreignKey: 'leave_type_id' })
+
+  leaveApplication.belongsTo(Employee, { as: 'verify', foreignKey: 'leapp_leave_empid'})
+  leaveApplication.hasMany(Employee, { as: 'verify', foreignKey: 'emp_id' })
+
+  leaveApplication.belongsTo(Employee, { as: 'recommend', foreignKey: 'leapp_leave_empid'})
+  leaveApplication.hasMany(Employee, { as: 'recommend', foreignKey: 'emp_id' })
+
+  leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_leave_empid'})
+  leaveApplication.hasMany(Employee, { as: 'approve', foreignKey: 'emp_id' })
 
   return leaveApplication;
 
