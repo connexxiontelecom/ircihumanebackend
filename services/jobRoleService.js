@@ -15,7 +15,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getJobRoles = async (req, res)=>{
-    const roles =  await jobRole.findAll({attributes: ['job_role','department_id', 'job_role_id', 'description'], include:[Department]});
+    const roles =  await jobRole.findAll({attributes: ['job_role','jb_department_id', 'job_role_id', 'description'], include:[Department]});
     //return await jobRole.findAll({ include: [Location, Pd] })
     res.status(200).json(roles)
 }
@@ -31,7 +31,7 @@ const setNewJobRole = async (req, res)=>  {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        await jobRole.create({job_role: req.body.job_role,department_id:req.body.department_id,description:req.body.description})
+        await jobRole.create({job_role: req.body.job_role,jb_department_id:req.body.department_id,description:req.body.description})
             .catch(errHandler);
         //Log
         const logData = {
@@ -69,7 +69,7 @@ const updateJobRole = async (req, res, next)=>{
         const role = await jobRole.update({
             job_role: req.body.job_role,
             description:req.body.description,
-            department_id:req.body.department_id
+            jb_department_id:req.body.department_id
         },{
             where:{
                 job_role_id:role_id
