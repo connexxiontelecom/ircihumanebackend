@@ -2,6 +2,8 @@
 const {
     Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
+const State = require("../models/State")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
     class Location extends Model {
         /**
@@ -35,5 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'Location',
         tableName: 'locations'
     });
+    State.belongsTo(Location, { foreignKey: 'l_state_id' });
+    Location.hasMany(State, { foreignKey: 's_id' });
     return Location;
 };
