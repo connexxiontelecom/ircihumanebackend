@@ -1,15 +1,23 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
-const location = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const location = require("../models/Location")(sequelize, Sequelize.DataTypes);
+const State = require("../models/State")(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 const logs = require('../services/logService');
 const helper  =require('../helper');
 const errHandler = (err) =>{
     console.log("Error: ", err);
 }
-const getLocations = async (req, res)=>{
-    const locations =  await location.findAll({attributes: ['location_name','location_id']});
-    res.status(200).json(locations)
+const getLocations = async (req, res, next)=>{
+    try{
+        const locations =  await location.findAll({attributes: ['location_name','location_id', 'l_t6_code', 'l_state_id'],
+            include:[State]});
+        res.status(200).json(locations)
+    }catch (e) {
+        res.status(400).json({'message':`Error while fetching locations ${ e.message}` });
+        next(e);
+    }
+
 }
 const setNewLocation = async (req, res, next)=>  {
     try{
