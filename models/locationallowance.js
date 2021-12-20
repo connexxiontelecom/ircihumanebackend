@@ -36,11 +36,11 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'location_allowances'
   });
 
-  Location.belongsTo(locationAllowance, { foreignKey: 'la_location_id' })
+  locationAllowance.belongsTo(Location, { foreignKey: 'la_location_id' })
   locationAllowance.hasMany(Location, { foreignKey: 'location_id' })
 
-  Pd.belongsTo(locationAllowance, {foreignKey: 'la_payment_id'})
-  locationAllowance.hasMany(Pd, {foreignKey: 'pd_id'})
+  locationAllowance.belongsTo(Pd, { foreignKey: 'la_payment_id' })
+  locationAllowance.hasMany(Pd, { foreignKey: 'pd_id' })
 
 
   return locationAllowance;

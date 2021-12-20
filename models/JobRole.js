@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'JobRole',
         tableName: 'job_roles'
     });
-    Department.belongsTo(JobRole, { foreignKey: 'jb_department_id' })
+    JobRole.belongsTo(Department, { foreignKey: 'jb_department_id' })
     JobRole.hasMany(Department, { foreignKey: 'department_id' })
 
 

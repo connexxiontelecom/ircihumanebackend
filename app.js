@@ -77,11 +77,9 @@ const userRouter = require('./routes/users')
         let port;
 
 
-    if(process.env.NODE_ENV === 'DEVELOPMENT'){
+    if(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION' ){
         port = process.env.PORT || 9500
     }
-
-    //let port = process.env.PORT || 9500
 
     if(process.env.NODE_ENV === 'TEST'){
         port = 0
