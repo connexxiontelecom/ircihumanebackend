@@ -39,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     leapp_approve_date: DataTypes.DATE,
     leapp_approve_comment: DataTypes.STRING,
     leapp_status: DataTypes.INTEGER,
+    leapp_year: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'leaveApplication',
@@ -49,13 +50,13 @@ module.exports = (sequelize, DataTypes) => {
   leaveApplication.hasMany(LeaveType, { foreignKey: 'leave_type_id' })
 
   leaveApplication.belongsTo(Employee, { as: 'verify', foreignKey: 'leapp_leave_empid'})
-  leaveApplication.hasMany(Employee, { as: 'verify', foreignKey: 'emp_id' })
+  leaveApplication.hasMany(Employee, { foreignKey: 'emp_id' })
 
   leaveApplication.belongsTo(Employee, { as: 'recommend', foreignKey: 'leapp_leave_empid'})
-  leaveApplication.hasMany(Employee, { as: 'recommend', foreignKey: 'emp_id' })
+  leaveApplication.hasMany(Employee, {  foreignKey: 'emp_id' })
 
   leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_leave_empid'})
-  leaveApplication.hasMany(Employee, { as: 'approve', foreignKey: 'emp_id' })
+  leaveApplication.hasMany(Employee, { foreignKey: 'emp_id' })
 
   return leaveApplication;
 

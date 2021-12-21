@@ -18,15 +18,16 @@ async function addLeaveApplication(leaveApplicationData){
         leapp_start_date: leaveApplicationData.leapp_start_date,
         leapp_end_date: leaveApplicationData.leapp_end_date,
         leapp_total_days: leaveApplicationData.leapp_total_days,
-        leapp_verify_by: leaveApplicationData.leapp_verify_by,
-        leapp_verify_date: leaveApplicationData.leapp_verify_date,
-        leapp_verify_comment: leaveApplicationData.leapp_verify_comment,
-        leapp_recommend_by: leaveApplicationData.leapp_recommend_by,
-        leapp_recommend_date: leaveApplicationData.leapp_recommend_date,
-        leapp_recommend_comment: leaveApplicationData.leapp_recommend_comment,
-        leapp_approve_by: leaveApplicationData.leapp_approve_by,
-        leapp_approve_date: leaveApplicationData.leapp_approve_date,
-        leapp_approve_comment: leaveApplicationData.leapp_approve_comment,
+        leapp_year: leaveApplicationData.leapp_year,
+        // leapp_verify_by: leaveApplicationData.leapp_verify_by,
+        // leapp_verify_date: leaveApplicationData.leapp_verify_date,
+        // leapp_verify_comment: leaveApplicationData.leapp_verify_comment,
+        // leapp_recommend_by: leaveApplicationData.leapp_recommend_by,
+        // leapp_recommend_date: leaveApplicationData.leapp_recommend_date,
+        // leapp_recommend_comment: leaveApplicationData.leapp_recommend_comment,
+        // leapp_approve_by: leaveApplicationData.leapp_approve_by,
+        // leapp_approve_date: leaveApplicationData.leapp_approve_date,
+        // leapp_approve_comment: leaveApplicationData.leapp_approve_comment,
         leapp_status: leaveApplicationData.leapp_status,
     });
 }
@@ -34,6 +35,14 @@ async function addLeaveApplication(leaveApplicationData){
 
 async function findAllLeaveApplication(){
     return await LeaveApplication.findAll({ include: [Leave, 'verify', 'recommend', 'approve' ] })
+}
+
+async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type){
+    return await LeaveApplication.sum('leapp_total_days',{
+        where: {
+     leapp_empid: employee_id, leapp_leave_type: leave_type, leapp_year: year
+        }
+    })
 }
 
 // async function findLocationAllowanceById(la_id){
@@ -58,9 +67,6 @@ async function findAllLeaveApplication(){
 
 
 module.exports = {
-    addLocationAllowance,
-    findAllLocationAllowances,
-    findLocationAllowanceById,
-    updateLocationAllowance,
-    findLocationAllowanceByPaymentIdLocationId
+  addLeaveApplication,
+    sumLeaveUsedByYearEmployeeLeaveType
    }
