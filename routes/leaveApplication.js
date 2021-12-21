@@ -13,13 +13,13 @@ const logs = require('../services/logService')
 
 /* Get leave application */
 router.get('/', auth, async function(req, res, next) {
-    // try {
-    //     await locationAllowance.findAllLocationAllowances().then((data) =>{
-    //         return res.status(200).json(data);
-    //     })
-    // } catch (err) {
-    //     return res.status(400).json(`Error while fetching location Allowances ${err.message}`)
-    // }
+    try {
+        await leaveApplication.findAllLeaveApplication().then((data) =>{
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching leaves ${err.message}`)
+    }
 });
 
 /* Add Location Allowance */

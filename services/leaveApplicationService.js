@@ -4,6 +4,7 @@ const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const LeaveApplication = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes)
 const Leave = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 
 
 const helper  = require('../helper');
@@ -34,7 +35,8 @@ async function addLeaveApplication(leaveApplicationData){
 
 
 async function findAllLeaveApplication(){
-    return await LeaveApplication.findAll({ include: [Leave, 'verify', 'recommend', 'approve' ] })
+
+    return await LeaveApplication.findAll({ include: [Leave, 'verify', 'recommend', 'approve'] })
 }
 
 async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type){
@@ -68,5 +70,6 @@ async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type
 
 module.exports = {
   addLeaveApplication,
-    sumLeaveUsedByYearEmployeeLeaveType
+    sumLeaveUsedByYearEmployeeLeaveType,
+    findAllLeaveApplication
    }

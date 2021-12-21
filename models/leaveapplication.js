@@ -49,14 +49,14 @@ module.exports = (sequelize, DataTypes) => {
   leaveApplication.belongsTo(LeaveType, { foreignKey: 'leapp_leave_type'})
   leaveApplication.hasMany(LeaveType, { foreignKey: 'leave_type_id' })
 
-  leaveApplication.belongsTo(Employee, { as: 'verify', foreignKey: 'leapp_leave_empid'})
+  leaveApplication.belongsTo(Employee, {  as: 'verify',  foreignKey: 'leapp_verify_by'})
   leaveApplication.hasMany(Employee, { foreignKey: 'emp_id' })
 
-  leaveApplication.belongsTo(Employee, { as: 'recommend', foreignKey: 'leapp_leave_empid'})
+  leaveApplication.belongsTo(Employee, { as: 'recommend', foreignKey: 'leapp_recommend_by'})
+  leaveApplication.hasMany(Employee, {    foreignKey: 'emp_id' })
+
+  leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_approve_by'})
   leaveApplication.hasMany(Employee, {  foreignKey: 'emp_id' })
-
-  leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_leave_empid'})
-  leaveApplication.hasMany(Employee, { foreignKey: 'emp_id' })
 
   return leaveApplication;
 
