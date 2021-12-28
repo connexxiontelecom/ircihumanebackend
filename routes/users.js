@@ -198,5 +198,7 @@ function generateAccessToken(username) {
     return jwt.sign({username},  process.env.TOKEN_SECRET, { expiresIn: '18000s' });
 }
 
+router.post('/change-password', auth, users.changePassword);
+
 
 module.exports = router;
