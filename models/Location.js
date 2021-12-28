@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'Location',
         tableName: 'locations'
     });
-    State.belongsTo(Location, { foreignKey: 'l_state_id' });
+    Location.belongsTo(State, { foreignKey: 'l_state_id' });
     Location.hasMany(State, { foreignKey: 's_id' });
 
     //Location.belongsTo(LocationAllowance, { foreignKey: 'la_location_id' })
