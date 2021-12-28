@@ -29,7 +29,7 @@ const createNewEmployee = async (req, res, next)=>  {
             phone_no: Joi.string().required().messages({'any.required':'Enter employee phone number'}),
             qualification: Joi.string().required().messages({'any.required':'Enter employee qualification'}),
             address: Joi.string().required().messages({'any.required':'Enter employee residential address'}),
-            location: Joi.number().required().messages({'any.required':'Select an employee location from the list provided'}),
+            location: Joi.number().required().messages({'any.required':'Select employee location from the list provided'}),
             subsidiary: Joi.number().required().messages({'any.required':'Which of the subsidiaries does this employee belongs to?'}),
             job_role: Joi.number().required().messages({"any.required":"What's this employee's job role?"}),
             grade_level: Joi.number().required().messages({"any.required":"What's this employee's grade level?"}),
