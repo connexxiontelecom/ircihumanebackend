@@ -12,7 +12,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getLeaveTypes = async (req, res)=>{
-    const leaves =  await leaveType.findAll({attributes: ['leave_name','leave_type_id', 'leave_duration']});
+    const leaves =  await leaveType.findAll({attributes: ['leave_name','leave_type_id', 'leave_duration', 'lt_rate', 'lt_mode']});
     res.status(200).json(leaves)
 }
 const setNewLeaveType = async (req, res, next)=>  {
