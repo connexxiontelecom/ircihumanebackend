@@ -20,7 +20,7 @@ const setNewLeaveType = async (req, res, next)=>  {
         const schema = Joi.object( {
             leave_name: Joi.string().required(),
             leave_mode: Joi.number().required(),
-            leave_rate: Joi.number().required(),
+            leave_rate: Joi.number().precision(2).required(),
             leave_duration: Joi.number().required(),
         });
         const leaveRequest = req.body
