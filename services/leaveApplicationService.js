@@ -36,7 +36,7 @@ async function addLeaveApplication(leaveApplicationData){
 
 async function findAllLeaveApplication(){
 
-    return await LeaveApplication.findAll({ include: [Leave, 'verify', 'recommend', 'approve'] })
+    return await LeaveApplication.findAll({ include: [Leave, 'employee', 'verify', 'recommend', 'approve'] })
 }
 
 async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type){
