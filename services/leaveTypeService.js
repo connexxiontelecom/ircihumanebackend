@@ -61,7 +61,7 @@ const updateLeaveType = async (req, res)=>{
             leave_name: Joi.string().required(),
             leave_duration: Joi.number().required(),
             leave_mode: Joi.number().required(),
-            leave_rate: Joi.number().required()
+            leave_rate: Joi.number().precision(2).required(),
         });
         const leaveRequest = req.body
         const validationResult = schema.validate(leaveRequest)
