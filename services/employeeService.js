@@ -21,7 +21,7 @@ const createNewEmployee = async (req, res, next)=>  {
                 .required()
                 .messages({'any.required':'Enter first name in the field provided'}),
             last_name: Joi.string().required().messages({'any.required':'Enter last name in the field provided'}),
-            //other_name: Joi.string().required().messages({'any.required':'Enter other name in the field provided'}),
+            //other_name: Joi.string(),
             unique_id: Joi.string().required().messages({'any.required':'Enter unique ID in the field provided'}),
            // birth_date: Joi.date().required().messages({'any.required':'Enter employee birth date'}),
             personal_email: Joi.string().required().messages({'any.required':'Enter a valid personal email address'}),
@@ -73,7 +73,7 @@ const createNewEmployee = async (req, res, next)=>  {
         await employee.create({
             emp_first_name: req.body.first_name,
             emp_last_name:req.body.last_name,
-            emp_other_name:req.body.other_name,
+            //emp_other_name:req.body.other_name,
             emp_unique_id:req.body.unique_id,
             //emp_dob:req.body.birth_date,
             emp_personal_email:req.body.personal_email,
