@@ -68,26 +68,35 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                     const accrualData = {
                         lea_emp_id: leaveApplicationRequest.leapp_empid,
                         lea_year: startYear,
-                        lea_leave_type: 1,
+                        lea_leave_type: leaveApplicationRequest.leapp_leave_type,
 
                     }
+
                     computeLeaveAccruals(accrualData).then((accruedDays) => {
-                        leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((sumLeave) => {
-                            if (parseInt(daysRequested) > (parseInt(accruedDays) - parseInt(sumLeave))) {
-                                return res.status(400).json("Days Requested Greater than Accrued Days")
-                            } else {
+                      if(_.isNull(accruedDays)){
+                            return  res.status(400).json('No Leave Accrued for Selected Leave')
+                        }else{
+                            leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((sumLeave) => {
 
-                                leaveApplicationRequest['leapp_year'] = startYear
-                                leaveApplicationRequest['leapp_total_days'] = daysRequested
-                                leaveApplicationRequest['leapp_status'] = 0;
-                                leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
-                                    return res.status(200).json(data)
-                                })
+                                return res.status(200).json(`${accruedDays} ${sumLeave}`)
+                                if (parseInt(daysRequested) > (parseInt(accruedDays) - parseInt(sumLeave))) {
+                                    return res.status(400).json("Days Requested Greater than Accrued Days")
+                                } else {
+
+                                    leaveApplicationRequest['leapp_year'] = startYear
+                                    leaveApplicationRequest['leapp_total_days'] = daysRequested
+                                    leaveApplicationRequest['leapp_status'] = 0;
+                                    leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
+                                        return res.status(200).json('Action Successful')
+                                    })
 
 
-                            }
+                                }
 
-                        })
+                            })
+
+                        }
+
 
 
                     })
