@@ -35,7 +35,7 @@ const leaveAccrual =  require('../services/leaveAccrualService')
     if (validationResult.error) {
         return validationResult.error.details[0].message
     } else {
-        //return "ello";
+
        return leaveAccrual.sumLeaveAccrualByYearEmployeeLeaveType(data.lea_year, data.lea_emp_id, data.lea_leave_type)
     }
 }
