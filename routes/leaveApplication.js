@@ -73,7 +73,7 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                     }
 
                     computeLeaveAccruals(accrualData).then((accruedDays) => {
-                      if(_.isNull(accruedDays)){
+                      if(_.isNull(accruedDays) || parseInt(accruedDays) === 0){
                             return  res.status(400).json('No Leave Accrued for Selected Leave')
                         }else{
                             leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((sumLeave) => {
