@@ -213,12 +213,12 @@ const createNewEmployee = async (req, res, next)=>  {
 }
 
 
-async function setSupervisorStatus(employeeId, status){
+async function setSupervisorStatus(data){
     return await employee.update({
-        emp_supervisor_status: status,
+        emp_supervisor_status: data.emp_supervisor_status,
     },{
         where:{
-            emp_id:employeeId
+            emp_id:data.emp_id
         } })
 }
 
@@ -298,6 +298,8 @@ const updateDepartment = async (req, res, next)=>{
 module.exports = {
     createNewEmployee,
     getAllEmployee,
+    setSupervisor,
+    setSupervisorStatus,
     getEmployeeById,
     getEmployeeByOfficialEmail,
     getEmployeeByPersonalEmail
