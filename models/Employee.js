@@ -62,6 +62,8 @@ module.exports = (sequelize, DataTypes) => {
         emp_salary_structure_setup:DataTypes.INTEGER,
         emp_salary_structure_category:DataTypes.INTEGER,
         emp_tax_amount:DataTypes.DOUBLE,
+        emp_supervisor_status:DataTypes.INTEGER,
+        emp_supervisor_id:DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
