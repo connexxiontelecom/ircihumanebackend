@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { QueryTypes } = require('sequelize')
+const { QueryTypes, Op } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
@@ -251,6 +251,29 @@ async function getEmployeeByPhoneNumber(employeePhoneNumber) {
 async function getSupervisors(){
     return await employee.findAll({where: { emp_supervisor_status: 1}})
 }
+
+async function getNoneSupervisors(){
+    return await employee.findAll({where:
+
+
+            {
+                [Op.or]: [{ a: 5 }, { b: 6 }],
+                emp_supervisor_status: {
+    [Op.or]: [0, NULL]
+    }
+        }
+
+    }
+
+   )
+}
+
+// {where:  Sequelize.or(
+//     { emp_supervisor_status: [null, 0] },
+//
+// )}
+
+
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
 //     const depart =  await department.findAll({where:{department_id: department_id}});
@@ -307,7 +330,8 @@ module.exports = {
     getEmployeeById,
     getEmployeeByOfficialEmail,
     getEmployeeByPersonalEmail,
-    getSupervisors
+    getSupervisors,
+    getNoneSupervisors
     //updateDepartment,
     //setNewDepartment,
 }
