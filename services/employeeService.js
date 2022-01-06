@@ -247,6 +247,10 @@ async function getEmployeeByOfficialEmail(employeeOEmail) {
 async function getEmployeeByPhoneNumber(employeePhoneNumber) {
     return await employee.findOne({ where: { emp_phone_no: employeePhoneNumber } })
 }
+
+async function getSupervisors(){
+    return await employee.findAll({where: { emp_supervisor_status: 1}})
+}
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
 //     const depart =  await department.findAll({where:{department_id: department_id}});
@@ -302,7 +306,8 @@ module.exports = {
     setSupervisorStatus,
     getEmployeeById,
     getEmployeeByOfficialEmail,
-    getEmployeeByPersonalEmail
+    getEmployeeByPersonalEmail,
+    getSupervisors
     //updateDepartment,
     //setNewDepartment,
 }

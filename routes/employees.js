@@ -51,5 +51,15 @@ router.post('/set-supervisor', auth,  async function(req, res, next) {
     }
 });
 
+router.get('/get-supervisor', auth, async function(req, res, next) {
+    try {
+        await employees.getSupervisors().then((data) =>{
+            return  res.status(200).json(data)
+        })
+    } catch (err) {
+        console.error(`An error occurred while updating supervisor status`, err.message);
+        next(err);
+    }
+});
 
 module.exports = router;
