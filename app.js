@@ -64,6 +64,9 @@ const userRouter = require('./routes/users')
     const leaveApplication = require('./routes/leaveApplication')
     app.use('/leave-application', leaveApplication)
 
+    const supervisorAssignment = require('./routes/supervisorAssignment')
+    app.use('/supervisor-assignment', supervisorAssignment)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
