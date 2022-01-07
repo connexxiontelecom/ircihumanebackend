@@ -12,7 +12,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getAllEmployee = async (req, res)=>{
-    const employees =  await employee.findAll();
+    const employees =  await employee.findAll({ include: ['supervisor'] });
     res.send(employees)
 }
 const createNewEmployee = async (req, res, next)=>  {

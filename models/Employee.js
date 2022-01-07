@@ -77,6 +77,10 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'Employee',
         tableName: 'employees'
     });
+
+   Employee.belongsTo(Employee, {as: 'supervisor', foreignKey: 'emp_supervisor_id'})
+    Employee.hasMany(Employee, { foreignKey: 'emp_id' })
+
     return Employee;
 };
 

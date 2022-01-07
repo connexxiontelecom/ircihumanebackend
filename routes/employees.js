@@ -5,6 +5,7 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService');
 const auth = require("../middleware/auth");
+const Joi = require("joi");
 
 
 /* GET employees. */
@@ -41,7 +42,7 @@ router.post('/set-supervisor', auth,  async function(req, res, next) {
                 }
                 logs.addLog(logData).then((logRes)=>{
 
-                    return  res.status(200).json(data)
+                    return  res.status(200).json('Supervisor Status Updated')
                 })
             }
         })
@@ -62,7 +63,7 @@ router.get('/get-supervisor', auth, async function(req, res, next) {
     }
 });
 
-router.get('/get-non-supervisor', auth, async function(req, res, next) {
+router.get('/get-none-supervisor', auth, async function(req, res, next) {
     try {
         await employees.getNoneSupervisors().then((data) =>{
             return  res.status(200).json(data)
