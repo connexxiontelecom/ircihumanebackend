@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { QueryTypes } = require('sequelize')
+const { QueryTypes, Op } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
@@ -12,7 +12,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getAllEmployee = async (req, res)=>{
-    const employees =  await employee.findAll();
+    const employees =  await employee.findAll({ include: ['supervisor'] });
     res.send(employees)
 }
 const createNewEmployee = async (req, res, next)=>  {
@@ -90,9 +90,6 @@ const createNewEmployee = async (req, res, next)=>  {
                                     if(!_.isNull(employeeData)){
                                         return res.status(400).json("Employee Phone Number Already Exists")
                                     } else{
-
-
-
                                         employee.create({
                                             emp_first_name: req.body.first_name,
                                             emp_last_name:req.body.last_name,
@@ -216,6 +213,26 @@ const createNewEmployee = async (req, res, next)=>  {
 }
 
 
+async function setSupervisorStatus(data){
+    return await employee.update({
+        emp_supervisor_status: data.emp_supervisor_status,
+    },{
+        where:{
+            emp_id:data.emp_id
+        } })
+}
+
+async function setSupervisor(employeeId, supervisorId){
+    return await employee.update({
+        emp_supervisor_id: supervisorId,
+    },{
+        where:{
+            emp_id:employeeId
+        } })
+}
+
+
+
 async function getEmployeeById(employeeId) {
     return await employee.findOne({ where: { emp_unique_id: employeeId } })
 }
@@ -230,6 +247,26 @@ async function getEmployeeByOfficialEmail(employeeOEmail) {
 async function getEmployeeByPhoneNumber(employeePhoneNumber) {
     return await employee.findOne({ where: { emp_phone_no: employeePhoneNumber } })
 }
+
+async function getSupervisors(){
+    return await employee.findAll({where: { emp_supervisor_status: 1}})
+}
+
+async function getNoneSupervisors(){
+    return await employee.findAll({where:
+            {                emp_supervisor_status: {
+                    [Op.or]: [0, null]
+                }
+        }
+
+    }
+
+   )
+}
+
+
+
+
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
 //     const depart =  await department.findAll({where:{department_id: department_id}});
@@ -281,9 +318,13 @@ const updateDepartment = async (req, res, next)=>{
 module.exports = {
     createNewEmployee,
     getAllEmployee,
+    setSupervisor,
+    setSupervisorStatus,
     getEmployeeById,
     getEmployeeByOfficialEmail,
-    getEmployeeByPersonalEmail
+    getEmployeeByPersonalEmail,
+    getSupervisors,
+    getNoneSupervisors
     //updateDepartment,
     //setNewDepartment,
 }
