@@ -254,13 +254,9 @@ async function getSupervisors(){
 
 async function getNoneSupervisors(){
     return await employee.findAll({where:
-
-
-            {
-                [Op.or]: [{ a: 5 }, { b: 6 }],
-                emp_supervisor_status: {
-    [Op.or]: [0, NULL]
-    }
+            {                emp_supervisor_status: {
+                    [Op.or]: [0, null]
+                }
         }
 
     }
@@ -268,10 +264,7 @@ async function getNoneSupervisors(){
    )
 }
 
-// {where:  Sequelize.or(
-//     { emp_supervisor_status: [null, 0] },
-//
-// )}
+
 
 
 // const getEmployeeById = async (req, res) =>{
