@@ -212,6 +212,9 @@ const createNewEmployee = async (req, res, next)=>  {
     }
 }
 
+async function getEmployee(employeeId){
+    return await employee.findOne({ where: { emp_id: employeeId } })
+}
 
 async function setSupervisorStatus(data){
     return await employee.update({
@@ -231,6 +234,34 @@ async function setSupervisor(employeeId, supervisorId){
         } })
 }
 
+async function updateEmployee(employeeId, employeeData){
+    return await employee.update({
+        emp_first_name: employeeData.first_name,
+        emp_last_name:employeeData.last_name,
+        emp_other_name:employeeData.other_name,
+        emp_qualification:employeeData.qualification,
+        emp_account_no:employeeData.account_no,
+        emp_bank_id:employeeData.bank,
+        emp_state_id:employeeData.state,
+        emp_lga_id:employeeData.lga,
+        emp_marital_status:employeeData.marital_status,
+        emp_spouse_name:employeeData.spouse_name,
+        emp_spouse_phone_no:employeeData.spouse_phone_no,
+        emp_next_of_kin_name:employeeData.next_of_kin_name,
+        emp_next_of_kin_address:employeeData.next_of_kin_address,
+        emp_next_of_kin_phone_no:employeeData.next_of_kin_phone,
+        emp_ailments:employeeData.ailments,
+        emp_blood_group:employeeData.blood_group,
+        emp_genotype:employeeData.genotype,
+        emp_emergency_name:employeeData.emergency_name,
+        emp_emergency_contact:employeeData.emergency_contact,
+    }, {
+        where:{
+            emp_id: employeeId
+        }
+    })
+
+}
 
 
 async function getEmployeeById(employeeId) {
@@ -321,6 +352,7 @@ module.exports = {
     setSupervisor,
     setSupervisorStatus,
     getEmployeeById,
+    getEmployee,
     getEmployeeByOfficialEmail,
     getEmployeeByPersonalEmail,
     getSupervisors,
