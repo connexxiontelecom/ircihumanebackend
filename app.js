@@ -61,6 +61,12 @@ const userRouter = require('./routes/users')
     const grantChartRouter = require('./routes/grantChart')
     app.use('/grant-chart',grantChartRouter)
 
+    const leaveApplication = require('./routes/leaveApplication')
+    app.use('/leave-application', leaveApplication)
+
+    const supervisorAssignment = require('./routes/supervisorAssignment')
+    app.use('/supervisor-assignment', supervisorAssignment)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
@@ -74,7 +80,7 @@ const userRouter = require('./routes/users')
 
     });
 
-        let port;
+     let port;
 
 
     if(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION' ){

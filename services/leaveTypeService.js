@@ -12,7 +12,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getLeaveTypes = async (req, res)=>{
-    const leaves =  await leaveType.findAll({attributes: ['leave_name','leave_type_id', 'leave_duration']});
+    const leaves =  await leaveType.findAll({attributes: ['leave_name','leave_type_id', 'leave_duration', 'lt_rate', 'lt_mode']});
     res.status(200).json(leaves)
 }
 const setNewLeaveType = async (req, res, next)=>  {
@@ -20,7 +20,7 @@ const setNewLeaveType = async (req, res, next)=>  {
         const schema = Joi.object( {
             leave_name: Joi.string().required(),
             leave_mode: Joi.number().required(),
-            leave_rate: Joi.number().required(),
+            leave_rate: Joi.number().precision(2).required(),
             leave_duration: Joi.number().required(),
         });
         const leaveRequest = req.body
@@ -61,7 +61,7 @@ const updateLeaveType = async (req, res)=>{
             leave_name: Joi.string().required(),
             leave_duration: Joi.number().required(),
             leave_mode: Joi.number().required(),
-            leave_rate: Joi.number().required()
+            leave_rate: Joi.number().precision(2).required(),
         });
         const leaveRequest = req.body
         const validationResult = schema.validate(leaveRequest)

@@ -4,7 +4,6 @@ const { sequelize, Sequelize } = require('./db');
 const bank = require("../models/Bank")(sequelize, Sequelize.DataTypes)
 const auth = require("../middleware/auth");
 const logs = require('../services/logService');
-const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
 const helper  =require('../helper');

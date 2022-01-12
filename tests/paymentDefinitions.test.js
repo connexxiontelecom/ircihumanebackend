@@ -1,4 +1,4 @@
-const { describe, it } = require("@jest/globals")
+const { describe, it, xit } = require("@jest/globals")
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -6,7 +6,7 @@ let token = process.env.LOGIN_TOKEN
 const request = require('supertest')
 const app = require('../app');
 describe('IrcIhumane Api', () => {
-    it('GET /payment definitions --> array payment definitions', ()=> {
+    xit('GET /payment definitions --> array payment definitions', ()=> {
         return request(app)
             .get('/payment-definitions')
             .set('x-auth-token', token)
@@ -34,7 +34,7 @@ describe('IrcIhumane Api', () => {
 
     })
 
-    it('POST /payment definitions/add-payment-definitions --> array payment definitions', ()=> {
+    xit('POST /payment definitions/add-payment-definitions --> array payment definitions', ()=> {
         return request(app)
             .post('/payment-definitions/add-payment-definition')
             .set({
@@ -71,7 +71,7 @@ describe('IrcIhumane Api', () => {
 
     })
 
-    it('PATCH /payment definitions/update-payment-definitions --> array payment definitions', ()=> {
+    xit('PATCH /payment definitions/update-payment-definitions --> array payment definitions', ()=> {
         return request(app)
             .patch('/payment-definitions/update-payment-definition/1')
             .set({
