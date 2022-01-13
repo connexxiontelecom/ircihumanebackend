@@ -67,6 +67,12 @@ const userRouter = require('./routes/users')
     const supervisorAssignment = require('./routes/supervisorAssignment')
     app.use('/supervisor-assignment', supervisorAssignment)
 
+    const timeSheet = require('./routes/timeSheet')
+    app.use('/time-sheet', timeSheet)
+
+    const timeAllocation = require('./routes/timeAllocation')
+    app.use('/time-allocation', timeAllocation)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
