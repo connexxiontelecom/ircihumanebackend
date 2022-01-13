@@ -26,7 +26,17 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
         }
 
             timeAllocation.addTimeAllocation(timeAllocationRequest).then((data)=>{
-                return res.status(200).json('Action Successful')
+
+                const logData = {
+                    "log_user_id": req.user.username.user_id,
+                    "log_description": "Added Time Allocation",
+                    "log_date": new Date()
+                }
+                logs.addLog(logData).then((logRes)=>{
+                    return res.status(200).json('Action Successful')
+                })
+
+
             })
 
     } catch (err) {
@@ -44,6 +54,7 @@ router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res,
         let year = date.getFullYear()
 
         timeAllocation.sumTimeAllocation(empId, month, year).then((data)=>{
+
             return res.status(200).json(data)
         })
     } catch (err) {

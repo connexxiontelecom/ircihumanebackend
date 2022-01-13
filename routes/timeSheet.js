@@ -34,12 +34,28 @@ router.post('/add-time-sheet', auth,  async function(req, res, next) {
             timeSheet.findTimeSheet(timeSheetRequest.ts_emp_id, timeSheetRequest.ts_day, timeSheetRequest.ts_month, timeSheetRequest.ts_year).then((data)=>{
                 if(_.isEmpty(data)){
                     timeSheet.addTimeSheet(timeSheetRequest).then((data) => {
-                        return res.status(200).json('Action Successful')
+
+                        const logData = {
+                            "log_user_id": req.user.username.user_id,
+                            "log_description": "Added Time Sheet",
+                            "log_date": new Date()
+                        }
+                        logs.addLog(logData).then((logRes)=>{
+                            return res.status(200).json('Action Successful')
+                        })
+                       // return res.status(200).json('Action Successful')
                     })
                 }else{
 
                     timeSheet.updateTimeSheet(data[0].ts_id, timeSheetRequest).then((data)=>{
-                        return res.status(200).json('Action Successful with update')
+                        const logData = {
+                            "log_user_id": req.user.username.user_id,
+                            "log_description": "Added Time Sheet",
+                            "log_date": new Date()
+                        }
+                        logs.addLog(logData).then((logRes)=>{
+                            return res.status(200).json('Action Successful')
+                        })
                     })
                 }
             })
