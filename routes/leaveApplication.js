@@ -115,11 +115,6 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
         }
 
 
-
-
-
-
-
     } catch (err) {
         console.error(`Error while adding location allowance `, err.message);
         next(err);
