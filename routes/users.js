@@ -163,7 +163,7 @@ router.post('/login', async function(req, res, next) {
                             if(parseInt(data.user_type) === 2 || parseInt(data.user_type) === 3){
 
                                 employees.getEmployeeById(data.user_username).then((empRes)=>{
-                                    employeeId = empRes
+                                    employeeId = empRes.emp_id
                                 })
 
 
@@ -181,7 +181,7 @@ router.post('/login', async function(req, res, next) {
                                 const responseData = {
                                     "token" : token,
                                     "userData": data,
-                                    "employee": employeeId.emp_id
+                                    "employee": employeeId
 
 
                                 }
