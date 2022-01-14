@@ -67,6 +67,9 @@ const userRouter = require('./routes/users')
     const supervisorAssignment = require('./routes/supervisorAssignment')
     app.use('/supervisor-assignment', supervisorAssignment)
 
+    const publicHolidayRouter =require("./routes/publicHolidays");
+    app.use('/public-holidays', publicHolidayRouter)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')

@@ -11,8 +11,12 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getDepartments = async (req, res)=>{
-    const departments =  await department.findAll({attributes: ['department_name','department_id', 'd_t3_code']});
-    res.status(200).json(departments)
+    try{
+        const departments =  await department.findAll({attributes: ['department_name','department_id', 'd_t3_code']});
+        res.status(200).json(departments);
+    }catch (e) {
+        res.status(500).json({message: "Something went wrong. Try again later"});
+    }
 }
 const setNewDepartment = async (req, res, next)=>  {
     try{
@@ -44,8 +48,12 @@ const setNewDepartment = async (req, res, next)=>  {
 }
 const getDepartmentById = async (req, res) =>{
     const department_id  = req.params.id;
-    const depart =  await department.findAll({where:{department_id: department_id}});
-    res.send(depart);
+    try{
+        const depart =  await department.findAll({where:{department_id: department_id}});
+        res.status(200).json(depart);
+    }catch (e) {
+        res.status(500).json({message:"Something went wrong. Try again later."});
+    }
 }
 const updateDepartment = async (req, res, next)=>{
     try{
