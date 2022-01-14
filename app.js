@@ -70,6 +70,15 @@ const userRouter = require('./routes/users')
     const publicHolidayRouter =require("./routes/publicHolidays");
     app.use('/public-holidays', publicHolidayRouter)
 
+    const timeSheet = require('./routes/timeSheet')
+    app.use('/time-sheet', timeSheet)
+
+    const timeAllocation = require('./routes/timeAllocation')
+    app.use('/time-allocation', timeAllocation)
+
+    const payrollMonthYearRouter = require('./routes/payrollMonthYear')
+    app.use('/payroll-month-year', payrollMonthYearRouter);
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
