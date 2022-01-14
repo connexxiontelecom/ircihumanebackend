@@ -16,10 +16,8 @@ const getBanks = async (req, res)=>{
         return res.status(200).json(banks)
 
     } catch (err) {
-        return res.status(400).json(`Error while fetching banks ${err.message}`)
+        return res.status(500).json({message: `Error while fetching banks ${err.message}`})
     }
-
-
 }
 const setNewBank = async (req, res, next)=>  {
     try{
