@@ -67,6 +67,9 @@ const userRouter = require('./routes/users')
     const supervisorAssignment = require('./routes/supervisorAssignment')
     app.use('/supervisor-assignment', supervisorAssignment)
 
+    const publicHolidayRouter =require("./routes/publicHolidays");
+    app.use('/public-holidays', publicHolidayRouter)
+
     const timeSheet = require('./routes/timeSheet')
     app.use('/time-sheet', timeSheet)
 
