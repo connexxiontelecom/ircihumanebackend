@@ -39,25 +39,26 @@ router.post('/add-salary-grade', auth,  async function(req, res, next) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-      let salaryGradeData =   salaryGrade.findSalaryGradeByName(salaryGradeRequest.sg_name).then((data)=>{
-            return data
+       salaryGrade.findSalaryGradeByName(salaryGradeRequest.sg_name).then((salaryGradeData)=>{
+           if(_.isEmpty(salaryGradeData) || _.isNull(salaryGradeData)){
+               salaryGrade.addSalaryGrade(salaryGradeRequest).then((data)=>{
+                   const logData = {
+                       "log_user_id": req.user.username.user_id,
+                       "log_description": "Added New Salary Grade",
+                       "log_date": new Date()
+                   }
+                   logs.addLog(logData).then((logRes)=>{
+                       return res.status(200).json('Action Successful')
+                   })
+               })
+           }else{
+
+               return res.status(400).json('Salary Grade Already Exists')
+           }
         })
 
-        if(_.isEmpty(salaryGradeData) || _.isNull(salaryGradeData)){
-          salaryGrade.addSalaryGrade(salaryGradeRequest).then((data)=>{
-              const logData = {
-                  "log_user_id": req.user.username.user_id,
-                  "log_description": "Added New Salary Grade",
-                  "log_date": new Date()
-              }
-              logs.addLog(logData).then((logRes)=>{
-                  return res.status(200).json('Action Successful')
-              })
-          })
-        }else{
 
-            return res.status(400).json('Salary Grade Already Exists')
-        }
+
 
     } catch (err) {
         console.error(`Error while adding time sheet `, err.message);
@@ -83,42 +84,37 @@ router.patch('/update-salary-grade/:sg_id', auth,  async function(req, res, next
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-
-        let salaryGradeData =   salaryGrade.findSalaryGradeByName(salaryGradeRequest.sg_name).then((data)=>{
-            return data
+        salaryGrade.findSalaryGradeByName(salaryGradeRequest.sg_name).then((salaryGradeData)=>{
+              if(_.isEmpty(salaryGradeData) || _.isNull(salaryGradeData)){
+                  salaryGrade.updateSalaryGrade(sgId, salaryGradeRequest).then((data)=>{
+                      const logData = {
+                          "log_user_id": req.user.username.user_id,
+                          "log_description": "Updated Salary Grade",
+                          "log_date": new Date()
+                      }
+                      logs.addLog(logData).then((logRes)=>{
+                          return res.status(200).json('Action Successful')
+                      })
+                  })
+              }
+              else{
+                  if(parseInt(salaryGradeData.sg_id) === parseInt(sgId)){
+                      salaryGrade.updateSalaryGrade(sgId, salaryGradeRequest).then((data)=>{
+                          const logData = {
+                              "log_user_id": req.user.username.user_id,
+                              "log_description": "Updated Salary Grade",
+                              "log_date": new Date()
+                          }
+                          logs.addLog(logData).then((logRes)=>{
+                              return res.status(200).json('Action Successful')
+                          })
+                      })
+                  }
+                  else{
+                      return res.status(400).json('Salary Grade Already Exists')
+                  }
+              }
         })
-
-        if(_.isEmpty(salaryGradeData) || _.isNull(salaryGradeData)){
-            salaryGrade.updateSalaryGrade(sgId, salaryGradeRequest).then((data)=>{
-                const logData = {
-                    "log_user_id": req.user.username.user_id,
-                    "log_description": "Updated Salary Grade",
-                    "log_date": new Date()
-                }
-                logs.addLog(logData).then((logRes)=>{
-                    return res.status(200).json('Action Successful')
-                })
-            })
-        }else{
-
-            if(parseInt(salaryGradeData.sg_id) === parseInt(sgId)){
-                salaryGrade.updateSalaryGrade(sgId, salaryGradeRequest).then((data)=>{
-                    const logData = {
-                        "log_user_id": req.user.username.user_id,
-                        "log_description": "Updated Salary Grade",
-                        "log_date": new Date()
-                    }
-                    logs.addLog(logData).then((logRes)=>{
-                        return res.status(200).json('Action Successful')
-                    })
-                })
-            } else{
-                return res.status(400).json('Salary Grade Already Exists')
-            }
-
-
-        }
-
     } catch (err) {
         console.error(`Error while adding time sheet `, err.message);
         next(err);
