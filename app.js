@@ -80,7 +80,13 @@ const userRouter = require('./routes/users')
 
 
     const payrollMonthYearRouter = require('./routes/payrollMonthYear')
-    app.use('/payroll-month-year', payrollMonthYearRouter);
+    app.use('/payroll-month-year', payrollMonthYearRouter)
+
+    const salaryGradeRouter = require('./routes/salaryGrade')
+    app.use('/salary-grade', salaryGradeRouter)
+
+    const salaryStructureRouter = require('./routes/salaryStructure')
+    app.use('/salary-structure', salaryStructureRouter)
 
 
     app.get('/',  async function(req, res) {
