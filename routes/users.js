@@ -166,7 +166,6 @@ router.post('/login', async function(req, res, next) {
                                     employeeId = empRes.emp_id
                                 })
 
-
                             }
 
                             let token = generateAccessToken(data)
@@ -182,12 +181,8 @@ router.post('/login', async function(req, res, next) {
                                     "token" : token,
                                     "userData": data,
                                     "employee": employeeId
-
-
                                 }
                                 return res.status(200).json(responseData);
-
-
                             })
 
                         }else{
