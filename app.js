@@ -79,6 +79,9 @@ const userRouter = require('./routes/users')
     const salaryGradeRouter = require('./routes/salaryGrade')
     app.use('/salary-grade', salaryGradeRouter)
 
+    const salaryStructureRouter = require('./routes/salaryStructure')
+    app.use('/salary-structure', salaryStructureRouter)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
