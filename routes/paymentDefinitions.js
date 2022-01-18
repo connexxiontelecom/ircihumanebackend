@@ -32,6 +32,7 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             pd_desc: Joi.number(),
             pd_basic: Joi.number().required(),
             pd_tie_number: Joi.string(),
+            pd_pr_gross: Joi.number().precision(2).required()
         })
 
         const paymentDefinitionRequest = req.body
@@ -41,27 +42,45 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
-            if(data){
-
-                return res.status(400).json('Payment Code Already Exist')
-
-            }else{
-               paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
-                   const logData = {
-                       "log_user_id": req.user.username.user_id,
-                       "log_description": "Added new payment definition",
-                       "log_date": new Date()
-                   }
-                   logs.addLog(logData).then((logRes)=>{
-                       //return res.status(200).json(logRes);
-                       return  res.status(200).json(data)
-                   })
-
-                })
-            }
+        let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) =>{
+            return data
         })
-    } catch (err) {
+            totalPercentageGross = parseFloat(totalPercentageGross)
+        if(totalPercentageGross <= 100){
+            let remaining = 100 - totalPercentageGross;
+            if(parseFloat(paymentDefinitionRequest.pd_pr_gross) > remaining){
+                return res.status(400).json(`Percentage Gross is exceeding 100%`)
+            }else{
+                await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
+                    if(data){
+
+                        return res.status(400).json('Payment Code Already Exist')
+
+                    }else{
+                        paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
+                            const logData = {
+                                "log_user_id": req.user.username.user_id,
+                                "log_description": "Added new payment definition",
+                                "log_date": new Date()
+                            }
+                            logs.addLog(logData).then((logRes)=>{
+                                //return res.status(200).json(logRes);
+                                return  res.status(200).json(data)
+                            })
+
+                        })
+                    }
+                })
+
+            }
+
+        }
+
+
+
+
+
+            } catch (err) {
         console.error(`Error while adding payment definition `, err.message);
         next(err);
     }

@@ -1,4 +1,4 @@
-const { QueryTypes } = require('sequelize')
+const { QueryTypes, Op } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
 
@@ -17,6 +17,7 @@ async function addPaymentDefinition(pd){
         pd_desc: pd.pd_desc,
         pd_basic: pd.pd_basic,
         pd_tie_number: pd.pd_tie_number,
+        pd_pr_gross: pd.pd_pr_gross
     });
 }
 
@@ -39,6 +40,7 @@ async function updatePaymentDefinition(pd, pd_id){
         pd_desc: pd.pd_desc,
         pd_basic: pd.pd_basic,
         pd_tie_number: pd.pd_tie_number,
+        pd_pr_gross: pd.pd_pr_gross
     },{
         where:{
             pd_id:pd_id
@@ -49,11 +51,26 @@ async function findAllCodes(){
     return await Pd.findAll()
 }
 
+async function findSumPercentage(){
+    return await Pd.sum('pd_pr_gross')
+
+}
+
+async function findCodeWithGross(){
+    return await Pd.findAll({ where:{
+            pd_pr_gross: {
+                [Op.ne]: 0
+            }
+        }})
+}
+
 module.exports = {
     addPaymentDefinition,
     findPaymentByCode,
     findPaymentById,
     findAllCodes,
-    updatePaymentDefinition
+    updatePaymentDefinition,
+    findSumPercentage,
+    findCodeWithGross
 
 }

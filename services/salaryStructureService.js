@@ -32,6 +32,8 @@ async function findSalaryStructure(empId,){
 
 }
 
+
+
 async function findSalaryStructures(){
    return  await SalaryStructure.findAll({
         attributes: [

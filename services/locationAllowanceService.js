@@ -44,11 +44,16 @@ async function findLocationAllowanceByPaymentIdLocationId(payment_id, location_i
     return await LocationAllowance.findOne({ where: { la_payment_id: payment_id, la_location_id: location_id }, include: [Location, Pd] })
 }
 
+async function findLocationAllowanceByLocationId(location_id){
+    return await LocationAllowance.findOne({ where: { la_location_id: location_id }, include: [Location, Pd] })
+}
+
 
 module.exports = {
     addLocationAllowance,
     findAllLocationAllowances,
     findLocationAllowanceById,
     updateLocationAllowance,
-    findLocationAllowanceByPaymentIdLocationId
+    findLocationAllowanceByPaymentIdLocationId,
+    findLocationAllowanceByLocationId
    }

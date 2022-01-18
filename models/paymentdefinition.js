@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     pd_desc: DataTypes.INTEGER,
     pd_basic: DataTypes.STRING,
     pd_tie_number: DataTypes.STRING,
+    pd_pr_gross: DataTypes.DOUBLE
 
   }, {
     sequelize,
