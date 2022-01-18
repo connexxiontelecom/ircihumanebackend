@@ -165,9 +165,7 @@ router.post('/login', async function(req, res, next) {
                             if(parseInt(data.user_type) === 2 || parseInt(data.user_type) === 3){
 
                                 employees.getEmployeeById(data.user_username).then((empRes)=>{
-                                    employeeId ={
-                                        employeeId: empRes.emp_id
-                                    }
+                                    employeeId = empRes
 
 
                                 })
