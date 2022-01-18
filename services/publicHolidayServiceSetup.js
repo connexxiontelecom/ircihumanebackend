@@ -7,7 +7,9 @@ const logs = require('../services/logService')
 
 
 const helper  = require('../helper');
-
+const errHandler = (err) =>{
+    console.log("Error: ", err);
+}
 const getAllPublicHolidays = async (req, res)=>{
     try {
         const holidays =  await PublicHoliday.findAll({attributes: ['ph_name', 'ph_day', 'ph_month', 'ph_year']});
@@ -44,7 +46,7 @@ const setNewPublicHoliday = async (req, res)=>  {
             return res.status(200).json(`New public holiday added successfully.`);
         });
     }catch (e) {
-        return res.status(500).json({message:"Something went wrong. Try again later."});;
+        return res.status(500).json({message:"Something went wrong. Try again later."+e});;
 
     }
 }
