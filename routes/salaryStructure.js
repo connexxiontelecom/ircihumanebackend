@@ -89,19 +89,51 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
 
                                            }
 
+                                            employee.getEmployee(8).then((data)=>{
+                                                let employeeLocation = data.emp_location_id
+                                               locationAllowance.findLocationAllowanceByLocationId(employeeLocation).then((hazardAllowances)=>{
+                                                   if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
+                                                       for(const allowance of hazardAllowances){
 
+                                                           salaryObject = {
+                                                               ss_empid: salaryStructureRequest.ss_empid,
+                                                               ss_pd: allowance.la_payment_id,
+                                                               ss_amount: allowance.la_amount
 
+                                                           }
 
-                                           const logData = {
-                                               "log_user_id": req.user.username.user_id,
-                                               "log_description": "Added new salary structure",
-                                               "log_date": new Date()
-                                           }
-                                           logs.addLog(logData).then((logRes)=>{
-                                               //return res.status(200).json(logRes);
-                                               return  res.status(200).json(`Action Successful`)
-                                           })
+                                                           salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
+                                                               if(_.isEmpty(data) || _.isNull(data)){
+                                                                   salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                                                                       return res.status(400).json(`An error occurred while adding`)
+                                                                   })
+                                                               }
+                                                           })
 
+                                                       }
+                                                       const logData = {
+                                                           "log_user_id": req.user.username.user_id,
+                                                           "log_description": "Added new salary structure",
+                                                           "log_date": new Date()
+                                                       }
+                                                       logs.addLog(logData).then((logRes)=>{
+                                                           //return res.status(200).json(logRes);
+                                                           return  res.status(200).json(`Action Successful`)
+                                                       })
+                                                   } else{
+                                                       const logData = {
+                                                           "log_user_id": req.user.username.user_id,
+                                                           "log_description": "Added new salary structure",
+                                                           "log_date": new Date()
+                                                       }
+                                                       logs.addLog(logData).then((logRes)=>{
+                                                           //return res.status(200).json(logRes);
+                                                           return  res.status(200).json(`Action Successful`)
+                                                       })
+                                                   }
+                                                })
+
+                                            })
 
                                        }
                                    })

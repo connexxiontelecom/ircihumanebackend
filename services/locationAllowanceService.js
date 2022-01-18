@@ -45,7 +45,7 @@ async function findLocationAllowanceByPaymentIdLocationId(payment_id, location_i
 }
 
 async function findLocationAllowanceByLocationId(location_id){
-    return await LocationAllowance.findOne({ where: { la_location_id: location_id }, include: [Location, Pd] })
+    return await LocationAllowance.findAll({ where: { la_location_id: location_id } })
 }
 
 
