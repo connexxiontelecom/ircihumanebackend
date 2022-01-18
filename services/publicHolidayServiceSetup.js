@@ -35,14 +35,14 @@ const setNewPublicHoliday = async (req, res)=>  {
         await PublicHoliday.create({ph_name: public_name, ph_day:public_day, ph_month:public_month, ph_year:public_year})
             .catch(errHandler);
         //Log
-       /* const logData = {
+        const logData = {
             "log_user_id": req.user.username.user_id,
             "log_description": `Log on public holiday: Added a new public holiday`,
             "log_date": new Date()
         }
         logs.addLog(logData).then((logRes)=>{
             return res.status(200).json(`New public holiday added successfully.`);
-        });*/
+        });
     }catch (e) {
         return res.status(500).json({message:"Something went wrong. Try again later."});;
 
@@ -57,43 +57,6 @@ const getPublicHolidayById = async (req, res) =>{
         return res.status(500).json({message: "Something went wrong. Try again later"});
     }
 }
-
-/*
-async function findAllLogs(){
-    return await Log.findAll({ include: [User]})
-}
-
-async function addLog(log){
-
-    try {
-        const schema = Joi.object( {
-            log_user_id: Joi.number().required(),
-            log_description: Joi.string().required(),
-            log_date: Joi.string().required(),
-        })
-
-        log.log_date = String(log.log_date)
-
-        const validationResult = schema.validate(log)
-
-        if(validationResult.error){
-            return validationResult.error.details[0].message
-        }
-        return  await Log.create({
-            log_user_id: log.log_user_id,
-            log_description: log.log_description,
-            log_date: log.log_date,
-
-        })
-
-
-    } catch (err) {
-        return err.message
-
-    }
-
-
-}*/
 
 
 module.exports = {
