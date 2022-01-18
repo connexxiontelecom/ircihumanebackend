@@ -165,31 +165,48 @@ router.post('/login', async function(req, res, next) {
                             if(parseInt(data.user_type) === 2 || parseInt(data.user_type) === 3){
 
                                 employees.getEmployeeById(data.user_username).then((empRes)=>{
-                                    employeeId ={
-                                        employeeId: empRes.emp_id
+                                    employeeId = empRes
+
+                                    let token = generateAccessToken(data)
+
+                                    const logData = {
+                                        "log_user_id": data.user_id,
+                                        "log_description": "logged in",
+                                        "log_date": new Date()
                                     }
+                                    logs.addLog(logData).then((logRes)=>{
+                                        data.user_password = null;
+                                        const responseData = {
+                                            "token" : token,
+                                            "userData": userData,
+                                            "employee": employeeId
+                                        }
+                                        return res.status(200).json(responseData);
+                                    })
 
 
                                 })
 
-                            }
+                            }else{
 
-                            let token = generateAccessToken(data)
+                                let token = generateAccessToken(data)
 
-                            const logData = {
-                                "log_user_id": data.user_id,
-                                "log_description": "logged in",
-                                "log_date": new Date()
-                            }
-                            logs.addLog(logData).then((logRes)=>{
-                                data.user_password = null;
-                                const responseData = {
-                                    "token" : token,
-                                    "userData": userData,
-                                    "employee": employeeId
+                                const logData = {
+                                    "log_user_id": data.user_id,
+                                    "log_description": "logged in",
+                                    "log_date": new Date()
                                 }
-                                return res.status(200).json(responseData);
-                            })
+                                logs.addLog(logData).then((logRes)=>{
+                                    data.user_password = null;
+                                    const responseData = {
+                                        "token" : token,
+                                        "userData": userData,
+
+                                    }
+                                    return res.status(200).json(responseData);
+                                })
+
+                            }
 
                         }else{
                             return res.status(400).json('Incorrect Password')
