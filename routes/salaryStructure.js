@@ -7,7 +7,9 @@ const salaryGrade =  require('../services/salaryGradeService')
 const salaryStructure = require('../services/salaryStructureService')
 const paymentDefinition = require('../services/paymentDefinitionService')
 const employee = require('../services/employeeService')
+const locationAllowance =  require('../services/locationAllowanceService')
 const logs = require('../services/logService')
+
 
 /* Get all Salary Structure */
 router.get('/', auth,  async function(req, res, next) {
@@ -57,59 +59,82 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
                                if((gross < minimum) || (gross > maximum)){
                                    return res.status(400).json(`Gross Salary not within grade band`)
                                }else{
-                                   let basicSalary = (60/100)*gross
-                                   let housingAllowance = (20/100)*gross
-                                   let transportAllowance = (20/100)*gross
+                                   paymentDefinition.findCodeWithGross().then((grossPercentage)=>{
+                                       if(_.isEmpty(grossPercentage) || _.isNull(grossPercentage)){
 
-                                   const basicObject = {
-                                       ss_empid: salaryStructureRequest.ss_empid,
-                                       ss_pd: 1,
-                                       ss_amount: basicSalary,
-                                   }
+                                       }else{
 
-                                   const transportObject = {
-                                       ss_empid: salaryStructureRequest.ss_empid,
-                                       ss_pd: 2,
-                                       ss_amount: transportAllowance,
-                                   }
 
-                                   const housingObject = {
-                                       ss_empid: salaryStructureRequest.ss_empid,
-                                       ss_pd: 3,
-                                       ss_amount: housingAllowance,
-                                   }
+                                           let salaryObject = {}
+                                            let amount
+                                            let percent
+                                           for(const percentage of grossPercentage){
+                                               percent = parseFloat(percentage.pd_pr_gross)
+                                               amount = (percent/100)*gross
 
-                                   salaryStructure.addSalaryStructure(basicObject).then((data)=>{
-                                       if(!_.isEmpty(data) || !_.isNull(data)){
-                                           salaryStructure.addSalaryStructure(transportObject).then((data)=>{
-                                               if(!_.isEmpty(data) || !_.isNull(data)){
-                                                   salaryStructure.addSalaryStructure(housingObject).then((data)=>{
-                                                       if(!_.isEmpty(data) || !_.isNull(data)){
-                                                           const logData = {
-                                                               "log_user_id": req.user.username.user_id,
-                                                               "log_description": "Added New Salary Structure",
-                                                               "log_date": new Date()
+                                               salaryObject = {
+                                                   ss_empid: salaryStructureRequest.ss_empid,
+                                                   ss_pd: percentage.pd_id,
+                                                   ss_amount: amount
+
+                                               }
+
+                                               salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
+                                                   if(_.isEmpty(data) || _.isNull(data)){
+                                                       salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                                                           return res.status(400).json(`An error occurred while adding`)
+                                                       })
+                                                   }
+                                               })
+
+                                           }
+
+                                            employee.getEmployee(8).then((data)=>{
+                                                let employeeLocation = data.emp_location_id
+                                               locationAllowance.findLocationAllowanceByLocationId(employeeLocation).then((hazardAllowances)=>{
+                                                   if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
+                                                       for(const allowance of hazardAllowances){
+
+                                                           salaryObject = {
+                                                               ss_empid: salaryStructureRequest.ss_empid,
+                                                               ss_pd: allowance.la_payment_id,
+                                                               ss_amount: allowance.la_amount
+
                                                            }
-                                                           logs.addLog(logData).then((logRes)=>{
-                                                               return res.status(200).json('Action Successful')
-                                                           })
-                                                       }else{
-                                                           salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                               return res.status(400).json(`An error occurred while adding`)
+
+                                                           salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
+                                                               if(_.isEmpty(data) || _.isNull(data)){
+                                                                   salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                                                                       return res.status(400).json(`An error occurred while adding`)
+                                                                   })
+                                                               }
                                                            })
 
                                                        }
-                                                   })
-                                               }else{
-                                                   salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                       return res.status(400).json(`An error occurred while adding`)
-                                                   })
-                                               }
-                                           })
-                                       }else {
-                                           salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                               return res.status(400).json(`An error occurred while adding`)
-                                           })
+                                                       const logData = {
+                                                           "log_user_id": req.user.username.user_id,
+                                                           "log_description": "Added new salary structure",
+                                                           "log_date": new Date()
+                                                       }
+                                                       logs.addLog(logData).then((logRes)=>{
+                                                           //return res.status(200).json(logRes);
+                                                           return  res.status(200).json(`Action Successful`)
+                                                       })
+                                                   } else{
+                                                       const logData = {
+                                                           "log_user_id": req.user.username.user_id,
+                                                           "log_description": "Added new salary structure",
+                                                           "log_date": new Date()
+                                                       }
+                                                       logs.addLog(logData).then((logRes)=>{
+                                                           //return res.status(200).json(logRes);
+                                                           return  res.status(200).json(`Action Successful`)
+                                                       })
+                                                   }
+                                                })
+
+                                            })
+
                                        }
                                    })
                               }
