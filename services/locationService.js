@@ -15,7 +15,7 @@ const getLocations = async (req, res, next)=>{
         res.status(200).json(locations)
     }catch (e) {
         res.status(400).json({'message':`Error while fetching locations ${ e.message}` });
-        next(e);
+        //next(e);
     }
 
 }
