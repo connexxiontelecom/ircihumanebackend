@@ -158,14 +158,16 @@ router.post('/login', async function(req, res, next) {
                         }
                         if(response){
                             delete data.user_password;
-                            let employeeId;
+                            let employeeId = {}
                             let userData = {}
                             userData = data
 
                             if(parseInt(data.user_type) === 2 || parseInt(data.user_type) === 3){
 
                                 employees.getEmployeeById(data.user_username).then((empRes)=>{
-                                    employeeId = empRes.emp_id
+                                    employeeId ={
+                                        employeeId: empRes.emp_id
+                                    }
 
 
                                 })
