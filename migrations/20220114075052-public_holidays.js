@@ -8,7 +8,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable('subsidiaries',{
+    await queryInterface.createTable('public_holidays',{
       ph_id: {
         allowNull: false,
         autoIncrement: true,
