@@ -44,6 +44,12 @@ router.post('/add-grant-chart', auth,  async function(req, res, next) {
 
             }else{
                grantChart.addGrantChart(gcRequest).then((data)=>{
+
+                   /*let granChart = data.gc_id
+
+                   budgetHolders.forEach((budgetHolder)=>{
+
+                   });*/
                    const logData = {
                        "log_user_id": req.user.username.user_id,
                        "log_description": "Added new Grant Chart Component",

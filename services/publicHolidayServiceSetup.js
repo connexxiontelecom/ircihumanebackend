@@ -46,7 +46,7 @@ const setNewPublicHoliday = async (req, res)=>  {
             return res.status(200).json(`New public holiday added successfully.`);
         });
     }catch (e) {
-        return res.status(500).json({message:"Something went wrong. Try again later."+e});;
+        return res.status(500).json({message:"Something went wrong. Try again later."});;
 
     }
 }
