@@ -71,6 +71,9 @@ const userRouter = require('./routes/users')
     const publicHolidayRouter =require("./routes/publicHolidays");
     app.use('/public-holidays', publicHolidayRouter)
 
+    const sectorLeadRouter =require("./routes/sectorLead");
+    app.use('/sector-leads', sectorLeadRouter)
+
 
     const timeSheet = require('./routes/timeSheet')
     app.use('/time-sheet', timeSheet)
