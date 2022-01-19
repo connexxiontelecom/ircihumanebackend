@@ -3,19 +3,15 @@ const _ = require('lodash')
 const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
-const salaryGrade =  require('../services/salaryGradeService')
-const salaryStructure = require('../services/salaryStructureService')
-const paymentDefinition = require('../services/paymentDefinitionService')
-const employee = require('../services/employeeService')
-const locationAllowance =  require('../services/locationAllowanceService')
+const rating =  require('../services/ratingService')
 const logs = require('../services/logService')
 
 
-/* Get all Salary Structure */
+/* Get all Ratings */
 router.get('/', auth,  async function(req, res, next) {
     try {
 
-        salaryStructure.findSalaryStructures().then((data)=>{
+        rating.findAllRating().then((data)=>{
             return res.status(200).json(data)
         })
 
@@ -29,136 +25,38 @@ router.get('/', auth,  async function(req, res, next) {
 
 
 /* Add to Salary structure */
-router.post('/add-salary-structure', auth,  async function(req, res, next) {
+router.post('/add-rating', auth,  async function(req, res, next) {
     try {
         const schema = Joi.object( {
-            ss_empid: Joi.number().required(),
-            ss_gross: Joi.number().precision(2).required(),
-            ss_grade: Joi.number().required(),
+            rating_name: Joi.string().required(),
+            rating_desc: Joi.string().required(),
         })
 
-        const salaryStructureRequest = req.body
-        const validationResult = schema.validate(salaryStructureRequest)
+        const ratingRequest = req.body
+        const validationResult = schema.validate(ratingRequest)
 
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-       employee.getEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-           if(!_.isEmpty(data) || !_.isNull(data)){
-               salaryStructure.findSalaryStructure(salaryStructureRequest.ss_empid).then((data)=>{
-                   if(_.isEmpty(data) || _.isNull(data)){
-                       salaryGrade.findSalaryGrade(salaryStructureRequest.ss_grade).then((data)=>{
-                           if(_.isEmpty(data) || _.isNull(data) ){
-                               return res.status(400).json(`Salary Grade Doesn't Exists`)
-                           }else{
-                               let maximum = parseFloat(data.sg_maximum)
-                               let minimum = parseFloat(data.sg_minimum)
-                               let gross = parseFloat(salaryStructureRequest.ss_gross)
+       await rating.findRatingByName(ratingRequest.rating_name).then((data)=>{
+          if(_.isEmpty(data) || _.isNull(data)){
+              rating.addRating(ratingRequest).then((data)=>{
+                  if(_.isEmpty(data) || _.isNull(data)){
+                      return res.status(400).json(`An Error Occurred while adding Rating`)
+                  }else{
 
-                               if((gross < minimum) || (gross > maximum)){
-                                   return res.status(400).json(`Gross Salary not within grade band`)
-                               }else{
-                                   paymentDefinition.findCodeWithGross().then((grossPercentage)=>{
-                                       if(_.isEmpty(grossPercentage) || _.isNull(grossPercentage)){
+                      return res.status(200).json(`Action Successful`)
+                  }
+              })
 
-                                       }else{
-
-
-                                           let salaryObject = {}
-                                            let amount
-                                            let percent
-                                           for(const percentage of grossPercentage){
-                                               percent = parseFloat(percentage.pd_pr_gross)
-                                               amount = (percent/100)*gross
-
-                                               salaryObject = {
-                                                   ss_empid: salaryStructureRequest.ss_empid,
-                                                   ss_pd: percentage.pd_id,
-                                                   ss_amount: amount
-
-                                               }
-
-                                               salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                                   if(_.isEmpty(data) || _.isNull(data)){
-                                                       salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                           return res.status(400).json(`An error occurred while adding`)
-                                                       })
-                                                   }
-                                               })
-
-                                           }
-
-                                            employee.getEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                let employeeLocation = data.emp_location_id
-                                               locationAllowance.findLocationAllowanceByLocationId(employeeLocation).then((hazardAllowances)=>{
-                                                   if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
-                                                       for(const allowance of hazardAllowances){
-
-                                                           salaryObject = {
-                                                               ss_empid: salaryStructureRequest.ss_empid,
-                                                               ss_pd: allowance.la_payment_id,
-                                                               ss_amount: allowance.la_amount
-
-                                                           }
-
-                                                           salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                                               if(_.isEmpty(data) || _.isNull(data)){
-                                                                   salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                                       return res.status(400).json(`An error occurred while adding`)
-                                                                   })
-                                                               }
-                                                           })
-
-                                                       }
-                                                       const logData = {
-                                                           "log_user_id": req.user.username.user_id,
-                                                           "log_description": "Added new salary structure",
-                                                           "log_date": new Date()
-                                                       }
-                                                       logs.addLog(logData).then((logRes)=>{
-                                                           //return res.status(200).json(logRes);
-                                                           return  res.status(200).json(`Action Successful`)
-                                                       })
-                                                   } else{
-                                                       const logData = {
-                                                           "log_user_id": req.user.username.user_id,
-                                                           "log_description": "Added new salary structure",
-                                                           "log_date": new Date()
-                                                       }
-                                                       logs.addLog(logData).then((logRes)=>{
-                                                           //return res.status(200).json(logRes);
-                                                           return  res.status(200).json(`Action Successful`)
-                                                       })
-                                                   }
-                                                })
-
-                                            })
-
-                                       }
-                                   })
-                              }
-
-                           }
-
-                       })
-                   }
-                   else{
-                       return res.status(400).json(`Salary Structure already set, consider updating`)
-                   }
-
-               })
-
-           }
-           else{
-               return res.status(400).json(`Employee Doesn't Exists`)
-           }
-       })
-
-
+          } else{
+              return res.status(400).json(`Rating Already Exists`)
+          }
+        })
 
     } catch (err) {
-        console.error(`Error while adding salary structure `, err.message);
+        console.error(`Error while adding rating `, err.message);
         next(err);
     }
 });

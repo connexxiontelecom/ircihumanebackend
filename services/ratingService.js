@@ -30,6 +30,11 @@ async function findRating(ratingId){
 
 }
 
+async function findRatingByName(ratingName){
+    return await Rating.findOne({  where: { rating_name: ratingName } })
+
+}
+
 async function findAllRating(){
     return await Rating.findAll()
 }
@@ -41,5 +46,6 @@ module.exports = {
     addRating,
     updateRating,
     findRating,
-    findAllRating
+    findAllRating,
+    findRatingByName
 }
