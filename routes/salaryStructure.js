@@ -89,7 +89,7 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
 
                                            }
 
-                                            employee.getEmployee(8).then((data)=>{
+                                            employee.getEmployee(salaryStructureRequest.ss_empid).then((data)=>{
                                                 let employeeLocation = data.emp_location_id
                                                locationAllowance.findLocationAllowanceByLocationId(employeeLocation).then((hazardAllowances)=>{
                                                    if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){

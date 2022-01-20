@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Test extends Model {
+  class rating extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,17 +13,18 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   };
-  Test.init({
-    test_id: {
+  rating.init({
+    rating_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
-    testname: DataTypes.STRING,
-    testjob: DataTypes.STRING
+    rating_name: DataTypes.STRING,
+    rating_desc: DataTypes.STRING
   }, {
     sequelize,
-    modelName: 'Test',
+    modelName: 'ratings',
+    tableName: 'ratings'
   });
-  return Test;
+  return rating;
 };
