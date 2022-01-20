@@ -64,14 +64,21 @@ router.get('/get-time-sheet/:emp_id/:date', auth,  async function(req, res, next
         let empId = req.params.emp_id
         let date = new Date(req.params.date)
 
-
-        let day = date.getDate()
-        let month = date.getMonth()+1
-        let year = date.getFullYear()
-
-        timeSheet.findTimeSheet(empId, day, month, year).then((data)=>{
-            return res.status(200).json(data[0])
+             const employeeData =  await employee.getEmployee(empId).then((data)=>{
+            return data
         })
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(404).json(`Employee Does Not Exist`)
+        }else {
+            let day = date.getDate()
+            let month = date.getMonth() + 1
+            let year = date.getFullYear()
+
+            timeSheet.findTimeSheet(empId, day, month, year).then((data) => {
+                return res.status(200).json(data[0])
+            })
+        }
 
 
 
@@ -84,22 +91,29 @@ router.get('/get-time-sheet/:emp_id/:date', auth,  async function(req, res, next
 router.get('/get-time-sheets/:emp_id', auth,  async function(req, res, next) {
     try {
         let empId = req.params.emp_id
-
-        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+        const employeeData =  await employee.getEmployee(empId).then((data)=>{
             return data
         })
-        if(_.isEmpty(payrollMonthYearData) || _.isNull(payrollMonthYearData)){
-            return res.status(404).json(`No Payroll Month and Year Set`)
-        }else{
-            let payrollMonth = parseInt(payrollMonthYearData.pym_month)
-            let payrollYear = payrollMonthYearData.pym_year
 
-            const timeSheetData = await timeSheet.findTimeSheetMonth(empId, payrollMonth, payrollYear).then((data) => {
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(404).json(`Employee Does Not Exist`)
+        }else {
+            const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
                 return data
             })
+            if (_.isEmpty(payrollMonthYearData) || _.isNull(payrollMonthYearData)) {
+                return res.status(404).json(`No Payroll Month and Year Set`)
+            } else {
+                let payrollMonth = parseInt(payrollMonthYearData.pym_month)
+                let payrollYear = payrollMonthYearData.pym_year
+
+                const timeSheetData = await timeSheet.findTimeSheetMonth(empId, payrollMonth, payrollYear).then((data) => {
+                    return data
+                })
 
                 return res.status(200).json(timeSheetData)
 
+            }
         }
 
      } catch (err) {
