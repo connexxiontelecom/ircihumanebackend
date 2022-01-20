@@ -40,11 +40,16 @@ async function findTimeSheet(empId, day, month, year){
 
 }
 
+async function findTimeSheetMonth(empId, month, year){
+    return await TimeSheet.findAll({ where: { ts_emp_id: empId, ts_month: month, ts_year: year}})
+}
+
 
 
 
 module.exports = {
     addTimeSheet,
     findTimeSheet,
-    updateTimeSheet
+    updateTimeSheet,
+    findTimeSheetMonth
 }
