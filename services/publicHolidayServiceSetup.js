@@ -60,9 +60,30 @@ const getPublicHolidayById = async (req, res) =>{
     }
 }
 
+async function fetchAllPublicHolidays(){
+    return await PublicHoliday.findAll()
+}
+
+async function fetchPublicHolidayByYear(year){
+    return await PublicHoliday.findAll({where:{
+        ph_year: year
+        }})
+}
+
+async function fetchSpecificPublicHoliday(day, month, year){
+    return await PublicHoliday.findAll({where:{
+           ph_day: day,
+            ph_month: month,
+            ph_year: year
+        }})
+}
+
 
 module.exports = {
     setNewPublicHoliday,
     getAllPublicHolidays,
     getPublicHolidayById,
+    fetchAllPublicHolidays,
+    fetchPublicHolidayByYear,
+    fetchSpecificPublicHoliday
 }
