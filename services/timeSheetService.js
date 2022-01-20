@@ -36,7 +36,7 @@ async function updateTimeSheet(ts_id, timeSheetData){
 }
 
 async function findTimeSheet(empId, day, month, year){
-    return await TimeSheet.findAll({ limit: 1, where: { ts_emp_id: empId, ts_day: day, ts_month: month, ts_year: year } })
+    return await TimeSheet.findOne({  where: { ts_emp_id: empId, ts_day: day, ts_month: month, ts_year: year } })
 
 }
 
