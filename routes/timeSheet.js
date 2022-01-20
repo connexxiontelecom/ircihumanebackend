@@ -76,7 +76,7 @@ router.get('/get-time-sheet/:emp_id/:date', auth,  async function(req, res, next
             let year = date.getFullYear()
 
             timeSheet.findTimeSheet(empId, day, month, year).then((data) => {
-                return res.status(200).json(data[0])
+                return res.status(200).json(data)
             })
         }
 
