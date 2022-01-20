@@ -24,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
         ph_month: DataTypes.STRING,
         ph_year: DataTypes.STRING,
         ph_date: DataTypes.DATE,
-        d_t3_code: DataTypes.STRING,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

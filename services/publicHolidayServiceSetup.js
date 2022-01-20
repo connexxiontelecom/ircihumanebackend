@@ -72,6 +72,8 @@ async function fetchPublicHolidayByYear(year){
 
 async function fetchSpecificPublicHoliday(day, month, year){
     return await PublicHoliday.findAll({where:{
+           ph_day: day,
+            ph_month: month,
             ph_year: year
         }})
 }
