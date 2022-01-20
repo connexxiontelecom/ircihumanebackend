@@ -18,6 +18,9 @@ async function addGoalSetting(goalSettingData){
 
 async function updateGoalSetting(gsId, goalSettingData){
     return await GoalSetting.update({
+        gs_from: goalSettingData.gs_from,
+        gs_to: goalSettingData.gs_to,
+        gs_year: goalSettingData.gs_year,
         gs_status: goalSettingData.gs_status,
 
 
@@ -26,6 +29,16 @@ async function updateGoalSetting(gsId, goalSettingData){
                 gs_id:gsId
             }
         });
+}
+
+async function closeGoalSetting(gsId){
+    return await GoalSetting.update({
+             gs_status: 0,
+    }, {
+        where:{
+            gs_id:gsId
+        }
+    });
 }
 
 async function findGoalSetting(gsActivity, year){
@@ -66,5 +79,6 @@ module.exports = {
     findGoalSetting,
     findActiveGoal,
     findGoals,
-    closeAllGoals
+    closeAllGoals,
+    closeGoalSetting
     }
