@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require("../middleware/auth");
 const grantChart =  require('../services/grantChartService');
+const budgetHolders = require('../services/budgetHolderService');
 const logs = require('../services/logService')
 
 
@@ -44,6 +45,12 @@ router.post('/add-grant-chart', auth,  async function(req, res, next) {
 
             }else{
                grantChart.addGrantChart(gcRequest).then((data)=>{
+
+                   let granChart = data.gc_id
+
+                   //budgetHolders.forEach((budgetHolder)=>{
+                    budgetHolders.setNewBudgetHolder(req.user.username.user_id, grantChart)
+                   //});
                    const logData = {
                        "log_user_id": req.user.username.user_id,
                        "log_description": "Added new Grant Chart Component",
