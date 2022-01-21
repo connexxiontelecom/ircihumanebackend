@@ -36,7 +36,7 @@
    app.use('/states', stateRouter);
    app.use('/employee-categories', employeeCategoryRouter);
    
-const userRouter = require('./routes/users')
+    const userRouter = require('./routes/users')
     app.use('/users', userRouter);
 
     const paymentDefinitionRouter = require('./routes/paymentDefinitions')
@@ -69,7 +69,13 @@ const userRouter = require('./routes/users')
 
 
     const publicHolidayRouter =require("./routes/publicHolidays");
-    app.use('/public-holidays', publicHolidayRouter)
+    app.use('/public-holidays', publicHolidayRouter);
+
+    const travelApplicationRouter =require("./routes/travelApplication");
+    app.use('/travel-applications', travelApplicationRouter);
+
+    const sectorLeadRouter =require("./routes/sectorLead");
+    app.use('/sector-leads', sectorLeadRouter)
 
 
     const timeSheet = require('./routes/timeSheet')
@@ -87,6 +93,12 @@ const userRouter = require('./routes/users')
 
     const salaryStructureRouter = require('./routes/salaryStructure')
     app.use('/salary-structure', salaryStructureRouter)
+
+    const goalSettingRouter = require('./routes/goalSetting')
+    app.use('/goal-setting', goalSettingRouter)
+
+    const selfAssessmentRouter = require('./routes/selfAssessment')
+    app.use('/self-assessment', selfAssessmentRouter)
 
 
     app.get('/',  async function(req, res) {

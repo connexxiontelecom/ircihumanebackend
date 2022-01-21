@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class goalSetting extends Model {
+  class selfAssessment extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,27 +13,19 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   };
-  goalSetting.init({
-    gs_id:{
+  selfAssessment.init({
+    sa_id:{
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
-    gs_from: DataTypes.STRING,
-    gs_to: DataTypes.STRING,
-    gs_year: DataTypes.STRING,
-    gs_activity: DataTypes.STRING,
-    gs_status: DataTypes.INTEGER
+    sa_gs_id: DataTypes.STRING,
+    sa_emp_id: DataTypes.STRING,
+    sa_comment: DataTypes.STRING
   }, {
     sequelize,
-    modelName: 'goalSetting',
-    tableName: 'goal_settings'
+    modelName: 'selfAssessment',
+    tableName: 'self_assessments'
   });
-  return goalSetting;
+  return selfAssessment;
 };
-
-/*
-activity
-1 = goal setting
-2 = mid year checking
- */

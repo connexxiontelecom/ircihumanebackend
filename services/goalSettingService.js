@@ -18,6 +18,9 @@ async function addGoalSetting(goalSettingData){
 
 async function updateGoalSetting(gsId, goalSettingData){
     return await GoalSetting.update({
+        gs_from: goalSettingData.gs_from,
+        gs_to: goalSettingData.gs_to,
+        gs_year: goalSettingData.gs_year,
         gs_status: goalSettingData.gs_status,
 
 
@@ -28,15 +31,36 @@ async function updateGoalSetting(gsId, goalSettingData){
         });
 }
 
+async function closeGoalSetting(gsId){
+    return await GoalSetting.update({
+             gs_status: 0,
+    }, {
+        where:{
+            gs_id:gsId
+        }
+    });
+}
+
 async function findGoalSetting(gsActivity, year){
     return await GoalSetting.findOne({  where: { gs_activity: gsActivity, gs_year: year } })
 
+}
+async function findOpenGoals(){
+    return await GoalSetting.findAll({ where: { gs_status: 1 }})
+}
+
+async function findLatestClosedGoal(){
+    return await GoalSetting.findOne({where: { gs_status: 0}, order: [ [ 'createdAt', 'DESC' ]]})
 }
 
 async function findActiveGoal(year){
     return await GoalSetting.findAll({  where: { gs_status: 1, gs_year: year } })
 
 }
+async function getGoalSetting(gsId){
+    return await GoalSetting.findOne({ where: { gs_id: gsId }})
+}
+
 
 async function closeAllGoals(){
     return await GoalSetting.update({
@@ -60,11 +84,18 @@ async function findGoals(){
 
 
 
+
+
 module.exports = {
     addGoalSetting,
     updateGoalSetting,
     findGoalSetting,
     findActiveGoal,
     findGoals,
-    closeAllGoals
+    closeAllGoals,
+    closeGoalSetting,
+    getGoalSetting,
+    findOpenGoals,
+    findLatestClosedGoal
+
     }
