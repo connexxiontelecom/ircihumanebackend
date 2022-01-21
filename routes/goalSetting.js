@@ -28,7 +28,7 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
             gs_to: Joi.string().required(),
             gs_year: Joi.string().required(),
             gs_activity: Joi.string().required(),
-            gs_status: Joi.number().required()
+
      })
 
         const gsRequest = req.body
@@ -54,15 +54,7 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
                 })
             }
 
-            const addGoalSettingActivityYear = await goalSetting.addGoalSetting(gsRequest).then((data)=>{
-                return data
-            })
-
-            if(!_.isEmpty(addGoalSettingActivityYear) || !_.isNull(addGoalSettingActivityYear)){
-                const neverUse = await goalSetting.closeAllGoals().then((data)=>{
-                    return data
-                })
-            }
+            gsRequest.gs_status = 1
             await goalSetting.addGoalSetting(gsRequest).then((data)=>{
                 if(_.isEmpty(data) || _.isNull(data)){
                     return res.status(400).json("An Error Occurred while adding goals")
@@ -100,7 +92,7 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
     }
 });
 
-/* Update Goal  */
+/* Close Goal  */
 
 router.patch('/close-goal-setting/:gs_id', auth,  async function(req, res, next) {
     try {

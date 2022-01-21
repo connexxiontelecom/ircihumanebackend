@@ -50,6 +50,10 @@ async function findActiveGoal(year){
     return await GoalSetting.findAll({  where: { gs_status: 1, gs_year: year } })
 
 }
+async function getGoalSetting(gsId){
+    return await GoalSetting.findOne({ where: { gs_id: gsId }})
+}
+
 
 async function closeAllGoals(){
     return await GoalSetting.update({
@@ -73,6 +77,8 @@ async function findGoals(){
 
 
 
+
+
 module.exports = {
     addGoalSetting,
     updateGoalSetting,
@@ -80,5 +86,6 @@ module.exports = {
     findActiveGoal,
     findGoals,
     closeAllGoals,
-    closeGoalSetting
+    closeGoalSetting,
+    getGoalSetting
     }
