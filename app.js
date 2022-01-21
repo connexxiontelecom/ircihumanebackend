@@ -94,6 +94,12 @@
     const salaryStructureRouter = require('./routes/salaryStructure')
     app.use('/salary-structure', salaryStructureRouter)
 
+    const goalSettingRouter = require('./routes/goalSetting')
+    app.use('/goal-setting', goalSettingRouter)
+
+    const selfAssessmentRouter = require('./routes/selfAssessment')
+    app.use('/self-assessment', selfAssessmentRouter)
+
 
     app.get('/',  async function(req, res) {
 

@@ -43,7 +43,7 @@ router.post('/add-time-sheet', auth,  async function(req, res, next) {
                 return res.status(200).json('Action Successful')
             })
         }else{
-            await updateTimeSheet(tsData[0].ts_id, timeSheetRequest)
+            await updateTimeSheet(tsData.ts_id, timeSheetRequest)
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": "Added Time Sheet",

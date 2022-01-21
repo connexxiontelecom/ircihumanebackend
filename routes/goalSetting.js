@@ -20,6 +20,16 @@ router.get('/', auth, async function(req, res, next) {
     }
 });
 
+router.get('/get-open-goal-setting', auth, async function(req, res, next) {
+    try {
+        await goalSetting.findGoals().then((data) =>{
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching goal settings ${err.message}`)
+    }
+});
+
 /* Add goal */
 router.post('/add-goal-setting', auth,  async function(req, res, next) {
     try {
@@ -28,7 +38,7 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
             gs_to: Joi.string().required(),
             gs_year: Joi.string().required(),
             gs_activity: Joi.string().required(),
-            gs_status: Joi.number().required()
+
      })
 
         const gsRequest = req.body
@@ -54,15 +64,7 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
                 })
             }
 
-            const addGoalSettingActivityYear = await goalSetting.addGoalSetting(gsRequest).then((data)=>{
-                return data
-            })
-
-            if(!_.isEmpty(addGoalSettingActivityYear) || !_.isNull(addGoalSettingActivityYear)){
-                const neverUse = await goalSetting.closeAllGoals().then((data)=>{
-                    return data
-                })
-            }
+            gsRequest.gs_status = 1
             await goalSetting.addGoalSetting(gsRequest).then((data)=>{
                 if(_.isEmpty(data) || _.isNull(data)){
                     return res.status(400).json("An Error Occurred while adding goals")
@@ -100,9 +102,9 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
     }
 });
 
-/* Update Goal  */
+/* Close Goal  */
 
-router.patch('/update-goal-setting/:gs_id', auth,  async function(req, res, next) {
+router.patch('/close-goal-setting/:gs_id', auth,  async function(req, res, next) {
     try {
         const gsId = req.params.gs_id
         const schema = Joi.object( {
@@ -120,63 +122,32 @@ router.patch('/update-goal-setting/:gs_id', auth,  async function(req, res, next
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
+        await goalSetting.closeGoalSetting(gsId).then((data)=>{
+            if(_.isEmpty(data) || _.isNull(data)){
+                return res.status(400).json("An Error Occurred")
+            }else {
 
+                const goalSettingLogObject = {
+                    gsl_activity: gsRequest.gs_activity,
+                    gsl_year: gsRequest.gs_year,
+                    gsl_status: gsRequest.gs_status
+                }
 
-        const goalSettingActivityYear = await goalSetting.findGoalSetting(gsRequest.gs_activity, gsRequest.gs_year).then((data)=>{
-            return data
+                goalSettingLog.addGoalSettingLog(goalSettingLogObject).then((data) => {
+
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Closed Goal Setting",
+                        "log_date": new Date()
+                    }
+                    logs.addLog(logData).then((logRes) => {
+                        return res.status(200).json('Action Successful')
+                    })
+                })
+            }
         })
 
-        if(_.isEmpty(goalSettingActivityYear) || _.isNull(goalSettingActivityYear)){
 
-            const activeGoalsYear = await goalSetting.findActiveGoal(gsRequest.gs_year).then((data)=>{
-                return data
-            })
-
-            if(!_.isEmpty(activeGoalsYear) || !_.isNull(activeGoalsYear)){
-                const closeAllGoals =   await goalSetting.closeAllGoals().then((data)=>{
-                    return data
-                })
-            }
-
-            const addGoalSettingActivityYear = await goalSetting.addGoalSetting(gsRequest).then((data)=>{
-                return data
-            })
-
-            if(!_.isEmpty(addGoalSettingActivityYear) || !_.isNull(addGoalSettingActivityYear)){
-                const neverUse = await goalSetting.closeAllGoals().then((data)=>{
-                    return data
-                })
-            }
-            await goalSetting.addGoalSetting(gsRequest).then((data)=>{
-                if(_.isEmpty(data) || _.isNull(data)){
-                    return res.status(400).json("An Error Occurred while adding goals")
-                }else{
-
-                    const goalSettingLogObject = {
-                        gsl_activity:gsRequest.gs_activity,
-                        gsl_year:gsRequest.gs_year,
-                        gsl_status: gsRequest.gs_status
-                    }
-
-                    goalSettingLog.addGoalSettingLog(goalSettingLogObject).then((data)=>{
-
-                        const logData = {
-                            "log_user_id": req.user.username.user_id,
-                            "log_description": "Added Supervisor Assignment",
-                            "log_date": new Date()
-                        }
-                        logs.addLog(logData).then((logRes)=>{
-                            return  res.status(200).json('Action Successful')
-                        })
-                    })
-                }
-            })
-
-
-        }else{
-            return res.status(400).json("Goal Setting for specific year and activity already announced")
-
-        }
 
     } catch (err) {
         console.error(`Error while assigning supervisor `, err.message);
