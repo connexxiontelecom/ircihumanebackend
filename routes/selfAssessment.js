@@ -8,19 +8,7 @@ const selfAssessment =  require('../services/selfAssessmentService');
 const employees = require('../services/employeeService');
 const logs = require('../services/logService')
 
-
-/* Get All goals setting */
-// router.get('/', auth, async function(req, res, next) {
-//     try {
-//         await goalSetting.findGoals().then((data) =>{
-//             return res.status(200).json(data);
-//                })
-//     } catch (err) {
-//         return res.status(400).json(`Error while fetching goal settings ${err.message}`)
-//     }
-// });
-
-/* Add goal */
+/* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
     try {
         let empId = req.params.emp_id
@@ -101,7 +89,63 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, re
     }
 });
 
-/* Close Goal  */
+/* Pre Fill Self Assessment  */
+router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+            return data
+        })
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+
+        }else{
+            if(parseInt(gsData.gs_status) === 1){
+
+                let latestClosedGoal = await goalSetting.findLatestClosedGoal().then((data)=>{
+                    return data
+                })
+
+                if(_.isEmpty(latestClosedGoal) || _.isNull(latestClosedGoal)){
+                    return res.status(400).json(`No Previous Goal Setting`)
+                }
+                else{
+                    let latestClosedGoalId = latestClosedGoal.gs_id
+                    let latestClosedGoalActivity = latestClosedGoal.gs_activity
+
+                    if(parseInt(gsData.gs_activity) === 2 && parseInt(latestClosedGoalActivity) === 1){
+                       await selfAssessment.findSelfAssessment(latestClosedGoalId, empId).then((data)=>{
+                            return res.status(200).json(data)
+                        })
+
+
+                    }
+
+
+                }
+
+            }
+            else{
+                return res.status(400).json(`Goal Setting Not Opened`)
+            }
+
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
 
 
 module.exports = router;

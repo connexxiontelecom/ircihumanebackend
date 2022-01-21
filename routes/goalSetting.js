@@ -20,6 +20,16 @@ router.get('/', auth, async function(req, res, next) {
     }
 });
 
+router.get('/get-open-goal-setting', auth, async function(req, res, next) {
+    try {
+        await goalSetting.findGoals().then((data) =>{
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching goal settings ${err.message}`)
+    }
+});
+
 /* Add goal */
 router.post('/add-goal-setting', auth,  async function(req, res, next) {
     try {
