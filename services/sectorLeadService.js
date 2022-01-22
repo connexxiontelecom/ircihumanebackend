@@ -34,6 +34,12 @@ const setNewSectorLead = async (req, res, next)=>  {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
+        const existingSector = await sectorLeadModel.findOne({ where: { sl_sector_id: req.body.sector } });
+        const existingLead = await sectorLeadModel.findOne({ where: { sl_employee_id: req.body.employee } });
+        if(existingSector !== null && existingLead !== null ){
+            return res.status(400).json({message: "There's already existing sector lead."});
+        }
+
         await sectorLeadModel.create({sl_sector_id: req.body.sector, sl_employee_id:req.body.employee})
             .catch(errHandler);
         //Log
@@ -46,8 +52,8 @@ const setNewSectorLead = async (req, res, next)=>  {
             return res.status(200).json(`New sector lead  was successfully saved`);
         })
     }catch (e) {
-        console.error(`Error while adding state `, e.message);
-        next(e);
+        res.status(400).json({message:`Error while adding state ${ e.message}`});
+
     }
 }
 const getSectorLeadById = async (req, res) =>{
@@ -56,7 +62,7 @@ const getSectorLeadById = async (req, res) =>{
         const sector =  await sectorLeadModel.findAll({where:{sl_id: sectorId}});
         return res.status(200).json(sector);
     }catch (e) {
-        return res.status(500).json({message:"Something went wrong. Try again later."});
+        return res.status(400).json({message:"Something went wrong. Try again later."});
     }
 
 }
