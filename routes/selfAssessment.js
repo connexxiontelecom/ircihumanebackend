@@ -133,7 +133,7 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                     let currentYear = gsData.gs_year;
                     //fetch questions from end of year
 
-                        const endYearQuestions = endYearAssessment.getEndOfYearAssessmentQuestionByGoal(gsData.gs_id).then((data)=>{
+                        const endYearQuestions = await endYearAssessment.getEndOfYearAssessmentQuestionByGoal(gsData.gs_id).then((data)=>{
                             return data
                         })
 
@@ -154,13 +154,13 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                               }
 
                                 //insert into self assessment
-                              addResponse = selfAssessment.addSelfAssessmentEndYear(eyaObject).then((data) => {
+                              addResponse = await selfAssessment.addSelfAssessmentEndYear(eyaObject).then((data) => {
                                   return data
                               })
 
                                 if(_.isNull(addResponse) || _.isEmpty(addResponse)){
                                   i++
-                                    destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                    destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
                                         return data
                                     })
                                     break
@@ -177,7 +177,7 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                             }
 
 
-                          let gss =  goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                          let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
                               return data
                           })
 
@@ -192,11 +192,11 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                                     gsIdArray.push(gs.gs_id)
                                 }
 
-                                let questionData = selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
                                     return data
                                 })
 
-                                return res.status(200).json(data)
+                                return res.status(200).json(questionData)
                             }
 
 

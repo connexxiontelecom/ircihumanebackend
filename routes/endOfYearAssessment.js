@@ -29,16 +29,22 @@ router.post('/add-question', auth,  async function(req, res, next) {
         let destroyResponse;
         let gsData;
         let i = 0;
+        let gsId;
         for(const eya of eyaRequests){
 
             gsData = await goalSetting.getActiveGoalSetting(eya.eya_gs_id).then((data)=>{
                 return data
             })
 
-            if(_.isEmpty(gsData) || _.isNull(gsData)){
+            if(_.isEmpty(gsData) || _.isNull(gsData) || parseInt(gsData.gs_activity) !== 3 || parseInt(gsData.gs_status) !== 1){
                 i++
+                destroyResponse = await endYearAssessment.removeAssessment(eya.eya_gs_id).then((data)=>{
+                    return data
+                })
+                break
 
             }else{
+                eya.eya_year = gsData.gs_year
                 addResponse = await endYearAssessment.addEndOfYearAssessment(eya).then((data)=>{
                     return data
                 })
@@ -48,10 +54,8 @@ router.post('/add-question', auth,  async function(req, res, next) {
         }
 
         if(i > 0){
-            destroyResponse = await endYearAssessment.removeAssessment(eya.eya_gs_id).then((data)=>{
-                return data
-            })
-            return res.status(400).json(`An error Occurred while adding`)
+
+            return res.status(400).json(`An error Occurred, Check for Open End of Activity`)
         }
         else{
             const logData = {
