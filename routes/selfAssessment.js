@@ -122,10 +122,17 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                 else{
                     let latestClosedGoalId = latestClosedGoal.gs_id
                     let latestClosedGoalActivity = latestClosedGoal.gs_activity
+                    let finalGsData = {}
+                    if(parseInt(gsData.gs_activity) === 1){
+                        finalGsData.goalSetting = gsData
+                        return res.status(200).json(finalGsData)
+                    }
 
                     if(parseInt(gsData.gs_activity) === 2 && parseInt(latestClosedGoalActivity) === 1){
                        await selfAssessment.findSelfAssessment(latestClosedGoalId, empId).then((data)=>{
-                            return res.status(200).json(data)
+                           finalGsData.goalSetting = gsData
+                           finalGsData.questions = data
+                            return res.status(200).json(finalGsData)
                         })
                     }
 
@@ -140,64 +147,110 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                         if(_.isEmpty(endYearQuestions) || _.isNull(endYearQuestions)){
                             return  res.status(400).json(`No End of year questions set yet`)
                         }
-                    else{
-                            let eyaObject
-                            let addResponse
-                            let destroyResponse
-                            let i = 0;
-                            for(const eya of endYearQuestions){
-                              eyaObject = {
-                                  sa_gs_id: gsId,
-                                  sa_emp_id: empId,
-                                  sa_comment: eya.eya_question,
-                                  sa_eya_id: eya.eya_id
+
+                        else{
+
+                            let empQuestions =  await selfAssessment.findSelfAssessment(gsId, empId).then((data)=>{
+                                return  data
+
+                            })
+
+                          if(_.isEmpty(empQuestions) || _.isNull(empQuestions)){
+
+                              let eyaObject
+                              let addResponse
+                              let destroyResponse
+                              let i = 0;
+                              for(const eya of endYearQuestions){
+                                  eyaObject = {
+                                      sa_gs_id: gsId,
+                                      sa_emp_id: empId,
+                                      sa_comment: eya.eya_question,
+                                      sa_eya_id: eya.eya_id
+                                  }
+
+                                  //insert into self assessment
+                                  addResponse = await selfAssessment.addSelfAssessmentEndYear(eyaObject).then((data) => {
+                                      return data
+                                  })
+
+                                  if(_.isNull(addResponse) || _.isEmpty(addResponse)){
+                                      i++
+                                      destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                          return data
+                                      })
+                                      break
+                                  }
                               }
 
-                                //insert into self assessment
-                              addResponse = await selfAssessment.addSelfAssessmentEndYear(eyaObject).then((data) => {
+                              if( i > 0){
+                                  destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                      return data
+                                  })
+
+                                  return  res.status(400).json(`There was an error while fetching questions`)
+
+                              }
+
+
+                              let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
                                   return data
                               })
 
-                                if(_.isNull(addResponse) || _.isEmpty(addResponse)){
-                                  i++
-                                    destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
-                                        return data
-                                    })
-                                    break
-                                }
-                           }
+                              if(_.isEmpty(gss) || _.isNull(gss)){
+                                  return res.status(404).json(`No Goal Setting found`)
+                              }
+                              else{
 
-                            if( i > 0){
-                                destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
-                                    return data
-                                })
+                                  let gsIdArray = [ ]
 
-                                return  res.status(400).json(`There was an error while fetching questions`)
+                                  for (const gs of gss){
+                                      gsIdArray.push(gs.gs_id)
+                                  }
 
-                            }
+                                  let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                      return data
+                                  })
 
 
-                          let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
-                              return data
-                          })
+                                  finalGsData.goalSetting = gsData
+                                  finalGsData.questions = questionData
+                                  return res.status(200).json(finalGsData)
 
-                            if(_.isEmpty(gss) || _.isNull(gss)){
-                                return res.status(404).json(`No Goal Setting found`)
-                            }
-                            else{
+                              }
 
-                                let gsIdArray = [ ]
 
-                                for (const gs of gss){
-                                    gsIdArray.push(gs.gs_id)
-                                }
+                          }
 
-                                let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
-                                    return data
-                                })
+                        else{
+                              let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                                  return data
+                              })
 
-                                return res.status(200).json(questionData)
-                            }
+                              if(_.isEmpty(gss) || _.isNull(gss)){
+                                  return res.status(404).json(`No Goal Setting found`)
+                              }
+                              else{
+
+                                  let gsIdArray = [ ]
+
+                                  for (const gs of gss){
+                                      gsIdArray.push(gs.gs_id)
+                                  }
+
+                                  let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                      return data
+                                  })
+
+
+                                  finalGsData.goalSetting = gsData
+                                  finalGsData.questions = questionData
+                                  return res.status(200).json(finalGsData)
+
+                              }
+
+                          }
+
 
 
 
