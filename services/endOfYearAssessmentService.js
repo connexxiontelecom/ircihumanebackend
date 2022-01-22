@@ -17,8 +17,24 @@ async function getEndOfYearAssessmentQuestionByGoal(eyGsId){
     return await EndYearAssessment.findAll({ where:{ eya_gs_id: eyGsId }})
 }
 
+async function getEndOfYearAssessmentQuestion(eyaId){
+    return await EndYearAssessment.findOne({ where:{ eya_id: eyaId }})
+}
+
 async function removeAssessment(gsId){
     return await EndYearAssessment.destroy({where: { eya_gs_id: gsId }})
+}
+
+async function updateQuestion(eyaId, eyaQuestion){
+
+    return await EndYearAssessment.update({
+        eya_question: eyaQuestion
+    }, {
+        where:{
+            eya_id: eyaId
+        }
+
+    })
 }
 
 
@@ -27,7 +43,9 @@ async function removeAssessment(gsId){
 module.exports = {
     addEndOfYearAssessment,
     getEndOfYearAssessmentQuestionByGoal,
-    removeAssessment
+    removeAssessment,
+    updateQuestion,
+    getEndOfYearAssessmentQuestion
 
 
 }

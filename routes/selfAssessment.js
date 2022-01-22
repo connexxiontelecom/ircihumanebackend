@@ -226,7 +226,6 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                               let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
                                   return data
                               })
-
                               if(_.isEmpty(gss) || _.isNull(gss)){
                                   return res.status(404).json(`No Goal Setting found`)
                               }
@@ -251,9 +250,6 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
 
                           }
 
-
-
-
                         }
 
                     }
@@ -273,7 +269,49 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
     }
 });
 
+router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
 
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(400).json(` Employee Does Not exist`)
+
+        }else{
+
+            const schema = Joi.object().keys({
+                sa_id: Joi.number().required(),
+                sa_response: Joi.string().required(),
+
+            })
+            const schemas = Joi.array().items(schema)
+            const selfAssessmentRequests = req.body
+
+            let validationResult = schemas.validate( selfAssessmentRequests )
+            if(validationResult.error){
+                return res.status(400).json(validationResult.error.details[0].message)
+            }
+
+            for(const sa of selfAssessmentRequests){
+               await selfAssessment.respondSelfAssessment(sa.sa_id, sa.sa_response).then((data)=>{
+                   return data
+               })
+            }
+            return res.status(200).json(`Action Successful`)
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
 
 
 

@@ -36,6 +36,26 @@ async function findSelfAssessmentQuestions(empId, gsIdArray){
     return await SelfAssessment.findAll({ where: { sa_gs_id: gsIdArray, sa_emp_id: empId }})
 }
 
+async function respondSelfAssessment(saId, saResponse){
+    return await SelfAssessment.update({
+        sa_response: saResponse
+    }, {
+        where:{
+            sa_id:saId
+        } })
+}
+
+async function updateQuestion(eyaId, question){
+    return await SelfAssessment.update({
+        sa_comment:question
+    },
+        {
+            where:{
+                sa_eya_id: eyaId
+            }
+        })
+}
+
 
 
 
@@ -46,5 +66,7 @@ module.exports = {
     addSelfAssessmentEndYear,
    findSelfAssessment,
     removeSelfAssessment,
-    findSelfAssessmentQuestions
+    findSelfAssessmentQuestions,
+    respondSelfAssessment,
+    updateQuestion
 }

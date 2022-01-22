@@ -103,6 +103,9 @@
     const endYearAssessmentRouter = require('./routes/endOfYearAssessment')
     app.use('/end-year-assessment', endYearAssessmentRouter)
 
+    const ratingRouter = require('./routes/rating')
+    app.use('/rating', ratingRouter)
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
