@@ -126,9 +126,11 @@ router.patch('/update-rating/:rating_id', auth,  async function(req, res, next) 
 
                                 }
                             })
+                        }else{
+                            return res.status(400).json(`Rating Already Exists`)
                         }
 
-                        return res.status(400).json(`Rating Already Exists`)
+
                     }
                 })
 
