@@ -39,6 +39,6 @@ module.exports = (sequelize, DataTypes) => {
     });
     SectorLead.belongsTo(Department, { foreignKey: 'sl_sector_id' });
     SectorLead.belongsTo(Employee, { foreignKey: 'sl_employee_id' });
-    //Location.hasMany(State, { foreignKey: 's_id' });
+    SectorLead.hasMany(Employee, { foreignKey: 'emp _id' });
     return SectorLead;
 };
