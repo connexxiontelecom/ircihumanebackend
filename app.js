@@ -100,6 +100,11 @@
     const selfAssessmentRouter = require('./routes/selfAssessment')
     app.use('/self-assessment', selfAssessmentRouter)
 
+    const endYearAssessmentRouter = require('./routes/endOfYearAssessment')
+    app.use('/end-year-assessment', endYearAssessmentRouter)
+
+    const ratingRouter = require('./routes/rating')
+    app.use('/rating', ratingRouter)
 
     app.get('/',  async function(req, res) {
 

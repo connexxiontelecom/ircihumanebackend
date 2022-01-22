@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class selfAssessment extends Model {
+  class endOfYearAssessment extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -12,22 +12,20 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-  };
-  selfAssessment.init({
-    sa_id:{
+  }
+  endOfYearAssessment.init({
+    eya_id:{
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
-    sa_gs_id: DataTypes.STRING,
-    sa_emp_id: DataTypes.STRING,
-    sa_comment: DataTypes.STRING,
-    sa_response: DataTypes.STRING,
-    sa_eya_id: DataTypes.INTEGER
+    eya_gs_id: DataTypes.STRING,
+    eya_year: DataTypes.STRING,
+    eya_question: DataTypes.STRING
   }, {
     sequelize,
-    modelName: 'selfAssessment',
-    tableName: 'self_assessments'
+    modelName: 'endOfYearAssessment',
+    tableName: 'end_year_assessments'
   });
-  return selfAssessment;
+  return endOfYearAssessment;
 };

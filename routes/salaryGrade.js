@@ -39,26 +39,28 @@ router.post('/add-salary-grade', auth,  async function(req, res, next) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-       salaryGrade.findSalaryGradeByName(salaryGradeRequest.sg_name).then((salaryGradeData)=>{
-           if(_.isEmpty(salaryGradeData) || _.isNull(salaryGradeData)){
-               salaryGrade.addSalaryGrade(salaryGradeRequest).then((data)=>{
-                   const logData = {
-                       "log_user_id": req.user.username.user_id,
-                       "log_description": "Added New Salary Grade",
-                       "log_date": new Date()
-                   }
-                   logs.addLog(logData).then((logRes)=>{
-                       return res.status(200).json('Action Successful')
-                   })
-               })
-           }else{
+        if((salaryGradeRequest.sg_minimum < salaryGradeRequest.sg_midpoint) && (salaryGradeRequest.sg_midpoint < salaryGradeRequest.sg_maximum)){
+            salaryGrade.findSalaryGradeByName(salaryGradeRequest.sg_name).then((salaryGradeData)=>{
+                if(_.isEmpty(salaryGradeData) || _.isNull(salaryGradeData)){
+                    salaryGrade.addSalaryGrade(salaryGradeRequest).then((data)=>{
+                        const logData = {
+                            "log_user_id": req.user.username.user_id,
+                            "log_description": "Added New Salary Grade",
+                            "log_date": new Date()
+                        }
+                        logs.addLog(logData).then((logRes)=>{
+                            return res.status(200).json('Action Successful')
+                        })
+                    })
+                }else{
 
-               return res.status(400).json('Salary Grade Already Exists')
-           }
-        })
+                    return res.status(400).json('Salary Grade Already Exists')
+                }
+            })
 
-
-
+        }else{
+            return res.status(400).json(`Confirm minimum, midpoint and maximum`)
+        }
 
     } catch (err) {
         console.error(`Error while adding time sheet `, err.message);
