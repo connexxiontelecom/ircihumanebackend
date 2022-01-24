@@ -12,7 +12,7 @@ const errHandler = (err) =>{
 }
 const getAllPublicHolidays = async (req, res)=>{
     try {
-        const holidays =  await PublicHoliday.findAll({attributes: ['ph_name', 'ph_day', 'ph_month', 'ph_year']});
+        const holidays =  await PublicHoliday.findAll({attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year']});
         return res.status(200).json(holidays)
     } catch (err) {
         return res.status(500).json({message: `Error while fetching public holidays ${err.message}`})
