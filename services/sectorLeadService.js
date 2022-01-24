@@ -71,7 +71,7 @@ const updateSectorLead = async (req, res, next)=>{
         const schema = Joi.object( {
             sector: Joi.string()
                 .required()
-                .messages({'any.required':'Sector lead is required'}),
+                .messages({'any.required':'Sector lead is ran equired'}),
             employee: Joi.string()
                 .required()
                 .messages({'any.required':'Employee field is required'}),
