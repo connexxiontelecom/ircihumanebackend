@@ -22,9 +22,25 @@ const registerNewAction = async (auth_type, travel_app, officer, status, comment
             auth_travelapp_id:travel_app
         });
     }catch (e) {
-        console.log(`Whoops: ${e.message}`);
+        res.status(400).json({message: `Whoops: ${e.message}`});
     }
 
+}
+
+const updateAuthorizationStatus = async (travel_app_id, status, comment)=>{
+    try{
+
+        await authorizationModel.update({
+            sl_employee_id: req.body.employee,
+            sl_sector_id: req.body.sector
+        },{
+            where:{
+                sl_id:sectorId
+            }
+        })
+    }catch (e) {
+        return res.status(400).json({message: "Something went wrong. Try again."});
+    }
 }
 
 
