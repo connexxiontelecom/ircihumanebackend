@@ -37,13 +37,13 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'grant_charts'
   });
 
-  Department.belongsTo(grantChart, { foreignKey: 'gc_department_id' })
+  grantChart.belongsTo(Department, { foreignKey: 'gc_department_id' })
   grantChart.hasMany(Department, { foreignKey: 'department_id' })
 
-  Location.belongsTo(grantChart, { foreignKey: 'gc_location_id' })
+  grantChart.belongsTo(Location, { foreignKey: 'gc_location_id' })
   grantChart.hasMany(Location, { foreignKey: 'location_id' })
 
-  Donor.belongsTo(grantChart, { foreignKey: 'gc_donor_id' })
+  grantChart.belongsTo(Donor, { foreignKey: 'gc_donor_id' })
   grantChart.hasMany(Donor, { foreignKey: 'donor_id' })
 
   return grantChart;
