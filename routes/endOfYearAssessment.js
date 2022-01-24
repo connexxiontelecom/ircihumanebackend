@@ -107,9 +107,9 @@ router.patch('/update-question/:eya_id', auth,  async function(req, res, next) {
                 return data
             })
 
-            const updateSelfAssessmentQuestion = await selfAssessment.updateQuestion(eyaId, eyaRequests.eya_question).then((data)=>{
-                return data
-            })
+            // const updateSelfAssessmentQuestion = await selfAssessment.updateQuestion(eyaId, eyaRequests.eya_question).then((data)=>{
+            //     return data
+            // })
 
             const logData = {
                 "log_user_id": req.user.username.user_id,
