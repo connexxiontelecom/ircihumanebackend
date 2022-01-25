@@ -67,7 +67,7 @@ router.post('/add-goal-setting', auth,  async function(req, res, next) {
         const toYear = to.getFullYear()
         const year = gsRequest.gs_year
 
-        if((fromYear === toYear) && (toYear === year)){
+        if(String(fromYear) === String(toYear)){
 
             const goalSettingActivityYear = await goalSetting.findGoalSetting(gsRequest.gs_activity, gsRequest.gs_year).then((data)=>{
                 return data
