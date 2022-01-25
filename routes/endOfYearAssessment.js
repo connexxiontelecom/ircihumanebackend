@@ -10,6 +10,23 @@ const logs = require('../services/logService')
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 
 /* Add end of year question Assessment */
+router.get('/', auth,  async function(req, res, next) {
+    try {
+
+        const questions = await endYearAssessment.getEndOfYearAssessmentQuestions().then((data)=>{
+            return data
+        })
+
+        return res.status(200).json(questions)
+
+    } catch (err) {
+        console.error(`Error while fetching questions `, err.message);
+        next(err);
+    }
+});
+
+
+/* Add end of year question Assessment */
 router.post('/add-question', auth,  async function(req, res, next) {
     try {
 
@@ -107,9 +124,9 @@ router.patch('/update-question/:eya_id', auth,  async function(req, res, next) {
                 return data
             })
 
-            const updateSelfAssessmentQuestion = await selfAssessment.updateQuestion(eyaId, eyaRequests.eya_question).then((data)=>{
-                return data
-            })
+            // const updateSelfAssessmentQuestion = await selfAssessment.updateQuestion(eyaId, eyaRequests.eya_question).then((data)=>{
+            //     return data
+            // })
 
             const logData = {
                 "log_user_id": req.user.username.user_id,

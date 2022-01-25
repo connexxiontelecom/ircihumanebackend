@@ -13,6 +13,13 @@ async function addEndOfYearAssessment(assessmentData){
      });
 }
 
+async function getEndOfYearAssessmentQuestions(){
+    return await EndYearAssessment.findAll( {order: [
+        ['eya_year', 'DESC'],
+        ['eya_id', 'ASC'],
+    ] })
+}
+
 async function getEndOfYearAssessmentQuestionByGoal(eyGsId){
     return await EndYearAssessment.findAll({ where:{ eya_gs_id: eyGsId }})
 }
@@ -45,7 +52,8 @@ module.exports = {
     getEndOfYearAssessmentQuestionByGoal,
     removeAssessment,
     updateQuestion,
-    getEndOfYearAssessmentQuestion
+    getEndOfYearAssessmentQuestion,
+    getEndOfYearAssessmentQuestions
 
 
 }
