@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'AuthorizationAction',
         tableName: 'authorization_actions',
-        timestamps:false
+        //timestamps:false
     });
     return AuthorizationAction;
 };

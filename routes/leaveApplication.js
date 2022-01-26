@@ -78,7 +78,7 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                         }else{
                             leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((sumLeave) => {
 
-                                return res.status(200).json(`${accruedDays} ${sumLeave}`)
+                               // return res.status(200).json(`${accruedDays} ${sumLeave}`)
                                 if (parseInt(daysRequested) > (parseInt(accruedDays) - parseInt(sumLeave))) {
                                     return res.status(400).json("Days Requested Greater than Accrued Days")
                                 } else {

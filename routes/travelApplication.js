@@ -13,6 +13,9 @@ const authorizationAction = require('../services/authorizationActionService');
 
 /* state routes. */
 
+router.get('/', auth, travelApplicationService.getTravelApplications);
+router.get('/my-travel-applications', auth, travelApplicationService.getTravelApplicationsByEmployeeId);
+
 //router.get('/', auth, travelApplicationService.getTravelApplications);
 router.post('/new-travel-application', auth, async (req, res)=>{
     try {
@@ -53,7 +56,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                         try{
                             const breakdowns = req.body.breakdown;
                             breakdowns.map((breakdown)=>{
-                                travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
+                                 travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
                             });
                         }catch (e) {
                             return res.status(500).json({message:"Something went wrong. Try again."});
