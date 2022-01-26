@@ -12,7 +12,24 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getTravelApplications = async (req, res)=>{
+    try{
+        const travelapps =  await travelApplicationModel.findAll();
+        res.status(200).json(travelapps)
 
+    }catch (e) {
+        res.status(400).json({message: "Something went wrong. Try again. "+e.message});
+    }
+}
+
+const getTravelApplicationsByEmployeeId = async (req, res)=>{
+    try{
+
+        const travelapps =  await travelApplicationModel.findAll({where:{travelapp_employee_id:1}});
+        res.status(200).json(travelapps)
+
+    }catch (e) {
+        res.status(400).json({message: "Something went wrong. Try again. "+e.message});
+    }
 }
 
 const setNewTravelApplication = async (travelData, days )=>{
@@ -31,4 +48,5 @@ const setNewTravelApplication = async (travelData, days )=>{
 module.exports = {
     getTravelApplications,
     setNewTravelApplication,
+    getTravelApplicationsByEmployeeId
 }

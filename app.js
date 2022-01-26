@@ -74,6 +74,9 @@
     const travelApplicationRouter =require("./routes/travelApplication");
     app.use('/travel-applications', travelApplicationRouter);
 
+    const authorizationRouter = require("./routes/authorization");
+    app.use('/application-authorization', authorizationRouter);
+
     const sectorLeadRouter =require("./routes/sectorLead");
     app.use('/sector-leads', sectorLeadRouter)
 
