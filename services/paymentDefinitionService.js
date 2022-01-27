@@ -47,6 +47,14 @@ async function updatePaymentDefinition(pd, pd_id){
         } })
 }
 
+async function findBasicPaymentDefinition(){
+    return await Pd.findOne({
+        where:{
+            pd_basic: 1
+        }
+    })
+}
+
 async function findAllCodes(){
     return await Pd.findAll()
 }
@@ -71,6 +79,7 @@ module.exports = {
     findAllCodes,
     updatePaymentDefinition,
     findSumPercentage,
-    findCodeWithGross
+    findCodeWithGross,
+    findBasicPaymentDefinition
 
 }

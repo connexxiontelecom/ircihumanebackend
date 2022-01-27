@@ -4,6 +4,7 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const paymentDefinition =  require('../services/paymentDefinitionService');
 const logs = require('../services/logService')
+const _ = require('lodash')
 
 
 /* Get All Payment Definitions */
@@ -29,10 +30,10 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             pd_payment_type: Joi.number().required(),
             pd_payment_variant: Joi.number().required(),
             pd_payment_taxable: Joi.number().required(),
-            pd_desc: Joi.number(),
+            pd_desc: Joi.alternatives().try(Joi.string(), Joi.number()),
             pd_basic: Joi.number().required(),
-            pd_tie_number: Joi.string(),
-            pd_pr_gross: Joi.number().precision(2).required()
+            pd_tie_number: Joi.alternatives().try(Joi.string(), Joi.number()),
+            pd_pr_gross: Joi.number().precision(2)
         })
 
         const paymentDefinitionRequest = req.body
@@ -48,29 +49,69 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             totalPercentageGross = parseFloat(totalPercentageGross)
         if(totalPercentageGross <= 100){
             let remaining = 100 - totalPercentageGross;
+
             if(parseFloat(paymentDefinitionRequest.pd_pr_gross) > remaining){
                 return res.status(400).json(`Percentage Gross is exceeding 100%`)
-            }else{
-                await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
-                    if(data){
+            }
 
-                        return res.status(400).json('Payment Code Already Exist')
+            else{
+
+                if(parseInt(paymentDefinitionRequest.pd_basic) === 1){
+                 const basicSalary = await paymentDefinition.findBasicPaymentDefinition().then((data)=>{
+                     return data
+                 })
+
+                    if(_.isEmpty(basicSalary) || _.isNull(basicSalary)){
+                        await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
+                            if(data){
+
+                                return res.status(400).json('Payment Code Already Exist')
+
+                            }else{
+                                paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
+                                    const logData = {
+                                        "log_user_id": req.user.username.user_id,
+                                        "log_description": "Added new payment definition",
+                                        "log_date": new Date()
+                                    }
+                                    logs.addLog(logData).then((logRes)=>{
+                                        //return res.status(200).json(logRes);
+                                        return  res.status(200).json(data)
+                                    })
+
+                                })
+                            }
+                        })
 
                     }else{
-                        paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
-                            const logData = {
-                                "log_user_id": req.user.username.user_id,
-                                "log_description": "Added new payment definition",
-                                "log_date": new Date()
-                            }
-                            logs.addLog(logData).then((logRes)=>{
-                                //return res.status(200).json(logRes);
-                                return  res.status(200).json(data)
-                            })
-
-                        })
+                        return res.status(400).json(`Basic Salary Already Set`)
                     }
-                })
+
+                }else{
+
+                    await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
+                        if(data){
+
+                            return res.status(400).json('Payment Code Already Exist')
+
+                        }else{
+                            paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
+                                const logData = {
+                                    "log_user_id": req.user.username.user_id,
+                                    "log_description": "Added new payment definition",
+                                    "log_date": new Date()
+                                }
+                                logs.addLog(logData).then((logRes)=>{
+                                    //return res.status(200).json(logRes);
+                                    return  res.status(200).json(data)
+                                })
+
+                            })
+                        }
+                    })
+                }
+
+
 
             }
 
