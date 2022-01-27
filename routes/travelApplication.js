@@ -10,6 +10,7 @@ const Joi = require('joi');
 const travelApplicationService = require('../services/travelApplicationService');
 const travelApplicationBreakdownService = require('../services/travelApplicationBreakdownService');
 const authorizationAction = require('../services/authorizationActionService');
+const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 
 /* state routes. */
 
@@ -51,20 +52,23 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             if(String(startYear) === String(endYear)){
                 let daysRequested =  await differenceInBusinessDays(endDate, startDate);
                 if(parseInt(daysRequested) >= 1) {
-                    travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
-                        const travelapp_id = data.travelapp_id;
-                        try{
-                            const breakdowns = req.body.breakdown;
-                            breakdowns.map((breakdown)=>{
-                                 travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
-                            });
-                        }catch (e) {
-                            return res.status(500).json({message:"Something went wrong. Try again."});
-                        }
-                        //Register authorization
-                        authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
+                    const empId = req.user.username.user_id;
+                    supervisorAssignmentService.getEmployeeSupervisor(empId).then((val)=>{
+                        if(val){
+                                travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
+                                    const travelapp_id = data.travelapp_id;
+                                    const breakdowns = req.body.breakdown;
+                                    breakdowns.map((breakdown)=>{
+                                        travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
+                                    });
 
-                        return res.status(200).json({message: 'Your travel application was successfully registered.'});
+                                //Register authorization
+                                authorizationAction.registerNewAction(3,travelapp_id, val.sa_supervisor_id,0,"Travel application initialized.");
+                                return res.status(200).json({message: 'Your travel application was successfully registered.'});
+                            });
+                        }else{
+                            return  res.status(400).json({message: 'You currently have no supervisor assigned to you. Contact admin.'});
+                        }
                     });
                 }else{
                     return  res.status(400).json({message: 'Travel duration must be greater or equal to 1'});
