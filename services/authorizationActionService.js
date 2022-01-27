@@ -2,6 +2,7 @@ const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
+const leaveApplicationModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 const logs = require('../services/logService');
 //const bcrypt = require("bcrypt");
@@ -94,7 +95,19 @@ const updateAuthorizationStatus = async (req, res)=>{
                 });
             }else if(markAsFinal === 1){
                 switch (type) {
-                    case 3:
+                    case 1: //leave application
+                        await leaveApplicationModel.update({
+                            leapp_status:status,
+                            leapp_approve_comment:comment,
+                            leapp_approve_date:new Date(),
+                            leapp_approve_by:officer,
+                        },{
+                            where:{
+                                leapp_id:appId
+                            }
+                        });
+                        break;
+                    case 3: //travel application
                         await travelApplicationModel.update({
                             travelapp_status:status,
                             travelapp_approve_comment:comment,
