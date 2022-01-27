@@ -36,9 +36,17 @@ async function findAllAssignments(){
         ], include: ['employee', 'supervisor'] })
 }
 
+async function getEmployeeSupervisor(emp_id){
+    return await SupervisorAssignment.findOne({
+        where:{sa_emp_id:emp_id},
+        andWhere:{sa_status: 1} //active
+    });
+}
+
 module.exports = {
     addAssignment,
     findAllAssignments,
     findLastActiveAssignment,
     updateAssignment,
+    getEmployeeSupervisor,
 }
