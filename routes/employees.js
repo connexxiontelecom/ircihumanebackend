@@ -126,4 +126,27 @@ router.get('/get-none-supervisor', auth, async function(req, res, next) {
     }
 });
 
+router.get('/get-supervisor-employees/:emp_id', auth, async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(400).json(` Employee Does Not exist`)
+        }
+        else{
+            await employees.getSupervisorEmployee(empId).then((data) =>{
+                return  res.status(200).json(data)
+            })
+        }
+
+    } catch (err) {
+        console.error(`An error occurred while updating supervisor status`, err.message);
+        next(err);
+    }
+});
+
+
 module.exports = router;

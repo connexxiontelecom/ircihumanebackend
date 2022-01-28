@@ -368,7 +368,8 @@ router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res,
         if(_.isEmpty(employeeData) || _.isNull(employeeData)){
             return res.status(400).json(` Employee Does Not exist`)
 
-        }else{
+        }
+        else{
 
             const schema = Joi.object().keys({
                 sa_id: Joi.number().required(),
