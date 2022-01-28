@@ -143,7 +143,7 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function(req, res, n
         }
 
     } catch (err) {
-        console.error(`An error occurred while updating supervisor status`, err.message);
+        console.error(`An error occurred while fetching`, err.message);
         next(err);
     }
 });
