@@ -383,6 +383,7 @@ router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res,
                 return res.status(400).json(validationResult.error.details[0].message)
             }
 
+
             for(const sa of selfAssessmentRequests){
                 await selfAssessment.updateSelfAssessment(sa.sa_id, sa.sa_comment).then((data)=>{
                     return data
