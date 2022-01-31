@@ -45,6 +45,27 @@ async function respondSelfAssessment(saId, saResponse){
         } })
 }
 
+async function updateSelfAssessment(saId, saComment){
+    return await SelfAssessment.update({
+        sa_comment: saComment
+    }, {
+        where:{
+            sa_id: saId
+        }
+    })
+}
+
+async function supervisorUpdateSelfAssessment(saId, saComment, saStatus){
+    return await SelfAssessment.update({
+        sa_comment: saComment,
+        sa_status: saStatus
+    }, {
+        where:{
+            sa_id: saId
+        }
+    })
+}
+
 async function updateQuestion(eyaId, question){
     return await SelfAssessment.update({
         sa_comment:question
@@ -68,5 +89,7 @@ module.exports = {
     removeSelfAssessment,
     findSelfAssessmentQuestions,
     respondSelfAssessment,
-    updateQuestion
+    updateQuestion,
+    updateSelfAssessment,
+    supervisorUpdateSelfAssessment
 }
