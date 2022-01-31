@@ -17,7 +17,10 @@ async function addPaymentDefinition(pd){
         pd_desc: pd.pd_desc,
         pd_basic: pd.pd_basic,
         pd_tie_number: pd.pd_tie_number,
-        pd_pr_gross: pd.pd_pr_gross
+        pd_pr_gross: pd.pd_pr_gross,
+        pd_amount: pd.pd_amount,
+        pd_value: pd.pd_value,
+        pd_percentage: pd.pd_percentage
     });
 }
 
@@ -40,11 +43,22 @@ async function updatePaymentDefinition(pd, pd_id){
         pd_desc: pd.pd_desc,
         pd_basic: pd.pd_basic,
         pd_tie_number: pd.pd_tie_number,
-        pd_pr_gross: pd.pd_pr_gross
+        pd_pr_gross: pd.pd_pr_gross,
+        pd_amount: pd.pd_amount,
+        pd_value: pd.pd_value,
+        pd_percentage: pd.pd_percentage
     },{
         where:{
             pd_id:pd_id
         } })
+}
+
+async function findBasicPaymentDefinition(){
+    return await Pd.findOne({
+        where:{
+            pd_basic: 1
+        }
+    })
 }
 
 async function findAllCodes(){
@@ -71,6 +85,7 @@ module.exports = {
     findAllCodes,
     updatePaymentDefinition,
     findSumPercentage,
-    findCodeWithGross
+    findCodeWithGross,
+    findBasicPaymentDefinition
 
 }

@@ -27,7 +27,10 @@ module.exports = (sequelize, DataTypes) => {
     pd_desc: DataTypes.INTEGER,
     pd_basic: DataTypes.STRING,
     pd_tie_number: DataTypes.STRING,
-    pd_pr_gross: DataTypes.DOUBLE
+    pd_pr_gross: DataTypes.DOUBLE,
+    pd_value: DataTypes.INTEGER,
+    pd_amount: DataTypes.INTEGER,
+    pd_percentage: DataTypes.DOUBLE
 
   }, {
     sequelize,
@@ -36,3 +39,14 @@ module.exports = (sequelize, DataTypes) => {
   });
   return PaymentDefinition;
 };
+
+
+/*
+
+please read
+
+pd value: 1 is flat, 2 is computed,
+pd amount: 1 gross, 2 is basic,
+pd percentage is percentage to be charged on pd_amount
+
+ */
