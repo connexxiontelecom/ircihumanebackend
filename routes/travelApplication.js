@@ -21,9 +21,7 @@ router.get('/my-travel-applications', auth, travelApplicationService.getTravelAp
 //router.get('/', auth, travelApplicationService.getTravelApplications);
 router.post('/new-travel-application', auth, async (req, res)=>{
     try {
-
-        //const p = JSON.parse(req.body);
-       // return req.status(200).json({message: "hello"});
+        //return res.status(200).json({message: "hello"});
         const schema = Joi.object({
             employee: Joi.number().required(),
             travel_category: Joi.number().required(),
@@ -32,6 +30,13 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             end_date: Joi.string().required(),
             t1_code: Joi.string().required(),
             hotel: Joi.number().required(),
+            city: Joi.string().allow(null, ''),
+            currency: Joi.string().allow(null, ''),
+            per_diem: Joi.number().allow(null, ''),
+            total: Joi.number().allow(null, ''),
+            arrival_date: Joi.string().allow(null, ''),
+            departure_date: Joi.string().allow(null, ''),
+            preferred_hotel: Joi.string().allow(null, ''),
 
             //t2_code: Joi.array().items(Joi.string()).allow(null).allow(''),
 
@@ -51,7 +56,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
         }
         if(req.body.travel_category === 1){
             const tc_schema = Joi.object({
-                per_diem: Joi.string().required(),
+                per_diem: Joi.number().required(),
                 t2_code: Joi.array().items(Joi.object({
                     code: Joi.string().required()
                 }))
