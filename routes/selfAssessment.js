@@ -400,5 +400,54 @@ router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res,
     }
 });
 
+router.patch('/supervisor-update-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(400).json(` Employee Does Not exist`)
+
+        }
+        else{
+
+            const schema = Joi.object().keys({
+                sa_id: Joi.number().required(),
+                sa_comment: Joi.string().required(),
+                sa_status: Joi.number().required()
+
+            })
+            const schemas = Joi.array().items(schema)
+            const selfAssessmentRequests = req.body
+
+            let validationResult = schemas.validate( selfAssessmentRequests )
+            if(validationResult.error){
+                return res.status(400).json(validationResult.error.details[0].message)
+            }
+
+
+            for(const sa of selfAssessmentRequests){
+                await selfAssessment.supervisorUpdateSelfAssessment(sa.sa_id, sa.sa_comment, sa.sa_status).then((data)=>{
+                    return data
+                })
+            }
+            return res.status(200).json(`Action Successful`)
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Updating Goals `, err.message);
+        next(err);
+    }
+});
+
+
+
 
 module.exports = router;
