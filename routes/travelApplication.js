@@ -18,27 +18,27 @@ const supervisorAssignmentService = require('../services/supervisorAssignmentSer
 router.get('/', auth, travelApplicationService.getTravelApplications);
 router.get('/my-travel-applications', auth, travelApplicationService.getTravelApplicationsByEmployeeId);
 
-//router.get('/', auth, travelApplicationService.getTravelApplications);
 router.post('/new-travel-application', auth, async (req, res)=>{
     try {
-        //return res.status(200).json({message: "hello"});
         const schema = Joi.object({
             employee: Joi.number().required(),
-            travel_category: Joi.number().required(),
+            travel_category: Joi.number().required().valid(1,2),
+            per_diem: Joi.alternatives().conditional('travel_category',{is: 1, then: Joi.number().required()}),
+            t2_code: Joi.alternatives().conditional('travel_category', { is: 1, then: Joi.array().items(Joi.object({
+                    code: Joi.number().required()
+                }))}),
+            hotel:Joi.number().required().valid(1,2),
+            city: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
+            arrival_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
+            departure_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
+            preferred_hotel: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
+
             purpose: Joi.string().required(),
             start_date: Joi.string().required(),
             end_date: Joi.string().required(),
             t1_code: Joi.string().required(),
-            hotel: Joi.number().required(),
-            city: Joi.string().allow(null, ''),
             currency: Joi.string().allow(null, ''),
-            per_diem: Joi.number().allow(null, ''),
             total: Joi.number().allow(null, ''),
-            arrival_date: Joi.string().allow(null, ''),
-            departure_date: Joi.string().allow(null, ''),
-            preferred_hotel: Joi.string().allow(null, ''),
-
-            //t2_code: Joi.array().items(Joi.string()).allow(null).allow(''),
 
             breakdown: Joi.array().items(Joi.object({
                 depart_from:Joi.string().required(),
@@ -54,34 +54,6 @@ router.post('/new-travel-application', auth, async (req, res)=>{
         if(validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        if(req.body.travel_category === 1){
-            const tc_schema = Joi.object({
-                per_diem: Joi.number().required(),
-                t2_code: Joi.array().items(Joi.object({
-                    code: Joi.string().required()
-                }))
-            });
-            const tcRequest = req.body;
-            const validateTC = tc_schema.validate(tcRequest);
-            if(validateTC.error){
-                return res.status(400).json(validateTC.error.details[0].message);
-            }
-        }
-        if(req.body.hotel === 1){
-            const h_schema = Joi.object({
-                city: Joi.string().required(),
-                arrival_date: Joi.string().required(),
-                departure_date: Joi.string().required(),
-                preferred_hotel: Joi.string().required(),
-
-            });
-            const hRequest = req.body;
-            const validateH = h_schema.validate(hRequest);
-            if(validateH.error){
-                return res.status(400).json(validateH.error.details[0].message);
-            }
-        }
-
 
         const { start_date, end_date } = req.body;
         let startDate = new Date(start_date);
