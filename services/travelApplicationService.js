@@ -21,10 +21,10 @@ const getTravelApplications = async (req, res)=>{
     }
 }
 
-const getTravelApplicationsByEmployeeId = async (req, res)=>{
+const getTravelApplicationsByEmployeeId = async (employee)=>{
     try{
-
-        const travelapps =  await travelApplicationModel.findAll({where:{travelapp_employee_id:1}});
+        const travelapps =  await travelApplicationModel.findAll({where:{travelapp_employee_id:employee},
+            include:[travelApplicationBreakdownModel]});
         res.status(200).json(travelapps)
 
     }catch (e) {
@@ -41,7 +41,17 @@ const setNewTravelApplication = async (travelData, days )=>{
         travelapp_end_date: travelData.end_date,
         travelapp_total_days: days,
         travelapp_t1_code: travelData.t1_code,
-        travelapp_t2_code: travelData.t2_code,
+        //travelapp_t2_code: travelData.t2_code,
+        travelapp_per_diem:travelData.travel_category === 1 ? travelData.per_diem : 0,
+        travelapp_days:days,
+        travelapp_currency:travelData.travel_category === 1 ?  travelData.currency : '',
+        travelapp_total:travelData.travel_category === 1 ? travelData.total : '',
+        travelapp_hotel:travelData.travel_category === 1 ? travelData.hotel : '',
+        travelapp_city:travelData.travel_category === 1 ? travelData.city : '',
+        travelapp_arrival_date:travelData.travel_category === 1 ? travelData.arrival_date : '',
+        travelapp_departure_date:travelData.travel_category === 1 ? travelData.departure_date : '',
+        travelapp_preferred_hotel:travelData.travel_category === 1 ? travelData.preferred_hotel : '',
+
     });
 }
 

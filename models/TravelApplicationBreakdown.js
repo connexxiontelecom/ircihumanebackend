@@ -1,4 +1,6 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
+const TravelApplication = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes)
 const {
     Model
 } = require('sequelize');
@@ -39,5 +41,6 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'travel_application_breakdown',
         timestamps:false
     });
+    TravelApplicationBreakdown.hasMany(TravelApplication, { foreignKey: 'ta_breakdown_travelapp_id'})
     return TravelApplicationBreakdown;
 };

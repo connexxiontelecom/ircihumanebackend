@@ -3,6 +3,7 @@ const { sequelize, Sequelize } = require('./db');
 const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
 const leaveApplicationModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
+const timeSheetModel = require("../models/timesheet")(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 const logs = require('../services/logService');
 //const bcrypt = require("bcrypt");
@@ -107,6 +108,20 @@ const updateAuthorizationStatus = async (req, res)=>{
                             }
                         });
                         break;
+                   /* case 2: //time sheet
+                        const randStr = Math.random().toString(36).substr(2, 5);
+                        await timeSheetModel.update({
+                            ts_status:status,
+                            ts_comment:comment,
+                            ts_date_approved:new Date(),
+                            ts_approve_by:officer,
+                            ts_ref_no: randStr
+                        },{
+                            where:{
+                                ts_id:appId
+                            }
+                        });
+                        break;*/
                     case 3: //travel application
                         await travelApplicationModel.update({
                             travelapp_status:status,
