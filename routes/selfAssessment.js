@@ -93,6 +93,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, re
 /* Pre Fill Self Assessment  */
 router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
     try {
+
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
 
@@ -123,6 +124,8 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                     let latestClosedGoalId = latestClosedGoal.gs_id
                     let latestClosedGoalActivity = latestClosedGoal.gs_activity
                     let finalGsData = {}
+
+                    //return  res.status(200).json(latestClosedGoal)
                     if(parseInt(gsData.gs_activity) === 1){
                         finalGsData.goalSetting = gsData
                         return res.status(200).json(finalGsData)
@@ -312,6 +315,138 @@ router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res
         next(err);
     }
 });
+
+/* Get Self Assessment  */
+router.get('/get-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+            return data
+        })
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+
+        }else{
+            let empQuestions =  await selfAssessment.findSelfAssessment(gsId, empId).then((data)=>{
+                return  data
+
+            })
+
+            return res.status(200).json(empQuestions)
+
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
+
+/* Update Self Assessment */
+
+router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(400).json(` Employee Does Not exist`)
+
+        }
+        else{
+
+            const schema = Joi.object().keys({
+                sa_id: Joi.number().required(),
+                sa_comment: Joi.string().required(),
+
+            })
+            const schemas = Joi.array().items(schema)
+            const selfAssessmentRequests = req.body
+
+            let validationResult = schemas.validate( selfAssessmentRequests )
+            if(validationResult.error){
+                return res.status(400).json(validationResult.error.details[0].message)
+            }
+
+
+            for(const sa of selfAssessmentRequests){
+                await selfAssessment.updateSelfAssessment(sa.sa_id, sa.sa_comment).then((data)=>{
+                    return data
+                })
+            }
+            return res.status(200).json(`Action Successful`)
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Updating Goals `, err.message);
+        next(err);
+    }
+});
+
+router.patch('/supervisor-update-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(400).json(` Employee Does Not exist`)
+
+        }
+        else{
+
+            const schema = Joi.object().keys({
+                sa_id: Joi.number().required(),
+                sa_comment: Joi.string().required(),
+                sa_status: Joi.number().required()
+
+            })
+            const schemas = Joi.array().items(schema)
+            const selfAssessmentRequests = req.body
+
+            let validationResult = schemas.validate( selfAssessmentRequests )
+            if(validationResult.error){
+                return res.status(400).json(validationResult.error.details[0].message)
+            }
+
+
+            for(const sa of selfAssessmentRequests){
+                await selfAssessment.supervisorUpdateSelfAssessment(sa.sa_id, sa.sa_comment, sa.sa_status).then((data)=>{
+                    return data
+                })
+            }
+            return res.status(200).json(`Action Successful`)
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Updating Goals `, err.message);
+        next(err);
+    }
+});
+
 
 
 

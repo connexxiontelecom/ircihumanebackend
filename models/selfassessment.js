@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
     sa_emp_id: DataTypes.STRING,
     sa_comment: DataTypes.STRING,
     sa_response: DataTypes.STRING,
-    sa_eya_id: DataTypes.INTEGER
+    sa_eya_id: DataTypes.INTEGER,
+    sa_status: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'selfAssessment',

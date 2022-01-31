@@ -295,6 +295,10 @@ async function getNoneSupervisors(){
    )
 }
 
+async function getSupervisorEmployee(supervisorId){
+    return await employee.findAll({where: { emp_supervisor_id: supervisorId}})
+}
+
 
 
 
@@ -356,7 +360,8 @@ module.exports = {
     getEmployeeByOfficialEmail,
     getEmployeeByPersonalEmail,
     getSupervisors,
-    getNoneSupervisors
+    getNoneSupervisors,
+    getSupervisorEmployee
     //updateDepartment,
     //setNewDepartment,
 }
