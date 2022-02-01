@@ -2,6 +2,7 @@ const Joi = require('joi');
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
+const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 const travelApplicationBreakdownModel = require("../models/TravelApplicationBreakdown")(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
@@ -22,15 +23,13 @@ const getTravelApplications = async (req, res)=>{
 }
 
 const getTravelApplicationsByEmployeeId = async (employee)=>{
-    try{
-        const travelapps =  await travelApplicationModel.findAll({where:{travelapp_employee_id:employee},
-            include:[travelApplicationBreakdownModel]});
-        res.status(200).json(travelapps)
-
-    }catch (e) {
-        res.status(400).json({message: "Something went wrong. Try again. "+e.message});
-    }
+    return await travelApplicationModel.findAll({where:{travelapp_employee_id:employee} ,include: [EmployeeModel] } );
 }
+
+const getTravelApplicationsById = async (id)=>{
+    return await travelApplicationModel.findOne({where:{travelapp_id:id} });
+}
+
 
 const setNewTravelApplication = async (travelData, days )=>{
     return await travelApplicationModel.create({
@@ -58,5 +57,6 @@ const setNewTravelApplication = async (travelData, days )=>{
 module.exports = {
     getTravelApplications,
     setNewTravelApplication,
-    getTravelApplicationsByEmployeeId
+    getTravelApplicationsByEmployeeId,
+    getTravelApplicationsById,
 }
