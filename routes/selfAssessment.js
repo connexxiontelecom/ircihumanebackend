@@ -447,6 +447,74 @@ router.patch('/supervisor-update-self-assessment/:emp_id/', auth,  async functio
     }
 });
 
+router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, next) {
+    try {
+
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+            return data
+        })
+
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+
+        }else{
+            if(parseInt(gsData.gs_status) === 1){
+                let currentYear = gsData.gs_year;
+                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                    return data
+                })
+
+                if(_.isEmpty(gss) || _.isNull(gss)){
+                    return res.status(404).json(`No Goal Setting found`)
+                }
+                else{
+
+                    let gsIdArray = [ ]
+
+                    for (const gs of gss){
+                        gsIdArray.push(gs.gs_id)
+                    }
+
+                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                        return data
+                    })
+
+                    const resData = {
+                        question: questionData,
+                        year: currentYear
+                    }
+
+
+
+                    return res.status(200).json(questionData)
+
+                }
+
+
+
+            }
+            else{
+                return res.status(400).json(`Goal Setting Not Opened`)
+            }
+
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
+
 
 
 
