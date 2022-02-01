@@ -494,9 +494,10 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
                         return data
                     })
 
-                    if(!_.isEmpty(employeeRating) || !_.isNull(employeeRating)){
+                    if(!(_.isEmpty(employeeRating) || _.isNull(employeeRating))){
                         ratingStatus = 1
                         ratingDetails = employeeRating
+
                     }
 
                     const resData = {
@@ -505,10 +506,10 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
                         ratingStatus: ratingStatus,
                         ratingDetails: ratingDetails
                     }
+                    return res.status(200).json(resData)
 
 
 
-                    return res.status(200).json(questionData)
 
                 }
 
