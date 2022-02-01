@@ -1,4 +1,6 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
+const TravelApplication = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes)
 const {
     Model
 } = require('sequelize');
@@ -25,19 +27,20 @@ module.exports = (sequelize, DataTypes) => {
         ta_breakdown_mode: {type:DataTypes.INTEGER,defaultValue:1,comment:"1=Road,2=Air"},
         ta_breakdown_prompt:{type:DataTypes.INTEGER, defaultValue: 1,comment:"1=AM,2=PM"},
         ta_breakdown_destination:DataTypes.STRING,
-        createdAt: {
+       /* createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
         },
         updatedAt: {
             field: 'updated_at',
             type: DataTypes.DATE,
-        },
+        },*/
     }, {
         sequelize,
         modelName: 'TravelApplicationBreakdown',
         tableName: 'travel_application_breakdown',
         timestamps:false
     });
+    TravelApplicationBreakdown.hasMany(TravelApplication, { foreignKey: 'ta_breakdown_travelapp_id'})
     return TravelApplicationBreakdown;
 };

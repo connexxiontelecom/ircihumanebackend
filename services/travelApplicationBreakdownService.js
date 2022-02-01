@@ -27,6 +27,11 @@ const setNewTravelApplicationBreakdown = async (breakdown, travelapp_id )=>{
 
 }
 
+const getDetailsByTravelApplicationId = async (travelapp_id)=>{
+    return await tmodel.findAll({where:{ta_breakdown_travelapp_id:travelapp_id}});
+}
+
 module.exports = {
     setNewTravelApplicationBreakdown,
+    getDetailsByTravelApplicationId,
 }

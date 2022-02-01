@@ -84,7 +84,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, re
         }
 
 
-     } catch (err) {
+    } catch (err) {
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -132,16 +132,16 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                     }
 
                     if(parseInt(gsData.gs_activity) === 2 && parseInt(latestClosedGoalActivity) === 1){
-                       await selfAssessment.findSelfAssessment(latestClosedGoalId, empId).then((data)=>{
-                           finalGsData.goalSetting = gsData
-                           finalGsData.questions = data
+                        await selfAssessment.findSelfAssessment(latestClosedGoalId, empId).then((data)=>{
+                            finalGsData.goalSetting = gsData
+                            finalGsData.questions = data
                             return res.status(200).json(finalGsData)
                         })
                     }
 
                     if(parseInt(gsData.gs_activity) === 3 && parseInt(latestClosedGoalActivity) === 2){
-                    let currentYear = gsData.gs_year;
-                    //fetch questions from end of year
+                        let currentYear = gsData.gs_year;
+                        //fetch questions from end of year
 
                         const endYearQuestions = await endYearAssessment.getEndOfYearAssessmentQuestionByGoal(gsData.gs_id).then((data)=>{
                             return data
@@ -158,100 +158,100 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
 
                             })
 
-                          if(_.isEmpty(empQuestions) || _.isNull(empQuestions)){
+                            if(_.isEmpty(empQuestions) || _.isNull(empQuestions)){
 
-                              let eyaObject
-                              let addResponse
-                              let destroyResponse
-                              let i = 0;
-                              for(const eya of endYearQuestions){
-                                  eyaObject = {
-                                      sa_gs_id: gsId,
-                                      sa_emp_id: empId,
-                                      sa_comment: eya.eya_question,
-                                      sa_eya_id: eya.eya_id
-                                  }
+                                let eyaObject
+                                let addResponse
+                                let destroyResponse
+                                let i = 0;
+                                for(const eya of endYearQuestions){
+                                    eyaObject = {
+                                        sa_gs_id: gsId,
+                                        sa_emp_id: empId,
+                                        sa_comment: eya.eya_question,
+                                        sa_eya_id: eya.eya_id
+                                    }
 
-                                  //insert into self assessment
-                                  addResponse = await selfAssessment.addSelfAssessmentEndYear(eyaObject).then((data) => {
-                                      return data
-                                  })
+                                    //insert into self assessment
+                                    addResponse = await selfAssessment.addSelfAssessmentEndYear(eyaObject).then((data) => {
+                                        return data
+                                    })
 
-                                  if(_.isNull(addResponse) || _.isEmpty(addResponse)){
-                                      i++
-                                      destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
-                                          return data
-                                      })
-                                      break
-                                  }
-                              }
+                                    if(_.isNull(addResponse) || _.isEmpty(addResponse)){
+                                        i++
+                                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                            return data
+                                        })
+                                        break
+                                    }
+                                }
 
-                              if( i > 0){
-                                  destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
-                                      return data
-                                  })
+                                if( i > 0){
+                                    destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                        return data
+                                    })
 
-                                  return  res.status(400).json(`There was an error while fetching questions`)
+                                    return  res.status(400).json(`There was an error while fetching questions`)
 
-                              }
-
-
-                              let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
-                                  return data
-                              })
-
-                              if(_.isEmpty(gss) || _.isNull(gss)){
-                                  return res.status(404).json(`No Goal Setting found`)
-                              }
-                              else{
-
-                                  let gsIdArray = [ ]
-
-                                  for (const gs of gss){
-                                      gsIdArray.push(gs.gs_id)
-                                  }
-
-                                  let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
-                                      return data
-                                  })
+                                }
 
 
-                                  finalGsData.goalSetting = gsData
-                                  finalGsData.questions = questionData
-                                  return res.status(200).json(finalGsData)
+                                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                                    return data
+                                })
 
-                              }
+                                if(_.isEmpty(gss) || _.isNull(gss)){
+                                    return res.status(404).json(`No Goal Setting found`)
+                                }
+                                else{
 
+                                    let gsIdArray = [ ]
 
-                          }
+                                    for (const gs of gss){
+                                        gsIdArray.push(gs.gs_id)
+                                    }
 
-                        else{
-                              let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
-                                  return data
-                              })
-                              if(_.isEmpty(gss) || _.isNull(gss)){
-                                  return res.status(404).json(`No Goal Setting found`)
-                              }
-                              else{
-
-                                  let gsIdArray = [ ]
-
-                                  for (const gs of gss){
-                                      gsIdArray.push(gs.gs_id)
-                                  }
-
-                                  let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
-                                      return data
-                                  })
+                                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                        return data
+                                    })
 
 
-                                  finalGsData.goalSetting = gsData
-                                  finalGsData.questions = questionData
-                                  return res.status(200).json(finalGsData)
+                                    finalGsData.goalSetting = gsData
+                                    finalGsData.questions = questionData
+                                    return res.status(200).json(finalGsData)
 
-                              }
+                                }
 
-                          }
+
+                            }
+
+                            else{
+                                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                                    return data
+                                })
+                                if(_.isEmpty(gss) || _.isNull(gss)){
+                                    return res.status(404).json(`No Goal Setting found`)
+                                }
+                                else{
+
+                                    let gsIdArray = [ ]
+
+                                    for (const gs of gss){
+                                        gsIdArray.push(gs.gs_id)
+                                    }
+
+                                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                        return data
+                                    })
+
+
+                                    finalGsData.goalSetting = gsData
+                                    finalGsData.questions = questionData
+                                    return res.status(200).json(finalGsData)
+
+                                }
+
+                            }
 
                         }
 
@@ -302,9 +302,9 @@ router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res
             }
 
             for(const sa of selfAssessmentRequests){
-               await selfAssessment.respondSelfAssessment(sa.sa_id, sa.sa_response).then((data)=>{
-                   return data
-               })
+                await selfAssessment.respondSelfAssessment(sa.sa_id, sa.sa_response).then((data)=>{
+                    return data
+                })
             }
             return res.status(200).json(`Action Successful`)
         }

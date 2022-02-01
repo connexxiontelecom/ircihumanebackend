@@ -14,9 +14,9 @@ async function addTimeSheet(timeSheetData){
         ts_start: timeSheetData.ts_start,
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
-
      });
 }
+
 
 async function updateTimeSheet(ts_id, timeSheetData){
     return await TimeSheet.update({
@@ -40,10 +40,32 @@ async function findTimeSheet(empId, day, month, year){
 
 }
 
+async function getLatestTimeSheet(){
+    return await TimeSheet.findOne({order: [
+            ['ts_id', 'DESC'],
+        ]});
+}
+
 async function findTimeSheetMonth(empId, month, year){
     return await TimeSheet.findAll({ where: { ts_emp_id: empId, ts_month: month, ts_year: year}})
 }
 
+async function updateTimeSheetStatus(comment, userId, status, randStr, ts_id){
+      return await TimeSheet.update({
+          ts_status:status,
+          ts_comment:comment,
+          ts_date_approved:new Date(),
+          ts_approve_by:userId,
+          ts_ref_no: randStr
+
+        }, {
+            where:{
+                ts_id:ts_id
+            }
+        });
+
+
+}
 
 
 
@@ -51,5 +73,7 @@ module.exports = {
     addTimeSheet,
     findTimeSheet,
     updateTimeSheet,
-    findTimeSheetMonth
+    findTimeSheetMonth,
+    getLatestTimeSheet,
+    updateTimeSheetStatus
 }

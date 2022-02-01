@@ -3,10 +3,15 @@ const _ = require('lodash')
 const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
-const timeSheet =  require('../services/timeSheetService')
+const { QueryTypes } = require('sequelize')
+const { sequelize, Sequelize } = require('../services/db');
+const timeSheetModel =  require('../models/timesheet')(sequelize, Sequelize.DataTypes);
+const timeSheet =  require('../services/timeSheetService');
+const timeSheetAllocation =  require('../services/timeAllocationService')
 const employee = require('../services/employeeService')
 const payrollMonthYear =  require('../services/payrollMonthYearService')
 const publicHolidays = require('../services/publicHolidayServiceSetup')
+const supervisorAssignment = require('../services/supervisorAssignmentService');
 const logs = require('../services/logService')
 
 
@@ -31,6 +36,11 @@ router.post('/add-time-sheet', auth,  async function(req, res, next) {
         }
 
         let tsData = await findTimeSheet(timeSheetRequest.ts_emp_id, timeSheetRequest.ts_day, timeSheetRequest.ts_month, timeSheetRequest.ts_year)
+
+        const lId = timeSheet.getLatestTimeSheet().then((latest)=>{
+            return latest;
+        });
+
 
         if(_.isEmpty(tsData)){
             await addTimeSheet(timeSheetRequest)
@@ -213,6 +223,70 @@ router.get('/preload-date/:emp_id', auth,  async function(req, res, next) {
     }
 });
 
+router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res, next) {
+    const empId = req.params.emp_id;
+    const userId = req.user.username.user_id;
+     supervisorAssignment.getEmployeeSupervisor(empId).then((data)=>{
+        if(data){
+            if(userId !== data.sa_supervisor_id) return res.status(404).json({message: "Access denied. You're not the assigned supervisor to this employee."});
+            const timeAllocation = timeSheetAllocation.findTimeAllocation(empId,req.params.month, req.params.year).then((tsa)=>{
+                return tsa;
+            })
+            timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
+                return res.status(200).json({timeSheet, timeAllocation});
+            });
+
+        }else{
+            return res.status(400).json({message: "There's no supervisor assigned to this employee. Contact admin or HR."});
+        }
+    })
+});
+
+
+router.post('/update-status', auth, async function (req, res) {
+    //status, comment, month, year, empId, officer(logged in person)
+    try{
+        const schema = Joi.object( {
+            comment: Joi.string().required(),
+            status: Joi.number().required(),
+            month: Joi.number().required(),
+            year: Joi.number().required(),
+            employee: Joi.number().required()
+        })
+
+        const timeSheetRequest = req.body
+        const validationResult = schema.validate(timeSheetRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const {employee, month, year, comment, status} = req.body;
+        const userId = req.user.username.user_id;
+        supervisorAssignment.getEmployeeSupervisor(employee).then((data)=>{
+            if(data){
+                if(userId !== data.sa_supervisor_id) return res.status(404).json({message: "Access denied. You're not the assigned supervisor to this employee."});
+                const randStr = Math.random().toString(36).substr(2, 5);
+                timeSheet.findTimeSheetMonth(employee, month, year).then((timeS)=>{
+                   timeS.map((time)=>{
+                       //return res.status(200).json({message: time});
+                       timeSheet.updateTimeSheetStatus(comment, userId, status, randStr, time.ts_id).then((data)=>{
+                           console.log(`Data updated: ${ data } AND ID: ${ time.ts_id }`);
+                       });
+                   });
+
+                });
+                return res.status(200).json({message:`Time sheet updated successfully.`});
+            }else{
+                return res.status(400).json({message: "There's no supervisor assigned to this employee. Contact admin or HR."});
+            }
+        })
+    }catch (e) {
+        return res.status(400).json({message: "Something went wrong. Try again."});
+    }
+});
+
+
 function getDaysInMonth(month, year) {
     let date = new Date(year, month, 1);
     let days = [];
@@ -241,6 +315,7 @@ async function findTimeSheet(empId, day, month, year){
         return data
     })
 }
+
 
 async function updateTimeSheet(timeSheetId, timeSheetData){
   return await timeSheet.updateTimeSheet(timeSheetId, timeSheetData).then((data)=>{

@@ -29,6 +29,10 @@ async function findGrantChartById(id){
     return await GrantChart.findOne({ where: { gc_id: id }, include: [Location, Department, Donor]  })
 }
 
+async function findGrantChartByDonorId(donor_id){
+    return await GrantChart.findOne({ where: { gc_donor_id: id }, include: [Location, Department, Donor]  })
+}
+
 async function updateGrantChart(grantChartData, gc_id){
 
     return  await GrantChart.update({
@@ -54,6 +58,7 @@ module.exports = {
     findAllCodes,
     findGrantChartByCode,
     findGrantChartById,
-    updateGrantChart
+    updateGrantChart,
+    findGrantChartByDonorId
 
 }
