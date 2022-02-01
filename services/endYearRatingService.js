@@ -10,6 +10,7 @@ async function addRating(ratingData){
         eyr_empid: ratingData.eyr_empid,
         eyr_year: ratingData.eyr_year,
         eyr_rating: ratingData.eyr_rating,
+        eyr_by: ratingData.eyr_by
 
      });
 }

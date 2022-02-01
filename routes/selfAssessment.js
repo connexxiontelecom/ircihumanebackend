@@ -292,6 +292,7 @@ router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res
             const schema = Joi.object().keys({
                 sa_id: Joi.number().required(),
                 sa_response: Joi.string().required(),
+                sa_status: Joi.number().required()
 
             })
             const schemas = Joi.array().items(schema)
@@ -490,7 +491,7 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
                         return data
                     })
 
-                    let employeeRating = endYearRating.findEmployeeRating(empId, currentYear).then((data)=>{
+                    let employeeRating = await endYearRating.findEmployeeRating(empId, currentYear).then((data)=>{
                         return data
                     })
 
