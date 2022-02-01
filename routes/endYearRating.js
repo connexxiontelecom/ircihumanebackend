@@ -6,7 +6,6 @@ const _ = require('lodash')
 const goalSetting =  require('../services/goalSettingService');
 const selfAssessment =  require('../services/selfAssessmentService');
 const employees = require('../services/employeeService');
-const endYearRating = require('../services/endYearRatingService');
 const logs = require('../services/logService')
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 
@@ -478,8 +477,7 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
                     return res.status(404).json(`No Goal Setting found`)
                 }
                 else{
-                    let ratingStatus = 0
-                    let ratingDetails;
+
                     let gsIdArray = [ ]
 
                     for (const gs of gss){
@@ -490,20 +488,9 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
                         return data
                     })
 
-                    let employeeRating = endYearRating.findEmployeeRating(empId, currentYear).then((data)=>{
-                        return data
-                    })
-
-                    if(!_.isEmpty(employeeRating) || !_.isNull(employeeRating)){
-                        ratingStatus = 1
-                        ratingDetails = employeeRating
-                    }
-
                     const resData = {
                         question: questionData,
-                        year: currentYear,
-                        ratingStatus: ratingStatus,
-                        ratingDetails: ratingDetails
+                        year: currentYear
                     }
 
 
