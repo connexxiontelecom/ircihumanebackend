@@ -98,13 +98,24 @@ router.post('/new-travel-application', auth, async (req, res)=>{
     }
 });
 
-router.get('/get-travel-application/:id', auth, (req, res)=>{
+router.get('/get-travel-application/:id', auth, async (req, res)=>{
     const employee = req.params.id
     try{
-        const tRequests = travelApplicationService.getTravelApplicationsByEmployeeId(employee);
+        const tRequests = await travelApplicationService.getTravelApplicationsByEmployeeId(employee);
         return res.status(200).json({applications:tRequests});
     }catch (e) {
-        return res.status(400).json({message: "Something went wrong. Try again."});
+        return res.status(400).json({message: "Something went wrong. Try again."+e.message });
+    }
+});
+router.get('/:id', auth, async (req, res)=>{ //get travel application details
+    const id = req.params.id
+    try{
+        const application = await travelApplicationService.getTravelApplicationsById(id);
+        const breakdown = await travelApplicationBreakdownService.getDetailsByTravelApplicationId(id);
+        const expenses = await travelApplicationT2Service.getT2DetailsByTravelApplicationId(id);
+        return res.status(200).json({  application, breakdown, expenses});
+    }catch (e) {
+        return res.status(400).json({message: "Something went wrong. Try again."+e });
     }
 });
 

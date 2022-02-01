@@ -75,7 +75,8 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'Employee',
-        tableName: 'employees'
+        tableName: 'employees',
+        timestamps:false
     });
 
    Employee.belongsTo(Employee, {as: 'supervisor', foreignKey: 'emp_supervisor_id'})

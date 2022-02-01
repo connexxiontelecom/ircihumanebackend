@@ -24,6 +24,11 @@ const setNewTravelApplicationT2 = async (travelapp_id, t2_id )=>{
 
 }
 
+const getT2DetailsByTravelApplicationId = async (travelapp_id)=>{
+    return await tmodel.findAll({where:{travelapp_t2_travelapp_id:travelapp_id}});
+}
+
 module.exports = {
     setNewTravelApplicationT2,
+    getT2DetailsByTravelApplicationId,
 }

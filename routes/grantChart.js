@@ -137,5 +137,17 @@ router.patch('/update-grant-chart/:gc_id', auth,  async function(req, res, next)
     }
 });
 
+router.get('/grant/donor/:donor_id', auth, async (req, res)=>{
+    try{
+        const { donor_id } = req.params.donor_id;
+        const gc = grantChart.findGrantChartByDonorId(donor_id).then((data)=>{
+            return data;
+        })
+        return res.status(200).json({gc});
+    }catch (e) {
+        return res.status(400).json({message: "Something went wrong. Try again."});
+    }
+});
+
 
 module.exports = router;
