@@ -30,7 +30,7 @@ async function findGrantChartById(id){
 }
 
 async function findGrantChartByDonorId(donor_id){
-    return await GrantChart.findOne({ where: { gc_donor_id: id }, include: [Location, Department, Donor]  })
+    return await GrantChart.findAll({ where: { gc_donor_id: donor_id }, include: [Location, Department, Donor]  })
 }
 
 async function updateGrantChart(grantChartData, gc_id){
