@@ -87,5 +87,4 @@ module.exports = {
     findSumPercentage,
     findCodeWithGross,
     findBasicPaymentDefinition
-
 }

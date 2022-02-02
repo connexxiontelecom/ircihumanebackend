@@ -30,9 +30,14 @@ async function findPayrollMonthYear(){
     return await Pym.findOne()
 }
 
+async function findPayrollByMonthYear(month, year){
+    return await Pym.findOne({where:{payroll_month_year_month:month, payroll_month_year_year:year}})
+}
+
 module.exports = {
    addPayrollMonthYear,
     updatePayrollMonthYear,
-    findPayrollMonthYear
+    findPayrollMonthYear,
+    findPayrollByMonthYear
 
 }
