@@ -27,7 +27,7 @@ const registerNewAction = async (auth_type, travel_app, officer, status, comment
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": `Log on authorization: Added a new authorization request.`,
+            "log_description": `Log on authorization: Authorized request.`,
             "log_date": new Date()
         }
         logs.addLog(logData).then((logRes)=>{

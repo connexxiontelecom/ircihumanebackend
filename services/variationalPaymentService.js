@@ -11,18 +11,19 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 
-const setNewVariationalPayment = async ( )=>{
+const setNewVariationalPayment = async ( variationalData )=>{
 
-    //const schema =
-
-    /*try{
+    try{
         await tmodel.create({
-            travelapp_t2_travelapp_id: travelapp_id,
-            travelapp_t2_id: t2_id,
+            vp_emp_id: variationalData.employee,
+            vp_payment_def_id: variationalData.payment_definition,
+            vp_amount: variationalData.amount,
+            vp_payment_month: variationalData.month,
+            vp_payment_year: variationalData.year
         });
     }catch (e) {
-        console.log(`Whoops: ${e.message}`);
-    }*/
+        //console.log(`Whoops: ${e.message}`);
+    }
 
 }
 

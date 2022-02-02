@@ -84,7 +84,15 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                     }
                     //Register authorization
                     authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.");
-                    return res.status(200).json('Your travel application was successfully registered.');
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Travel application",
+                        "log_date": new Date()
+                    }
+                    logs.addLog(logData).then((logRes)=>{
+                        //return  res.status(200).json(data)
+                        return res.status(200).json('Your travel application was successfully registered.');
+                    })
                 });
             }else{
                 return  res.status(400).json('Travel duration must be greater or equal to 1');
