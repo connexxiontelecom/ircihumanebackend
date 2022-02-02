@@ -27,6 +27,8 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             t2_code: Joi.alternatives().conditional('travel_category', { is: 1, then: Joi.array().items(Joi.object({
                     code: Joi.number().required()
                 }))}),
+            per_diem:Joi.alternatives().conditional('travel_category', {is:2, then: Joi.number().allow('')}),
+            t2_code:Joi.alternatives().conditional('travel_category', {is:2, then: Joi.number().allow('')}),
             hotel:Joi.number().required().valid(1,2),
             city: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
             arrival_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
