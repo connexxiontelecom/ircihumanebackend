@@ -45,11 +45,11 @@ const setNewTravelApplication = async (travelData, days )=>{
         travelapp_days:days,
         travelapp_currency:travelData.travel_category === 1 ?  travelData.currency : '',
         travelapp_total:travelData.travel_category === 1 ? travelData.total : '',
-        travelapp_hotel:travelData.travel_category === 1 ? travelData.hotel : '',
-        travelapp_city:travelData.travel_category === 1 ? travelData.city : '',
-        travelapp_arrival_date:travelData.travel_category === 1 ? travelData.arrival_date : '',
-        travelapp_departure_date:travelData.travel_category === 1 ? travelData.departure_date : '',
-        travelapp_preferred_hotel:travelData.travel_category === 1 ? travelData.preferred_hotel : '',
+        travelapp_hotel:travelData.hotel,
+        travelapp_city:travelData.hotel === 1 ? travelData.city : '',
+        travelapp_arrival_date:travelData.hotel === 1 ? travelData.arrival_date : '',
+        travelapp_departure_date:travelData.hotel === 1 ? travelData.departure_date : '',
+        travelapp_preferred_hotel:travelData.hotel === 1 ? travelData.preferred_hotel : '',
 
     });
 }
