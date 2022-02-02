@@ -71,7 +71,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
         if(String(startYear) === String(endYear)){
             let daysRequested =  await differenceInBusinessDays(endDate, startDate);
             if(parseInt(daysRequested) >= 1) {
-                travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
+                await travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
                     const travelapp_id = data.travelapp_id;
                     //try {
                         const breakdowns = req.body.breakdown;
