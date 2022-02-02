@@ -16,26 +16,13 @@ const errHandler = (err) =>{
 }
 
 const registerNewAction = async (auth_type, travel_app, officer, status, comment)=>  {
-    try{
-        await authorizationModel.create({
+    return await authorizationModel.create({
             auth_officer_id: officer,
             auth_status: status,
             auth_comment: comment,
             auth_type: auth_type,
             auth_travelapp_id:travel_app
         });
-        //Log
-        const logData = {
-            "log_user_id": req.user.username.user_id,
-            "log_description": `Log on authorization: Authorized request.`,
-            "log_date": new Date()
-        }
-        logs.addLog(logData).then((logRes)=>{
-            return res.status(200).json(`New  authorization request submitted.`);
-        })
-    }catch (e) {
-        res.status(400).json({message: `Whoops something went wrong. ${e.message}`});
-    }
 
 }
 
