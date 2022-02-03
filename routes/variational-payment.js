@@ -36,9 +36,10 @@ router.post('/', auth, async (req, res)=>{
         if(validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        const pdId = paymentDefinition.findPaymentById(req.body.payment_definition).then((data)=>{
-            return data;
+        const pdId = await paymentDefinition.findPaymentById(req.body.payment_definition).then((data)=>{
+            return  data;
         });
+
         if(pdId.pd_payment_variant !== 1) return res.status(400).json('Choose variational payment from the option provided.');
         //check payroll routine for month and year
         /*const period = payrollMonthYear.findPayrollByMonthYear(req.body.month, req.body.year).then((val)=>{
@@ -51,7 +52,7 @@ router.post('/', auth, async (req, res)=>{
         }*/
         const payrollR = 1;
         if(payrollR === 1){
-            return res.status().json("You cannot run payroll routine for this period");
+            return res.status(400).json("You cannot run payroll routine for this period");
         }else{
             variationalPayment.setNewVariationalPayment(req.body).then((data)=>{
                 return res.status(200).json("Action success!");
@@ -59,7 +60,7 @@ router.post('/', auth, async (req, res)=>{
         }
 
     }catch (e) {
-        return res.status(400).json(`Error while posting variational payment`);
+        return res.status(400).json(`Error while posting variational payment.`);
     }
 });
 
@@ -73,7 +74,7 @@ router.get('/:id', auth, async (req, res)=>{
     }
 });
 
-router.post('/update-status/:id', auth, async (req, res)=>{
+router.post('/confirm-payment/:id', auth, async (req, res)=>{
     try{
         const schema = Joi.object({
             status: Joi.number().required(),

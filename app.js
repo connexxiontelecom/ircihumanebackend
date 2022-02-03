@@ -77,6 +77,9 @@
     const authorizationRouter = require("./routes/authorization");
     app.use('/application-authorization', authorizationRouter);
 
+    const variationalPaymentRouter = require("./routes/variational-payment");
+    app.use('/variational-payment', variationalPaymentRouter);
+
     const sectorLeadRouter =require("./routes/sectorLead");
     app.use('/sector-leads', sectorLeadRouter)
 
