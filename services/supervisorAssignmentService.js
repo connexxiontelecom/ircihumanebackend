@@ -38,8 +38,8 @@ async function findAllAssignments(){
 
 async function getEmployeeSupervisor(emp_id){
     return await SupervisorAssignment.findOne({
-        where:{sa_emp_id:emp_id},
-        andWhere:{sa_status: 1} //active
+        where:{sa_emp_id:emp_id, sa_status: 1},
+
     });
 }
 

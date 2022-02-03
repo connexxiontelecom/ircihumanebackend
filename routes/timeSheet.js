@@ -170,7 +170,7 @@ router.get('/preload-date/:emp_id', auth,  async function(req, res, next) {
 
                     if(weekday[d.getDay()] === 'Saturday' || weekday[d.getDay()] === 'Sunday' ){
                     }else{
-                        checkSpecificPubHols = getSpecificHoliday(dayNumber, pm, payrollYear)
+                        checkSpecificPubHols = await getSpecificHoliday(dayNumber, pm, payrollYear)
                         if(_.isEmpty(checkSpecificPubHols) || _.isNull(checkSpecificPubHols)){
                             if(weekday[d.getDay()] !== 'Friday'){
                                 timeObject = {
@@ -228,7 +228,7 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res, n
     const userId = req.user.username.user_id;
      supervisorAssignment.getEmployeeSupervisor(empId).then((data)=>{
         if(data){
-            if(userId !== data.sa_supervisor_id) return res.status(404).json({message: "Access denied. You're not the assigned supervisor to this employee."});
+            // if(userId !== data.sa_supervisor_id) return res.status(404).json("Access denied. You're not the assigned supervisor to this employee.");
             const timeAllocation = timeSheetAllocation.findTimeAllocation(empId,req.params.month, req.params.year).then((tsa)=>{
                 return tsa;
             })
@@ -237,7 +237,7 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res, n
             });
 
         }else{
-            return res.status(400).json({message: "There's no supervisor assigned to this employee. Contact admin or HR."});
+            return res.status(400).json( "There's no supervisor assigned to this employee. Contact admin or HR.");
         }
     })
 });
