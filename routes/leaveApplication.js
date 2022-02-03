@@ -11,6 +11,7 @@ const { addLeaveAccrual, computeLeaveAccruals } = require("../routes/leaveAccrua
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const logs = require('../services/logService')
+const employees = require("../services/employeeService");
 
 
 /* Get leave application */
@@ -59,14 +60,14 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
         let endYear = endDate.getFullYear();
 
         if(isBefore(startDate, new Date()) ){
-            return  res.status(400).json('Leave start date cannot be before today')
+            return  res.status(400).json('Leave start date cannot be before today or today')
         }else{
             if(String(startYear) === String(endYear)){
                 let daysRequested =  await differenceInBusinessDays(endDate, startDate)
                 const empId = req.user.username.user_id;
                 if(parseInt(daysRequested) >= 1) {
-                    supervisorAssignmentService.getEmployeeSupervisor(empId).then((val)=>{
-                        if(val){
+                    supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val)=>{
+                        if(!(_.isEmpty(val) || _.isNull(val))){
                             const accrualData = {
                                 lea_emp_id: leaveApplicationRequest.leapp_empid,
                                 lea_year: startYear,
@@ -102,8 +103,9 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                                 }
                             })
 
-                        }else{
-                            return  res.status(400).json({message: 'You currently have no supervisor assigned to you. Contact admin.'});
+                        }
+                        else{
+                            return  res.status(400).json( 'You currently have no supervisor assigned to you. Contact admin.');
                         }
                     });
                 }else{
@@ -125,64 +127,24 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
     }
 });
 
-/* Update Location Allowance */
-// router.patch('/update-location-allowance/:la_id', auth,  async function(req, res, next) {
-//     try {
-//
-//         const schema = Joi.object( {
-//             la_payment_id: Joi.number().required(),
-//             la_location_id: Joi.number().required(),
-//             la_amount: Joi.number().precision(2).required()
-//
-//         })
-//         const locationAllowanceRequest = req.body
-//         const validationResult = schema.validate(locationAllowanceRequest)
-//         if(validationResult.error){
-//             return res.status(400).json(validationResult.error.details[0].message)
-//         }
-//         await locationAllowance.findLocationAllowanceByPaymentIdLocationId(locationAllowanceRequest.la_payment_id, locationAllowanceRequest.la_location_id).then((data) =>{
-//             if(_.isEmpty(data)){
-//                 locationAllowance.findLocationAllowanceById(req.params['la_id']).then((data)=>{
-//                     if(_.isEmpty(data)){
-//                         return res.status(404).json(`Location Allowance Does Not Exist`)
-//                     }
-//                     else{
-//                         locationAllowance.updateLocationAllowance(locationAllowanceRequest, req.params['la_id']).then((data)=>{
-//                             const logData = {
-//                                 "log_user_id": req.user.username.user_id,
-//                                 "log_description": "Updated Tax Rate",
-//                                 "log_date": new Date()
-//                             }
-//                             logs.addLog(logData).then((logRes)=>{
-//                                 //return res.status(200).json(logRes);
-//                                 return  res.status(200).json(`Location Allowance Updated`)
-//                             })
-//                         })
-//                     }
-//                 })
-//               }else{
-//                 if(parseInt(req.params['la_id']) === parseInt(data.la_id)){
-//                     locationAllowance.updateLocationAllowance(locationAllowanceRequest, req.params['la_id']).then((data)=>{
-//                         const logData = {
-//                             "log_user_id": req.user.username.user_id,
-//                             "log_description": "Updated Tax Rate",
-//                             "log_date": new Date()
-//                         }
-//                         logs.addLog(logData).then((logRes)=>{
-//                             //return res.status(200).json(logRes);
-//                             return  res.status(200).json(`Location Allowance Updated`)
-//                         })
-//                     })
-//                 }else{
-//                     return res.status(400).json(`Location Allowance Update Not Allowed`)
-//                 }
-//             }
-//         })
-//     } catch (err) {
-//         console.error(`Error while updating Location Allowance`, err.message);
-//         next(err);
-//     }
-// });
-//
 
+/* Get Employee Leave application */
+router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
+    try {
+
+        let empId = req.params['emp_id']
+        await employees.getEmployee(empId).then((data)=>{
+            if(_.isEmpty(data)){
+                return res.status(404).json(`Employee Doesn't Exist`)
+            }else{
+                leaveApplication.findEmployeeLeaveApplication(empId).then((data) =>{
+                    return res.status(200).json(data);
+                })
+            }
+        })
+
+    } catch (err) {
+        return res.status(400).json(`Error while fetching leaves ${err.message}`)
+    }
+});
 module.exports = router;

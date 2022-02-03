@@ -41,6 +41,17 @@ async function findAllLeaveApplication(){
         ], include: [Leave, 'employee', 'verify', 'recommend', 'approve'] })
 }
 
+async function findEmployeeLeaveApplication(empId){
+
+    return await LeaveApplication.findAll({
+        where:{ leapp_empid: empId },
+        order: [
+            ['leapp_id', 'DESC'],
+        ],
+        include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+    })
+}
+
 async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type){
     return await LeaveApplication.sum('leapp_total_days',{
         where: {
@@ -73,5 +84,6 @@ async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type
 module.exports = {
   addLeaveApplication,
     sumLeaveUsedByYearEmployeeLeaveType,
-    findAllLeaveApplication
+    findAllLeaveApplication,
+    findEmployeeLeaveApplication
    }

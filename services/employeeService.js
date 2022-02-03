@@ -81,7 +81,9 @@ const createNewEmployee = async (req, res, next)=>  {
                  getEmployeeByPersonalEmail(req.body.personal_email).then((employeeData)=>{
                     if(!_.isNull(employeeData)){
                         return res.status(400).json("Employee Personal Email Already Exists")
-                    }else {
+                    }
+                    else
+                        {
                         getEmployeeByOfficialEmail(req.body.office_email).then((employeeData)=>{
                             if(!_.isNull(employeeData)){
                                 return res.status(400).json("Employee Official Email Already Exists")
@@ -93,47 +95,15 @@ const createNewEmployee = async (req, res, next)=>  {
                                         employee.create({
                                             emp_first_name: req.body.first_name,
                                             emp_last_name:req.body.last_name,
-                                            //emp_other_name:req.body.other_name,
                                             emp_unique_id:req.body.unique_id,
-                                            //emp_dob:req.body.birth_date,
                                             emp_personal_email:req.body.personal_email,
                                             emp_office_email:req.body.office_email,
                                             emp_phone_no:req.body.phone_no,
-                                            //emp_qualification:req.body.qualification,
-                                            //emp_:req.body.address,
                                             emp_location_id:req.body.location,
-                                            //emp_subsidiary_id:req.body.subsidiary,
                                             emp_job_role_id:req.body.job_role,
-                                            //emp_grade_id:req.body.grade_level,
                                             emp_account_no:req.body.account_no,
                                             emp_bank_id:req.body.bank,
-                                            // emp_hmo_no:req.body.hmo_no,
-                                            // emp_hmo_id:req.body.hmo_id,
-                                            // emp_pensionable:req.body.pensionable,
-                                            // emp_pension_no:req.body.pension_no,
-                                            // emp_pension_id:req.body.pension_id,
-                                            // emp_paye_no:req.body.paye_no,
-                                            // emp_passport:req.body.passport,
-                                            // emp_nysc_details:req.body.nysc_details,
-                                            // emp_nysc_document:req.body.nysc_document,
-                                            // emp_state_id:req.body.state,
-                                            // emp_lga_id:req.body.lga,
-                                            // emp_marital_status:req.body.marital_status,
-                                            // emp_spouse_name:req.body.spouse_name,
-                                            // emp_spouse_phone_no:req.body.spouse_phone_no,
-                                            // emp_next_of_kin_name:req.body.next_of_kin_name,
-                                            // emp_next_of_kin_address:req.body.next_of_kin_address,
-                                            // emp_next_of_kin_phone_no:req.body.next_of_kin_phone,
-                                            // emp_ailments:req.body.ailments,
-                                            // emp_blood_group:req.body.blood_group,
-                                            // emp_genotype:req.body.genotype,
-                                            // emp_emergency_name:req.body.emergency_name,
-                                            // emp_emergency_contact:req.body.emergency_contact,
-                                            // emp_employment_date:req.body.employment_date,
-                                            // emp_status:req.body.employment_status,
                                             emp_salary_structure_setup:0,
-
-                                            // emp_tax_amount:req.body.tax_amount,
                                         }).catch(errHandler);
 
                                         const userData = {
@@ -145,7 +115,6 @@ const createNewEmployee = async (req, res, next)=>  {
                                             user_token: 1,
                                             user_status: 1,
                                         }
-
                                         users.findUserByEmail(req.body.office_email).then((data) =>{
                                             if(data){
                                                 employee.destroy({
@@ -180,31 +149,16 @@ const createNewEmployee = async (req, res, next)=>  {
                                                 })
                                             }
                                         })
-
-
-
-
-
-
-
-
                                     }
                                 })
                             }
 
                         })
-
                     }
                 })
 
             }
             })
-
-
-
-
-
-        //Log
 
     }catch (e) {
         console.error(`Error: Could not enrol employee `, e.message);
@@ -236,25 +190,25 @@ async function setSupervisor(employeeId, supervisorId){
 
 async function updateEmployee(employeeId, employeeData){
     return await employee.update({
-        emp_first_name: employeeData.first_name,
-        emp_last_name:employeeData.last_name,
-        emp_other_name:employeeData.other_name,
-        emp_qualification:employeeData.qualification,
-        emp_account_no:employeeData.account_no,
-        emp_bank_id:employeeData.bank,
-        emp_state_id:employeeData.state,
-        emp_lga_id:employeeData.lga,
-        emp_marital_status:employeeData.marital_status,
-        emp_spouse_name:employeeData.spouse_name,
-        emp_spouse_phone_no:employeeData.spouse_phone_no,
-        emp_next_of_kin_name:employeeData.next_of_kin_name,
-        emp_next_of_kin_address:employeeData.next_of_kin_address,
-        emp_next_of_kin_phone_no:employeeData.next_of_kin_phone,
-        emp_ailments:employeeData.ailments,
-        emp_blood_group:employeeData.blood_group,
-        emp_genotype:employeeData.genotype,
-        emp_emergency_name:employeeData.emergency_name,
-        emp_emergency_contact:employeeData.emergency_contact,
+        emp_first_name: employeeData.emp_first_name,
+        emp_last_name:employeeData.emp_last_name,
+        emp_other_name:employeeData.emp_other_name,
+        emp_qualification:employeeData.emp_qualification,
+        emp_account_no:employeeData.emp_account_no,
+        emp_bank_id:employeeData.emp_bank_id,
+        emp_state_id:employeeData.emp_state_id,
+        emp_lga_id:employeeData.emp_lga_id,
+        emp_marital_status:employeeData.emp_marital_status,
+        emp_spouse_name:employeeData.emp_spouse_name,
+        emp_spouse_phone_no:employeeData.emp_spouse_phone_no,
+        emp_next_of_kin_name:employeeData.emp_next_of_kin_name,
+        emp_next_of_kin_address:employeeData.emp_next_of_kin_address,
+        emp_next_of_kin_phone_no:employeeData.emp_next_of_kin_phone_no,
+        emp_ailments:employeeData.emp_ailments,
+        emp_blood_group:employeeData.emp_blood_group,
+        emp_genotype:employeeData.emp_genotype,
+        emp_emergency_name:employeeData.emp_emergency_name,
+        emp_emergency_contact:employeeData.emp_emergency_contact,
     }, {
         where:{
             emp_id: employeeId
@@ -361,7 +315,8 @@ module.exports = {
     getEmployeeByPersonalEmail,
     getSupervisors,
     getNoneSupervisors,
-    getSupervisorEmployee
+    getSupervisorEmployee,
+    updateEmployee
     //updateDepartment,
     //setNewDepartment,
 }
