@@ -6,6 +6,7 @@ const  differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
 const isBefore = require('date-fns/isBefore')
 const auth = require("../middleware/auth");
 const Joi = require('joi');
+const logs = require('../services/logService');
 
 const travelApplicationService = require('../services/travelApplicationService');
 const travelApplicationBreakdownService = require('../services/travelApplicationBreakdownService');
@@ -27,16 +28,21 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             t2_code: Joi.alternatives().conditional('travel_category', { is: 1, then: Joi.array().items(Joi.object({
                     code: Joi.number().required()
                 }))}),
+            /*t2_code: Joi.alternatives().conditional('travel_category', { is: 2, then: Joi.array().items(Joi.object({
+                    code: Joi.number().allow('')
+                }))}),*/
             hotel:Joi.number().required().valid(1,2),
             city: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
             arrival_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
             departure_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
             preferred_hotel: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
 
+
             purpose: Joi.string().required(),
             start_date: Joi.string().required(),
             end_date: Joi.string().required(),
             t1_code: Joi.string().required(),
+            currency: Joi.string().allow(null, ''),
             currency: Joi.string().allow(null, ''),
             total: Joi.number().allow(null, ''),
 
@@ -60,14 +66,13 @@ router.post('/new-travel-application', auth, async (req, res)=>{
         let startYear = startDate.getFullYear();
         let endDate = new Date(end_date);
         let endYear = endDate.getFullYear();
-        if(isBefore(startDate, new Date())) return res.status(400).json({message:"Your start date cannot be before today."});
-        if(isBefore(endDate, new Date())) return res.status(400).json({message:"Your end date cannot be before today."});
+        if(isBefore(startDate, new Date())) return res.status(400).json("Your start date cannot be before today.");
+        if(isBefore(endDate, new Date())) return res.status(400).json("Your end date cannot be before today.");
         if(String(startYear) === String(endYear)){
             let daysRequested =  await differenceInBusinessDays(endDate, startDate);
             if(parseInt(daysRequested) >= 1) {
-                travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
+                await travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
                     const travelapp_id = data.travelapp_id;
-                    try {
                         const breakdowns = req.body.breakdown;
                         breakdowns.map((breakdown) => {
                             travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
@@ -79,22 +84,28 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                             travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                         });
                     }
-                    }catch (e) {
-                        return res.status(400).json({message:"Something went wrong. Try again."});
-                    }
-                    //Register authorization
-                    authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.");
-                    return res.status(200).json({message: 'Your travel application was successfully registered.'});
+                    authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
+                        .then((outcome)=>{
+                            const logData = {
+                                "log_user_id": req.user.username.user_id,
+                                "log_description": "Travel application ",
+                                "log_date": new Date()
+                            }
+                            logs.addLog(logData).then((logRes)=>{
+                                return res.status(200).json('Your travel application was successfully registered.');
+                            })
+                        });
+
                 });
             }else{
-                return  res.status(400).json({message: 'Travel duration must be greater or equal to 1'});
+                return  res.status(400).json('Travel duration must be greater or equal to 1');
             }
         }else{
-            return  res.status(400).json({message: 'Travel period must be within the same year'})
+            return  res.status(400).json('Travel period must be within the same year')
         }
 
     }catch (e) {
-        return res.status(400).json({message:`Something went wrong. Inspect and try again. Error: ${e.message}`});
+        return res.status(400).json(`Something went wrong. Inspect and try again.`);
     }
 });
 
@@ -102,9 +113,9 @@ router.get('/get-travel-application/:id', auth, async (req, res)=>{
     const employee = req.params.id
     try{
         const tRequests = await travelApplicationService.getTravelApplicationsByEmployeeId(employee);
-        return res.status(200).json({applications:tRequests});
+        return res.status(200).json(tRequests);
     }catch (e) {
-        return res.status(400).json({message: "Something went wrong. Try again."+e.message });
+        return res.status(400).json("Something went wrong. Try again.");
     }
 });
 router.get('/:id', auth, async (req, res)=>{ //get travel application details
@@ -113,9 +124,9 @@ router.get('/:id', auth, async (req, res)=>{ //get travel application details
         const application = await travelApplicationService.getTravelApplicationsById(id);
         const breakdown = await travelApplicationBreakdownService.getDetailsByTravelApplicationId(id);
         const expenses = await travelApplicationT2Service.getT2DetailsByTravelApplicationId(id);
-        return res.status(200).json({  application, breakdown, expenses});
+        return res.status(200).json(application, breakdown, expenses);
     }catch (e) {
-        return res.status(400).json({message: "Something went wrong. Try again."+e });
+        return res.status(400).json("Something went wrong. Try again.");
     }
 });
 

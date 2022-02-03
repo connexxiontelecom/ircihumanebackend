@@ -201,7 +201,6 @@ router.post('/login', async function(req, res, next) {
                                     const responseData = {
                                         "token" : token,
                                         "userData": userData,
-
                                     }
                                     return res.status(200).json(responseData);
                                 })

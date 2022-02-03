@@ -34,6 +34,15 @@ const setNewPublicHoliday = async (req, res)=>  {
             return res.status(400).json(validationResult.error.details[0].message)
         }
         const { public_name, public_day, public_month, public_year } = req.body;
+        const existPeriod = await PublicHoliday.findOne({
+            attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year'],
+            where:{
+                ph_day:public_day,
+                ph_month: public_month,
+                ph_year: public_year
+            }});
+        if(existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");
+
         await PublicHoliday.create({ph_name: public_name, ph_day:public_day, ph_month:public_month, ph_year:public_year})
             .catch(errHandler);
         //Log
@@ -46,7 +55,7 @@ const setNewPublicHoliday = async (req, res)=>  {
             return res.status(200).json(`New public holiday added successfully.`);
         });
     }catch (e) {
-        return res.status(500).json({message:"Something went wrong. Try again later."});;
+        return res.status(500).json({message:"Something went wrong. Try again later."+e.message});;
 
     }
 }
@@ -77,6 +86,12 @@ async function fetchSpecificPublicHoliday(day, month, year){
             ph_year: year
         }})
 }
+async function fetchPublicHolidayByMonthYear(month, year){
+    return await PublicHoliday.findAll({where:{
+            ph_month: month,
+            ph_year: year
+        }})
+}
 
 
 module.exports = {
@@ -85,5 +100,5 @@ module.exports = {
     getPublicHolidayById,
     fetchAllPublicHolidays,
     fetchPublicHolidayByYear,
-    fetchSpecificPublicHoliday
+    fetchSpecificPublicHoliday,
 }
