@@ -14,7 +14,7 @@ const errHandler = (err) =>{
 const setNewVariationalPayment = async ( variationalData )=>{
 
     try{
-        await tmodel.create({
+        await variationalPaymentModel.create({
             vp_emp_id: variationalData.employee,
             vp_payment_def_id: variationalData.payment_definition,
             vp_amount: variationalData.amount,
@@ -43,10 +43,14 @@ const updateVariationalPaymentStatus = async (id, status, user)=>{
         {where:{vp_id: id}});
 }
 
+const getUnconfirmedVariationalPayment = async ()=>{
+    return await variationalPaymentModel.findAll({where:{vp_confirm:0}})
+}
 
 module.exports = {
     setNewVariationalPayment,
     getVariationalPayments,
     getVariationalPaymentById,
     updateVariationalPaymentStatus,
+    getUnconfirmedVariationalPayment,
 }

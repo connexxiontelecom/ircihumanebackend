@@ -13,11 +13,11 @@ const logs = require('../services/logService')
 /* Get All variational payments */
 router.get('/', auth, async function(req, res, next) {
     try {
-        await variationalPayment.getVariationalPayments.then((data) =>{
+        await variationalPayment.getVariationalPayments().then((data) =>{
             return res.status(200).json(data);
         })
     } catch (err) {
-        return res.status(400).json(`Error while fetching variational payments `)
+        return res.status(400).json(`Error while fetching variational payments`)
     }
 });
 
@@ -50,11 +50,11 @@ router.post('/', auth, async (req, res)=>{
         }else{
 
         }*/
-        const payrollR = 1;
+        const payrollR = 0;
         if(payrollR === 1){
             return res.status(400).json("You cannot run payroll routine for this period");
         }else{
-            variationalPayment.setNewVariationalPayment(req.body).then((data)=>{
+            await variationalPayment.setNewVariationalPayment(req.body).then((data)=>{
                 return res.status(200).json("Action success!");
             })
         }
@@ -66,6 +66,7 @@ router.post('/', auth, async (req, res)=>{
 
 router.get('/:id', auth, async (req, res)=>{
     try{
+        const id = req.params.id;
         variationalPayment.getVariationalPaymentById(id).then((data)=>{
             return res.status(200).json(data);
         })
@@ -96,7 +97,15 @@ router.post('/confirm-payment/:id', auth, async (req, res)=>{
     }
 });
 
-
+router.get('/unconfirmed/payments', auth, async (req, res)=>{
+    try{
+        variationalPayment.getUnconfirmedVariationalPayment().then((data)=>{
+            return res.status(200).json(data);
+        })
+    }catch (e) {
+        return res.status(400).json('Something went wrong. Try again.');
+    }
+});
 
 
 
