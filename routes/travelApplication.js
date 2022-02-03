@@ -124,7 +124,7 @@ router.get('/:id', auth, async (req, res)=>{ //get travel application details
         const application = await travelApplicationService.getTravelApplicationsById(id);
         const breakdown = await travelApplicationBreakdownService.getDetailsByTravelApplicationId(id);
         const expenses = await travelApplicationT2Service.getT2DetailsByTravelApplicationId(id);
-        return res.status(200).json(application, breakdown, expenses);
+        return res.status(200).json({application, breakdown, expenses});
     }catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }

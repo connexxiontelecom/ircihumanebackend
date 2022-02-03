@@ -23,9 +23,10 @@ const setNewPublicHoliday = async (req, res)=>  {
     try{
         const schema = Joi.object( {
             public_name: Joi.string().required(),
-            public_day: Joi.string().required(),
-            public_month: Joi.string().required(),
-            public_year: Joi.string().required(),
+            //public_day: Joi.string().required(),
+            //public_month: Joi.string().required(),
+            public_date: Joi.date().required(),
+            //public_year: Joi.string().required(),
         })
         const publicRequest = req.body
         const validationResult = schema.validate(publicRequest)
@@ -33,17 +34,21 @@ const setNewPublicHoliday = async (req, res)=>  {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        const { public_name, public_day, public_month, public_year } = req.body;
+        const { public_name, public_date } = req.body;
+        const date = new Date(public_date);
+        const day = date.getUTCDate();
+        const month = date.getUTCMonth() + 1;
+        const year = date.getUTCFullYear();
         const existPeriod = await PublicHoliday.findOne({
             attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year'],
             where:{
-                ph_day:public_day,
-                ph_month: public_month,
-                ph_year: public_year
+                ph_day:day,
+                ph_month: month,
+                ph_year: year
             }});
         if(existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");
 
-        await PublicHoliday.create({ph_name: public_name, ph_day:public_day, ph_month:public_month, ph_year:public_year})
+        await PublicHoliday.create({ph_name: public_name, ph_day:day, ph_month:month, ph_year:year, ph_date: public_date})
             .catch(errHandler);
         //Log
         const logData = {
