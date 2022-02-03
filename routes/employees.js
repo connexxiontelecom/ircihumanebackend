@@ -13,6 +13,23 @@ router.get('/', auth, employees.getAllEmployee);
 /*router.get('/getemployee', async function(req, res, next){
 
 })*/
+
+router.get('/get-employee/:emp_id', auth, async function(req, res, next){
+    try {
+        let empId = req.params['emp_id']
+        await employees.getEmployee(empId).then((data)=>{
+            if(_.isEmpty(data)){
+                return res.status(404).json(`Employee Doesn't Exist`)
+            }else{
+              return res.status(200).json(data)
+            }
+        })
+
+    } catch (err) {
+        console.error(`An error occurred while fetching Employee `, err.message);
+        next(err);
+    }
+})
 router.post('/employee-enrollment',auth, employees.createNewEmployee);
 
 router.patch('/update-employee/:emp_id', auth,  async function(req, res, next) {
@@ -23,45 +40,23 @@ router.patch('/update-employee/:emp_id', auth,  async function(req, res, next) {
                 return res.status(400).json(`Employee Doesn't Exist`)
             }else{
                 const employeeData = req.body
+                employees.updateEmployee(empId, employeeData).then((data)=>{
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Updated Employee Details",
+                        "log_date": new Date()
+                    }
+                    logs.addLog(logData).then((logRes)=>{
 
-
-
-
-            }
-        })
-
-
-        const schema = Joi.object( {
-            emp_supervisor_status: Joi.number().required(),
-            emp_id: Joi.number().required()
-        })
-
-        const supervisorRequest = req.body
-        const validationResult = schema.validate(supervisorRequest)
-
-        if(validationResult.error){
-            return res.status(400).json(validationResult.error.details[0].message)
-        }
-
-        await employees.setSupervisorStatus(supervisorRequest).then((data) =>{
-            if(_.isEmpty(data)){
-
-                return res.status(400).json('An error occurred while updating supervisor status')
-
-            }else{
-                const logData = {
-                    "log_user_id": req.user.username.user_id,
-                    "log_description": "Updated Employee Supervisor Status",
-                    "log_date": new Date()
-                }
-                logs.addLog(logData).then((logRes)=>{
-
-                    return  res.status(200).json('Supervisor Status Updated')
+                        return  res.status(200).json('Action Successful')
+                    })
                 })
+
             }
         })
+
     } catch (err) {
-        console.error(`An error occurred while updating supervisor status `, err.message);
+        console.error(`An error occurred while updating Employee `, err.message);
         next(err);
     }
 });
