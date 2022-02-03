@@ -28,9 +28,9 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             t2_code: Joi.alternatives().conditional('travel_category', { is: 1, then: Joi.array().items(Joi.object({
                     code: Joi.number().required()
                 }))}),
-            t2_code: Joi.alternatives().conditional('travel_category', { is: 2, then: Joi.array().items(Joi.object({
+            /*t2_code: Joi.alternatives().conditional('travel_category', { is: 2, then: Joi.array().items(Joi.object({
                     code: Joi.number().allow('')
-                }))}),
+                }))}),*/
             hotel:Joi.number().required().valid(1,2),
             city: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
             arrival_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
@@ -73,7 +73,6 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             if(parseInt(daysRequested) >= 1) {
                 await travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
                     const travelapp_id = data.travelapp_id;
-                    //try {
                         const breakdowns = req.body.breakdown;
                         breakdowns.map((breakdown) => {
                             travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
@@ -85,19 +84,14 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                             travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                         });
                     }
-                    //}catch (e) {
-                        //return res.status(400).json("Something went wrong. Try again.");
-                   // }
-                    //Register authorization
                     authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
                         .then((outcome)=>{
                             const logData = {
                                 "log_user_id": req.user.username.user_id,
-                                "log_description": "Travel application",
+                                "log_description": "Travel application ",
                                 "log_date": new Date()
                             }
                             logs.addLog(logData).then((logRes)=>{
-                                //return  res.status(200).json(data)
                                 return res.status(200).json('Your travel application was successfully registered.');
                             })
                         });
