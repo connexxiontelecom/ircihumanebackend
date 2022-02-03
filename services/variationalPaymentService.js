@@ -43,6 +43,8 @@ const updateVariationalPaymentStatus = async (id, status, user)=>{
         {where:{vp_id: id}});
 }
 
+
+
 const getUnconfirmedVariationalPayment = async ()=>{
     return await variationalPaymentModel.findAll({where:{vp_confirm:0}})
 }
