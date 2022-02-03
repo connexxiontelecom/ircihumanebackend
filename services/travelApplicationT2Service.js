@@ -11,7 +11,7 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 
-const setNewTravelApplicationT2 = async (travelapp_id, t2_id )=>{
+async function setNewTravelApplicationT2 (travelapp_id, t2_id ){
 
     try{
         await tmodel.create({

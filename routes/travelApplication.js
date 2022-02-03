@@ -84,18 +84,17 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                             travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                         });
                     }
-                    const logData = {
-                        "log_user_id": req.user.username.user_id,
-                        "log_description": "Travel application ",
-                        "log_date": new Date()
-                    }
-                    logs.addLog(logData).then((logRes)=>{
-                        return res.status(200).json('Your travel application was successfully registered.');
-                    });
-                    /*authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
+                    authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
                         .then((outcome)=>{
-
-                        });*/
+                            const logData = {
+                                "log_user_id": req.user.username.user_id,
+                                "log_description": "Travel application ",
+                                "log_date": new Date()
+                            }
+                            logs.addLog(logData).then((logRes)=>{
+                                return res.status(200).json('Your travel application was successfully registered.');
+                            })
+                        });
 
                 });
             }else{

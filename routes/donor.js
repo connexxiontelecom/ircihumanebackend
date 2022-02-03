@@ -125,7 +125,7 @@ router.patch('/update-donor/:donor_id', auth,  async function(req, res, next) {
 
 router.get('/:id', auth, async (req, res)=>{
     try{
-        await donor.findDonorById(req.body.id).then((data)=>{
+        await donor.findDonorById(req.params.id).then((data)=>{
             return res.status(200).json(data);
         })
     }catch (e) {
