@@ -149,5 +149,15 @@ router.get('/grant/donor/:donor_id', auth, async (req, res)=>{
     }
 });
 
+router.get('/:id', auth, async (req, res)=>{
+    try{
+        await grantChart.findGrantChartById(req.body.id).then((data)=>{
+            return res.status(200).json(data);
+        })
+    }catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
 
 module.exports = router;
