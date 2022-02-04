@@ -11,19 +11,15 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 
-const setNewVariationalPayment = async ( variationalData )=>{
-
-    try{
-        await variationalPaymentModel.create({
-            vp_emp_id: variationalData.employee,
-            vp_payment_def_id: variationalData.payment_definition,
-            vp_amount: variationalData.amount,
-            vp_payment_month: variationalData.month,
-            vp_payment_year: variationalData.year
+ async function setNewVariationalPayment(variationalData){
+       return  await variationalPaymentModel.create({
+            vp_emp_id: variationalData.vp_emp_id,
+            vp_payment_def_id: variationalData.vp_payment_def_id,
+            vp_amount: variationalData.vp_amount,
+            vp_payment_month: variationalData.vp_payment_month,
+            vp_payment_year: variationalData.vp_payment_year
         });
-    }catch (e) {
-        //console.log(`Whoops: ${e.message}`);
-    }
+
 
 }
 
@@ -43,7 +39,10 @@ const updateVariationalPaymentStatus = async (id, status, user)=>{
         {where:{vp_id: id}});
 }
 
+async function getCurrentPayment(year, month){
+    return await variationalPaymentModel.findAll({where:{vp_payment_month: month, vp_payment_year: year}});
 
+}
 
 const getUnconfirmedVariationalPayment = async ()=>{
     return await variationalPaymentModel.findAll({where:{vp_confirm:0}})
@@ -55,4 +54,5 @@ module.exports = {
     getVariationalPaymentById,
     updateVariationalPaymentStatus,
     getUnconfirmedVariationalPayment,
+    getCurrentPayment
 }

@@ -65,6 +65,10 @@ async function findAllCodes(){
     return await Pd.findAll()
 }
 
+async function getVariationalPayments(){
+    return await Pd.findAll({ where:{ pd_payment_variant: 1}})
+}
+
 async function findSumPercentage(){
     return await Pd.sum('pd_pr_gross')
 
@@ -86,5 +90,6 @@ module.exports = {
     updatePaymentDefinition,
     findSumPercentage,
     findCodeWithGross,
-    findBasicPaymentDefinition
+    findBasicPaymentDefinition,
+    getVariationalPayments
 }

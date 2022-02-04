@@ -1,7 +1,13 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
 const {
     Model
 } = require('sequelize');
+
+const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
+const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
+
 module.exports = (sequelize, DataTypes) => {
     class Employee extends Model {
         /**
@@ -79,10 +85,22 @@ module.exports = (sequelize, DataTypes) => {
         timestamps:false
     });
 
-   Employee.belongsTo(Employee, {as: 'supervisor', foreignKey: 'emp_supervisor_id'})
+    Employee.belongsTo(Employee, {as: 'supervisor', foreignKey: 'emp_supervisor_id'})
     Employee.hasMany(Employee, { foreignKey: 'emp_id' })
+
+    Employee.belongsTo(Location, {as: 'location', foreignKey: 'emp_location_id'})
+    Employee.hasMany(Location, {foreignKey: 'location_id'})
+
+    Employee.belongsTo(JobRole, { foreignKey: 'emp_job_role_id'})
+    Employee.hasMany(JobRole, {foreignKey: 'job_role_id'})
+
+    // JobRole.belongsTo(Department, { as: 'department', foreignKey: 'jb_department_id' })
+    // JobRole.hasMany(Department, { foreignKey: 'department_id' })
+
 
     return Employee;
 };
+
+
 
 
