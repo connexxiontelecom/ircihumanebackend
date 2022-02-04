@@ -21,10 +21,10 @@ router.get('/', auth, async function(req, res, next) {
     }
 });
 
-router.post('/', auth, async (req, res)=>{
+router.post('/', auth, async (req, res, next)=>{
     try{
         const schema = Joi.object({
-            employee: Joi.number().required(),
+            employee: Joi.array().items(Joi.number().required()),
             payment_definition:Joi.number().required(),
             amount:Joi.number().required(),
             month:Joi.number().required(),
@@ -36,56 +36,59 @@ router.post('/', auth, async (req, res)=>{
         if(validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        const pdId = await paymentDefinition.findPaymentById(req.body.payment_definition).then((data)=>{
-            return  data;
-        });
-
-        if(pdId.pd_payment_variant !== 1) return res.status(400).json('Choose variational payment from the option provided.');
-        //check payroll routine for month and year
-        /*const period = payrollMonthYear.findPayrollByMonthYear(req.body.month, req.body.year).then((val)=>{
-            return val
-        });
-        if(_.isEmpty(period) || _.isNull(period)){
-
-        }else{
-
-        }*/
         const payrollR = 0;
         if(payrollR === 1){
             return res.status(400).json("You cannot run payroll routine for this period");
         }else{
-            await variationalPayment.setNewVariationalPayment(req.body).then((data)=>{
-                return res.status(200).json("Action success!");
-            })
+            const pdId = await paymentDefinition.findPaymentById(req.body.payment_definition).then((data)=>{
+                return  data;
+            });
+
+            if(parseInt(pdId.pd_payment_variant) !== 1) return res.status(400).json('Choose variational payment from the option provided.');
+
+            let employeesIds = req.body.employee
+            for (const emp of employeesIds) {
+                const employeeData =  await employees.getEmployee(emp).then((data)=>{
+                    return data
+                })
+                if(!(_.isNull(employeeData) || _.isEmpty(employeeData))){
+                  const vpObject = {
+                      vp_emp_id: parseInt(emp),
+                      vp_payment_def_id: parseInt(req.body.payment_definition),
+                      vp_amount:  parseFloat(req.body.amount),
+                      vp_payment_month:  parseInt(req.body.month),
+                      vp_payment_year:  parseInt(req.body.year)
+                  }
+                  await variationalPayment.setNewVariationalPayment(vpObject).then()
+               }
+            }
+            return res.status(200).json('Action Successful')
         }
 
     }catch (e) {
-        return res.status(400).json(`Error while posting variational payment.`);
+        return res.status(400).json(`Error while posting variational payment.${e.message}`);
     }
 });
 
-router.get('/:id', auth, async (req, res)=>{
+router.get('/:id', auth, async (req, res, next)=>{
     try{
         const id = req.params.id;
         variationalPayment.getVariationalPaymentById(id).then((data)=>{
             return res.status(200).json(data);
         })
     }catch (e) {
-        return res.status(200).json('Something went wrong. Try again.');
+        return res.status(400).json('Something went wrong. Try again.');
     }
 });
 
-router.post('/confirm-payment/', auth, async (req, res)=>{
+router.post('/confirm-payment', auth, async (req, res, next)=>{
     try{
         const schema = Joi.object({
             status: Joi.number().required(),
-            //vp_id:Joi.number().required(),
-            variational_payment:Joi.number().required() //variational payment ID
+             variational_payment:Joi.number().required() //variational payment ID
         });
-
         const vpRequest = req.body
         const validationResult = schema.validate(vpRequest)
-
         if(validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
@@ -102,7 +105,7 @@ router.post('/confirm-payment/', auth, async (req, res)=>{
     }
 });
 
-router.get('/unconfirmed/payments', auth, async (req, res)=>{
+router.get('/unconfirmed-payment', auth, async (req, res, next)=>{
     try{
         variationalPayment.getUnconfirmedVariationalPayment().then((data)=>{
             return res.status(200).json(data);
