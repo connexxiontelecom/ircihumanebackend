@@ -39,7 +39,10 @@ const updateVariationalPaymentStatus = async (id, status, user)=>{
         {where:{vp_id: id}});
 }
 
+async function getCurrentPayment(year, month){
+    return await variationalPaymentModel.findAll({where:{vp_payment_month: month, vp_payment_year: year}});
 
+}
 
 const getUnconfirmedVariationalPayment = async ()=>{
     return await variationalPaymentModel.findAll({where:{vp_confirm:0}})
@@ -51,4 +54,5 @@ module.exports = {
     getVariationalPaymentById,
     updateVariationalPaymentStatus,
     getUnconfirmedVariationalPayment,
+    getCurrentPayment
 }
