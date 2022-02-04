@@ -61,10 +61,8 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
                                }else{
                                    paymentDefinition.findCodeWithGross().then((grossPercentage)=>{
                                        if(_.isEmpty(grossPercentage) || _.isNull(grossPercentage)){
-
+                                           return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
                                        }else{
-
-
                                            let salaryObject = {}
                                             let amount
                                             let percent
