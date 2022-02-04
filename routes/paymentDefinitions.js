@@ -21,6 +21,17 @@ router.get('/', auth, async function(req, res, next) {
     }
 });
 
+
+router.get('/variational-payments', auth, async function(req, res, next) {
+    try {
+         await paymentDefinition.getVariationalPayments().then((data) =>{
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching variational payment definition ${err.message}`)
+    }
+});
+
 /* Add Payment Definition */
 router.post('/add-payment-definition', auth,  async function(req, res, next) {
     try {

@@ -2,6 +2,8 @@ const Joi = require('joi');
 const { QueryTypes, Op } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
+const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const logs = require('../services/logService')
@@ -12,7 +14,8 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getAllEmployee = async (req, res)=>{
-    const employees =  await employee.findAll({ include: ['supervisor'] });
+    const employees =  await employee.findAll({
+        include: ['supervisor', 'location', {model: JobRole, include: Department}] });
     res.send(employees)
 }
 const createNewEmployee = async (req, res, next)=>  {
@@ -167,7 +170,7 @@ const createNewEmployee = async (req, res, next)=>  {
 }
 
 async function getEmployee(employeeId){
-    return await employee.findOne({ where: { emp_id: employeeId } })
+    return await employee.findOne({ where: { emp_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
 }
 
 async function setSupervisorStatus(data){
@@ -219,7 +222,7 @@ async function updateEmployee(employeeId, employeeData){
 
 
 async function getEmployeeById(employeeId) {
-    return await employee.findOne({ where: { emp_unique_id: employeeId } })
+    return await employee.findOne({ where: { emp_unique_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
 }
 
 async function getEmployeeByPersonalEmail(employeePEmail) {

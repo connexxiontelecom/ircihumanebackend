@@ -184,8 +184,6 @@ router.patch('/update-salary-structure/:emp_id', auth,  async function(req, res,
             if(!_.isEmpty(data) || !_.isNull(data)){
                 salaryStructure.findSalaryStructure(empId).then((data)=>{
                     if(_.isEmpty(data) || _.isNull(data)){
-
-
                         return res.status(400).json(`Salary Structure was never setup, consider setting up`)
                     }
                     else{
