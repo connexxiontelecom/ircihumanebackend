@@ -3,6 +3,10 @@ const {sequelize, Sequelize} = require("../services/db");
 const {
     Model
 } = require('sequelize');
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
+
+
 module.exports = (sequelize, DataTypes) => {
     class VariationalPayment extends Model {
         /**
@@ -33,5 +37,14 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'variational_payments',
         timestamps:false
     });
+
+    VariationalPayment.belongsTo(Employee, { as:'employee', foreignKey: 'vp_emp_id' })
+    VariationalPayment.hasMany(Employee, { foreignKey: 'emp_id' })
+
+
+    VariationalPayment.belongsTo(Pd, { as:'payment', foreignKey: 'vp_payment_def_id' })
+    VariationalPayment.hasMany(Pd, { foreignKey: 'pd_id' })
+
+
     return VariationalPayment;
 };
