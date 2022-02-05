@@ -2,7 +2,6 @@ const Joi = require('joi');
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const variationalPaymentModel = require("../models/VariationalPayment")(sequelize, Sequelize.DataTypes);
-//const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const logs = require('../services/logService')
 
@@ -24,11 +23,13 @@ const errHandler = (err) =>{
 }
 
 const getVariationalPayments = async ()=>{
-    return await variationalPaymentModel.findAll();
+    return await variationalPaymentModel.findAll({
+        include: ['employee']
+    });
 }
 
 const getVariationalPaymentById = async (id)=>{
-    return await variationalPaymentModel.findOne({where:{vp_id: id}});
+    return await variationalPaymentModel.findOne({where:{vp_id: id}, include: ['employee', 'payment']});
 }
 
 const updateVariationalPaymentStatus = async (id, status, user)=>{
@@ -40,12 +41,12 @@ const updateVariationalPaymentStatus = async (id, status, user)=>{
 }
 
 async function getCurrentPayment(year, month){
-    return await variationalPaymentModel.findAll({where:{vp_payment_month: month, vp_payment_year: year}});
+    return await variationalPaymentModel.findAll({where:{vp_payment_month: month, vp_payment_year: year}, include: ['employee', 'payment']});
 
 }
 
 const getUnconfirmedVariationalPayment = async ()=>{
-    return await variationalPaymentModel.findAll({where:{vp_confirm:0}})
+    return await variationalPaymentModel.findAll({where:{vp_confirm:0}, include: ['employee', 'payment']})
 }
 
 module.exports = {
