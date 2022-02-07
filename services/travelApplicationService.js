@@ -58,7 +58,8 @@ const setNewTravelApplication = async (travelData, days )=>{
 
 const getTravelApplicationsForAuthorization = async (travelAppIds)=>{
     return await travelApplicationModel.findAll({
-        where: {travelapp_id: travelAppIds}
+        where: {travelapp_id: travelAppIds},
+        include:[EmployeeModel]
     })
 }
 module.exports = {
