@@ -70,7 +70,8 @@ async function updateTimeSheetStatus(comment, userId, status, randStr, ts_id){
 
 const getTimeSheetApplicationsForAuthorization = async (month, year)=>{
     return await TimeSheet.findAll({
-        where: {ts_month:month, ts_year:year},
+        where:  { ts_year:year},
+        //where: { where:Sequelize.and({ts_year:year}) },
         include:[EmployeeModel]
     })
 }
