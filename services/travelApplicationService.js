@@ -28,7 +28,7 @@ const getTravelApplicationsByEmployeeId = async (employee)=>{
 }
 
 const getTravelApplicationsById = async (id)=>{
-    return await travelApplicationModel.findOne({where:{travelapp_id:id} });
+    return await travelApplicationModel.findOne({where:{travelapp_id:id},include: [EmployeeModel] });
 }
 
 
@@ -44,10 +44,10 @@ const setNewTravelApplication = async (travelData, days )=>{
         //travelapp_t2_code: travelData.t2_code,
         travelapp_per_diem:travelData.travel_category === 1 ? travelData.per_diem : 0,
         travelapp_days:days,
-        travelapp_currency:travelData.travel_category === 1 ?  travelData.currency : '',
-        travelapp_total:travelData.travel_category === 1 ? travelData.total : '',
+        travelapp_currency:travelData.travel_category === 1 ?  travelData.currency : 'NGN',
+        travelapp_total:travelData.travel_category === 1 ? travelData.total : 0,
         travelapp_hotel:travelData.hotel,
-        travelapp_city:travelData.hotel === 1 ? travelData.city : '',
+        travelapp_city:travelData.hotel === 1 ? travelData.city : null,
         travelapp_arrival_date:travelData.hotel === 1 ? travelData.arrival_date : null,
         travelapp_departure_date:travelData.hotel === 1 ? travelData.departure_date : null,
         travelapp_preferred_hotel:travelData.hotel === 1 ? travelData.preferred_hotel : null,

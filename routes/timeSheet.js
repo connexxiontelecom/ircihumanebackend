@@ -332,8 +332,18 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
             data.map((app)=>{
                 ids.push(app.auth_travelapp_id);
             });
-            timeSheet.getTimeSheetApplicationsForAuthorization(ids).then((data)=>{
-                return res.status(200).json(data);
+            const month = [];
+            const year = [];
+            timeSheetAllocation.getTimeAllocationApplicationsForAuthorization(ids).then((info)=>{
+                info.map((n)=>{
+                    month.push(n.ta_month);
+                    year.push(n.ta_year);
+                });
+                //return res.status(200).json({month,year});
+                timeSheet.getTimeSheetApplicationsForAuthorization(month, year).then((r)=>{
+                    return res.status(200).json(r);
+                })
+
             });
         })
     }catch (e) {

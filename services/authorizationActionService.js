@@ -36,8 +36,8 @@ const updateAuthorizationStatus = async (req, res)=>{
             officer: Joi.number().required(),
             type: Joi.number().required(),
             comment: Joi.string().required(),
-            markAsFinal: Joi.number().required().valid(1,2),
-            nextOfficer: Joi.alternatives().conditional('markAsFinal',{is: 2, then: Joi.number().required()}),
+            markAsFinal: Joi.number().required().valid(0,1),
+            nextOfficer: Joi.alternatives().conditional('markAsFinal',{is: 1, then: Joi.number().required()}),
         });
 
         const authRequest = req.body

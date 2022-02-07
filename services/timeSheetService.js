@@ -68,12 +68,17 @@ async function updateTimeSheetStatus(comment, userId, status, randStr, ts_id){
 
 }
 
-const getTimeSheetApplicationsForAuthorization = async (appIds)=>{
+const getTimeSheetApplicationsForAuthorization = async (month, year)=>{
     return await TimeSheet.findAll({
-        where: {ts_ref_no: appIds},
+        where: {ts_month:month, ts_year:year},
         include:[EmployeeModel]
     })
 }
+/*const getTimeAllocationApplicationsForAuthorization = async (month, year)=>{
+    return await TimeAllocation.findAll({
+        where: {ta_month:month, ta_year:year}
+    })
+}*/
 
 module.exports = {
     addTimeSheet,
