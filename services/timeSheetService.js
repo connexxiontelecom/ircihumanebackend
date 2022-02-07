@@ -1,6 +1,7 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const TimeSheet = require("../models/timesheet")(sequelize, Sequelize.DataTypes)
+const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 
 const helper  = require('../helper');
 
@@ -67,7 +68,12 @@ async function updateTimeSheetStatus(comment, userId, status, randStr, ts_id){
 
 }
 
-
+const getTimeSheetApplicationsForAuthorization = async (appIds)=>{
+    return await TimeSheet.findAll({
+        where: {ts_ref_no: appIds},
+        include:[EmployeeModel]
+    })
+}
 
 module.exports = {
     addTimeSheet,
@@ -75,5 +81,6 @@ module.exports = {
     updateTimeSheet,
     findTimeSheetMonth,
     getLatestTimeSheet,
-    updateTimeSheetStatus
+    updateTimeSheetStatus,
+    getTimeSheetApplicationsForAuthorization
 }

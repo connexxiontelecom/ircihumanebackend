@@ -84,6 +84,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                             travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                         });
                     }
+                   // supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid);
                     authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
                         .then((outcome)=>{
                             const logData = {
@@ -133,7 +134,7 @@ router.get('/:id', auth, async (req, res)=>{ //get travel application details
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
-        await authorizationAction.getTravelAuthorizationByOfficerId(supervisorId,3).then((data)=>{
+        await authorizationAction.getAuthorizationByOfficerId(supervisorId,3).then((data)=>{
             const ids = [];
             data.map((app)=>{
                 ids.push(app.auth_travelapp_id);

@@ -141,12 +141,13 @@ const updateAuthorizationStatus = async (req, res)=>{
     }
 }
 
-const getTravelAuthorizationByOfficerId = async (officerId, type)=>{
+const getAuthorizationByOfficerId = async (officerId, type)=>{
     return await authorizationModel.findAll({where:{auth_officer_id:officerId, auth_type:type}})
 }
+
 
 module.exports = {
     registerNewAction,
     updateAuthorizationStatus,
-    getTravelAuthorizationByOfficerId,
+    getAuthorizationByOfficerId,
 }

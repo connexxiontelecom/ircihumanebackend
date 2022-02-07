@@ -11,7 +11,8 @@ async function addTimeAllocation(timeAllocationData){
         ta_month: timeAllocationData.ta_month,
         ta_year: timeAllocationData.ta_year,
         ta_tcode: timeAllocationData.ta_tcode,
-        ta_charge: timeAllocationData.ta_charge
+        ta_charge: timeAllocationData.ta_charge,
+        ta_ref_no: timeAllocationData.ta_ref_no
 
      });
 }
@@ -40,12 +41,17 @@ async function sumTimeAllocation(empId, month, year){
     return await TimeAllocation.sum('ta_charge',{  where: { ta_emp_id: empId, ta_month: month, ta_year: year }})
 }
 
-
+const getTimeAllocationApplicationsForAuthorization = async (appIds)=>{
+    return await TimeAllocation.findAll({
+        where: {ta_ref_no: appIds}
+    })
+}
 
 
 module.exports = {
     addTimeAllocation,
     findTimeAllocation,
     updateTimeAllocation,
-    sumTimeAllocation
+    sumTimeAllocation,
+    getTimeAllocationApplicationsForAuthorization
 }
