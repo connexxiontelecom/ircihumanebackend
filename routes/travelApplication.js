@@ -132,8 +132,8 @@ router.get('/:id', auth, async (req, res)=>{ //get travel application details
 
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
-        const employeeId = req.params.id;  //req.employee.emp_id || 1;
-        await authorizationAction.getTravelAuthorizationByOfficerId(employeeId,3).then((data)=>{
+        const supervisorId = req.params.id;
+        await authorizationAction.getTravelAuthorizationByOfficerId(supervisorId,3).then((data)=>{
             const ids = [];
             data.map((app)=>{
                 ids.push(app.auth_travelapp_id);
