@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class timesheet extends Model {
     /**
@@ -33,5 +35,6 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'TimeSheet',
     tableName: 'time_sheets'
   });
+  timesheet.belongsTo(Employee, { foreignKey: 'ts_emp_id' })
   return timesheet;
 };

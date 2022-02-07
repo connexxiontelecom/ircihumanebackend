@@ -12,7 +12,8 @@ const employee = require('../services/employeeService')
 const payrollMonthYear =  require('../services/payrollMonthYearService')
 const publicHolidays = require('../services/publicHolidayServiceSetup')
 const supervisorAssignment = require('../services/supervisorAssignmentService');
-const logs = require('../services/logService')
+const logs = require('../services/logService');
+const authorizationAction = require('../services/authorizationActionService');
 
 
 /* Add to time sheet */
@@ -322,6 +323,34 @@ async function updateTimeSheet(timeSheetId, timeSheetData){
       return data
   })
 }
+
+router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
+    try{
+        const supervisorId = req.params.id;
+        await authorizationAction.getAuthorizationByOfficerId(supervisorId,2).then((data)=>{
+            const ids = [];
+            data.map((app)=>{
+                ids.push(app.auth_travelapp_id);
+            });
+            const month = [];
+            const year = [];
+            timeSheetAllocation.getTimeAllocationApplicationsForAuthorization(ids).then((info)=>{
+                info.map((n)=>{
+                    month.push(n.ta_month);
+                    year.push(n.ta_year);
+                });
+                //return res.status(200).json({month,year});
+                timeSheet.getTimeSheetApplicationsForAuthorization(month, year).then((r)=>{
+                    return res.status(200).json(r);
+                })
+
+            });
+        })
+    }catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
 
 
 module.exports = router;

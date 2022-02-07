@@ -8,6 +8,7 @@ const timeAllocation =  require('../services/timeAllocationService')
 const timeSheet =  require('../services/timeSheetService')
 const logs = require('../services/logService')
 
+const authorizationAction = require('../services/authorizationActionService');
 
 /* Add to time sheet */
 router.post('/add-time-allocation', auth,  async function(req, res, next) {
@@ -18,6 +19,7 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
             ta_year: Joi.string().required(),
             ta_tcode: Joi.string().required(),
             ta_charge: Joi.number().precision(2).required(),
+            ta_ref_no: Joi.string().required()
                   })
 
         const timeAllocationRequest = req.body
@@ -28,17 +30,18 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
         }
 
             timeAllocation.addTimeAllocation(timeAllocationRequest).then((data)=>{
-
-                const logData = {
-                    "log_user_id": req.user.username.user_id,
-                    "log_description": "Added Time Allocation",
-                    "log_date": new Date()
-                }
-                logs.addLog(logData).then((logRes)=>{
-                    return res.status(200).json('Action Successful')
-                })
-
-
+                //supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid);
+                authorizationAction.registerNewAction(2,data.ta_ref_no, 2,0,"Time allocation/time sheet initialized.")
+                    .then((val)=>{
+                        const logData = {
+                            "log_user_id": req.user.username.user_id,
+                            "log_description": "Added Time Allocation",
+                            "log_date": new Date()
+                        }
+                        logs.addLog(logData).then((logRes)=>{
+                            return res.status(200).json('Action Successful')
+                        })
+                    })
             })
 
     } catch (err) {
