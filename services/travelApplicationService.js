@@ -4,6 +4,7 @@ const { sequelize, Sequelize } = require('./db');
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 const travelApplicationBreakdownModel = require("../models/TravelApplicationBreakdown")(sequelize, Sequelize.DataTypes);
+const authorizationService = require('../services/authorizationActionService')
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const logs = require('../services/logService')
@@ -54,9 +55,16 @@ const setNewTravelApplication = async (travelData, days )=>{
     });
 }
 
+
+const getTravelApplicationsForAuthorization = async (travelAppIds)=>{
+    return await travelApplicationModel.findAll({
+        where: {travelapp_id: travelAppIds}
+    })
+}
 module.exports = {
     getTravelApplications,
     setNewTravelApplication,
     getTravelApplicationsByEmployeeId,
     getTravelApplicationsById,
+    getTravelApplicationsForAuthorization
 }
