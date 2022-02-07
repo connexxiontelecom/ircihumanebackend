@@ -328,6 +328,7 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
         await authorizationAction.getAuthorizationByOfficerId(supervisorId,2).then((data)=>{
+
             const ids = [];
             data.map((app)=>{
                 ids.push(app.auth_travelapp_id);
