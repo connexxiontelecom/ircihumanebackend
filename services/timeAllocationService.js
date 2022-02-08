@@ -1,6 +1,7 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const TimeAllocation = require("../models/timeallocation")(sequelize, Sequelize.DataTypes)
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 
 const helper  = require('../helper');
 
@@ -33,12 +34,21 @@ async function updateTimeAllocation(ta_id, timeAllocationData){
 }
 
 async function findTimeAllocation(empId, month, year){
-    return await TimeAllocation.findAll({  where: { ta_emp_id: empId, ta_month: month, ta_year: year } })
-
+    return await TimeAllocation.findAll({  where: { ta_emp_id: empId, ta_month: month, ta_year: year },
+        include: [Employee]
+    })
+}
+async function findTimeAllocationDetail(empId, month, year){
+    return await TimeAllocation.findOne({  where: { ta_emp_id: empId, ta_month: month, ta_year: year },
+        include: [Employee]
+    })
 }
 
 async function sumTimeAllocation(empId, month, year){
-    return await TimeAllocation.sum('ta_charge',{  where: { ta_emp_id: empId, ta_month: month, ta_year: year }})
+    return await TimeAllocation.sum('ta_charge',{
+        where: { ta_emp_id: empId, ta_month: month, ta_year: year },
+        include: [Employee]
+    })
 }
 
 const getTimeAllocationApplicationsForAuthorization = async (appIds)=>{
@@ -53,5 +63,6 @@ module.exports = {
     findTimeAllocation,
     updateTimeAllocation,
     sumTimeAllocation,
-    getTimeAllocationApplicationsForAuthorization
+    getTimeAllocationApplicationsForAuthorization,
+    findTimeAllocationDetail
 }
