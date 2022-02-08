@@ -4,6 +4,7 @@ const authorizationModel = require("../models/AuthorizationAction")(sequelize, S
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
 const leaveApplicationModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const timeSheetModel = require("../models/timesheet")(sequelize, Sequelize.DataTypes);
+const timeAllocationModel = require("../models/timeallocation")(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 const logs = require('../services/logService');
 //const bcrypt = require("bcrypt");
@@ -31,13 +32,13 @@ const updateAuthorizationStatus = async (req, res)=>{
     try{
         const schema = Joi.object({
             //auth_id: Joi.number().required(),
-            appId: Joi.number().required(),
+            appId: Joi.string().required(),
             status: Joi.number().required(),
             officer: Joi.number().required(),
             type: Joi.number().required(),
             comment: Joi.string().required(),
             markAsFinal: Joi.number().required().valid(0,1),
-            nextOfficer: Joi.alternatives().conditional('markAsFinal',{is: 1, then: Joi.number().required()}),
+            nextOfficer: Joi.alternatives().conditional('markAsFinal',{is: 0, then: Joi.number().required()}),
         });
 
         const authRequest = req.body
@@ -94,10 +95,9 @@ const updateAuthorizationStatus = async (req, res)=>{
                             }
                         });
                         break;
-                   /* case 2: //time sheet
-                        const randStr = Math.random().toString(36).substr(2, 5);
-                        await timeSheetModel.update({
-                            ts_status:status,
+                    case 2: //time sheet
+                        await timeAllocationModel.update({
+                            ta_status:status,
                             ts_comment:comment,
                             ts_date_approved:new Date(),
                             ts_approve_by:officer,
@@ -107,7 +107,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                                 ts_id:appId
                             }
                         });
-                        break;*/
+                        break;
                     case 3: //travel application
                         await travelApplicationModel.update({
                             travelapp_status:status,
