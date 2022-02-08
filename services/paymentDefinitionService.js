@@ -82,6 +82,8 @@ async function findCodeWithGross(){
         }})
 }
 
+
+
 module.exports = {
     addPaymentDefinition,
     findPaymentByCode,
@@ -91,5 +93,6 @@ module.exports = {
     findSumPercentage,
     findCodeWithGross,
     findBasicPaymentDefinition,
-    getVariationalPayments
+    getVariationalPayments,
+
 }
