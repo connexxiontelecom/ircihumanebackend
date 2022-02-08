@@ -48,7 +48,6 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
 
         const employeeData =   await employee.getEmployee(empId).then((data)=>{
             return  data
-
         })
 
         if(!_.isEmpty(employeeData) || !_.isNull(employeeData)){
@@ -56,13 +55,10 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
                 return data
             })
 
-            if(_.isEmpty(empSalaryStructure) || _.isNull(empSalaryStructure)){
-                return res.status(400).json(`Salary Structure was never setup, consider setting up`)
+            if(!(_.isEmpty(empSalaryStructure) || _.isNull(empSalaryStructure))){
+                return res.status(400).json(`Salary Structure already set up, consider updating`)
             }
             else{
-
-
-
                 const empSalaryGrade = await salaryGrade.findSalaryGrade(salaryStructureRequest.ss_grade).then((data)=>{
                     return data
                 })
