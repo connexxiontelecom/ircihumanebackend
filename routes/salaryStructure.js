@@ -109,24 +109,29 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
                                                            })
 
                                                        }
-                                                       const logData = {
-                                                           "log_user_id": req.user.username.user_id,
-                                                           "log_description": "Added new salary structure",
-                                                           "log_date": new Date()
-                                                       }
-                                                       logs.addLog(logData).then((logRes)=>{
-                                                           //return res.status(200).json(logRes);
-                                                           return  res.status(200).json(`Action Successful`)
+                                                       employee.updateGrossSalary(salaryStructureRequest.ss_empid, gross).then((updateData)=>{
+                                                           if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
+                                                               const logData = {
+                                                                   "log_user_id": req.user.username.user_id,
+                                                                   "log_description": "Added new salary structure",
+                                                                   "log_date": new Date()
+                                                               }
+                                                               logs.addLog(logData).then((logRes)=>{
+                                                                   //return res.status(200).json(logRes);
+                                                                   return  res.status(200).json(`Action Successful`)
+                                                               })
+                                                           } else {
+                                                               salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                                                                   return res.status(400).json(`An error occurred while updating Employee's Gross`)
+                                                               })
+
+                                                           }
                                                        })
+
                                                    } else{
-                                                       const logData = {
-                                                           "log_user_id": req.user.username.user_id,
-                                                           "log_description": "Added new salary structure",
-                                                           "log_date": new Date()
-                                                       }
-                                                       logs.addLog(logData).then((logRes)=>{
-                                                           //return res.status(200).json(logRes);
-                                                           return  res.status(200).json(`Action Successful`)
+
+                                                       salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                                                           return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
                                                        })
                                                    }
                                                 })

@@ -221,6 +221,18 @@ async function updateEmployee(employeeId, employeeData){
 }
 
 
+async function updateGrossSalary(employeeId, employeeGross){
+    return await employee.update({
+        emp_gross: employeeGross
+    }, {
+        where:{
+            emp_id: employeeId
+        }
+    })
+
+}
+
+
 async function getEmployeeById(employeeId) {
     return await employee.findOne({ where: { emp_unique_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
 }
@@ -319,7 +331,8 @@ module.exports = {
     getSupervisors,
     getNoneSupervisors,
     getSupervisorEmployee,
-    updateEmployee
+    updateEmployee,
+    updateGrossSalary
     //updateDepartment,
     //setNewDepartment,
 }
