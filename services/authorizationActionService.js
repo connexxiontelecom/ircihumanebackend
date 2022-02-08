@@ -128,11 +128,11 @@ const updateAuthorizationStatus = async (req, res)=>{
                     "log_date": new Date()
                 }
                 logs.addLog(logData).then((logRes)=>{
-                    res.status(200).json({message: "Your action was registered successfully."});
+                    res.status(200).json("Your action was registered successfully.");
                 });
             }
         }else{
-            res.status(404).json({message:"Whoops! The requested record does not exist."});
+            res.status(404).json("Whoops! The requested record does not exist.");
         }
 
     }catch (e) {
