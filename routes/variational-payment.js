@@ -52,6 +52,16 @@ router.post('/', auth, async (req, res, next)=>{
                     return data
                 })
                 if(!(_.isNull(employeeData) || _.isEmpty(employeeData))){
+
+                    const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(emp), parseInt(req.body.year), parseInt(req.body.month), parseInt(req.body.payment_definition)).then((data)=>{
+                        return data
+                    })
+
+                    if(!(_.isNull(checkExisting) || _.isEmpty(checkExisting))){
+
+
+                    }
+
                   const vpObject = {
                       vp_emp_id: parseInt(emp),
                       vp_payment_def_id: parseInt(req.body.payment_definition),
