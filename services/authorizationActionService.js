@@ -5,6 +5,7 @@ const travelApplicationModel = require("../models/TravelApplication")(sequelize,
 const leaveApplicationModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const timeSheetModel = require("../models/timesheet")(sequelize, Sequelize.DataTypes);
 const timeAllocationModel = require("../models/timeallocation")(sequelize, Sequelize.DataTypes);
+const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const Joi = require('joi');
 const logs = require('../services/logService');
 //const bcrypt = require("bcrypt");
@@ -98,13 +99,12 @@ const updateAuthorizationStatus = async (req, res)=>{
                     case 2: //time sheet
                         await timeAllocationModel.update({
                             ta_status:status,
-                            ts_comment:comment,
-                            ts_date_approved:new Date(),
-                            ts_approve_by:officer,
-                            ts_ref_no: randStr
+                            ta_comment:comment,
+                            ta_date_approved:new Date(),
+                            ta_approved_by:officer,
                         },{
                             where:{
-                                ts_id:appId
+                                ta_ref_no:appId
                             }
                         });
                         break;
@@ -144,9 +144,17 @@ const getAuthorizationByOfficerId = async (officerId, type)=>{
     return await authorizationModel.findAll({where:{auth_officer_id:officerId, auth_type:type}})
 }
 
+const getAuthorizationLog = async (authId, type )=>{
+    return await authorizationModel.findAll({
+        where:{auth_travelapp_id: authId, auth_type:type},
+        include:[EmployeeModel]
+    });
+}
+
 
 module.exports = {
     registerNewAction,
     updateAuthorizationStatus,
     getAuthorizationByOfficerId,
+    getAuthorizationLog
 }
