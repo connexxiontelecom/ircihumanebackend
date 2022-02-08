@@ -38,8 +38,10 @@ const updateAuthorizationStatus = async (req, res)=>{
             officer: Joi.number().required(),
             type: Joi.number().required(),
             comment: Joi.string().required(),
+
             markAsFinal: Joi.number().required().valid(0,1),
             nextOfficer: Joi.alternatives().conditional('markAsFinal',{is: 0, then: Joi.number().required()}),
+
         });
 
         const authRequest = req.body
@@ -140,6 +142,7 @@ const updateAuthorizationStatus = async (req, res)=>{
     }
 }
 
+
 const getAuthorizationByOfficerId = async (officerId, type)=>{
     return await authorizationModel.findAll({where:{auth_officer_id:officerId, auth_type:type}})
 }
@@ -152,9 +155,12 @@ const getAuthorizationLog = async (authId, type )=>{
 }
 
 
+
 module.exports = {
     registerNewAction,
     updateAuthorizationStatus,
+    getTravelAuthorizationByOfficerId,
     getAuthorizationByOfficerId,
     getAuthorizationLog
+
 }

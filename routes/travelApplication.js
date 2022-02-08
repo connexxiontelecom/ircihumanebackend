@@ -150,6 +150,25 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     }
 });
 
+
+router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
+    try{
+        const employeeId = req.params.id;  //req.employee.emp_id || 1;
+        await authorizationAction.getTravelAuthorizationByOfficerId(employeeId,3).then((data)=>{
+            const ids = [];
+            data.map((app)=>{
+                ids.push(app.auth_travelapp_id);
+            });
+            travelApplicationService.getTravelApplicationsForAuthorization(ids).then((data)=>{
+                return res.status(200).json(data);
+            });
+        })
+    }catch (e) {
+            return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
+
 /*router.post('/authorization', auth, async (req, res)=>{
     try{
         const schema = Joi.object({
