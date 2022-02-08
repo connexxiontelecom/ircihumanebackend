@@ -30,7 +30,7 @@ const updateAuthorizationStatus = async (req, res)=>{
 
     try{
         const schema = Joi.object({
-            auth_id: Joi.number().required(),
+            //auth_id: Joi.number().required(),
             appId: Joi.number().required(),
             status: Joi.number().required(),
             officer: Joi.number().required(),
@@ -50,8 +50,7 @@ const updateAuthorizationStatus = async (req, res)=>{
 
         const application = await authorizationModel.findOne(
             {
-                where:{auth_id: auth_id},
-                where:{auth_status:0}, //pending request
+                where:{auth_travelapp_id: appId, auth_type: type, auth_status: 0},
             });
 
         if(application){
