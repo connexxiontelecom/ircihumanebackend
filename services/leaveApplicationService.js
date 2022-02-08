@@ -80,10 +80,18 @@ async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type
 //     return await LocationAllowance.findOne({ where: { la_payment_id: payment_id, la_location_id: location_id }, include: [Location, Pd] })
 // }
 
+const getLeaveApplicationsForAuthorization = async (leaveAppIds)=>{
+    return await LeaveApplication.findAll({
+        where: {leapp_id: leaveAppIds},
+        include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+    })
+}
+
 
 module.exports = {
   addLeaveApplication,
     sumLeaveUsedByYearEmployeeLeaveType,
     findAllLeaveApplication,
-    findEmployeeLeaveApplication
+    findEmployeeLeaveApplication,
+    getLeaveApplicationsForAuthorization
    }

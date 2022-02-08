@@ -14,6 +14,7 @@ const logs = require('../services/logService')
 const employees = require("../services/employeeService");
 
 
+
 /* Get leave application */
 router.get('/', auth, async function(req, res, next) {
     try {
@@ -145,6 +146,24 @@ router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
 
     } catch (err) {
         return res.status(400).json(`Error while fetching leaves ${err.message}`)
+    }
+});
+
+router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
+    try{
+        const supervisorId = req.params.id;
+        await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
+            const ids = [];
+            data.map((app)=>{
+                ids.push(app.auth_travelapp_id);
+            });
+            //return res.status(200).json(ids);
+            leaveApplication.getLeaveApplicationsForAuthorization(ids).then((data)=>{
+                return res.status(200).json(data);
+            });
+        })
+    }catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
     }
 });
 module.exports = router;
