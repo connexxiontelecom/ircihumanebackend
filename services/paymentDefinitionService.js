@@ -20,7 +20,8 @@ async function addPaymentDefinition(pd){
         pd_pr_gross: pd.pd_pr_gross,
         pd_amount: pd.pd_amount,
         pd_value: pd.pd_value,
-        pd_percentage: pd.pd_percentage
+        pd_percentage: pd.pd_percentage,
+        pd_tax: pd.pd_tax
     });
 }
 
@@ -46,7 +47,9 @@ async function updatePaymentDefinition(pd, pd_id){
         pd_pr_gross: pd.pd_pr_gross,
         pd_amount: pd.pd_amount,
         pd_value: pd.pd_value,
-        pd_percentage: pd.pd_percentage
+        pd_percentage: pd.pd_percentage,
+        pd_tax: pd.pd_tax
+
     },{
         where:{
             pd_id:pd_id
@@ -82,6 +85,16 @@ async function findCodeWithGross(){
         }})
 }
 
+async function findTax(){
+    return await Pd.findOne({
+        where:{
+            pd_tax: 1
+        }
+    })
+}
+
+
+
 module.exports = {
     addPaymentDefinition,
     findPaymentByCode,
@@ -91,5 +104,7 @@ module.exports = {
     findSumPercentage,
     findCodeWithGross,
     findBasicPaymentDefinition,
-    getVariationalPayments
+    getVariationalPayments,
+    findTax
+
 }
