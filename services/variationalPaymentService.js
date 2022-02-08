@@ -49,6 +49,10 @@ async function checkDuplicateEntry(empId, year, month, paymentType){
     return await variationalPaymentModel.findOne({ where:{ vp_payment_month: month, vp_payment_year: year, vp_emp_id: empId, vp_payment_def_id: paymentType}})
 }
 
+async function deletePaymentEntry(vpId){
+    return await variationalPaymentModel.destroy({where:{ vp_id: vpId}})
+}
+
 const getUnconfirmedVariationalPayment = async ()=>{
     return await variationalPaymentModel.findAll({where:{vp_confirm:0}, include: ['employee', 'payment']})
 }
@@ -60,5 +64,6 @@ module.exports = {
     updateVariationalPaymentStatus,
     getUnconfirmedVariationalPayment,
     getCurrentPayment,
-    checkDuplicateEntry
+    checkDuplicateEntry,
+    deletePaymentEntry
 }

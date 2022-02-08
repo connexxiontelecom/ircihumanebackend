@@ -58,10 +58,8 @@ router.post('/', auth, async (req, res, next)=>{
                     })
 
                     if(!(_.isNull(checkExisting) || _.isEmpty(checkExisting))){
-
-
+                            await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
                     }
-
                   const vpObject = {
                       vp_emp_id: parseInt(emp),
                       vp_payment_def_id: parseInt(req.body.payment_definition),
