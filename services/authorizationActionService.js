@@ -46,7 +46,7 @@ const updateAuthorizationStatus = async (req, res)=>{
             return res.status(400).json(validationResult.error.details[0].message);
         }
         //res.send(req.body);
-        const {auth_id, appId, status, officer, type, comment, markAsFinal, nextOfficer} = req.body;
+        const {appId, status, officer, type, comment, markAsFinal, nextOfficer} = req.body;
 
         const application = await authorizationModel.findOne(
             {
@@ -54,14 +54,14 @@ const updateAuthorizationStatus = async (req, res)=>{
             });
 
         if(application){
-            if(application.auth_officer_id !== officer) return res.status(400).json({message:"You do not have permission to authorize this request."});
+            if(application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
 
             const auth = await authorizationModel.update({
                 auth_status: status,
                 auth_comment:comment
             },{
                 where:{
-                    auth_id:auth_id
+                    auth_travelapp_id: appId, auth_type: type
                 }
             });
             if(markAsFinal === 0 ){
@@ -78,7 +78,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                     "log_date": new Date()
                 }
                 logs.addLog(logData).then((logRes)=>{
-                    res.status(200).json({message: "Your action was registered successfully."});
+                    res.status(200).json("Your action was registered successfully.");
                 });
             }else if(markAsFinal === 1){
                 switch (type) {
@@ -136,7 +136,7 @@ const updateAuthorizationStatus = async (req, res)=>{
         }
 
     }catch (e) {
-        return res.status(400).json({message: "Something went wrong. Try again."+e.message});
+        return res.status(400).json("Something went wrong. Try again.");
     }
 }
 
