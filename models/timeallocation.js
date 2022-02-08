@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class timeallocation extends Model {
     /**
@@ -24,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
     ta_year: DataTypes.TEXT,
     ta_tcode: DataTypes.TEXT,
     ta_charge: DataTypes.DOUBLE,
+    ta_ref_no: DataTypes.STRING,
+    ta_date_approved: DataTypes.DATE,
+    ta_approved_by: DataTypes.INTEGER,
+    ta_status: DataTypes.INTEGER,
+    ta_comment: DataTypes.TEXT,
 
 
   }, {
@@ -31,5 +38,6 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'TimeAllocation',
     tableName: 'time_allocations'
   });
+  timeallocation.belongsTo(Employee, { foreignKey: 'ta_emp_id' })
   return timeallocation;
 };

@@ -2,6 +2,8 @@
 const {
     Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
     class AuthorizationAction extends Model {
         /**
@@ -38,5 +40,6 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'authorization_actions',
         //timestamps:false
     });
+    AuthorizationAction.belongsTo(Employee, { foreignKey: 'auth_officer_id' })
     return AuthorizationAction;
 };

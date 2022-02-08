@@ -84,6 +84,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                             travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                         });
                     }
+                   // supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid);
                     authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
                         .then((outcome)=>{
                             const logData = {
@@ -124,11 +125,31 @@ router.get('/:id', auth, async (req, res)=>{ //get travel application details
         const application = await travelApplicationService.getTravelApplicationsById(id);
         const breakdown = await travelApplicationBreakdownService.getDetailsByTravelApplicationId(id);
         const expenses = await travelApplicationT2Service.getT2DetailsByTravelApplicationId(id);
-        return res.status(200).json({application, breakdown, expenses});
+        //return res.status(200).json(application.travelapp_id);
+        const log = await authorizationAction.getAuthorizationLog(application.travelapp_id,3);
+        return res.status(200).json({application, breakdown, expenses, log});
     }catch (e) {
-        return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again."+e.message);
     }
 });
+
+router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
+    try{
+        const supervisorId = req.params.id;
+        await authorizationAction.getAuthorizationByOfficerId(supervisorId,3).then((data)=>{
+            const ids = [];
+            data.map((app)=>{
+                ids.push(app.auth_travelapp_id);
+            });
+            travelApplicationService.getTravelApplicationsForAuthorization(ids).then((data)=>{
+                return res.status(200).json(data);
+            });
+        })
+    }catch (e) {
+            return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
 
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
@@ -146,6 +167,7 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
             return res.status(400).json("Something went wrong. Try again.");
     }
 });
+
 
 /*router.post('/authorization', auth, async (req, res)=>{
     try{
