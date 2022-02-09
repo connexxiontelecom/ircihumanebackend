@@ -10,7 +10,9 @@ const employee = require('../services/employeeService')
 const locationAllowance =  require('../services/locationAllowanceService')
 const salary = require('../services/salaryService')
 const variationalPayment = require('../services/variationalPaymentService')
-const payrollMonthYear =  require('../services/payrollMonthYearService');
+const payrollMonthYear =  require('../services/payrollMonthYearService')
+const taxRates = require('../services/taxRateService')
+const minimumTaxRate = require('../services/minimumTaxRateService')
 const logs = require('../services/logService')
 
 
@@ -256,11 +258,94 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                                     }
                                 }
 
-
-
-
                                 //tax computation
+                                let taxRatesData = await taxRates.findAllTaxRate().then((data)=>{
+                                    return data
+                                })
 
+                                if(_.isEmpty(taxRatesData) || _.isNull(taxRatesData)){
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                        return res.status(400).json(`No tax Rate Setup `)
+
+                                    })
+
+                                }
+
+                                let minimumTaxRateData = await minimumTaxRate.findAllMinimumTaxRate().then((data)=>{
+                                    return data
+                                })
+
+                                if(_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)){
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                        return res.status(400).json(`Minimum Tax Rate Not Setup `)
+
+                                    })
+                                }
+
+
+                                let paymentDefinitionTaxData = await paymentDefinition.findTax().then((data)=>{
+                                    return data
+                                })
+
+                                if(_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)){
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                        return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
+
+                                    })
+                                }
+
+                                let taxRelief = ((20/100) * empAdjustedGross) + (200000/12)
+                                let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (empAdjustedGross - taxRelief);
+                                let tempTaxAmount = empAdjustedGross - taxRelief
+                                let cTax;
+                                let totalTaxAmount = 0;
+
+                                    for(const tax of taxRatesData){
+                                        if(tempTaxAmount >= tax.tr_band/12){
+                                            cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                                        } else{
+                                            cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                            totalTaxAmount = cTax + totalTaxAmount
+                                            break;
+                                        }
+                                        tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
+                                        totalTaxAmount = cTax + totalTaxAmount
+                                    }
+
+                                if(totalTaxAmount <= minimumTax) {
+                                    totalTaxAmount = minimumTax
+                                }
+
+                                salaryObject = {
+                                    salary_empid: emp.emp_id,
+                                    salary_paymonth: payrollMonth,
+                                    salary_payyear: payrollYear,
+                                    salary_pd: paymentDefinitionTaxData.pd_id,
+                                    salary_amount: totalTaxAmount,
+                                    salary_share: 0,
+                                    salary_tax: 1
+                                }
+
+                                let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                    return data
+                                })
+
+                                if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                        return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                    })
+
+                                }
+
+                                const logData = {
+                                    "log_user_id": req.user.username.user_id,
+                                    "log_description": "Ran Payroll Routine",
+                                    "log_date": new Date()
+                                }
+                                await logs.addLog(logData).then((logRes)=>{
+                                    return  res.status(200).json(`Action Successful`)
+                                })
 
                             }
 
