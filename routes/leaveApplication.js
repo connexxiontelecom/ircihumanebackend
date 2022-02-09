@@ -149,6 +149,17 @@ router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
     }
 });
 
+router.get('/:id', auth, async (req, res)=>{ //get leave application details
+    const id = req.params.id
+    try{
+        const application = await leaveApplication.getLeaveApplicationsById(id);
+        const log = await authorizationAction.getAuthorizationLog(application.leapp_id,1);
+        return res.status(200).json({application, log});
+    }catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
