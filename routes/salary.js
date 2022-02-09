@@ -115,10 +115,15 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                                 return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
 
                             }else {
-
-
                                 let amount
                                 let percent
+                                let basicSalary;
+                                let paymentDefinitionData = await paymentDefinition.findBasicPaymentDefinition().then((data)=>{
+                                    return data
+                                })
+
+                                //  splitting into percentages
+
                                 for(const percentage of grossPercentage){
                                     percent = parseFloat(percentage.pd_pr_gross)
                                     amount = (percent/100)*empAdjustedGross
@@ -129,10 +134,13 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                                         salary_payyear: payrollYear,
                                         salary_pd: percentage.pd_id,
                                         salary_amount: amount,
-                                        salary_share: 0,
-                                        salary_tax: 0
+                                        salary_share: percent,
+                                        salary_tax: percent
                                     }
 
+                                    if(parseInt(paymentDefinitionData.pd_id) === parseInt(percentage.pd_id)){
+                                        basicSalary = amount
+                                    }
                                     let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
                                         return data
                                     })
@@ -148,6 +156,7 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                                 }
 
 
+                                // hazard allowances
                                 const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(emp.emp_location_id).then((data)=>{
                                     return data
                                 })
@@ -180,6 +189,77 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
 
                                     }
                                 }
+
+
+                                     //computational Payments
+
+                                const computationalPayments = await paymentDefinition.getComputedPayments().then((data)=>{
+                                    return data
+                                })
+
+                                for(const computationalPayment of computationalPayments ){
+
+                                      //gross computation
+                                    if(parseInt(computationalPayment.pd_amount) === 1){
+
+                                        amount = (parseFloat(computationalPayment.pd_percentage)/100)*empAdjustedGross
+
+                                        salaryObject = {
+                                            salary_empid: emp.emp_id,
+                                            salary_paymonth: payrollMonth,
+                                            salary_payyear: payrollYear,
+                                            salary_pd: computationalPayment.pd_id,
+                                            salary_amount: amount,
+                                            salary_share: 0,
+                                            salary_tax: 0
+                                        }
+
+                                        let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                            return data
+                                        })
+
+                                        if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                            })
+
+                                        }
+                                    }
+
+                                    //basic computation
+                                    if(parseInt(computationalPayment.pd_amount) === 2){
+                                        amount = (parseFloat(computationalPayment.pd_percentage)/100)*basicSalary
+
+                                        salaryObject = {
+                                            salary_empid: emp.emp_id,
+                                            salary_paymonth: payrollMonth,
+                                            salary_payyear: payrollYear,
+                                            salary_pd: computationalPayment.pd_id,
+                                            salary_amount: amount,
+                                            salary_share: 0,
+                                            salary_tax: 0
+                                        }
+
+                                        let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                            return data
+                                        })
+
+                                        if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                return res.status(400).json(`An error Occurred while Processing Routine basic computation `)
+
+                                            })
+
+                                        }
+
+                                    }
+                                }
+
+
+
+
+                                //tax computation
 
 
                             }
