@@ -2,8 +2,6 @@ const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const TaxRate = require("../models/taxrate")(sequelize, Sequelize.DataTypes)
 
-const helper  = require('../helper');
-
 
 async function addTaxRate(taxRateData){
 
