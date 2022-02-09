@@ -93,6 +93,14 @@ async function findTax(){
     })
 }
 
+async function getComputedPayments(){
+    return await Pd.findAll({
+        where:{
+            pd_value: 2
+        }
+    })
+}
+
 
 
 module.exports = {
@@ -105,6 +113,7 @@ module.exports = {
     findCodeWithGross,
     findBasicPaymentDefinition,
     getVariationalPayments,
-    findTax
+    findTax,
+    getComputedPayments
 
 }
