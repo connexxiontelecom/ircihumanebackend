@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
   leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_approve_by'})
   leaveApplication.hasMany(Employee, {  foreignKey: 'emp_id' })
 
-  leaveApplication.belongsTo(Employee, { foreignKey: 'leapp_empid' })
+  //leaveApplication.belongsTo(Employee, { foreignKey: 'leapp_empid' })
 
   return leaveApplication;
 
