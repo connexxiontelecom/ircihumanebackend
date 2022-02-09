@@ -26,6 +26,7 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
         }else{
             const payrollMonth = payrollMonthYearData.pym_month
             const payrollYear = payrollMonthYearData.pym_year
+            let salaryObject = {}
 
             // check for pending variational payments
             const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYear(payrollMonth, payrollYear).then((data)=>{
@@ -54,9 +55,10 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
 
                         if(!(_.isEmpty(employeeVariationalPayments) || _.isNull(employeeVariationalPayments))){
 
+
                             for(const empVP of employeeVariationalPayments){
 
-                                if(parseInt(empVP.payment.pd_total_gross) === 1){
+                               if(parseInt(empVP.payment.pd_total_gross) === 1){
                                     if(parseInt(empVP.payment.pd_payment_type) === 1 ){
                                         empAdjustedGross = empAdjustedGross + parseFloat(empVP.vp_amount)
 
@@ -68,6 +70,28 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                                     }
 
 
+
+                                }
+
+                                salaryObject = {
+                                    salary_empid: emp.emp_id,
+                                    salary_paymonth: payrollMonth,
+                                    salary_payyear: payrollYear,
+                                    salary_pd: empVP.vp_payment_def_id,
+                                    salary_amount: empVP.vp_amount,
+                                    salary_share: 0,
+                                    salary_tax: 0
+                                }
+
+                                let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                    return data
+                                })
+
+                                if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                        return res.status(400).json(`An error Occurred while Processing Routine variational payments `)
+
+                                    })
 
                                 }
 
@@ -92,7 +116,7 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
 
                             }else {
 
-                                let salaryObject = {}
+
                                 let amount
                                 let percent
                                 for(const percentage of grossPercentage){
@@ -109,8 +133,52 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                                         salary_tax: 0
                                     }
 
+                                    let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                        return data
+                                    })
+
+                                    if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                            return res.status(400).json(`An error Occurred while Processing Routine spliting gross `)
+
+                                        })
+
+                                    }
+
+                                }
 
 
+                                const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(emp.emp_location_id).then((data)=>{
+                                    return data
+                                })
+
+                                if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)) {
+                                    for (const allowance of hazardAllowances) {
+
+                                        salaryObject = {
+                                            salary_empid: emp.emp_id,
+                                            salary_paymonth: payrollMonth,
+                                            salary_payyear: payrollYear,
+                                            salary_pd: allowance.la_payment_id,
+                                            salary_amount: allowance.la_amount,
+                                            salary_share: 0,
+                                            salary_tax: 0
+                                        }
+
+                                        let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                            return data
+                                        })
+
+                                        if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                return res.status(400).json(`An error Occurred while Processing Routine hazard allowance `)
+
+                                            })
+
+                                        }
+
+
+                                    }
                                 }
 
 

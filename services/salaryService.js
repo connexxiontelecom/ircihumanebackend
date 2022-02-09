@@ -24,7 +24,15 @@ async function getSalaryMonthYear(month, year){
         }})
 }
 
+async function undoSalaryMonthYear(month, year){
+    return await  Salary.destroy({where:{
+        salary_paymonth: month,
+        salary_payyear: year
+        }})
+}
+
 module.exports = {
 addSalary,
-    getSalaryMonthYear
+    getSalaryMonthYear,
+    undoSalaryMonthYear
 }
