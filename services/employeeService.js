@@ -220,7 +220,6 @@ async function updateEmployee(employeeId, employeeData){
 
 }
 
-
 async function updateGrossSalary(employeeId, employeeGross){
     return await employee.update({
         emp_gross: employeeGross
@@ -232,7 +231,6 @@ async function updateGrossSalary(employeeId, employeeGross){
 
 }
 
-
 async function getEmployeeById(employeeId) {
     return await employee.findOne({ where: { emp_unique_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
 }
@@ -240,6 +238,7 @@ async function getEmployeeById(employeeId) {
 async function getEmployeeByPersonalEmail(employeePEmail) {
     return await employee.findOne({ where: { emp_personal_email: employeePEmail } })
 }
+
 async function getEmployeeByOfficialEmail(employeeOEmail) {
     return await employee.findOne({ where: { emp_office_email: employeeOEmail } })
 }
@@ -267,6 +266,12 @@ async function getNoneSupervisors(){
 async function getSupervisorEmployee(supervisorId){
     return await employee.findAll({where: { emp_supervisor_id: supervisorId}})
 }
+
+async function getActiveEmployees(){
+    return await employee.findAll()
+}
+
+
 
 
 
@@ -332,7 +337,8 @@ module.exports = {
     getNoneSupervisors,
     getSupervisorEmployee,
     updateEmployee,
-    updateGrossSalary
+    updateGrossSalary,
+    getActiveEmployees
     //updateDepartment,
     //setNewDepartment,
 }

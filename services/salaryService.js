@@ -7,13 +7,24 @@ const VariationalPayment = require("../models/VariationalPayment")(sequelize, Se
 const Joi = require('joi');
 
 async function addSalary(salary){
-
-
-    return await salary.create({
-
+    return await Salary.create({
+        salary_empid: salary.salary_empid,
+        salary_paymonth: salary.salary_paymonth,
+        salary_payyear: salary.salary_payyear,
+        salary_pd: salary.salary_pd,
+        salary_share: salary.salary_share,
+        salary_tax: salary.salary_tax
     });
 }
 
-module.exports = {
+async function getSalaryMonthYear(month, year){
+    return await Salary.findAll({where:{
+        salary_paymonth: month,
+         salary_payyear: year
+        }})
+}
 
+module.exports = {
+addSalary,
+    getSalaryMonthYear
 }
