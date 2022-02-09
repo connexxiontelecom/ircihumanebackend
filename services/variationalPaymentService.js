@@ -65,6 +65,15 @@ async function getUnconfirmedVariationalPaymentMonthYear(month, year){
         }})
 }
 
+async  function getVariationalPaymentEmployeeMonthYear(empId, month, year){
+    return await variationalPaymentModel.findAll({where:{
+        vp_emp_id: empId,
+            vp_payment_month: month,
+            vp_payment_year: year,
+            vp_confirm: 1
+        }, include: ['payment']})
+}
+
 module.exports = {
     setNewVariationalPayment,
     getVariationalPayments,
@@ -74,5 +83,6 @@ module.exports = {
     getCurrentPayment,
     checkDuplicateEntry,
     deletePaymentEntry,
-    getUnconfirmedVariationalPaymentMonthYear
+    getUnconfirmedVariationalPaymentMonthYear,
+    getVariationalPaymentEmployeeMonthYear
 }

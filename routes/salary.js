@@ -40,7 +40,91 @@ router.get('/payroll-routine', auth,  async function(req, res, next) {
                 })
 
                 if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+                    const employees = await employee.getActiveEmployees().then((data)=>{
+                        return data
+                    })
 
+                    for (const emp of employees) {
+                        let empAdjustedGross = parseFloat(emp.emp_gross)
+
+                        //check employee variational payments
+                        const employeeVariationalPayments = await variationalPayment.getVariationalPaymentEmployeeMonthYear(emp.emp_id, payrollMonth, payrollYear).then((data)=>{
+                            return data
+                        })
+
+                        if(!(_.isEmpty(employeeVariationalPayments) || _.isNull(employeeVariationalPayments))){
+
+                            for(const empVP of employeeVariationalPayments){
+
+                                if(parseInt(empVP.payment.pd_total_gross) === 1){
+                                    if(parseInt(empVP.payment.pd_payment_type) === 1 ){
+                                        empAdjustedGross = empAdjustedGross + parseFloat(empVP.vp_amount)
+
+                                    }
+
+                                    if(parseInt(empVP.payment.pd_payment_type) === 0 ){
+                                        empAdjustedGross = empAdjustedGross - parseFloat(empVP.vp_amount)
+
+                                    }
+
+
+
+                                }
+
+
+                            }
+                        }
+
+                        const grossPercentage =  await paymentDefinition.findCodeWithGross().then((data)=>{
+                            return data
+                        })
+                        if(_.isEmpty(grossPercentage) || _.isNull(grossPercentage)){
+                            return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
+                        }
+                        else {
+
+                            const totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
+                                return data
+                            })
+
+                            if(parseFloat(totalPercentageGross) > 100 || parseFloat( totalPercentageGross) < 100 ){
+                                return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
+
+                            }else {
+
+                                let salaryObject = {}
+                                let amount
+                                let percent
+                                for(const percentage of grossPercentage){
+                                    percent = parseFloat(percentage.pd_pr_gross)
+                                    amount = (percent/100)*empAdjustedGross
+
+                                    salaryObject = {
+                                        salary_empid: emp.emp_id,
+                                        salary_paymonth: payrollMonth,
+                                        salary_payyear: payrollYear,
+                                        salary_pd: percentage.pd_id,
+                                        salary_amount: amount,
+                                        salary_share: 0,
+                                        salary_tax: 0
+                                    }
+
+
+
+                                }
+
+
+                            }
+
+
+                        }
+
+
+
+
+
+
+                    }
 
                 }else{
 
