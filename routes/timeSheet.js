@@ -232,7 +232,10 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res, n
             // if(userId !== data.sa_supervisor_id) return res.status(404).json("Access denied. You're not the assigned supervisor to this employee.");
              timeSheetAllocation.findTimeAllocationDetail(empId,req.params.month, req.params.year).then((timeAllocation)=>{
                 timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
-                    return res.status(200).json({timeSheet, timeAllocation});
+                    authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
+                        return res.status(200).json({timeSheet, timeAllocation, log});
+                    })
+
                 });
             })
 
