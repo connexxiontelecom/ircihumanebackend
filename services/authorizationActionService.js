@@ -159,7 +159,7 @@ const getAuthorizationLog = async (authId, type )=>{
 module.exports = {
     registerNewAction,
     updateAuthorizationStatus,
-    getTravelAuthorizationByOfficerId,
+    //getTravelAuthorizationByOfficerId,
     getAuthorizationByOfficerId,
     getAuthorizationLog
 
