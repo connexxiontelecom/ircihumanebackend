@@ -71,7 +71,6 @@ router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res,
             timeAllocationBreakDown: timeAllocationBreakDown
         }
 
-
         return res.status(200).json(responseData)
     } catch (err) {
         console.error(`Error while fetching time allocation `, err.message);
