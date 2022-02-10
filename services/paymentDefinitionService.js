@@ -69,7 +69,7 @@ async function findAllCodes(){
 }
 
 async function getVariationalPayments(){
-    return await Pd.findAll({ where:{ pd_payment_variant: 1}})
+    return await Pd.findAll({ where:{ pd_payment_variant: 2}})
 }
 
 async function findSumPercentage(){
