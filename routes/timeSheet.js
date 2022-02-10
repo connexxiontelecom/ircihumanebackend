@@ -99,6 +99,36 @@ router.get('/get-time-sheet/:emp_id/:date', auth,  async function(req, res, next
     }
 });
 
+router.get('/get-time-sheet-month/:emp_id/:date', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        let date = new Date(req.params.date)
+
+        const employeeData =  await employee.getEmployee(empId).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(404).json(`Employee Does Not Exist`)
+        }else {
+
+            let month = date.getMonth() + 1
+            let year = date.getFullYear()
+
+            await timeSheet.findTimeSheetMonthEmployee(empId, month, year).then((data) => {
+                return res.status(200).json(data)
+            })
+        }
+
+
+
+    } catch (err) {
+        console.error(`Error while fetching time sheet `, err.message);
+        next(err);
+    }
+});
+
+
 router.get('/get-time-sheets/:emp_id', auth,  async function(req, res, next) {
     try {
         let empId = req.params.emp_id
