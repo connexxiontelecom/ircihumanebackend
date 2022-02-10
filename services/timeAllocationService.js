@@ -50,6 +50,12 @@ async function findTimeAllocationsDetail(empId, month, year){
     })
 }
 
+async function findTimeAllocationsEmployee(empId){
+    return await TimeAllocation.findAll({  where: { ta_emp_id: empId },
+        include: [Employee]
+    })
+}
+
 async function sumTimeAllocation(empId, month, year){
     return await TimeAllocation.sum('ta_charge',{
         where: { ta_emp_id: empId, ta_month: month, ta_year: year },
@@ -71,5 +77,6 @@ module.exports = {
     sumTimeAllocation,
     getTimeAllocationApplicationsForAuthorization,
     findTimeAllocationDetail,
-    findTimeAllocationsDetail
+    findTimeAllocationsDetail,
+    findTimeAllocationsEmployee
 }
