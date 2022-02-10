@@ -58,10 +58,20 @@ router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res,
         let month = date.getMonth()+1
         let year = date.getFullYear()
 
-        timeAllocation.sumTimeAllocation(empId, month, year).then((data)=>{
-
-            return res.status(200).json(data)
+        const timeAllocationSum  = await timeAllocation.sumTimeAllocation(empId, month, year).then((data)=>{
+                return data
         })
+
+        const timeAllocationBreakDown = await timeAllocation.findTimeAllocationDetail(empId, month, year).then((data)=>{
+            return data
+        })
+
+        const responseData = {
+            timeAllocationSum: timeAllocationSum,
+            timeAllocationBreakDown: timeAllocationBreakDown
+        }
+
+        return res.status(200).json(responseData)
     } catch (err) {
         console.error(`Error while fetching time allocation `, err.message);
         next(err);
