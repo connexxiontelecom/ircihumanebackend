@@ -224,26 +224,24 @@ router.get('/preload-date/:emp_id', auth,  async function(req, res, next) {
     }
 });
 
-router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res, next) {
-    const empId = req.params.emp_id;
-    const userId = req.user.username.user_id;
-     supervisorAssignment.getEmployeeSupervisor(empId).then((data)=>{
-        if(data){
-            // if(userId !== data.sa_supervisor_id) return res.status(404).json("Access denied. You're not the assigned supervisor to this employee.");
-             timeSheetAllocation.findTimeAllocationDetail(empId,req.params.month, req.params.year).then((timeAllocation)=>{
-                timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
-                    authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
-                        return res.status(200).json({timeSheet, timeAllocation, log});
-                    })
+router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
+    try{
+        const empId = parseInt(req.params.emp_id);
+        const month = parseInt(req.params.month);
+        const year = parseInt(req.params.year);
+        const userId = req.user.username.user_id;
+        await timeSheetAllocation.findTimeAllocationDetail(month, year,empId).then((timeAllocation)=>{
+            timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
+                authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
+                    return res.status(200).json({timeSheet, timeAllocation, log});
+                })
 
-                });
-            })
+            });
+        })
+    }catch (e) {
+        return res.status(400).json("Whoops! Something went wrong. Try again.");
+    }
 
-
-        }else{
-            return res.status(400).json( "There's no supervisor assigned to this employee. Contact admin or HR.");
-        }
-    })
 });
 
 
