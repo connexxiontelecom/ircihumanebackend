@@ -43,7 +43,6 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             end_date: Joi.string().required(),
             t1_code: Joi.string().required(),
             currency: Joi.string().allow(null, ''),
-            currency: Joi.string().allow(null, ''),
             total: Joi.number().allow(null, ''),
 
             breakdown: Joi.array().items(Joi.object({
@@ -69,38 +68,42 @@ router.post('/new-travel-application', auth, async (req, res)=>{
         if(isBefore(startDate, new Date())) return res.status(400).json("Your start date cannot be before today.");
         if(isBefore(endDate, new Date())) return res.status(400).json("Your end date cannot be before today.");
         if(String(startYear) === String(endYear)){
-            let daysRequested =  await differenceInBusinessDays(endDate, startDate);
-            if(parseInt(daysRequested) >= 1) {
-                await travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
-                    const travelapp_id = data.travelapp_id;
-                        const breakdowns = req.body.breakdown;
-                        breakdowns.map((breakdown) => {
-                            travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
-                        });
-                        if (req.body.travel_category === 1) {
+            supervisorAssignmentService.getEmployeeSupervisor(req.body.employee).then((sup)=>{
+                if(sup){
+                    let daysRequested =   differenceInBusinessDays(endDate, startDate);
+                    if(parseInt(daysRequested) >= 1) {
+                         travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
+                            const travelapp_id = data.travelapp_id;
+                            const breakdowns = req.body.breakdown;
+                            breakdowns.map((breakdown) => {
+                                travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
+                            });
+                            if (req.body.travel_category === 1) {
 
-                        const t2CodeArray = req.body.t2_code;
-                        t2CodeArray.map((t2Data) => {
-                            travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
-                        });
-                    }
-                   // supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid);
-                    authorizationAction.registerNewAction(3,travelapp_id, 2,0,"Travel application initialized.")
-                        .then((outcome)=>{
-                            const logData = {
-                                "log_user_id": req.user.username.user_id,
-                                "log_description": "Travel application ",
-                                "log_date": new Date()
+                                const t2CodeArray = req.body.t2_code;
+                                t2CodeArray.map((t2Data) => {
+                                    travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
+                                });
                             }
-                            logs.addLog(logData).then((logRes)=>{
-                                return res.status(200).json('Your travel application was successfully registered.');
-                            })
+                            authorizationAction.registerNewAction(3,travelapp_id, sup.sa_supervisor_id,0,"Travel application initialized.")
+                                .then((outcome)=>{
+                                    const logData = {
+                                        "log_user_id": req.user.username.user_id,
+                                        "log_description": "Travel application ",
+                                        "log_date": new Date()
+                                    }
+                                    logs.addLog(logData).then((logRes)=>{
+                                        return res.status(200).json('Your travel application was successfully registered.');
+                                    })
+                                });
                         });
-
-                });
-            }else{
-                return  res.status(400).json('Travel duration must be greater or equal to 1');
-            }
+                    }else{
+                        return  res.status(400).json('Travel duration must be greater or equal to 1');
+                    }
+                }else{
+                    return res.status(400).json("You currently have no supervisor assigned to you.");
+                }
+            });
         }else{
             return  res.status(400).json('Travel period must be within the same year')
         }

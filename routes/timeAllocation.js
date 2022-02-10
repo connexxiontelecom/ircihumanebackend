@@ -7,7 +7,7 @@ const timeAllocation =  require('../services/timeAllocationService')
 
 const timeSheet =  require('../services/timeSheetService')
 const logs = require('../services/logService')
-
+const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const authorizationAction = require('../services/authorizationActionService');
 
 /* Add to time sheet */
@@ -28,10 +28,10 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-
+    supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup)=>{
+        if(sup){
             timeAllocation.addTimeAllocation(timeAllocationRequest).then((data)=>{
-                //supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid);
-                authorizationAction.registerNewAction(2,data.ta_ref_no, 2,0,"Time allocation/time sheet initialized.")
+                authorizationAction.registerNewAction(2,data.ta_ref_no, sup.sa_supervisor_id,0,"Time allocation/time sheet initialized.")
                     .then((val)=>{
                         const logData = {
                             "log_user_id": req.user.username.user_id,
@@ -43,6 +43,10 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
                         })
                     })
             })
+        }else{
+            return res.status(400).json("You currently have no supervisor assigned to you.");
+        }
+    });
 
     } catch (err) {
         console.error(`Error while adding time sheet `, err.message);
