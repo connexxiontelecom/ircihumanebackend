@@ -30,7 +30,8 @@ module.exports = (sequelize, DataTypes) => {
     pd_pr_gross: DataTypes.DOUBLE,
     pd_value: DataTypes.INTEGER,
     pd_amount: DataTypes.INTEGER,
-    pd_percentage: DataTypes.DOUBLE
+    pd_percentage: DataTypes.DOUBLE,
+    pd_tax: DataTypes.INTEGER
 
   }, {
     sequelize,

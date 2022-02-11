@@ -47,7 +47,8 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             pd_pr_gross: Joi.number().precision(2),
             pd_value:Joi.number(),
             pd_amount: Joi.number(),
-            pd_percentage: Joi.number().precision(2)
+            pd_percentage: Joi.number().precision(2),
+            pd_tax: Joi.number()
         })
 
         const paymentDefinitionRequest = req.body
@@ -70,18 +71,33 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
 
             else{
 
+                if(parseInt(paymentDefinitionRequest.pd_tax) === 1){
+                    const salaryTaxSetup = await paymentDefinition.findTax().then((data)=>{
+                        return data
+                    })
+                    if(!(_.isEmpty(salaryTaxSetup) || _.isNull(salaryTaxSetup))){
+                        return res.status(400).json(`Tax Payment Definition Already Set`)
+                    }else{
+                        paymentDefinitionRequest.pd_pr_gross = 0
+                        paymentDefinitionRequest.pd_value = 0
+                        paymentDefinitionRequest.pd_payment_type = 0
+                    }
+                }
+
                 if(parseInt(paymentDefinitionRequest.pd_basic) === 1){
                  const basicSalary = await paymentDefinition.findBasicPaymentDefinition().then((data)=>{
                      return data
                  })
 
                     if(_.isEmpty(basicSalary) || _.isNull(basicSalary)){
-                        await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
+
+                                  await paymentDefinition.findPaymentByCode(paymentDefinitionRequest.pd_payment_code).then((data) =>{
                             if(data){
 
                                 return res.status(400).json('Payment Code Already Exist')
 
                             }else{
+
                                 paymentDefinition.addPaymentDefinition(paymentDefinitionRequest).then((data)=>{
                                     const logData = {
                                         "log_user_id": req.user.username.user_id,
@@ -154,10 +170,11 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
             pd_desc: Joi.alternatives().try(Joi.string(), Joi.number()),
             pd_basic: Joi.number().required(),
             pd_tie_number: Joi.alternatives().try(Joi.string(), Joi.number()),
-            pd_pr_gross: Joi.number().precision(2),
+            pd_pr_gross: Joi.number().precision(2).required(),
             pd_value:Joi.alternatives().try(Joi.string(), Joi.number()),
             pd_amount: Joi.alternatives().try(Joi.string(), Joi.number()),
-            pd_percentage: Joi.alternatives().try(Joi.string(), Joi.number())
+            pd_percentage: Joi.alternatives().try(Joi.string(), Joi.number()),
+            pd_tax: Joi.number().required()
         })
         let updateResponse
         const paymentDefinitionRequest = req.body
@@ -176,7 +193,22 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
             }
             else{
 
+                if(parseInt(paymentDefinitionRequest.pd_tax) === 1){
+                    const salaryTaxSetup = await paymentDefinition.findTax().then((data)=>{
+                        return data
+                    })
+                    if(!(_.isEmpty(salaryTaxSetup) || _.isNull(salaryTaxSetup))){
 
+                        if(parseInt(salaryTaxSetup.pd_id) !== parseInt(req.params['pd_id'])){
+                            return res.status(400).json(`Tax Payment Definition Already Set`)
+                        }
+
+                    }else{
+                        paymentDefinitionRequest.pd_pr_gross = 0
+                        paymentDefinitionRequest.pd_value = 0
+                        paymentDefinitionRequest.pd_payment_type = 0
+                    }
+                }
 
                 const checkGross = await checkForMaxPercentage(paymentDefinitionRequest.pd_pr_gross, paymentDefinitionDetails)
 
@@ -234,7 +266,6 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
                     }
                     else{
 
-
                         updateResponse = await updatePaymentDefinition(paymentDefinitionRequest, req.params['pd_id'])
                         if(updateResponse){
                             const logData = {
@@ -254,13 +285,6 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
                 }else{
                     return res.status(400).json(`Percentage Gross is exceeding 100%`)
                 }
-
-
-
-
-
-
-
 
             }
 

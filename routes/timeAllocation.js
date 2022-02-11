@@ -62,16 +62,42 @@ router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res,
         let month = date.getMonth()+1
         let year = date.getFullYear()
 
-        timeAllocation.sumTimeAllocation(empId, month, year).then((data)=>{
-
-            return res.status(200).json(data)
+        const timeAllocationSum  = await timeAllocation.sumTimeAllocation(empId, month, year).then((data)=>{
+                return data
         })
+
+        const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsDetail(empId, month, year).then((data)=>{
+            return data
+        })
+
+        const responseData = {
+            timeAllocationSum: timeAllocationSum,
+            timeAllocationBreakDown: timeAllocationBreakDown
+        }
+
+        return res.status(200).json(responseData)
     } catch (err) {
         console.error(`Error while fetching time allocation `, err.message);
         next(err);
     }
 });
 
+
+router.get('/get-employee-time-allocation/:emp_id', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+
+        const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsEmployee(empId).then((data)=>{
+            return data
+        })
+
+        return res.status(200).json(timeAllocationBreakDown)
+    } catch (err) {
+        console.error(`Error while fetching time allocation `, err.message);
+        next(err);
+    }
+});
 
 
 module.exports = router;

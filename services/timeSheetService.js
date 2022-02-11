@@ -41,6 +41,11 @@ async function findTimeSheet(empId, day, month, year){
 
 }
 
+async function findTimeSheetMonthEmployee(empId,  month, year){
+    return await TimeSheet.findAll({  where: { ts_emp_id: empId, ts_month: month, ts_year: year } })
+
+}
+
 async function getLatestTimeSheet(){
     return await TimeSheet.findOne({order: [
             ['ts_id', 'DESC'],
@@ -88,5 +93,6 @@ module.exports = {
     findTimeSheetMonth,
     getLatestTimeSheet,
     updateTimeSheetStatus,
-    getTimeSheetApplicationsForAuthorization
+    getTimeSheetApplicationsForAuthorization,
+    findTimeSheetMonthEmployee
 }
