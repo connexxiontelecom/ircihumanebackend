@@ -97,9 +97,14 @@ const updateLeaveType = async (req, res)=>{
 
 }
 
+async function getAllLeaves(){
+    return await leaveType.findAll()
+}
+
 module.exports = {
     getLeaveTypes,
     getLeaveTypeById,
     updateLeaveType,
     setNewLeaveType,
+    getAllLeaves
 }

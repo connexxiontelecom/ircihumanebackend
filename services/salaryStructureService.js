@@ -13,22 +13,13 @@ async function addSalaryStructure(salaryStructureData){
      });
 }
 
-async function updateSalaryGrade(sgId, salaryGradeData){
-    return await SalaryGrade.update({
-        tsg_name: salaryGradeData.sg_name,
-        sg_minimum: salaryGradeData.sg_minimum,
-        sg_midpoint: salaryGradeData.sg_midpoint,
-        sg_maximum: salaryGradeData.sg_maximum,
 
-    }, {
-            where:{
-                sg_id:sgId
-            }
-        });
-}
 
 async function findSalaryStructure(empId,){
-    return await SalaryStructure.findAll({ where: { ss_empid: empId }, include: ['payment'] })
+    return await SalaryStructure.findAll({ where: { ss_empid: empId }, include: ['payment'], order: [
+            ['ss_amount', 'DESC']
+
+        ] })
 
 }
 
