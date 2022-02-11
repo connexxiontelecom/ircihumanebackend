@@ -19,6 +19,12 @@ const employees = require("../services/employeeService");
 router.get('/', auth, async function(req, res, next) {
     try {
         await leaveApplication.findAllLeaveApplication().then((data) =>{
+            let appId = [];
+            data.map((app)=>{
+                appId.push(app.travelapp_id);
+            });
+            const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
+            data.push(authorizers);
             return res.status(200).json(data);
         })
     } catch (err) {
@@ -139,6 +145,12 @@ router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
                 return res.status(404).json(`Employee Doesn't Exist`)
             }else{
                 leaveApplication.findEmployeeLeaveApplication(empId).then((data) =>{
+                    let appId = [];
+                    data.map((app)=>{
+                        appId.push(app.travelapp_id);
+                    });
+                    const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
+                    data.push(authorizers);
                     return res.status(200).json(data);
                 })
             }
@@ -170,6 +182,12 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
             });
             //return res.status(200).json(ids);
             leaveApplication.getLeaveApplicationsForAuthorization(ids).then((data)=>{
+                let appId = [];
+                data.map((app)=>{
+                    appId.push(app.travelapp_id);
+                });
+                const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
+                data.push(authorizers);
                 return res.status(200).json(data);
             });
         })
