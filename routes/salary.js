@@ -13,6 +13,8 @@ const variationalPayment = require('../services/variationalPaymentService')
 const payrollMonthYear =  require('../services/payrollMonthYearService')
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
+const { addLeaveAccrual, computeLeaveAccruals } = require("../routes/leaveAccrual");
+const leaveTypeService = require('../services/leaveTypeService');
 const logs = require('../services/logService')
 
 
@@ -346,14 +348,39 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                     }
 
-                                    const logData = {
-                                        "log_user_id": req.user.username.user_id,
-                                        "log_description": "Ran Payroll Routine",
-                                        "log_date": new Date()
-                                    }
-                                    await logs.addLog(logData).then((logRes)=>{
-                                        return  res.status(200).json(`Action Successful`)
+                                    const leaveTypesData = await leaveTypeService.getAllLeaves().then((data)=>{
+                                        return data
                                     })
+
+                                    if(_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)){
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                            return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
+
+                                        })
+
+                                    }
+
+                                    for(const leaveType of leaveTypesData){
+                                        const leaveAccrual = {
+                                            lea_emp_id: emp.emp_id,
+                                            lea_month: payrollMonth,
+                                            lea_year: payrollYear,
+                                            lea_leave_type: leaveType.leave_type_id,
+                                            lea_rate: parseFloat(leaveType.lt_rate)
+                                        }
+
+                                       const addAccrualResponse =  await addLeaveAccrual(leaveAccrual).then((data)=>{
+                                           return data
+                                       })
+
+                                        if(_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)){
+                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
+
+                                            })
+                                        }
+                                    }
+
 
                                 }
 
@@ -362,13 +389,16 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                         }
 
-
-
-
-
-
-
                     }
+
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Ran Payroll Routine",
+                        "log_date": new Date()
+                    }
+                    await logs.addLog(logData).then((logRes)=>{
+                        return  res.status(200).json(`Action Successful`)
+                    })
 
                 }else{
 
@@ -384,8 +414,18 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
         }
 
     }catch (err) {
-        console.log(err.message)
-         next(err);
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
+        })
+
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+
+        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            console.log(err.message)
+            next(err);
+        })
+
     }
 });
 

@@ -20,7 +20,7 @@ const leaveAccrual =  require('../services/leaveAccrualService')
     if (validationResult.error) {
         return validationResult.error.details[0].message
     } else {
-        return leaveAccrual.addLeaveAccrual(data)
+        return await leaveAccrual.addLeaveAccrual(data)
     }
 }
 
