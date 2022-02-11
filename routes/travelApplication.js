@@ -72,7 +72,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                 if(sup){
                     let daysRequested =   differenceInBusinessDays(endDate, startDate);
                     if(parseInt(daysRequested) >= 1) {
-                         travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
+                        travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
                             const travelapp_id = data.travelapp_id;
                             const breakdowns = req.body.breakdown;
                             breakdowns.map((breakdown) => {
@@ -117,15 +117,15 @@ router.get('/get-travel-application/:id', auth, async (req, res)=>{
     const employee = req.params.id
     try{
         const tRequests = await travelApplicationService.getTravelApplicationsByEmployeeId(employee);
-        /*let appId = [];
+        let appId = [];
         tRequests.map((app)=>{
             appId.push(app.travelapp_id);
         });
         const authorizers = await authorizationAction.getAuthorizationLog(appId, 3);
-        tRequests.push(authorizers);*/
+        tRequests.push(authorizers);
         return res.status(200).json(tRequests);
     }catch (e) {
-        return res.status(400).json("Something went wrong. Try again."+e.message);
+        return res.status(400).json("Something went wrong. Try again.");
     }
 });
 router.get('/:id', auth, async (req, res)=>{ //get travel application details
@@ -151,17 +151,23 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
                 ids.push(app.auth_travelapp_id);
             });
             travelApplicationService.getTravelApplicationsForAuthorization(ids).then((data)=>{
+                let appId = [];
+                data.map((app)=>{
+                    appId.push(app.travelapp_id);
+                });
+                const authorizers =  authorizationAction.getAuthorizationLog(appId, 3);
+                data.push(authorizers);
                 return res.status(200).json(data);
             });
         })
     }catch (e) {
-            return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again.");
     }
 });
 
 
 
-router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
+/*router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const employeeId = req.params.id;  //req.employee.emp_id || 1;
         await authorizationAction.getTravelAuthorizationByOfficerId(employeeId,3).then((data)=>{
@@ -174,9 +180,9 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
             });
         })
     }catch (e) {
-            return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again.");
     }
-});
+});*/
 
 
 /*router.post('/authorization', auth, async (req, res)=>{

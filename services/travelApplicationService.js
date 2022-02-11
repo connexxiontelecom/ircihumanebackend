@@ -31,18 +31,7 @@ const getTravelApplications = async (req, res)=>{
 }
 
 const getTravelApplicationsByEmployeeId = async (employee)=>{
-    return await travelApplicationModel.findAll(
-        {where:{travelapp_employee_id:employee} ,
-        include: [{
-            model: EmployeeModel},
-            {
-                include:[{
-                    model:authorizationModel,
-                    as:'authorizer',
-                    include:[{model: authorizationModel, as: 'user'}]
-                }]
-            }
-        ] } );
+    return await travelApplicationModel.findAll({where:{travelapp_employee_id:employee} ,include: [EmployeeModel] } );
 }
 
 const getTravelApplicationsById = async (id)=>{
