@@ -154,6 +154,7 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
 });
 
 
+
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const employeeId = req.params.id;  //req.employee.emp_id || 1;

@@ -3,6 +3,7 @@ const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
 const travelApplicationBreakdownModel = require("../models/TravelApplicationBreakdown")(sequelize, Sequelize.DataTypes);
 const authorizationService = require('../services/authorizationActionService')
 //const bcrypt = require("bcrypt");
@@ -15,11 +16,17 @@ const errHandler = (err) =>{
 }
 const getTravelApplications = async (req, res)=>{
     try{
-        const travelapps =  await travelApplicationModel.findAll();
+        let travelapps =  await travelApplicationModel.findAll({include:[EmployeeModel]});
+        let appId = [];
+        travelapps.map((app)=>{
+            appId.push(app.travelapp_id);
+        });
+        const authorizers = await authorizationService.getAuthorizationLog(appId, 3);
+        travelapps.push(authorizers)
         res.status(200).json(travelapps)
 
     }catch (e) {
-        res.status(400).json({message: "Something went wrong. Try again. "+e.message});
+        res.status(400).json("Something went wrong. Try again. "+e.message);
     }
 }
 
