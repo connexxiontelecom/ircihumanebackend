@@ -41,6 +41,8 @@ module.exports = (sequelize, DataTypes) => {
         //timestamps:false
     });
     AuthorizationAction.belongsTo(Employee, { foreignKey: 'auth_officer_id' });
-    //AuthorizationAction.hasMany(Employee, { as: 'officers', foreignKey: 'auth_officer_id' });
+
+    AuthorizationAction.hasMany(Employee, { foreignKey: 'emp_id', as: 'authorizer' });
+    Employee.belongsTo(AuthorizationAction, {foreignKey: 'auth_officer_id', as: 'user'})
     return AuthorizationAction;
 };
