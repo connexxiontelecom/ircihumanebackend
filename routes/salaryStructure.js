@@ -399,5 +399,39 @@ router.patch('/update-salary-structure/:emp_id', auth,  async function(req, res,
 });
 
 
+router.get('/get-salary-structure/:emp_id', auth,  async function(req, res, next) {
+    try {
+        const empId = req.params.emp_id
+
+
+        const employeeData =   await employee.getEmployee(empId).then((data)=>{
+            return  data
+
+        })
+
+        if(!_.isEmpty(employeeData) || !_.isNull(employeeData)){
+            const empSalaryStructure = await salaryStructure.findSalaryStructure(empId).then((data)=>{
+                return data
+            })
+
+            if(_.isEmpty(empSalaryStructure) || _.isNull(empSalaryStructure)){
+                return res.status(400).json(`Salary Structure was never setup, consider setting up`)
+            }
+            else{
+                return res.status(200).json(empSalaryStructure)
+            }
+
+        }
+        else{
+            return res.status(400).json(`Employee Doesn't Exists`)
+        }
+    } catch (err) {
+        console.error(`Error while Fetching `, err.message);
+        next(err);
+    }
+
+});
+
+
 
 module.exports = router;
