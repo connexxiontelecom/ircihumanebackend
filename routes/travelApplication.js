@@ -153,25 +153,4 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     }
 });
 
-/*router.post('/authorization', auth, async (req, res)=>{
-    try{
-        const schema = Joi.object({
-            comment:Joi.string().required(),
-            status:Joi.number().required(),
-            officer:Joi.number().required(),
-            travelapp_id:Joi.number().required(),
-            mark_as_final:Joi.number().required()
-        });
-        const travelRequest = req.body
-        const validationResult = schema.validate(travelRequest)
-        if(validationResult.error) {
-            return res.status(400).json(validationResult.error.details[0].message);
-        }
-
-
-    }catch (e) {
-
-    }
-});*/
-
 module.exports = router;

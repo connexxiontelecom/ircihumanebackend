@@ -170,7 +170,8 @@ const createNewEmployee = async (req, res, next)=>  {
 }
 
 async function getEmployee(employeeId){
-    return await employee.findOne({ where: { emp_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
+    return await employee.findOne({ where: { emp_id: employeeId },
+        include: ['supervisor', 'location', {model: JobRole, include: Department}] })
 }
 
 async function setSupervisorStatus(data){
