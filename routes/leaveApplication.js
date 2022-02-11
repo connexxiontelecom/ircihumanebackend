@@ -19,6 +19,12 @@ const employees = require("../services/employeeService");
 router.get('/', auth, async function(req, res, next) {
     try {
         await leaveApplication.findAllLeaveApplication().then((data) =>{
+            let appId = [];
+            data.map((app)=>{
+                appId.push(app.travelapp_id);
+            });
+            const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
+            data.push(authorizers);
             return res.status(200).json(data);
         })
     } catch (err) {

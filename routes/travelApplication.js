@@ -117,6 +117,12 @@ router.get('/get-travel-application/:id', auth, async (req, res)=>{
     const employee = req.params.id
     try{
         const tRequests = await travelApplicationService.getTravelApplicationsByEmployeeId(employee);
+        let appId = [];
+        tRequests.map((app)=>{
+            appId.push(app.travelapp_id);
+        });
+        const authorizers = await authorizationAction.getAuthorizationLog(appId, 3);
+        tRequests.push(authorizers);
         return res.status(200).json(tRequests);
     }catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
