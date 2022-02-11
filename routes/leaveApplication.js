@@ -175,22 +175,35 @@ router.get('/:id', auth, async (req, res)=>{ //get leave application details
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
-        await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
-            const ids = [];
-            data.map((app)=>{
-                ids.push(app.auth_travelapp_id);
-            });
-            //return res.status(200).json(ids);
-            leaveApplication.getLeaveApplicationsForAuthorization(ids).then((data)=>{
-                let appId = [];
-                data.map((app)=>{
-                    appId.push(app.travelapp_id);
-                });
-                const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
-                data.push(authorizers);
-                return res.status(200).json(data);
-            });
+        const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
+            return data
         })
+
+        const ids = [];
+        let authId = [];
+        authAction.map((app)=>{
+            ids.push(parseInt(app.auth_travelapp_id));
+            authId.push(parseInt(app.auth_officer_id));
+        });
+
+        let leaveObject = {}
+     let leaveData =   await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((data)=>{
+             return  data
+
+        });
+
+
+
+        const authorizers =  await authorizationAction.getAuthorizationLog(ids, 1).then((data)=>{
+            return data
+        });
+
+        leaveObject = {
+            leave: leaveData,
+            authorizers: authorizers
+        }
+
+        return res.status(200).json(leaveObject)
     }catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
