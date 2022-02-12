@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
+const _ = require('lodash');
 const {format} = require('date-fns');
 const  differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
 const isBefore = require('date-fns/isBefore')
@@ -145,23 +146,31 @@ router.get('/:id', auth, async (req, res)=>{ //get travel application details
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
+        let travelObj = {};
         await authorizationAction.getAuthorizationByOfficerId(supervisorId,3).then((data)=>{
             const ids = [];
             data.map((app)=>{
-                ids.push(app.auth_travelapp_id);
+                ids.push(parseInt(app.auth_travelapp_id));
             });
-            travelApplicationService.getTravelApplicationsForAuthorization(ids).then((data)=>{
+            //return res.status(200).json(_.uniq(ids));
+            travelApplicationService.getTravelApplicationsForAuthorization(_.uniq(ids)).then((data)=>{
                 let appId = [];
                 data.map((app)=>{
                     appId.push(app.travelapp_id);
                 });
-                const authorizers =  authorizationAction.getAuthorizationLog(appId, 3);
-                data.push(authorizers);
-                return res.status(200).json(data);
+
+                 authorizationAction.getAuthorizationLog(appId, 3).then((officers)=>{
+                    travelObj = {
+                        data,
+                        officers
+                    }
+                    return res.status(200).json(travelObj);
+                });
+
             });
         })
     }catch (e) {
-        return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again."+e.message);
     }
 });
 

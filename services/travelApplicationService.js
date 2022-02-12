@@ -65,9 +65,10 @@ const setNewTravelApplication = async (travelData, days )=>{
 
 const getTravelApplicationsForAuthorization = async (travelAppIds)=>{
     return await travelApplicationModel.findAll({
-
+        order:[['travelapp_id', 'DESC']],
         where: {travelapp_id: travelAppIds},
-        include:[EmployeeModel]
+        include: [{model:EmployeeModel, as:"applicant"},
+        ]
 
     })
 }
