@@ -42,7 +42,7 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             purpose: Joi.string().required(),
             start_date: Joi.string().required(),
             end_date: Joi.string().required(),
-            t1_code: Joi.string().required(),
+            t1_code: Joi.string().allow(null, ''),
             currency: Joi.string().allow(null, ''),
             total: Joi.number().allow(null, ''),
 

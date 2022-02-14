@@ -59,7 +59,7 @@ const setNewTravelApplication = async (travelData, days )=>{
         travelapp_start_date: travelData.start_date,
         travelapp_end_date: travelData.end_date,
         travelapp_total_days: days,
-        travelapp_t1_code: travelData.t1_code,
+        travelapp_t1_code: travelData.travel_category === 2 ? travelData.t1_code : null,
         //travelapp_t2_code: travelData.t2_code,
         travelapp_per_diem:travelData.travel_category === 1 ? travelData.per_diem : 0,
         travelapp_days:days,
