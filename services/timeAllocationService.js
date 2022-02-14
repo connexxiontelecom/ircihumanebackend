@@ -39,7 +39,9 @@ async function findTimeAllocation(empId, month, year){
     })
 }
 async function findTimeAllocationDetail(month, year, empId){
-    return await TimeAllocation.findOne({  where: { ta_emp_id: empId, ta_month: month, ta_year: year },
+    return await TimeAllocation.findOne({
+        group:['ta_month', 'ta_year'],
+        where: { ta_emp_id: empId, ta_month: month, ta_year: year },
         include: [Employee]
     })
 }

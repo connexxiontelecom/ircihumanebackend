@@ -117,14 +117,20 @@ router.post('/new-travel-application', auth, async (req, res)=>{
 router.get('/get-travel-application/:id', auth, async (req, res)=>{
     const employee = req.params.id
     try{
-        const tRequests = await travelApplicationService.getTravelApplicationsByEmployeeId(employee);
+        let travelObj = {};
         let appId = [];
-        tRequests.map((app)=>{
-            appId.push(app.travelapp_id);
-        });
-        const authorizers = await authorizationAction.getAuthorizationLog(appId, 3);
-        tRequests.push(authorizers);
-        return res.status(200).json(tRequests);
+         await travelApplicationService.getTravelApplicationsByEmployeeId(employee).then((data)=>{
+             data.map((app)=>{
+                 appId.push(app.travelapp_id);
+             });
+              authorizationAction.getAuthorizationLog(_.uniq(appId), 3).then((officers)=>{
+                  travelObj = {
+                      data,
+                      officers
+                  }
+                  return res.status(200).json(travelObj);
+              });
+         });
     }catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
@@ -152,13 +158,11 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
             data.map((app)=>{
                 ids.push(parseInt(app.auth_travelapp_id));
             });
-            //return res.status(200).json(_.uniq(ids));
             travelApplicationService.getTravelApplicationsForAuthorization(_.uniq(ids)).then((data)=>{
                 let appId = [];
                 data.map((app)=>{
                     appId.push(app.travelapp_id);
                 });
-
                  authorizationAction.getAuthorizationLog(appId, 3).then((officers)=>{
                     travelObj = {
                         data,

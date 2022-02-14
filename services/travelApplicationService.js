@@ -15,15 +15,24 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getTravelApplications = async (req, res)=>{
+    let travelObj = {};
+    let appId = [];
     try{
-        let travelapps =  await travelApplicationModel.findAll({include:[EmployeeModel]});
-        let appId = [];
-        travelapps.map((app)=>{
-            appId.push(app.travelapp_id);
+        await travelApplicationModel.findAll({
+            order:[['travelapp_id', 'DESC']],
+            include:[{model:EmployeeModel,as:'applicant'}]}).then((data)=>{
+            data.map((app)=>{
+                appId.push(app.travelapp_id);
+            });
+            authorizationService.getAuthorizationLog(appId, 3).then((officers)=>{
+                travelObj = {
+                    data,
+                    officers
+                }
+                res.status(200).json(travelObj)
+            });
         });
-        const authorizers = await authorizationService.getAuthorizationLog(appId, 3);
-        travelapps.push(authorizers)
-        res.status(200).json(travelapps)
+
 
     }catch (e) {
         res.status(400).json("Something went wrong. Try again. "+e.message);
@@ -31,7 +40,10 @@ const getTravelApplications = async (req, res)=>{
 }
 
 const getTravelApplicationsByEmployeeId = async (employee)=>{
-    return await travelApplicationModel.findAll({where:{travelapp_employee_id:employee} ,include: [EmployeeModel] } );
+    return await travelApplicationModel.findAll({
+        order:[['travelapp_id', 'DESC']],
+        where:{travelapp_employee_id:employee} ,
+        include: [{model:EmployeeModel, as:'applicant'}] } );
 }
 
 const getTravelApplicationsById = async (id)=>{
