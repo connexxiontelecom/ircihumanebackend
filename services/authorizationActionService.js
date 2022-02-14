@@ -156,7 +156,7 @@ const getAuthorizationByOfficerId = async (officerId, type)=>{
 
 async function getAuthorizationLog(authId, type){
     return await authorizationModel.findAll({
-        order:[['auth_id', 'DESC']],
+        //order:[['auth_id', 'DESC']],
         where:{auth_travelapp_id: authId, auth_type:type},
         include:['officers']
     });
