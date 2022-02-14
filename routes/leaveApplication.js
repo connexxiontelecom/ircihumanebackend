@@ -18,14 +18,19 @@ const employees = require("../services/employeeService");
 /* Get leave application */
 router.get('/', auth, async function(req, res, next) {
     try {
+        let appId = [];
+        let leaveObj = {};
         await leaveApplication.findAllLeaveApplication().then((data) =>{
-            let appId = [];
             data.map((app)=>{
-                appId.push(app.travelapp_id);
+                appId.push(app.leapp_id);
             });
-            const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
-            data.push(authorizers);
-            return res.status(200).json(data);
+            authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
+                leaveObj = {
+                  data,
+                  officers
+                };
+                return res.status(200).json(leaveObj);
+            });
         })
     } catch (err) {
         return res.status(400).json(`Error while fetching leaves ${err.message}`)
@@ -151,8 +156,6 @@ router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
                         appId.push(app.leapp_id);
                     });
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
-                        //data.push(authorizers);
-                       // return res.status(200).json(data);
                         leaveObj = {
                             data,
                             officers
@@ -183,35 +186,30 @@ router.get('/:id', auth, async (req, res)=>{ //get leave application details
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
+        let leaveObj = {};
+        let ids = [];
+        let authId = [];
         const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
             return data
         })
-
-        const ids = [];
-        let authId = [];
         authAction.map((app)=>{
             ids.push(parseInt(app.auth_travelapp_id));
             authId.push(parseInt(app.auth_officer_id));
         });
-
-        let leaveObject = {}
-     let leaveData =   await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((data)=>{
-             return  data
+        let data =   await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((apps)=>{
+             return  apps
 
         });
-
-
-
-        const authorizers =  await authorizationAction.getAuthorizationLog(ids, 1).then((data)=>{
-            return data
+        const officers =  await authorizationAction.getAuthorizationLog(ids, 1).then((off)=>{
+            return off
         });
 
-        leaveObject = {
-            leave: leaveData,
-            authorizers: authorizers
+        leaveObj = {
+            data,
+            officers
         }
 
-        return res.status(200).json(leaveObject)
+        return res.status(200).json(leaveObj)
     }catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
