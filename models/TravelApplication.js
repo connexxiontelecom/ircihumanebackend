@@ -4,6 +4,7 @@ const {
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+//const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
 
 module.exports = (sequelize, DataTypes) => {
     class TravelApplication extends Model {
@@ -60,7 +61,8 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'travel_applications',
         timestamps:false
     });
-    TravelApplication.belongsTo(Employee, { foreignKey: 'travelapp_employee_id' })
+    TravelApplication.belongsTo(Employee, { foreignKey: 'travelapp_employee_id', as: "applicant"});
+    //TravelApplication.belongsToMany(authorizationModel, { through: 'auth_travelapp_id', as: 'authorizers' });
 
     return TravelApplication;
 };

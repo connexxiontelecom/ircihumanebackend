@@ -139,19 +139,27 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
 router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
     try {
 
-        let empId = req.params['emp_id']
+        let empId = req.params['emp_id'];
+        let leaveObj = {};
+        let appId = [];
         await employees.getEmployee(empId).then((data)=>{
             if(_.isEmpty(data)){
                 return res.status(404).json(`Employee Doesn't Exist`)
             }else{
                 leaveApplication.findEmployeeLeaveApplication(empId).then((data) =>{
-                    let appId = [];
                     data.map((app)=>{
-                        appId.push(app.travelapp_id);
+                        appId.push(app.leapp_id);
                     });
-                    const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
-                    data.push(authorizers);
-                    return res.status(200).json(data);
+                    authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
+                        //data.push(authorizers);
+                       // return res.status(200).json(data);
+                        leaveObj = {
+                            data,
+                            officers
+                        }
+                        return res.status(200).json(leaveObj);
+                    });
+
                 })
             }
         })
