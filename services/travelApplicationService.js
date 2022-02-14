@@ -47,7 +47,7 @@ const getTravelApplicationsByEmployeeId = async (employee)=>{
 }
 
 const getTravelApplicationsById = async (id)=>{
-    return await travelApplicationModel.findOne({where:{travelapp_id:id},include: [EmployeeModel] });
+    return await travelApplicationModel.findOne({where:{travelapp_id:id},include: [{model: EmployeeModel, as:'applicant'}] });
 }
 
 
