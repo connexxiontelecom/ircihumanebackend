@@ -400,7 +400,8 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                         return  res.status(200).json(`Action Successful`)
                     })
 
-                }else{
+                }
+                else{
 
                     return res.status(400).json(`Payroll Routine has already been run`)
                 }
