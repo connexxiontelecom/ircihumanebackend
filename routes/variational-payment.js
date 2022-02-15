@@ -66,7 +66,13 @@ router.post('/', auth, async (req, res, next)=>{
                     })
 
                     if (!(_.isNull(checkExisting) || _.isEmpty(checkExisting))) {
-                        await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
+                        if(parseInt(checkExisting.vp_confirm) === 0){
+                            await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
+                        }else{
+
+                            return res.status(400).json(`${checkExisting.payment.pd_payment_name} already actioned for employee, consider updating`)
+                        }
+
                     }
                     const vpObject = {
                         vp_emp_id: parseInt(employeeId),
@@ -188,7 +194,7 @@ router.get('/current-payment/:year/:month', auth, async (req, res, next)=>{
 router.patch('/update-payment-amount/:id', auth, async (req, res, next)=>{
     try{
         const schema = Joi.object({
-            amount: Joi.number().required(),
+            vp_amount: Joi.number().required(),
 
         });
         const vpRequest = req.body

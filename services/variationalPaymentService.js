@@ -53,7 +53,7 @@ async function getCurrentPayment(year, month){
 }
 
 async function checkDuplicateEntry(empId, year, month, paymentType){
-    return await variationalPaymentModel.findOne({ where:{ vp_payment_month: month, vp_payment_year: year, vp_emp_id: empId, vp_payment_def_id: paymentType}})
+    return await variationalPaymentModel.findOne({ where:{ vp_payment_month: month, vp_payment_year: year, vp_emp_id: empId, vp_payment_def_id: paymentType}, include: ['employee', 'payment']})
 }
 
 async function deletePaymentEntry(vpId){
