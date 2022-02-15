@@ -8,6 +8,7 @@ const paymentDefinition =  require('../services/paymentDefinitionService');
 const payrollMonthYear =  require('../services/payrollMonthYearService');
 const employees = require('../services/employeeService');
 const logs = require('../services/logService')
+const salary = require("../services/salaryService");
 
 
 /* Get All variational payments */
@@ -23,55 +24,108 @@ router.get('/', auth, async function(req, res, next) {
 
 router.post('/', auth, async (req, res, next)=>{
     try{
-        const schema = Joi.object({
-            employee: Joi.array().items(Joi.number().required()),
-            payment_definition:Joi.number().required(),
-            amount:Joi.number().required(),
-            month:Joi.number().required(),
-            year:Joi.number().required()
-        });
+        // const scheme = Joi.array().items(Joi.object().keys({
+        //     name: Joi.string().required(),
+        //     value: Joi.required()
+        // }).unknown(true)).unique((a, b) => a.name === b.name)
+        //
+        //
+        // const schema = Joi.object({
+        //     employee: Joi.array().items(Joi.number().required()),
+        //     payment_definition:Joi.number().required(),
+        //     amount:Joi.number().required(),
+        //     month:Joi.number().required(),
+        //     year:Joi.number().required()
+        // });
 
         const vpRequest = req.body
-        const validationResult = schema.validate(vpRequest)
-        if(validationResult.error) {
-            return res.status(400).json(validationResult.error.details[0].message);
-        }
-        const payrollR = 0;
-        if(payrollR === 1){
-            return res.status(400).json("You cannot run payroll routine for this period");
-        }else{
-            const pdId = await paymentDefinition.findPaymentById(req.body.payment_definition).then((data)=>{
-                return  data;
-            });
+        //const validationResult = schema.validate(vpRequest)
+        // if(validationResult.error) {
+        //     return res.status(400).json(validationResult.error.details[0].message);
+        // }
 
-            if(parseInt(pdId.pd_payment_variant) !== 1) return res.status(400).json('Choose variational payment from the option provided.');
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(req.body.month, req.body.year).then((data)=>{
+            return data
+        })
 
-            let employeesIds = req.body.employee
-            for (const emp of employeesIds) {
-                const employeeData =  await employees.getEmployee(emp).then((data)=>{
-                    return data
-                })
-                if(!(_.isNull(employeeData) || _.isEmpty(employeeData))){
+        if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
 
-                    const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(emp), parseInt(req.body.year), parseInt(req.body.month), parseInt(req.body.payment_definition)).then((data)=>{
+            let employeeId = req.body.employee
+            let payments = req.body.payments
+
+            const employeeData = await employees.getEmployee(employeeId).then((data) => {
+                return data
+            })
+            if (!(_.isNull(employeeData) || _.isEmpty(employeeData))) {
+
+                for (const payment of payments) {
+                    const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(employeeId), parseInt(req.body.year), parseInt(req.body.month), parseInt(payment.payment_definition)).then((data) => {
                         return data
                     })
 
-                    if(!(_.isNull(checkExisting) || _.isEmpty(checkExisting))){
-                            await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
+                    if (!(_.isNull(checkExisting) || _.isEmpty(checkExisting))) {
+                        await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
                     }
-                  const vpObject = {
-                      vp_emp_id: parseInt(emp),
-                      vp_payment_def_id: parseInt(req.body.payment_definition),
-                      vp_amount:  parseFloat(req.body.amount),
-                      vp_payment_month:  parseInt(req.body.month),
-                      vp_payment_year:  parseInt(req.body.year)
-                  }
-                  await variationalPayment.setNewVariationalPayment(vpObject).then()
-               }
+                    const vpObject = {
+                        vp_emp_id: parseInt(employeeId),
+                        vp_payment_def_id: parseInt(payment.payment_definition),
+                        vp_amount: parseFloat(payment.amount),
+                        vp_payment_month: parseInt(req.body.month),
+                        vp_payment_year: parseInt(req.body.year)
+                    }
+                    await variationalPayment.setNewVariationalPayment(vpObject).then()
+                }
+
+                return res.status(200).json('Action Successful')
+
+            } else {
+                return res.status(404).json('Employee Does not Exists')
             }
-            return res.status(200).json('Action Successful')
+
+        }else {
+            return res.status(400).json("Payroll Routine already run for this period");
+
         }
+
+        // const payrollR = 0;
+        // if(payrollR === 1){
+        //     return res.status(400).json("You cannot run payroll routine for this period");
+        // }
+        // else{
+        //
+        //
+        //     const pdId = await paymentDefinition.findPaymentById(req.body.payment_definition).then((data)=>{
+        //         return  data;
+        //     });
+        //
+        //     if(parseInt(pdId.pd_payment_variant) !== 1) return res.status(400).json('Choose variational payment from the option provided.');
+        //
+        //     let employeesIds = req.body.employee
+        //     for (const emp of employeesIds) {
+        //         const employeeData =  await employees.getEmployee(emp).then((data)=>{
+        //             return data
+        //         })
+        //         if(!(_.isNull(employeeData) || _.isEmpty(employeeData))){
+        //
+        //             const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(emp), parseInt(req.body.year), parseInt(req.body.month), parseInt(req.body.payment_definition)).then((data)=>{
+        //                 return data
+        //             })
+        //
+        //             if(!(_.isNull(checkExisting) || _.isEmpty(checkExisting))){
+        //                     await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
+        //             }
+        //           const vpObject = {
+        //               vp_emp_id: parseInt(emp),
+        //               vp_payment_def_id: parseInt(req.body.payment_definition),
+        //               vp_amount:  parseFloat(req.body.amount),
+        //               vp_payment_month:  parseInt(req.body.month),
+        //               vp_payment_year:  parseInt(req.body.year)
+        //           }
+        //           await variationalPayment.setNewVariationalPayment(vpObject).then()
+        //        }
+        //     }
+        //     return res.status(200).json('Action Successful')
+        // }
 
     }catch (e) {
         return res.status(400).json(`Error while posting variational payment.${e.message}`);

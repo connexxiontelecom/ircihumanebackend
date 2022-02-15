@@ -7,6 +7,7 @@ const leaveAccrual =  require('../services/leaveAccrualService')
 const leaveType = require('../services/leaveTypeService')
 const employee = require("../services/employeeService");
 const auth = require("../middleware/auth");
+const leaveApplication = require("../services/leaveApplicationService");
 
 
     async function addLeaveAccrual(data) {
@@ -70,9 +71,21 @@ router.get('/get-leave-acrruals/:emp_id', auth,  async function(req, res, next) 
             else{
                 let responseData = [ ]
                 for (const leave of leaves) {
-                        let leaveSumAccruals = await leaveAccrual.sumLeaveAccrualByYearEmployeeLeaveType(year, empId, 1).then((data)=>{
+
+                    let usedLeaveValue = 0
+
+                    let usedLeavesData = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((sumLeave) => {
+                        return sumLeave
+                      })
+
+                    if(!(_.isNull(usedLeavesData) || parseInt(usedLeavesData) === 0)){
+                        usedLeaveValue = usedLeavesData
+                    }
+
+                        let leaveSumAccruals = await leaveAccrual.sumLeaveAccrualByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((data)=>{
                             return data
                         })
+
                         let accrualValue = 0;
                         if(!(_.isNull(leaveSumAccruals) || parseInt(leaveSumAccruals) === 0)){
                           accrualValue = leaveSumAccruals
@@ -81,7 +94,7 @@ router.get('/get-leave-acrruals/:emp_id', auth,  async function(req, res, next) 
 
                         const finalLeaveAccrualObject = {
                             leave: leave,
-                            accrual: accrualValue
+                            accrual: accrualValue - usedLeaveValue
                         }
 
                      responseData.push(finalLeaveAccrualObject)
