@@ -40,6 +40,13 @@ const updateVariationalPaymentStatus = async (id, status, user)=>{
         {where:{vp_id: id}});
 }
 
+async function updateAmount(id, amount){
+    return await variationalPaymentModel.update({
+        vp_confirm: 0,
+        vp_amount: amount
+    }, { where: {vp_id: id}})
+}
+
 async function getCurrentPayment(year, month){
     return await variationalPaymentModel.findAll({where:{vp_payment_month: month, vp_payment_year: year}, include: ['employee', 'payment']});
 
@@ -51,6 +58,10 @@ async function checkDuplicateEntry(empId, year, month, paymentType){
 
 async function deletePaymentEntry(vpId){
     return await variationalPaymentModel.destroy({where:{ vp_id: vpId}})
+}
+
+async function findPayment(vpId){
+    return await variationalPaymentModel.findOne({where:{ vp_id: vpId}})
 }
 
 const getUnconfirmedVariationalPayment = async ()=>{
@@ -84,5 +95,7 @@ module.exports = {
     checkDuplicateEntry,
     deletePaymentEntry,
     getUnconfirmedVariationalPaymentMonthYear,
-    getVariationalPaymentEmployeeMonthYear
+    getVariationalPaymentEmployeeMonthYear,
+    findPayment,
+    updateAmount
 }

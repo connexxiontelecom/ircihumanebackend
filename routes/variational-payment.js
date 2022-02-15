@@ -44,6 +44,8 @@ router.post('/', auth, async (req, res, next)=>{
         //     return res.status(400).json(validationResult.error.details[0].message);
         // }
 
+        //return  res.status(200).json(vpRequest)
+
         const salaryRoutineCheck = await salary.getSalaryMonthYear(req.body.month, req.body.year).then((data)=>{
             return data
         })
@@ -180,6 +182,44 @@ router.get('/current-payment/:year/:month', auth, async (req, res, next)=>{
         })
     }catch (e) {
         return res.status(400).json(`Something went wrong. Try again. ${e.message}`);
+    }
+});
+
+router.patch('/update-payment-amount/:id', auth, async (req, res, next)=>{
+    try{
+        const schema = Joi.object({
+            amount: Joi.number().required(),
+
+        });
+        const vpRequest = req.body
+        const validationResult = schema.validate(vpRequest)
+        if(validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message);
+        }
+        const vpId = req.params.id
+
+
+        const payments = await variationalPayment.findPayment(vpId).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(payments) || _.isNull(payments)){
+            return res.status(400).json('Payment does not exists');
+        }
+
+
+        const updateResponse = await variationalPayment.updateAmount(vpId, vpRequest.vp_amount).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(updateResponse) || _.isNull(updateResponse)){
+            return res.status(400).json('An error occurred');
+        }
+
+        return res.status(200).json('Action Successful');
+
+    }catch (e) {
+        return res.status(400).json('Something went wrong. Try again.'+e.message);
     }
 });
 
