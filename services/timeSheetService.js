@@ -62,6 +62,12 @@ async function findTimeSheetMonth(empId, month, year){
         where: { ts_emp_id: empId, ts_month: month, ts_year: year}
     })
 }
+async function findTimeSheetByMonthOnly(month, year){
+    return await TimeSheet.findAll({
+        group:['ts_month', 'ts_year'],
+        where: {  ts_month: month, ts_year: year}
+    })
+}
 
 async function updateTimeSheetStatus(comment, userId, status, randStr, ts_id){
       return await TimeSheet.update({
@@ -101,5 +107,6 @@ module.exports = {
     getLatestTimeSheet,
     updateTimeSheetStatus,
     getTimeSheetApplicationsForAuthorization,
-    findTimeSheetMonthEmployee
+    findTimeSheetMonthEmployee,
+    findTimeSheetByMonthOnly
 }

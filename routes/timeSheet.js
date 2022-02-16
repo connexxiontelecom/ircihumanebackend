@@ -17,6 +17,30 @@ const authorizationAction = require('../services/authorizationActionService');
 
 
 /* Add to time sheet */
+router.get('/', auth,  async function(req, res, next) {
+    try {
+            const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+                return data
+            })
+            if (_.isEmpty(payrollMonthYearData) || _.isNull(payrollMonthYearData)) {
+                return res.status(404).json(`No Payroll Month and Year Set`)
+            } else {
+                let payrollMonth = parseInt(payrollMonthYearData.pym_month)
+                let payrollYear = payrollMonthYearData.pym_year
+
+                const timeSheetData = await timeSheet.findTimeSheetByMonthOnly(payrollMonth, payrollYear).then((data) => {
+                    return data
+                })
+
+                return res.status(200).json(timeSheetData)
+
+            }
+
+    } catch (err) {
+        return res.status(400).json(`Error while fetching time sheet `);
+
+    }
+});
 router.post('/add-time-sheet', auth,  async function(req, res, next) {
     try {
         const schema = Joi.object( {
@@ -158,8 +182,8 @@ router.get('/get-time-sheets/:emp_id', auth,  async function(req, res, next) {
         }
 
      } catch (err) {
-        console.error(`Error while fetching time sheet `, err.message);
-        next(err);
+        return res.status(400).json(`Error while fetching time sheet `);
+
     }
 });
 
@@ -261,15 +285,19 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
         const year = parseInt(req.params.year);
         const userId = req.user.username.user_id;
         await timeSheetAllocation.findTimeAllocationDetail(month, year,empId).then((timeAllocation)=>{
-            timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
-                if(_.isEmpty(timeSheet) || _.isNull(timeSheet)){
-                    return res.status(400).json("No time sheet record found.");
-                }else{
-                    authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
-                        return res.status(200).json({timeSheet, timeAllocation, log});
-                    })
-                }
-            });
+            if(_.isNull(timeAllocation) || _.isEmpty(timeAllocation)){
+                return res.status(404).json("No time allocation found.");
+            }else{
+                timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
+                    if(_.isEmpty(timeSheet) || _.isNull(timeSheet)){
+                        return res.status(400).json("No time sheet record found.");
+                    }else{
+                        authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
+                            return res.status(200).json({timeSheet, timeAllocation, log});
+                        })
+                    }
+                });
+            }
         })
     }catch (e) {
         return res.status(400).json("Whoops! Something went wrong. Try again."+e.message);
@@ -363,6 +391,7 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
         const supervisorId = req.params.id;
         await authorizationAction.getAuthorizationByOfficerId(supervisorId,2).then((data)=>{
 
+            ;
             const ids = [];
             data.map((app)=>{
                 ids.push(app.auth_travelapp_id);
@@ -374,7 +403,7 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
                     month.push(n.ta_month);
                     year.push(n.ta_year);
                 });
-                //return res.status(200).json({month,year});
+
                 timeSheet.getTimeSheetApplicationsForAuthorization(month, year).then((r)=>{
                     return res.status(200).json(r);
                 })
