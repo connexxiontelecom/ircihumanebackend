@@ -84,6 +84,8 @@ const getTravelApplicationsForAuthorization = async (travelAppIds)=>{
 
     })
 }
+
+
 module.exports = {
     getTravelApplications,
     setNewTravelApplication,
