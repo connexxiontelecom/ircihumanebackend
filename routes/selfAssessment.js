@@ -42,6 +42,11 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, re
                 let addResponse;
                 let destroyResponse;
                 let i = 0;
+
+            await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                    return data
+                })
+
                 for(const sa of saRequests){
                     sa.sa_emp_id = empId
                     sa.sa_gs_id = gsId
