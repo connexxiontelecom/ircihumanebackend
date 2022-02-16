@@ -2,8 +2,12 @@ const Joi = require('joi')
 const _ = require('lodash')
 const express = require('express')
 const router = express.Router()
-const leaveAccrual =  require('../services/leaveAccrualService')
 
+const leaveAccrual =  require('../services/leaveAccrualService')
+const leaveType = require('../services/leaveTypeService')
+const employee = require("../services/employeeService");
+const auth = require("../middleware/auth");
+const leaveApplication = require("../services/leaveApplicationService");
 
 
     async function addLeaveAccrual(data) {
@@ -20,7 +24,7 @@ const leaveAccrual =  require('../services/leaveAccrualService')
     if (validationResult.error) {
         return validationResult.error.details[0].message
     } else {
-        return leaveAccrual.addLeaveAccrual(data)
+        return await leaveAccrual.addLeaveAccrual(data)
     }
 }
 
@@ -41,6 +45,74 @@ const leaveAccrual =  require('../services/leaveAccrualService')
 }
 
 
+router.get('/get-leave-acrruals/:emp_id', auth,  async function(req, res, next) {
+    try {
+        const empId = req.params.emp_id
+
+        const d = new Date();
+        const year = d.getFullYear();
+
+        const employeeData =   await employee.getEmployee(empId).then((data)=>{
+            return  data
+
+        })
+
+        if(!_.isEmpty(employeeData) || !_.isNull(employeeData)){
+
+
+            const leaves = await leaveType.getAllLeaves().then((data)=>{
+                return data
+            })
+
+
+            if(_.isEmpty(leaves) || _.isNull(leaves)){
+                return res.status(400).json(`No leave set up`)
+            }
+            else{
+                let responseData = [ ]
+                for (const leave of leaves) {
+
+                    let usedLeaveValue = 0
+
+                    let usedLeavesData = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((sumLeave) => {
+                        return sumLeave
+                      })
+
+                    if(!(_.isNull(usedLeavesData) || parseInt(usedLeavesData) === 0)){
+                        usedLeaveValue = usedLeavesData
+                    }
+
+                        let leaveSumAccruals = await leaveAccrual.sumLeaveAccrualByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((data)=>{
+                            return data
+                        })
+
+                        let accrualValue = 0;
+                        if(!(_.isNull(leaveSumAccruals) || parseInt(leaveSumAccruals) === 0)){
+                          accrualValue = leaveSumAccruals
+                        }
+
+
+                        const finalLeaveAccrualObject = {
+                            leave: leave,
+                            accrual: accrualValue - usedLeaveValue
+                        }
+
+                     responseData.push(finalLeaveAccrualObject)
+               }
+
+                return res.status(200).json(responseData)
+            }
+
+        }
+        else{
+            return res.status(400).json(`Employee Doesn't Exists`)
+        }
+    } catch (err) {
+        console.error(`Error while Fetching `, err.message);
+        next(err);
+    }
+
+});
 
 module.exports = {
     router,
