@@ -54,7 +54,7 @@ async function getLatestTimeSheet(){
 
 async function findTimeSheetMonth(empId, month, year){
     return await TimeSheet.findAll({
-        group:['ts_month', 'ts_year'],
+       // group:['ts_month', 'ts_year'],
        /* attributes:[
             [sequelize.fn('distinct', sequelize.col('ts_month')), 'thisMonth'],
             [sequelize.fn('distinct', sequelize.col('ts_year')), 'thisYear']
