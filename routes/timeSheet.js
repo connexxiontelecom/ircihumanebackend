@@ -289,7 +289,7 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
                 return res.status(404).json("No time allocation found.");
             }else{
                 timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
-                    if(_.isEmpty(timeShfieet) || _.isNull(timeSheet)){
+                    if(_.isEmpty(timeSheet) || _.isNull(timeSheet)){
                         return res.status(400).json("No time sheet record found.");
                     }else{
                         authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
