@@ -74,6 +74,8 @@ router.post('/', auth, async (req, res, next)=>{
                         }
 
                     }
+
+                if(parseFloat(payment.amount) > 0){
                     const vpObject = {
                         vp_emp_id: parseInt(employeeId),
                         vp_payment_def_id: parseInt(payment.payment_definition),
@@ -82,6 +84,8 @@ router.post('/', auth, async (req, res, next)=>{
                         vp_payment_year: parseInt(req.body.year)
                     }
                     await variationalPayment.setNewVariationalPayment(vpObject).then()
+                }
+
                 }
 
                 return res.status(200).json('Action Successful')
