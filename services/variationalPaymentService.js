@@ -52,6 +52,11 @@ async function getCurrentPayment(year, month){
 
 }
 
+async function getCurrentPendingPayment(year, month){
+    return await variationalPaymentModel.findAll({where:{vp_payment_month: month, vp_payment_year: year, vp_confirm: 0}, include: ['employee', 'payment']});
+
+}
+
 async function checkDuplicateEntry(empId, year, month, paymentType){
     return await variationalPaymentModel.findOne({ where:{ vp_payment_month: month, vp_payment_year: year, vp_emp_id: empId, vp_payment_def_id: paymentType}, include: ['employee', 'payment']})
 }
@@ -97,5 +102,6 @@ module.exports = {
     getUnconfirmedVariationalPaymentMonthYear,
     getVariationalPaymentEmployeeMonthYear,
     findPayment,
-    updateAmount
+    updateAmount,
+    getCurrentPendingPayment
 }
