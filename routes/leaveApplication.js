@@ -18,14 +18,19 @@ const employees = require("../services/employeeService");
 /* Get leave application */
 router.get('/', auth, async function(req, res, next) {
     try {
+        let appId = [];
+        let leaveObj = {};
         await leaveApplication.findAllLeaveApplication().then((data) =>{
-            let appId = [];
             data.map((app)=>{
-                appId.push(app.travelapp_id);
+                appId.push(app.leapp_id);
             });
-            const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
-            data.push(authorizers);
-            return res.status(200).json(data);
+            authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
+                leaveObj = {
+                  data,
+                  officers
+                };
+                return res.status(200).json(leaveObj);
+            });
         })
     } catch (err) {
         return res.status(400).json(`Error while fetching leaves ${err.message}`)
@@ -139,19 +144,25 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
 router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
     try {
 
-        let empId = req.params['emp_id']
+        let empId = req.params['emp_id'];
+        let leaveObj = {};
+        let appId = [];
         await employees.getEmployee(empId).then((data)=>{
             if(_.isEmpty(data)){
                 return res.status(404).json(`Employee Doesn't Exist`)
             }else{
                 leaveApplication.findEmployeeLeaveApplication(empId).then((data) =>{
-                    let appId = [];
                     data.map((app)=>{
-                        appId.push(app.travelapp_id);
+                        appId.push(app.leapp_id);
                     });
-                    const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
-                    data.push(authorizers);
-                    return res.status(200).json(data);
+                    authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
+                        leaveObj = {
+                            data,
+                            officers
+                        }
+                        return res.status(200).json(leaveObj);
+                    });
+
                 })
             }
         })
@@ -175,22 +186,30 @@ router.get('/:id', auth, async (req, res)=>{ //get leave application details
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{
         const supervisorId = req.params.id;
-        await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
-            const ids = [];
-            data.map((app)=>{
-                ids.push(app.auth_travelapp_id);
-            });
-            //return res.status(200).json(ids);
-            leaveApplication.getLeaveApplicationsForAuthorization(ids).then((data)=>{
-                let appId = [];
-                data.map((app)=>{
-                    appId.push(app.travelapp_id);
-                });
-                const authorizers =  authorizationAction.getAuthorizationLog(appId, 1);
-                data.push(authorizers);
-                return res.status(200).json(data);
-            });
+        let leaveObj = {};
+        let ids = [];
+        let authId = [];
+        const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
+            return data
         })
+        authAction.map((app)=>{
+            ids.push(parseInt(app.auth_travelapp_id));
+            authId.push(parseInt(app.auth_officer_id));
+        });
+        let data =   await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((apps)=>{
+             return  apps
+
+        });
+        const officers =  await authorizationAction.getAuthorizationLog(ids, 1).then((off)=>{
+            return off
+        });
+
+        leaveObj = {
+            data,
+            officers
+        }
+
+        return res.status(200).json(leaveObj)
     }catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }

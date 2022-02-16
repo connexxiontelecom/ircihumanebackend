@@ -262,14 +262,17 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
         const userId = req.user.username.user_id;
         await timeSheetAllocation.findTimeAllocationDetail(month, year,empId).then((timeAllocation)=>{
             timeSheet.findTimeSheetMonth(empId, req.params.month, req.params.year).then((timeSheet)=>{
-                authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
-                    return res.status(200).json({timeSheet, timeAllocation, log});
-                })
-
+                if(_.isEmpty(timeSheet) || _.isNull(timeSheet)){
+                    return res.status(400).json("No time sheet record found.");
+                }else{
+                    authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
+                        return res.status(200).json({timeSheet, timeAllocation, log});
+                    })
+                }
             });
         })
     }catch (e) {
-        return res.status(400).json("Whoops! Something went wrong. Try again.");
+        return res.status(400).json("Whoops! Something went wrong. Try again."+e.message);
     }
 
 });

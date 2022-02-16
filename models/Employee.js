@@ -6,6 +6,8 @@ const {
 
 const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
+//const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+//const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
 
 module.exports = (sequelize, DataTypes) => {
@@ -94,6 +96,9 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(JobRole, { foreignKey: 'emp_job_role_id'})
     Employee.hasMany(JobRole, {foreignKey: 'job_role_id'})
+
+    //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
+    //Employee.belongsTo(travelApplicationModel, { foreignKey:'emp_id', as: 'applicant' });
 
     // JobRole.belongsTo(Department, { as: 'department', foreignKey: 'jb_department_id' })
     // JobRole.hasMany(Department, { foreignKey: 'department_id' })

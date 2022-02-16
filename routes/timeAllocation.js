@@ -99,5 +99,32 @@ router.get('/get-employee-time-allocation/:emp_id', auth,  async function(req, r
     }
 });
 
+router.get('/authorization/:super_id', auth,  async function(req, res, next) {
+    try {
+
+        let super_id = req.params.super_id
+        let ref_no = [];
+        let timeObj = {};
+        await authorizationAction.getAuthorizationByOfficerId(super_id, 2).then((data)=>{
+            data.map((da)=>{
+                ref_no.push(da.auth_travelapp_id)
+            });
+        })
+         await timeAllocation.findTimeAllocationsByRefNo(ref_no).then((data)=>{
+             authorizationAction.getAuthorizationLog(ref_no, 2).then((officers)=>{
+                timeObj = {
+                    data,
+                    officers
+                }
+                return res.status(200).json(timeObj);
+            });
+        })
+
+    } catch (err) {
+       res.status(400).json(`Error while fetching time allocation `);
+        next(err);
+    }
+});
+
 
 module.exports = router;

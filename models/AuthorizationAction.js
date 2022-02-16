@@ -2,8 +2,10 @@
 const {
     Model
 } = require('sequelize');
+
 const {sequelize, Sequelize} = require("../services/db");
-const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+
 module.exports = (sequelize, DataTypes) => {
     class AuthorizationAction extends Model {
         /**
@@ -22,7 +24,10 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
         auth_travelapp_id: DataTypes.INTEGER,
-        auth_officer_id: DataTypes.INTEGER,
+        auth_officer_id: {
+            type:DataTypes.INTEGER,
+            unique:true
+        },
         auth_status: {type:DataTypes.INTEGER, defaultValue:0, comment:"0=pending,1=approved,2=declined"},
         auth_type: {type:DataTypes.INTEGER, defaultValue:1, comment:"1=leave,2=time-sheet,3=travel,4=self"},
         auth_comment:{type:DataTypes.STRING, allowNull:true},
@@ -40,6 +45,9 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'authorization_actions',
         //timestamps:false
     });
-    AuthorizationAction.belongsTo(Employee, { foreignKey: 'auth_officer_id' })
+    //AuthorizationAction.belongsTo(Employee, { foreignKey: 'auth_officer_id', as: 'officers' });
+    AuthorizationAction.belongsTo(Employee, {foreignKey:'auth_officer_id',  as: 'officers'});
+
+
     return AuthorizationAction;
 };

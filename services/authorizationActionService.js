@@ -147,10 +147,18 @@ const getAuthorizationByOfficerId = async (officerId, type)=>{
     return await authorizationModel.findAll({where:{auth_officer_id:officerId, auth_type:type}})
 }
 
-const getAuthorizationLog = async (authId, type )=>{
+// const getAuthorizationLog = async (authId, type )=>{
+//     return await authorizationModel.findAll({
+//         where:{auth_travelapp_id: authId, auth_type:type},
+//         //include:[EmployeeModel]
+//     });
+// }
+
+async function getAuthorizationLog(authId, type){
     return await authorizationModel.findAll({
+        //order:[['auth_id', 'DESC']],
         where:{auth_travelapp_id: authId, auth_type:type},
-        include:[EmployeeModel]
+        include:['officers']
     });
 }
 
