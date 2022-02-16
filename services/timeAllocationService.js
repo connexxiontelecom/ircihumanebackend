@@ -5,6 +5,12 @@ const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 
 const helper  = require('../helper');
 
+async function findAllTimeAllocations(){
+    return await TimeAllocation.findAll({order:[['ta_id', 'DESC']],
+        include: [Employee]
+    })
+}
+
 
 async function addTimeAllocation(timeAllocationData){
     return await TimeAllocation.create({
@@ -40,11 +46,19 @@ async function findTimeAllocation(empId, month, year){
 }
 async function findTimeAllocationDetail(month, year, empId){
     return await TimeAllocation.findOne({
-        group:['ta_month', 'ta_year'],
+        /*group:['ta_month', 'ta_year'],
         attributes:['ta_month', 'ta_year', 'ta_id', 'ta_emp_id',
             'ta_tcode', 'ta_charge', 'createdAt', 'updatedAt',
-            'ta_ref_no', 'ta_comment', 'ta_date_approved', 'ta_approved_by', 'ta_status'],
+            'ta_ref_no', 'ta_comment', 'ta_date_approved', 'ta_approved_by', 'ta_status'],*/
         where: { ta_emp_id: empId, ta_month: month, ta_year: year },
+        order:[['ta_id', 'DESC']],
+        include: [Employee]
+    })
+}
+async function findTimeAllocationDetailMonthYear(month, year){
+    return await TimeAllocation.findOne({
+        where: { ta_month: month, ta_year: year },
+        order:[['ta_id', 'DESC']],
         include: [Employee]
     })
 }
@@ -57,6 +71,7 @@ async function findTimeAllocationsDetail(empId, month, year){
 
 async function findTimeAllocationsEmployee(empId){
     return await TimeAllocation.findAll({  where: { ta_emp_id: empId },
+        order:[['ta_id', 'DESC']],
         include: [Employee]
     })
 }
@@ -89,5 +104,7 @@ module.exports = {
     findTimeAllocationDetail,
     findTimeAllocationsDetail,
     findTimeAllocationsEmployee,
-    findTimeAllocationsByRefNo
+    findTimeAllocationsByRefNo,
+    findAllTimeAllocations,
+    findTimeAllocationDetailMonthYear
 }

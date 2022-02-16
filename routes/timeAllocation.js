@@ -10,6 +10,23 @@ const logs = require('../services/logService')
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const authorizationAction = require('../services/authorizationActionService');
 
+
+
+router.get('/', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+
+        const timeAllocationBreakDown = await timeAllocation.findAllTimeAllocations().then((data)=>{
+            return data
+        })
+
+        return res.status(200).json(timeAllocationBreakDown)
+    } catch (err) {
+        return res.status(400).json(`Error while fetching time allocation `);
+
+    }
+});
 /* Add to time sheet */
 router.post('/add-time-allocation', auth,  async function(req, res, next) {
     try {
@@ -94,7 +111,7 @@ router.get('/get-employee-time-allocation/:emp_id', auth,  async function(req, r
 
         return res.status(200).json(timeAllocationBreakDown)
     } catch (err) {
-        console.error(`Error while fetching time allocation `, err.message);
+        return res.status(400).json(`Error while fetching time allocation `);
         next(err);
     }
 });
