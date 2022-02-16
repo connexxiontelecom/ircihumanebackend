@@ -74,6 +74,8 @@ router.post('/', auth, async (req, res, next)=>{
                         }
 
                     }
+
+                if(parseFloat(payment.amount) > 0){
                     const vpObject = {
                         vp_emp_id: parseInt(employeeId),
                         vp_payment_def_id: parseInt(payment.payment_definition),
@@ -82,6 +84,8 @@ router.post('/', auth, async (req, res, next)=>{
                         vp_payment_year: parseInt(req.body.year)
                     }
                     await variationalPayment.setNewVariationalPayment(vpObject).then()
+                }
+
                 }
 
                 return res.status(200).json('Action Successful')
@@ -184,6 +188,18 @@ router.get('/current-payment/:year/:month', auth, async (req, res, next)=>{
         let month = req.params.month
         let year = req.params.year
         await variationalPayment.getCurrentPayment(year, month).then((data)=>{
+            return res.status(200).json(data);
+        })
+    }catch (e) {
+        return res.status(400).json(`Something went wrong. Try again. ${e.message}`);
+    }
+});
+
+router.get('/current-pending-payment/:year/:month', auth, async (req, res, next)=>{
+    try{
+        let month = req.params.month
+        let year = req.params.year
+        await variationalPayment.getCurrentPendingPayment(year, month).then((data)=>{
             return res.status(200).json(data);
         })
     }catch (e) {
