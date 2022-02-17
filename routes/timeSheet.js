@@ -310,17 +310,47 @@ router.get('/:month/:year', auth, async function (req, res) {
         //const empId = parseInt(req.params.emp_id);
         const month = parseInt(req.params.month);
         const year = parseInt(req.params.year);
+   //     const userId = req.user.username.user_id;
+        const timeAllocation= await timeSheetAllocation.findTimeAllocationDetailMonthYear(month, year).then((data)=>{
+            return data;
+        })
+        if(_.isNull(timeAllocation) || _.isEmpty(timeAllocation)){
+            return res.status(404).json("No time allocation found.");
+        }
+          const timesheet = await  timeSheet.findTimeSheetByMonthOnly(month, year).then((time)=>{
+               return time;
+            });
+        if(_.isEmpty(timesheet) || _.isNull(timesheet)){
+            return res.status(400).json("No time sheet record found.");
+        }
+
+           await  authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
+                return res.status(200).json({timesheet, timeAllocation, log});
+            })
+
+    }catch (e) {
+        return res.status(400).json("Whoops! Something went wrong. Try again.");
+    }
+
+});
+/*
+
+router.get('/:month/:year', auth, async function (req, res) {
+    try{
+        //const empId = parseInt(req.params.emp_id);
+        const month = parseInt(req.params.month);
+        const year = parseInt(req.params.year);
         const userId = req.user.username.user_id;
         await timeSheetAllocation.findTimeAllocationDetailMonthYear(month, year).then((timeAllocation)=>{
             if(_.isNull(timeAllocation) || _.isEmpty(timeAllocation)){
                 return res.status(404).json("No time allocation found.");
             }else{
-                timeSheet.findTimeSheetByMonthOnly(req.params.month, req.params.year).then((timeSheet)=>{
-                    if(_.isEmpty(timeSheet) || _.isNull(timeSheet)){
+                timeSheet.findTimeSheetByMonthOnly(month, year).then((timesheet)=>{
+                    if(_.isEmpty(timesheet) || _.isNull(timesheet)){
                         return res.status(400).json("No time sheet record found.");
                     }else{
                         authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
-                            return res.status(200).json({timeSheet, timeAllocation, log});
+                            return res.status(200).json({timesheet, timeAllocation, log});
                         })
                     }
                 });
@@ -331,6 +361,7 @@ router.get('/:month/:year', auth, async function (req, res) {
     }
 
 });
+*/
 
 
 router.post('/update-status', auth, async function (req, res) {
