@@ -52,7 +52,7 @@ const setNewJobRole = async (req, res)=>  {
 }
 const getJobRoleById = async (req, res) =>{
     const role_id  = req.params.id;
-    const role =  await jobRole.findAll({where:{job_role_id: role_id}});
+    const role =  await jobRole.findOne({where:{job_role_id: role_id}});
     res.status(200).json(role);
 }
 const updateJobRole = async (req, res, next)=>{

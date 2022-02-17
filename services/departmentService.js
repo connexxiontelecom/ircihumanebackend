@@ -42,17 +42,17 @@ const setNewDepartment = async (req, res, next)=>  {
             return res.status(200).json(`New department :  ${req.body.department_name} was successfully saved in the database`);
         })
     }catch (e) {
-        console.error(`Error while adding payment definition `, e.message);
-        next(e);
+        return res.status(400).json(`Error while adding payment definition `);
+
     }
 }
 const getDepartmentById = async (req, res) =>{
     const department_id  = req.params.id;
     try{
-        const depart =  await department.findAll({where:{department_id: department_id}});
-        res.status(200).json(depart);
+        const depart =  await department.findOne({where:{department_id: department_id}});
+        return res.status(200).json(depart);
     }catch (e) {
-        res.status(500).json({message:"Something went wrong. Try again later."});
+        return res.status(400).json("Something went wrong. Try again later.");
     }
 }
 const updateDepartment = async (req, res, next)=>{
@@ -86,8 +86,8 @@ const updateDepartment = async (req, res, next)=>{
             return res.status(200).json(`Your changes on   ${req.body.department_name} were saved successfully.`);
         });
     }catch (e) {
-        console.error(`Error while adding payment definition `, e.message);
-        next(e);
+        return res.status(400).error(`Error while adding payment definition `);
+
     }
 }
 
