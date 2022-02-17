@@ -15,6 +15,19 @@ async function addLeaveAccrual(accrualData){
     });
 }
 
+async function removeLeaveAccrual(accrualData){
+
+
+    return await LeaveAccrual.destroy({
+        where:{
+            lea_month:accrualData.lea_month,
+            lea_year: accrualData.lea_year,
+        }
+    });
+}
+
+
+
 async function findLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_type){
     return await LeaveAccrual.findAll({ where: { lea_emp_id: employee_id, lea_year: year, lea_leave_type: leave_type } })
 }
@@ -27,6 +40,7 @@ async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_t
 module.exports = {
    addLeaveAccrual,
     findLeaveAccrualByYearEmployeeLeaveType,
-    sumLeaveAccrualByYearEmployeeLeaveType
+    sumLeaveAccrualByYearEmployeeLeaveType,
+    removeLeaveAccrual
 
 }
