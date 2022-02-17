@@ -64,7 +64,7 @@ async function findTimeSheetMonth(empId, month, year){
 }
 async function findTimeSheetByMonthOnly(month, year){
     return await TimeSheet.findAll({
-        group:['ts_month', 'ts_year'],
+        //group:['ts_month', 'ts_year'],
         where: {  ts_month: month, ts_year: year}
     })
 }
