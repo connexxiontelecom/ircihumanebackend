@@ -32,8 +32,17 @@ async function undoSalaryMonthYear(month, year){
         }})
 }
 
+async function getEmployeeSalary(month, year, empId){
+    return await Salary.findAll({where:{
+        salary_paymonth: month,
+         salary_payyear: year,
+            salary_empid: empId
+        }, include: ['employee', 'payment']})
+}
+
 module.exports = {
 addSalary,
     getSalaryMonthYear,
-    undoSalaryMonthYear
+    undoSalaryMonthYear,
+    getEmployeeSalary
 }
