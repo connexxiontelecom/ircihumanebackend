@@ -634,5 +634,63 @@ router.get('/approve-salary-routine', auth,  async function(req, res, next) {
 });
 
 
+router.get('/confirm-salary-routine', auth,  async function(req, res, next) {
+    try{
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
+        })
+        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
+            return res.status(400).json(`No payroll month and year set`)
+        }
+        else{
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+            let employeeSalary = [ ]
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return data
+            })
+
+            if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+                return res.status(400).json(`Payroll Routine has not been run`)
+
+
+
+            }
+            else{
+                let today = new Date();
+                let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+
+
+                const confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isEmpty(confirmResponse) || _.isNull(confirmResponse))){
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
+                        "log_date": new Date()
+                    }
+                    await logs.addLog(logData).then((logRes)=>{
+                        return  res.status(200).json(`Payroll Confirmed`)
+                    })
+                }
+
+            }
+
+        }
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+
 
 module.exports = router;
