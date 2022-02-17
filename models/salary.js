@@ -30,7 +30,12 @@ module.exports = (sequelize, DataTypes) => {
     salary_share: DataTypes.DOUBLE,
     salary_tax: DataTypes.INTEGER,
     salary_confirmed: DataTypes.INTEGER,
-    salary_amount: DataTypes.DOUBLE
+    salary_amount: DataTypes.DOUBLE,
+    salary_approved: DataTypes.INTEGER,
+    salary_approved_by: DataTypes.INTEGER,
+    salary_approved_date: DataTypes.DATE,
+    salary_confirmed_by: DataTypes.INTEGER,
+    salary_confirmed_date: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'salary',
