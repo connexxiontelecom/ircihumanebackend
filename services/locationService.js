@@ -53,9 +53,14 @@ const setNewLocation = async (req, res, next)=>  {
 
 }
 const getLocationById = async (req, res) =>{
-    const location_id  = req.params.id;
-    const loc =  await location.findAll({where:{location_id: location_id}});
-    res.status(200).json(loc);
+    try{
+        const location_id  = req.params.id;
+        const loc =  await location.findOne({where:{location_id: location_id}});
+        return res.status(200).json(loc);
+    }catch (e) {
+        return res.status(400).json("Something went wrong.");
+    }
+
 }
 const updateLocation = async (req, res, next)=>{
     try{
@@ -101,4 +106,5 @@ module.exports = {
     getLocations,
     updateLocation,
     setNewLocation,
+
 }
