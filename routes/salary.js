@@ -656,9 +656,6 @@ router.get('/confirm-salary-routine', auth,  async function(req, res, next) {
             if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
 
                 return res.status(400).json(`Payroll Routine has not been run`)
-
-
-
             }
             else{
                 let today = new Date();
