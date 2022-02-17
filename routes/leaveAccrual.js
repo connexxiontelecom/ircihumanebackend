@@ -28,6 +28,14 @@ const leaveApplication = require("../services/leaveApplicationService");
     }
 }
 
+
+async function removeLeaveAccrual(data) {
+
+
+        return await leaveAccrual.removeLeaveAccrual(data)
+
+}
+
     async function computeLeaveAccruals(data) {
     const schema = Joi.object({
         lea_emp_id: Joi.number().required(),
@@ -117,6 +125,7 @@ router.get('/get-leave-acrruals/:emp_id', auth,  async function(req, res, next) 
 module.exports = {
     router,
     addLeaveAccrual,
-    computeLeaveAccruals
+    computeLeaveAccruals,
+    removeLeaveAccrual
 
 }

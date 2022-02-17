@@ -13,7 +13,7 @@ const variationalPayment = require('../services/variationalPaymentService')
 const payrollMonthYear =  require('../services/payrollMonthYearService')
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
-const { addLeaveAccrual, computeLeaveAccruals } = require("../routes/leaveAccrual");
+const { addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual } = require("../routes/leaveAccrual");
 const leaveTypeService = require('../services/leaveTypeService');
 const logs = require('../services/logService')
 
@@ -27,7 +27,8 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
         })
         if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
             return res.status(400).json(`No payroll month and year set`)
-        }else{
+        }
+        else{
             const payrollMonth = payrollMonthYearData.pym_month
             const payrollYear = payrollMonthYearData.pym_year
             let salaryObject = {}
@@ -431,332 +432,259 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 });
 
 
-/* Add to Salary structure */
-router.post('/add-salary-structure', auth,  async function(req, res, next) {
-    try {
-        const schema = Joi.object( {
-            ss_empid: Joi.number().required(),
-            ss_gross: Joi.number().precision(2).required(),
-            ss_grade: Joi.number().required(),
+/* check payroll routine */
+router.get('/check-salary-routine', auth,  async function(req, res, next) {
+    try{
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
         })
-
-        const salaryStructureRequest = req.body
-        const validationResult = schema.validate(salaryStructureRequest)
-
-        if(validationResult.error){
-            return res.status(400).json(validationResult.error.details[0].message)
-        }
-
-        let empId = salaryStructureRequest.ss_empid
-
-        const employeeData =   await employee.getEmployee(empId).then((data)=>{
-            return  data
-        })
-
-        if(!_.isEmpty(employeeData) || !_.isNull(employeeData)){
-            const empSalaryStructure = await salaryStructure.findSalaryStructure(empId).then((data)=>{
+        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
+            return res.status(400).json(`No payroll month and year set`)
+        }else{
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
                 return data
             })
 
-            if(!(_.isEmpty(empSalaryStructure) || _.isNull(empSalaryStructure))){
-                return res.status(400).json(`Salary Structure already set up, consider updating`)
+            if(!(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck))){
+                return res.status(400).json(`Payroll Routine has already been run`)
+            }else{
+                return res.status(200).json(`Payroll Routine has not been run`)
+            }
+
+        }
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+/* undo salary */
+router.get('/undo-salary-routine', auth,  async function(req, res, next) {
+    try{
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
+        })
+
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+
+       const salaryRoutineUndo =  await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            return data
+        })
+
+        const leaveAccrualData = {
+            lea_month:payrollMonth,
+            lea_year: payrollYear,
+        }
+        const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data)=>{
+            return data
+        })
+
+        const reverseVariationalPayments  = await variationalPayment.undoVariationalPaymentMonthYear(payrollMonth, payrollYear).then((data)=>{
+            return data
+        })
+
+        return res.status(200).json(`Action Successful`)
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+/* fetch salary */
+router.get('/pull-salary-routine', auth,  async function(req, res, next) {
+    try{
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
+        })
+        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
+            return res.status(400).json(`No payroll month and year set`)
+        }
+        else{
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+            let employeeSalary = [ ]
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return data
+            })
+
+            if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+                return res.status(400).json(`Payroll Routine has not been run`)
+
+
+
             }
             else{
-                const empSalaryGrade = await salaryGrade.findSalaryGrade(salaryStructureRequest.ss_grade).then((data)=>{
+
+                const employees = await employee.getActiveEmployees().then((data)=>{
                     return data
                 })
 
-                if(_.isEmpty(empSalaryGrade) || _.isNull(empSalaryGrade) ){
-                    return res.status(400).json(`Salary Grade Doesn't Exists`)
-                }
-                else{
-                    let maximum = parseFloat(empSalaryGrade.sg_maximum)
-                    let minimum = parseFloat(empSalaryGrade.sg_minimum)
-                    let gross = parseFloat(salaryStructureRequest.ss_gross)
+                for (const emp of employees) {
 
-                    if((gross < minimum) || (gross > maximum)){
-                        return res.status(400).json(`Gross Salary not within grade band`)
-                    }else{
-                        const grossPercentage =  await paymentDefinition.findCodeWithGross().then((data)=>{
-                            return data
-                        })
+                            let grossSalary = 0
+                            let netSalary = 0
+                            let totalDeduction = 0
 
-                        if(_.isEmpty(grossPercentage) || _.isNull(grossPercentage)){
-                            return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
-                        }
-                        else{
-                            let totalPercentageGross =  await paymentDefinition.findSumPercentage().then((data) =>{
+                            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
                                 return data
                             })
 
-                            if(parseFloat(totalPercentageGross) > 100 || parseFloat( totalPercentageGross) < 100 ){
-                                return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
-
+                    if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
+                        for (const empSalary of employeeSalaries) {
+                            if(parseInt(empSalary.payment.pd_payment_type) === 1){
+                                grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                             }else{
-                                await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
-
-                                let salaryObject = {}
-                                let amount
-                                let percent
-                                for(const percentage of grossPercentage){
-                                    percent = parseFloat(percentage.pd_pr_gross)
-                                    amount = (percent/100)*gross
-
-                                    salaryObject = {
-                                        ss_empid: empId,
-                                        ss_pd: percentage.pd_id,
-                                        ss_amount: amount
-
-                                    }
-
-                                    await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                        if(_.isEmpty(data) || _.isNull(data)){
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                                return res.status(400).json(`An error occurred while adding`)
-                                            })
-                                        }
-                                    })
-
-                                }
-
-                                const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(employeeData.emp_location_id).then((data)=>{
-                                    return data
-                                })
-
-                                if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
-                                    for(const allowance of hazardAllowances){
-
-                                        salaryObject = {
-                                            ss_empid: empId,
-                                            ss_pd: allowance.la_payment_id,
-                                            ss_amount: allowance.la_amount
-
-                                        }
-
-                                        let salaryStructureAddResponse = await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                            return  data
-
-                                        })
-
-                                        if(_.isEmpty(salaryStructureAddResponse) || _.isNull(salaryStructureAddResponse)){
-                                            await salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                return res.status(400).json(`An error occurred while adding`)
-                                            })
-                                        }
-
-                                    }
-
-                                    await employee.updateGrossSalary(empId, gross).then((updateData)=>{
-                                        if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
-                                            const logData = {
-                                                "log_user_id": req.user.username.user_id,
-                                                "log_description": "Updated salary structure",
-                                                "log_date": new Date()
-                                            }
-                                            logs.addLog(logData).then((logRes)=>{
-                                                //return res.status(200).json(logRes);
-                                                return  res.status(200).json(`Action Successful`)
-                                            })
-                                        } else {
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                                return res.status(400).json(`An error occurred while updating Employee's Gross`)
-                                            })
-
-                                        }
-                                    })
-
-                                }
-                                else{
-
-                                    await salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                        return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
-                                    })
-                                }
-
+                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                             }
-
-
                         }
+                        netSalary = grossSalary - totalDeduction
+
+                        let salaryObject = {
+                            employee: `${emp.emp_first_name} ${emp.emp_last_name} - ${emp.emp_unique_id}`,
+                            grossSalary: grossSalary,
+                            totalDeduction: totalDeduction,
+                            netSalary: netSalary
+                        }
+
+                        employeeSalary.push(salaryObject)
+
                     }
 
+                }
+                return res.status(200).json(employeeSalary)
+            }
+
+        }
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+router.get('/approve-salary-routine', auth,  async function(req, res, next) {
+    try{
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
+        })
+        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
+            return res.status(400).json(`No payroll month and year set`)
+        }
+        else{
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+            let employeeSalary = [ ]
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return data
+            })
+
+            if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+                return res.status(400).json(`Payroll Routine has not been run`)
+
+
+
+            }
+            else{
+                let today = new Date();
+                let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+
+
+                const approveResponse = await salary.approveSalary(payrollMonth, payrollYear, req.user.username.user_id, date).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isEmpty(approveResponse) || _.isNull(approveResponse))){
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": `approved payroll routine for ${payrollMonth} - ${payrollYear}`,
+                        "log_date": new Date()
+                    }
+                    await logs.addLog(logData).then((logRes)=>{
+                        return  res.status(200).json(`Payroll Approved`)
+                    })
                 }
 
             }
 
         }
-        else{
-            return res.status(400).json(`Employee Doesn't Exists`)
-        }
 
-
-    } catch (err) {
-        console.error(`Error while adding salary structure `, err.message);
+    }catch (err) {
+        console.log(err.message)
         next(err);
+
     }
 });
 
 
-/* Update Salary Structure */
-router.patch('/update-salary-structure/:emp_id', auth,  async function(req, res, next) {
-    try {
-        const empId = req.params.emp_id
-        const schema = Joi.object( {
-            ss_gross: Joi.number().precision(2).required(),
-            ss_grade: Joi.number().required(),
+router.get('/confirm-salary-routine', auth,  async function(req, res, next) {
+    try{
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
         })
-
-        const salaryStructureRequest = req.body
-        const validationResult = schema.validate(salaryStructureRequest)
-
-        if(validationResult.error){
-            return res.status(400).json(validationResult.error.details[0].message)
+        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
+            return res.status(400).json(`No payroll month and year set`)
         }
-
-      const employeeData =   await employee.getEmployee(empId).then((data)=>{
-          return  data
-
-        })
-
-        if(!_.isEmpty(employeeData) || !_.isNull(employeeData)){
-            const empSalaryStructure = await salaryStructure.findSalaryStructure(empId).then((data)=>{
+        else{
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+            let employeeSalary = [ ]
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
                 return data
             })
 
-            if(_.isEmpty(empSalaryStructure) || _.isNull(empSalaryStructure)){
-                return res.status(400).json(`Salary Structure was never setup, consider setting up`)
+            if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+                return res.status(400).json(`Payroll Routine has not been run`)
             }
             else{
+                let today = new Date();
+                let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 
 
-
-                const empSalaryGrade = await salaryGrade.findSalaryGrade(salaryStructureRequest.ss_grade).then((data)=>{
+                const confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date).then((data)=>{
                     return data
                 })
 
-                if(_.isEmpty(empSalaryGrade) || _.isNull(empSalaryGrade) ){
-                    return res.status(400).json(`Salary Grade Doesn't Exists`)
-                }
-                else{
-                    let maximum = parseFloat(empSalaryGrade.sg_maximum)
-                    let minimum = parseFloat(empSalaryGrade.sg_minimum)
-                    let gross = parseFloat(salaryStructureRequest.ss_gross)
-
-                    if((gross < minimum) || (gross > maximum)){
-                        return res.status(400).json(`Gross Salary not within grade band`)
-                    }else{
-                        const grossPercentage =  await paymentDefinition.findCodeWithGross().then((data)=>{
-                            return data
-                        })
-
-                        if(_.isEmpty(grossPercentage) || _.isNull(grossPercentage)){
-                            return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
-                        }
-                        else{
-                            let totalPercentageGross =  await paymentDefinition.findSumPercentage().then((data) =>{
-                                return data
-                            })
-
-                            if(parseFloat(totalPercentageGross) > 100 || parseFloat( totalPercentageGross) < 100 ){
-                                return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
-
-                            }else{
-                                await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
-
-                                let salaryObject = {}
-                                let amount
-                                let percent
-                                for(const percentage of grossPercentage){
-                                    percent = parseFloat(percentage.pd_pr_gross)
-                                    amount = (percent/100)*gross
-
-                                    salaryObject = {
-                                        ss_empid: empId,
-                                        ss_pd: percentage.pd_id,
-                                        ss_amount: amount
-
-                                    }
-
-                                   await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                        if(_.isEmpty(data) || _.isNull(data)){
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                                return res.status(400).json(`An error occurred while adding`)
-                                            })
-                                        }
-                                    })
-
-                                }
-
-                                const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(employeeData.emp_location_id).then((data)=>{
-                                    return data
-                                })
-
-                                if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
-                                    for(const allowance of hazardAllowances){
-
-                                        salaryObject = {
-                                            ss_empid: empId,
-                                            ss_pd: allowance.la_payment_id,
-                                            ss_amount: allowance.la_amount
-
-                                        }
-
-                                        let salaryStructureAddResponse = await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                            return  data
-
-                                        })
-
-                                        if(_.isEmpty(salaryStructureAddResponse) || _.isNull(salaryStructureAddResponse)){
-                                            await salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                                return res.status(400).json(`An error occurred while adding`)
-                                            })
-                                        }
-
-                                    }
-
-                                   await employee.updateGrossSalary(empId, gross).then((updateData)=>{
-                                        if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
-                                            const logData = {
-                                                "log_user_id": req.user.username.user_id,
-                                                "log_description": "Updated salary structure",
-                                                "log_date": new Date()
-                                            }
-                                            logs.addLog(logData).then((logRes)=>{
-                                                //return res.status(200).json(logRes);
-                                                return  res.status(200).json(`Action Successful`)
-                                            })
-                                        } else {
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                                return res.status(400).json(`An error occurred while updating Employee's Gross`)
-                                            })
-
-                                        }
-                                    })
-
-                                }
-                                else{
-
-                                    await salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                        return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
-                                    })
-                                }
-
-                            }
-
-
-                        }
+                if(!(_.isEmpty(confirmResponse) || _.isNull(confirmResponse))){
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
+                        "log_date": new Date()
                     }
-
+                    await logs.addLog(logData).then((logRes)=>{
+                        return  res.status(200).json(`Payroll Confirmed`)
+                    })
                 }
 
             }
 
         }
-        else{
-            return res.status(400).json(`Employee Doesn't Exists`)
-        }
-    } catch (err) {
-        console.error(`Error while adding time sheet `, err.message);
+
+    }catch (err) {
+        console.log(err.message)
         next(err);
+
     }
 });
 
