@@ -40,8 +40,8 @@ module.exports = (sequelize, DataTypes) => {
   salary.belongsTo(Pd, { as:'payment', foreignKey: 'salary_pd' })
   salary.hasMany(Pd, { foreignKey: 'pd_id' })
 
-  Employee.belongsTo(Employee, {as: 'employee', foreignKey: 'salary_empid'})
-  Employee.hasMany(Employee, { foreignKey: 'emp_id' })
+  salary.belongsTo(Employee, {as: 'employee', foreignKey: 'salary_empid'})
+  salary.hasMany(Employee, { foreignKey: 'emp_id' })
 
 
 

@@ -463,7 +463,7 @@ router.get('/check-salary-routine', auth,  async function(req, res, next) {
     }
 });
 
-
+/* undo salary */
 router.get('/undo-salary-routine', auth,  async function(req, res, next) {
     try{
 
@@ -499,7 +499,7 @@ router.get('/undo-salary-routine', auth,  async function(req, res, next) {
     }
 });
 
-
+/* fetch salary */
 router.get('/pull-salary-routine', auth,  async function(req, res, next) {
     try{
 
@@ -542,23 +542,26 @@ router.get('/pull-salary-routine', auth,  async function(req, res, next) {
                                 return data
                             })
 
-                            for (const empSalary of employeeSalaries) {
-                                if(parseInt(employeeSalary.payment.pd_payment_type) === 1){
-                                    grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                                }else{
-                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
-                                }
+                    if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
+                        for (const empSalary of employeeSalaries) {
+                            if(parseInt(empSalary.payment.pd_payment_type) === 1){
+                                grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                            }else{
+                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                             }
-                            netSalary = grossSalary - totalDeduction
+                        }
+                        netSalary = grossSalary - totalDeduction
 
                         let salaryObject = {
-                                grossSalary: grossSalary,
-                                totalDeduction: totalDeduction,
-                                netSalary: netSalary
+                            employee: `${emp.emp_first_name} ${emp.emp_last_name} - ${emp.emp_unique_id}`,
+                            grossSalary: grossSalary,
+                            totalDeduction: totalDeduction,
+                            netSalary: netSalary
                         }
 
-                    employeeSalary.push(salaryObject)
+                        employeeSalary.push(salaryObject)
 
+                    }
 
                 }
                 return res.status(200).json(employeeSalary)
@@ -572,6 +575,8 @@ router.get('/pull-salary-routine', auth,  async function(req, res, next) {
 
     }
 });
+
+
 
 
 module.exports = router;
