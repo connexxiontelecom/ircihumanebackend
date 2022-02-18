@@ -553,7 +553,11 @@ router.get('/pull-salary-routine', auth,  async function(req, res, next) {
                         netSalary = grossSalary - totalDeduction
 
                         let salaryObject = {
-                            employee: `${emp.emp_first_name} ${emp.emp_last_name} - ${emp.emp_unique_id}`,
+                            employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                            employeeId: emp.emp_unique_id,
+                            location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                            jobRole :`${emp.JobRole.job_role}`,
+                            sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
                             grossSalary: grossSalary,
                             totalDeduction: totalDeduction,
                             netSalary: netSalary
@@ -688,6 +692,93 @@ router.get('/confirm-salary-routine', auth,  async function(req, res, next) {
     }
 });
 
+
+router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) {
+    try{
+
+       const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
+            return data
+        })
+        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
+            return res.status(400).json(`No payroll month and year set`)
+        }
+        else{
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return data
+            })
+
+            if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+                return res.status(400).json(`Payroll Routine has not been run`)
+            }
+            else{
+                const emp = await employee.getEmployee(parseInt(req.params.empId)).then((data)=>{
+                    return data
+                })
+
+                if(_.isEmpty(emp) || _.isNull(emp)){
+                    return  res.status(400).json(`Employee Doesnt Exist`)
+                }
+
+                let grossSalary = 0
+                let netSalary = 0
+                let totalDeduction = 0
+                let deductions = [ ]
+                let incomes = [ ]
+
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
+
+                    for (const empSalary of employeeSalaries) {
+                        if(parseInt(empSalary.payment.pd_payment_type) === 1){
+                            const incomeDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
+                            incomes.push(incomeDetails)
+                            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                        }else{
+                            const deductionDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
+                            deductions.push(deductionDetails)
+                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                        }
+                    }
+                    netSalary = grossSalary - totalDeduction
+
+                    let employeeSalary = {
+                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                        employeeId: emp.emp_unique_id,
+                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        jobRole :`${emp.JobRole.job_role}`,
+                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        grossSalary: grossSalary,
+                        totalDeduction: totalDeduction,
+                        netSalary: netSalary,
+                        incomes: incomes,
+                        deductions: deductions
+                    }
+
+                    return res.status(200).json(employeeSalary)
+
+                }else{
+                    return res.status(200).json(`No Salary for Employee`)
+                }
+
+
+            }
+
+        }
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
 
 
 module.exports = router;
