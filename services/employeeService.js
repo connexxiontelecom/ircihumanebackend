@@ -14,9 +14,14 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 const getAllEmployee = async (req, res)=>{
-    const employees =  await employee.findAll({
-        include: ['supervisor', 'location', {model: JobRole, include: Department}] });
-    res.send(employees)
+    try{
+        const employees =  await employee.findAll({
+            include: ['supervisor', 'location', {model: JobRole, include: Department}] });
+        return res.status(200).json(employees)
+    }catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
+
 }
 const createNewEmployee = async (req, res, next)=>  {
     try{

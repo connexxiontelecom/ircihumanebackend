@@ -1,6 +1,7 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const department = require("../models/Department")(sequelize, Sequelize.DataTypes);
+const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
@@ -12,7 +13,10 @@ const errHandler = (err) =>{
 }
 const getDepartments = async (req, res)=>{
     try{
-        const departments =  await department.findAll({attributes: ['department_name','department_id', 'd_t3_code']});
+        const departments =  await department.findAll({
+            attributes: ['department_name','department_id', 'd_t3_code', 'd_sector_lead_id'],
+            //include:[{model:EmployeeModel, as:'sector_lead'}]
+        });
         res.status(200).json(departments);
     }catch (e) {
         res.status(500).json({message: "Something went wrong. Try again later"});
@@ -23,6 +27,7 @@ const setNewDepartment = async (req, res, next)=>  {
         const schema = Joi.object( {
             department_name: Joi.string().required(),
             t3_code: Joi.string().required(),
+            sector_lead:Joi.number().required()
         })
         const departmentRequest = req.body
         const validationResult = schema.validate(departmentRequest)
@@ -30,7 +35,11 @@ const setNewDepartment = async (req, res, next)=>  {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        await department.create({department_name: req.body.department_name, d_t3_code:req.body.t3_code})
+        await department.create({
+            department_name: req.body.department_name,
+            d_t3_code:req.body.t3_code,
+            d_sector_lead_id:parseInt(req.body.sector_lead),
+        })
             .catch(errHandler);
         //Log
         const logData = {

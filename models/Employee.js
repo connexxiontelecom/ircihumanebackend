@@ -8,7 +8,7 @@ const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 //const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
-const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
+//const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
 
 module.exports = (sequelize, DataTypes) => {
     class Employee extends Model {
