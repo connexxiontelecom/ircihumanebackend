@@ -584,15 +584,20 @@ router.post('/pull-salary-routine', auth,  async function(req, res, next) {
     try{
 
 
-        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data)=>{
-            return data
+        const schema = Joi.object( {
+            pym_month: Joi.number().required(),
+            pym_year: Joi.number().required()
         })
-        if(_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)){
-            return res.status(400).json(`No payroll month and year set`)
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
         }
-        else{
-            const payrollMonth = payrollMonthYearData.pym_month
-            const payrollYear = payrollMonthYearData.pym_year
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+
             //check if payroll routine has been run
             let employeeSalary = [ ]
             const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
@@ -651,7 +656,7 @@ router.post('/pull-salary-routine', auth,  async function(req, res, next) {
                 return res.status(200).json(employeeSalary)
             }
 
-        }
+
 
     }catch (err) {
         console.log(err.message)
