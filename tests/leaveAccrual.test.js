@@ -1,8 +1,8 @@
 const { describe, it, xit, test } = require("@jest/globals")
-const dotenv = require('dotenv');
-
-dotenv.config();
-let token = process.env.LOGIN_TOKEN
+// const dotenv = require('dotenv');
+//
+// dotenv.config();
+// let token = process.env.LOGIN_TOKEN
 const request = require('supertest')
 const app = require('../app');
 const { addLeaveAccrual, computeLeaveAccruals } = require("../routes/leaveAccrual")

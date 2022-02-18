@@ -553,8 +553,9 @@ router.get('/pull-salary-routine', auth,  async function(req, res, next) {
                         netSalary = grossSalary - totalDeduction
 
                         let salaryObject = {
+                            employeeId: emp.emp_id,
                             employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                            employeeId: emp.emp_unique_id,
+                            employeeUniqueId: emp.emp_unique_id,
                             location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                             jobRole :`${emp.JobRole.job_role}`,
                             sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
@@ -638,8 +639,9 @@ router.post('/pull-salary-routine', auth,  async function(req, res, next) {
                         netSalary = grossSalary - totalDeduction
 
                         let salaryObject = {
+                            employeeId: emp.emp_id,
                             employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                            employeeId: emp.emp_unique_id,
+                            employeeUniqueId: emp.emp_unique_id,
                             location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                             jobRole :`${emp.JobRole.job_role}`,
                             sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
@@ -833,8 +835,9 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                     netSalary = grossSalary - totalDeduction
 
                     let employeeSalary = {
+                        employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeId: emp.emp_unique_id,
+                        employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
@@ -924,8 +927,9 @@ router.post('/pull-salary-routine/:empId', auth,  async function(req, res, next)
                     netSalary = grossSalary - totalDeduction
 
                     let employeeSalary = {
+                        employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeId: emp.emp_unique_id,
+                        employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
@@ -1022,8 +1026,9 @@ router.post('/pull-emolument', auth,  async function(req, res, next) {
                         netSalary = grossSalary - totalDeduction
 
                         let salaryObject = {
+                            employeeId: emp.emp_id,
                             employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                            employeeId: emp.emp_unique_id,
+                            employeeUniqueId: emp.emp_unique_id,
                             location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                             jobRole :`${emp.JobRole.job_role}`,
                             sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
