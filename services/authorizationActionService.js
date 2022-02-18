@@ -65,7 +65,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                 auth_comment:comment
             },{
                 where:{
-                    auth_travelapp_id: appId, auth_type: type
+                    auth_travelapp_id: appId, auth_type: type, auth_officer_id:officer
                 }
             });
             if(markAsFinal === 0 ){
