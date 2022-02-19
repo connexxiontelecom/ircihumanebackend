@@ -1,5 +1,6 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
+const _ = require('lodash');
 const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
 const travelApplicationModel = require("../models/TravelApplication")(sequelize, Sequelize.DataTypes);
 const leaveApplicationModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
@@ -32,12 +33,12 @@ const updateAuthorizationStatus = async (req, res)=>{
 
     try{
         const schema = Joi.object({
-            //auth_id: Joi.number().required(),
             appId: Joi.string().required(),
             status: Joi.number().required(),
             officer: Joi.number().required(),
             type: Joi.number().required(),
             comment: Joi.string().required(),
+            role: Joi.number().required(),
 
             markAsFinal: Joi.number().required().valid(0,1),
             nextOfficer: Joi.alternatives().conditional('markAsFinal',{is: 0, then: Joi.number().required()}),
@@ -49,23 +50,24 @@ const updateAuthorizationStatus = async (req, res)=>{
         if(validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        //res.send(req.body);
-        const {appId, status, officer, type, comment, markAsFinal, nextOfficer} = req.body;
+
+        const {appId,role, status, officer, type, comment, markAsFinal, nextOfficer} = req.body;
 
         const application = await authorizationModel.findOne(
             {
-                where:{auth_travelapp_id: appId, auth_type: type, auth_status: 0},
+                where:{auth_travelapp_id: appId, auth_type: type, auth_status: 0, auth_officer_id:officer},
             });
 
-        if(application){
+        if(!_.isNull(application) || !_.isEmpty(application)){
             if(application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
 
             const auth = await authorizationModel.update({
                 auth_status: status,
-                auth_comment:comment
+                auth_comment:comment,
+                auth_role_id:role,
             },{
                 where:{
-                    auth_travelapp_id: appId, auth_type: type
+                    auth_travelapp_id: appId, auth_type: type, auth_officer_id:officer
                 }
             });
             if(markAsFinal === 0 ){
@@ -138,7 +140,7 @@ const updateAuthorizationStatus = async (req, res)=>{
         }
 
     }catch (e) {
-        return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again."+e.message);
     }
 }
 
@@ -158,7 +160,7 @@ async function getAuthorizationLog(authId, type){
     return await authorizationModel.findAll({
         //order:[['auth_id', 'DESC']],
         where:{auth_travelapp_id: authId, auth_type:type},
-        include:['officers']
+        include:['officers', 'role']
     });
 }
 
