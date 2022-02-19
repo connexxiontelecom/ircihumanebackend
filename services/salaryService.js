@@ -32,8 +32,47 @@ async function undoSalaryMonthYear(month, year){
         }})
 }
 
+async function getEmployeeSalary(month, year, empId){
+    return await Salary.findAll({where:{
+        salary_paymonth: month,
+         salary_payyear: year,
+            salary_empid: empId
+        }, include: ['employee', 'payment']})
+}
+
+async function approveSalary(month, year, user, date){
+    return await Salary.update({
+        salary_approved: 1,
+        salary_approved_by: user,
+        salary_approved_date: date
+        },
+        {where:{
+            salary_paymonth: month,
+            salary_payyear: year,
+
+        },
+        })
+}
+
+async function confirmSalary(month, year, user, date){
+    return await Salary.update({
+            salary_confirmed: 1,
+            salary_confirmed_by: user,
+            salary_confirmed_date: date
+        },
+        {where:{
+                salary_paymonth: month,
+                salary_payyear: year,
+
+            },
+        })
+}
+
 module.exports = {
 addSalary,
     getSalaryMonthYear,
-    undoSalaryMonthYear
+    undoSalaryMonthYear,
+    getEmployeeSalary,
+    approveSalary,
+    confirmSalary
 }

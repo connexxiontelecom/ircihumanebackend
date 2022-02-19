@@ -278,7 +278,7 @@ async function getSupervisorEmployee(supervisorId){
 }
 
 async function getActiveEmployees(){
-    return await employee.findAll()
+    return await employee.findAll({include: ['supervisor', 'location', {model: JobRole, include: Department}]})
 }
 
 
