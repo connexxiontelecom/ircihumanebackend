@@ -1,11 +1,9 @@
 'use strict';
-const {sequelize, Sequelize} = require("../services/db");
 const {
     Model
 } = require('sequelize');
-//const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
-    class Department extends Model {
+    class AuthorizationRole extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -15,15 +13,18 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
     };
-    Department.init({
-        department_id: {
+    AuthorizationRole.init({
+        ar_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
-        department_name: DataTypes.STRING,
-        d_t3_code: DataTypes.STRING,
-        d_sector_lead_id: DataTypes.INTEGER,
+        ar_title: DataTypes.STRING,
+        ar_type: {
+            type:DataTypes.INTEGER,
+            defaultValue:1,
+            comment:'1=leave,2=timesheet,3=travel'
+        },
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
@@ -34,10 +35,8 @@ module.exports = (sequelize, DataTypes) => {
         },
     }, {
         sequelize,
-        modelName: 'Department',
-        tableName: 'departments'
+        modelName: 'AuthorizationRole',
+        tableName: 'authorization_roles'
     });
-  // Department.belongsTo(EmployeeModel, {as: 'sector_lead', foreignKey: 'd_sector_lead_id'})
-
-    return Department;
+    return AuthorizationRole;
 };

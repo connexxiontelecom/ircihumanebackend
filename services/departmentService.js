@@ -1,7 +1,6 @@
-const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const department = require("../models/Department")(sequelize, Sequelize.DataTypes);
-const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+//const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
