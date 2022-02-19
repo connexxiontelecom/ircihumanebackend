@@ -5,6 +5,7 @@ const {
 
 const {sequelize, Sequelize} = require("../services/db");
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const AuthRole = require("../models/AuthorizationRole")(sequelize, Sequelize.DataTypes);
 
 module.exports = (sequelize, DataTypes) => {
     class AuthorizationAction extends Model {
@@ -31,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         auth_status: {type:DataTypes.INTEGER, defaultValue:0, comment:"0=pending,1=approved,2=declined"},
         auth_type: {type:DataTypes.INTEGER, defaultValue:1, comment:"1=leave,2=time-sheet,3=travel,4=self"},
         auth_comment:{type:DataTypes.STRING, allowNull:true},
+        auth_role_id:{type:DataTypes.INTEGER, allowNull:true},
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
@@ -45,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'authorization_actions',
         //timestamps:false
     });
-    //AuthorizationAction.belongsTo(Employee, { foreignKey: 'auth_officer_id', as: 'officers' });
+    AuthorizationAction.belongsTo(AuthRole, { foreignKey: 'auth_role_id', as: 'role' });
     AuthorizationAction.belongsTo(Employee, {foreignKey:'auth_officer_id',  as: 'officers'});
 
 

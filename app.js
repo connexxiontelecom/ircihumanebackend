@@ -54,6 +54,9 @@
     const locationAllowanceRouter = require('./routes/locationAllowances')
     app.use('/location-allowance',locationAllowanceRouter)
 
+    const authorizationRoleRouter = require('./routes/authorization-role')
+    app.use('/authorization-roles',authorizationRoleRouter)
+
 
     const donorRouter = require('./routes/donor')
     app.use('/donor',donorRouter)
