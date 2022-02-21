@@ -53,6 +53,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                     for (const emp of employees) {
                         let empAdjustedGross = parseFloat(emp.emp_gross)
                         let empGross = parseFloat(emp.emp_gross)
+
                         if(empAdjustedGross > 0){
                             //check employee variational payments
                             const employeeVariationalPayments = await variationalPayment.getVariationalPaymentEmployeeMonthYear(emp.emp_id, payrollMonth, payrollYear).then((data)=>{
@@ -271,6 +272,19 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     }
 
                                     //tax computation
+
+                                    let taxableIncome = 0;
+                                    let taxableIncomeData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                                        return data
+                                    })
+
+                                    for(const income of taxableIncomeData){
+                                       if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
+                                         taxableIncome = parseFloat(income.salary_amount) + taxableIncome
+                                       }
+                                    }
+
+
                                     let taxRatesData = await taxRates.findAllTaxRate().then((data)=>{
                                         return data
                                     })
@@ -282,7 +296,6 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         })
 
                                     }
-
                                     let minimumTaxRateData = await minimumTaxRate.findAllMinimumTaxRate().then((data)=>{
                                         return data
                                     })
@@ -306,9 +319,9 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         })
                                     }
 
-                                    let taxRelief = ((20/100) * empAdjustedGross) + (200000/12)
-                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (empAdjustedGross - taxRelief);
-                                    let tempTaxAmount = empAdjustedGross - taxRelief
+                                    let taxRelief = ((20/100) * taxableIncome) + (200000/12)
+                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
+                                    let tempTaxAmount = taxableIncome - taxRelief
                                     let cTax;
                                     let totalTaxAmount = 0;
 
