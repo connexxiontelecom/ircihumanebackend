@@ -244,6 +244,9 @@ async function updateGrossSalary(employeeId, employeeGross){
 async function getEmployeeById(employeeId) {
     return await employee.findOne({ where: { emp_unique_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
 }
+async function getEmployeeByIdOnly(employeeId) {
+    return await employee.findOne({ where: { emp_id: employeeId }, include: ['supervisor', 'location', {model: JobRole, include: Department}] })
+}
 
 async function getEmployeeByPersonalEmail(employeePEmail) {
     return await employee.findOne({ where: { emp_personal_email: employeePEmail } })
@@ -348,7 +351,8 @@ module.exports = {
     getSupervisorEmployee,
     updateEmployee,
     updateGrossSalary,
-    getActiveEmployees
+    getActiveEmployees,
+    getEmployeeByIdOnly
     //updateDepartment,
     //setNewDepartment,
 }
