@@ -52,6 +52,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                     for (const emp of employees) {
                         let empAdjustedGross = parseFloat(emp.emp_gross)
+                        let empGross = parseFloat(emp.emp_gross)
                         if(empAdjustedGross > 0){
                             //check employee variational payments
                             const employeeVariationalPayments = await variationalPayment.getVariationalPaymentEmployeeMonthYear(emp.emp_id, payrollMonth, payrollYear).then((data)=>{
@@ -128,9 +129,9 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     })
 
                                 }else {
-                                    let amount
-                                    let percent
-                                    let basicSalary;
+                                    let amount = 0;
+                                    let percent = 0;
+                                    let basicSalary = 0;
                                     let paymentDefinitionData = await paymentDefinition.findBasicPaymentDefinition().then((data)=>{
                                         return data
                                     })
@@ -139,7 +140,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                     for(const percentage of grossPercentage){
                                         percent = parseFloat(percentage.pd_pr_gross)
-                                        amount = (percent/100)*empAdjustedGross
+                                        amount = (percent/100)*empGross
 
                                         salaryObject = {
                                             salary_empid: emp.emp_id,
@@ -152,7 +153,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         }
 
                                         if(parseInt(paymentDefinitionData.pd_id) === parseInt(percentage.pd_id)){
-                                            basicSalary = amount
+                                           basicSalary = amount
                                         }
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
                                             return data
@@ -242,7 +243,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                         //basic computation
                                         if(parseInt(computationalPayment.pd_amount) === 2){
-                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*basicSalary
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)* basicSalary
 
                                             salaryObject = {
                                                 salary_empid: emp.emp_id,
