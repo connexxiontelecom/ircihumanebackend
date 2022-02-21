@@ -15,7 +15,7 @@ async function addTaxRate(taxRateData){
 
 async function findAllTaxRate(){
     return await TaxRate.findAll({ order: [
-         ['tr_band', 'ASC'],
+         ['tr_rate', 'ASC'],
         ]
     })
 }

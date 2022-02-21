@@ -324,17 +324,24 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     let tempTaxAmount = taxableIncome - taxRelief
                                     let cTax;
                                     let totalTaxAmount = 0;
-
+                                    let i = 0;
                                     for(const tax of taxRatesData){
-                                        if(tempTaxAmount >= tax.tr_band/12){
-                                            cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
-                                        } else{
+                                        if(i < parseInt(taxRatesData.length)){
+                                            if(tempTaxAmount >= tax.tr_band/12){
+                                                cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                                            } else{
+                                                cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                totalTaxAmount = cTax + totalTaxAmount
+                                                break;
+                                            }
+                                        }else {
                                             cTax = (tax.tr_rate/100) * (tempTaxAmount)
-                                            totalTaxAmount = cTax + totalTaxAmount
-                                            break;
+
                                         }
+
                                         tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
                                         totalTaxAmount = cTax + totalTaxAmount
+                                        i++;
                                     }
 
                                     if(totalTaxAmount <= minimumTax) {
@@ -1072,4 +1079,121 @@ router.post('/pull-emolument', auth,  async function(req, res, next) {
     }
 });
 
+
+
+
+/* run salary routine */
+router.get('/salary-test-routine',   async function(req, res, next) {
+    try{
+
+        let taxableIncome = 675805;
+
+
+        let taxRatesData = await taxRates.findAllTaxRate().then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(taxRatesData) || _.isNull(taxRatesData)){
+            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return res.status(400).json(`No tax Rate Setup `)
+
+            })
+
+        }
+        let minimumTaxRateData = await minimumTaxRate.findAllMinimumTaxRate().then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)){
+            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return res.status(400).json(`Minimum Tax Rate Not Setup `)
+
+            })
+        }
+
+
+        let paymentDefinitionTaxData = await paymentDefinition.findTax().then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)){
+            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
+
+            })
+        }
+
+        let taxRelief = ((20/100) * taxableIncome) + (200000/12)
+        let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
+        let tempTaxAmount = taxableIncome - taxRelief
+        let cTax;
+        let totalTaxAmount = 0;
+        let i = 0;
+        for(const tax of taxRatesData){
+            if(i < parseInt(taxRatesData.length)){
+                if(tempTaxAmount >= tax.tr_band/12){
+                    cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                } else{
+                    cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                    totalTaxAmount = cTax + totalTaxAmount
+                    break;
+                }
+            }else {
+                cTax = (tax.tr_rate/100) * (tempTaxAmount)
+
+            }
+
+            tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
+            totalTaxAmount = cTax + totalTaxAmount
+            i++;
+        }
+
+        if(totalTaxAmount <= minimumTax) {
+            totalTaxAmount = minimumTax
+        }
+
+        return res.status(200).json(totalTaxAmount)
+
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
 module.exports = router;
+
+// DO While NOT rsA.EOF
+// i = i + 1
+// xBand = rsA("Band")
+// xRate = rsA("Rate")
+//
+// If xTaxPay > 0 Then
+// x_Diff = cdbl(x_TempPay) - cdbl(xBand)
+//
+// If x_Diff >= 0 Then
+// 'If i <> 5 Then
+// If i <> xTaxCount Then
+// x_Percent = cdbl(xRate) * 0.01 * cdbl(xBand)
+// Else
+// x_Percent = cdbl(xRate) * 0.01 * cdbl(x_TempPay)
+// End If
+// Else
+// x_Percent = cdbl(xRate) * 0.01 * cdbl(x_TempPay)
+// x_PerTotal = cdbl(x_PerTotal) + cdbl(x_Percent)
+// Exit Do
+// End If
+//
+//
+// Else
+// x_Percent = cdbl(xTaxIncome) * cdbl(xSpecMinTax) * 0.01
+//
+// End If
+//
+//
+// x_TempPay = cdbl(x_TempPay) - cdbl(xBand)
+// x_PerTotal = cdbl(x_PerTotal) + cdbl(x_Percent)
+//
+// rsA.MoveNext
+// Loop
