@@ -9,8 +9,8 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 
-const getAllAuthorizationRoles = async  ()=>{
-    return await authorizationRoleModel.findAll();
+const getAllAuthorizationRoles = async  (type)=>{
+    return await authorizationRoleModel.findAll({where:{ar_type:type}});
 }
 
 const addAuthorizationRole = async (requestBody)=>  {

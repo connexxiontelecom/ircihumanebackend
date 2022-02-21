@@ -7,9 +7,11 @@ const logs = require('../services/logService')
 const authorizationRoleService = require('../services/authorizationRoleService')
 
 
-router.get('/', auth, async function(req, res, next) {
+router.get('/:typeId', auth, async function(req, res, next) {
     try {
-        await authorizationRoleService.getAllAuthorizationRoles().then((data) =>{
+        const typeId = parseInt(req.params.typeId);
+
+        await authorizationRoleService.getAllAuthorizationRoles(typeId).then((data) =>{
             return res.status(200).json(data);
         })
     } catch (err) {

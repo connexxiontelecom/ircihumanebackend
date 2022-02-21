@@ -14,6 +14,8 @@ const travelApplicationBreakdownService = require('../services/travelApplication
 const travelApplicationT2Service = require('../services/travelApplicationT2Service');
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
+const sectorService = require('../services/departmentService');
+const employeeService = require('../services/employeeService');
 
 /* state routes. */
 
@@ -69,8 +71,26 @@ router.post('/new-travel-application', auth, async (req, res)=>{
         if(isBefore(startDate, new Date())) return res.status(400).json("Your start date cannot be before today.");
         if(isBefore(endDate, new Date())) return res.status(400).json("Your end date cannot be before today.");
         if(String(startYear) === String(endYear)){
-            supervisorAssignmentService.getEmployeeSupervisor(req.body.employee).then((sup)=>{
-                if(sup){
+            //sector lead instead
+            const emp  = await employeeService.getEmployeeByIdOnly(req.body.employee).then((user)=>{
+                return user;
+
+            })
+            //return res.status(200).json(emp);
+            if(_.isEmpty(emp) || _.isNull(emp)){
+                return res.status(400).json("Could not find employee record.");
+            }
+            const empSectorId = emp.emp_job_role_id;
+
+            const sectorLeads = await sectorService.getDepartmentSectorLeadBySectorId(empSectorId).then((sec)=>{
+                return sec;
+            });
+            if(_.isNull(sectorLeads) || _.isEmpty(sectorLeads)){
+                return res.status(400).json("Employee sector does not exist. Either set it up or contact admin.");
+            }
+
+            //supervisorAssignmentService.getEmployeeSupervisor(req.body.employee).then((sup)=>{
+                //if(sup){
                     let daysRequested =   differenceInBusinessDays(endDate, startDate);
                     if(parseInt(daysRequested) >= 1) {
                         travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
@@ -86,31 +106,35 @@ router.post('/new-travel-application', auth, async (req, res)=>{
                                     travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                                 });
                             }
-                            authorizationAction.registerNewAction(3,travelapp_id, sup.sa_supervisor_id,0,"Travel application initialized.")
-                                .then((outcome)=>{
-                                    const logData = {
-                                        "log_user_id": req.user.username.user_id,
-                                        "log_description": "Travel application ",
-                                        "log_date": new Date()
-                                    }
-                                    logs.addLog(logData).then((logRes)=>{
-                                        return res.status(200).json('Your travel application was successfully registered.');
-                                    })
-                                });
+                            sectorLeads.map((sectorLead)=>{
+                                authorizationAction.registerNewAction(3,travelapp_id, sectorLead.d_sector_lead_id,0,"Travel application initialized.")
+                                    .then((outcome)=>{
+                                        const logData = {
+                                            "log_user_id": req.user.username.user_id,
+                                            "log_description": "Travel application ",
+                                            "log_date": new Date()
+                                        }
+                                        logs.addLog(logData).then((logRes)=>{
+                                            /*return res.status(200).json('Your travel application was successfully registered.');*/
+                                        })
+                                    });
+                            });
+                            return res.status(200).json('Your travel application was successfully registered.');
+
                         });
                     }else{
                         return  res.status(400).json('Travel duration must be greater or equal to 1');
                     }
-                }else{
+                /*}else{
                     return res.status(400).json("You currently have no supervisor assigned to you.");
-                }
-            });
+                }*/
+            //});
         }else{
             return  res.status(400).json('Travel period must be within the same year')
         }
 
     }catch (e) {
-        return res.status(400).json(`Something went wrong. Inspect and try again.`);
+        return res.status(400).json(`Something went wrong. Inspect and try again.${e.message}`);
     }
 });
 
