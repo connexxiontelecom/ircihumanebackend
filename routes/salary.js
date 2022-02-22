@@ -50,11 +50,13 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                         return data
                     })
 
+                    let GrossArray = [ ]
+
                     for (const emp of employees) {
-                        let empAdjustedGross = parseFloat(emp.emp_gross)
+
                         let empGross = parseFloat(emp.emp_gross)
 
-                        if(empAdjustedGross > 0){
+                        if(empGross > 0){
                             //check employee variational payments
                             const employeeVariationalPayments = await variationalPayment.getVariationalPaymentEmployeeMonthYear(emp.emp_id, payrollMonth, payrollYear).then((data)=>{
                                 return data
@@ -65,18 +67,6 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                 for(const empVP of employeeVariationalPayments){
 
-                                    if(parseInt(empVP.payment.pd_total_gross) === 1){
-                                        if(parseInt(empVP.payment.pd_payment_type) === 1 ){
-                                            empAdjustedGross = empAdjustedGross + parseFloat(empVP.vp_amount)
-
-                                        }
-
-                                        if(parseInt(empVP.payment.pd_payment_type) === 0 ){
-                                            empAdjustedGross = empAdjustedGross - parseFloat(empVP.vp_amount)
-
-                                        }
-
-                                    }
 
                                     salaryObject = {
                                         salary_empid: emp.emp_id,
@@ -210,6 +200,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     })
 
                                     let fullGross = 0;
+                                    let empAdjustedGross = 0
 
                                     let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
                                         return data
@@ -219,6 +210,20 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     for(const salary of fullSalaryData){
                                         if(parseInt(salary.payment.pd_payment_type) === 1){
                                             fullGross = parseFloat(salary.salary_amount) + fullGross
+                                        }
+
+
+                                        if(parseInt(salary.payment.pd_total_gross) === 1){
+                                            if(parseInt(salary.payment.pd_payment_type) === 1 ){
+                                                empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                                            }
+
+                                            if(parseInt(salary.payment.pd_payment_type) === 0 ){
+                                                empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                                            }
+
                                         }
                                     }
 
@@ -486,13 +491,22 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         }
                                     }
 
+                                    let grossObject = {
+                                        empGross, empAdjustedGross
+                                    }
 
+                                    GrossArray.push(grossObject)
                                 }
 
 
                             }
 
                         }
+
+
+
+
+
 
                     }
 
@@ -502,7 +516,8 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                         "log_date": new Date()
                     }
                     await logs.addLog(logData).then((logRes)=>{
-                        return  res.status(200).json(`Action Successful`)
+
+                        return  res.status(200).json('Action Successful')
                     })
 
                 }
