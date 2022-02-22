@@ -76,8 +76,6 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                         }
 
-
-
                                     }
 
                                     salaryObject = {
@@ -132,10 +130,11 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                 }else {
                                     let amount = 0;
                                     let percent = 0;
-                                    let basicSalary = 0;
+
                                     let paymentDefinitionData = await paymentDefinition.findBasicPaymentDefinition().then((data)=>{
                                         return data
                                     })
+                                    let basicSalaryPercent = parseFloat(paymentDefinitionData.pd_pr_gross)
 
                                     //  splitting into percentages
 
@@ -153,16 +152,14 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             salary_tax: 0
                                         }
 
-                                        if(parseInt(paymentDefinitionData.pd_id) === parseInt(percentage.pd_id)){
-                                           basicSalary = amount
-                                        }
+
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
                                             return data
                                         })
 
                                         if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
                                             await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
-                                                return res.status(400).json(`An error Occurred while Processing Routine spliting gross `)
+                                                return res.status(400).json(`An error Occurred while Processing Routine splitting gross `)
 
                                             })
 
@@ -212,9 +209,27 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         return data
                                     })
 
+                                    let fullGross = 0;
+
+                                    let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                                        return data
+                                    })
+
+
+                                    for(const salary of fullSalaryData){
+                                        if(parseInt(salary.payment.pd_payment_type) === 1){
+                                            fullGross = parseFloat(salary.salary_amount) + fullGross
+                                        }
+                                    }
+
+
+                                    let basicFullGross = (basicSalaryPercent/100)*fullGross
+
+                                    let basicAdjustedGross = (basicSalaryPercent/100)*empAdjustedGross;
+
                                     for(const computationalPayment of computationalPayments ){
 
-                                        //gross computation
+                                        //adjusted gross computation
                                         if(parseInt(computationalPayment.pd_amount) === 1){
 
                                             amount = (parseFloat(computationalPayment.pd_percentage)/100)*empAdjustedGross
@@ -242,9 +257,10 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             }
                                         }
 
-                                        //basic computation
+
+                                        //adjusted gross basic computation
                                         if(parseInt(computationalPayment.pd_amount) === 2){
-                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)* basicSalary
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)* basicAdjustedGross
 
                                             salaryObject = {
                                                 salary_empid: emp.emp_id,
@@ -269,7 +285,68 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             }
 
                                         }
+
+
+
+                                        // Full Gross
+                                        if(parseInt(computationalPayment.pd_amount) === 3){
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*fullGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                                return data
+                                            })
+
+                                            if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
+
+
+                                        // Full basic Gross
+                                        if(parseInt(computationalPayment.pd_amount) === 4){
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*basicFullGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                                return data
+                                            })
+
+                                            if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
                                     }
+
+
 
                                     //tax computation
 
