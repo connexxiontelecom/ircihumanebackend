@@ -319,7 +319,13 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         })
                                     }
 
-                                    let taxRelief = ((20/100) * taxableIncome) + (200000/12)
+                                    let checka = parseFloat(200000/12)
+                                    let checkb = parseFloat((1/100)  * taxableIncome)
+                                    let allowableSum = checka
+                                    if(checkb > checka){
+                                        allowableSum = checkb
+                                    }
+                                    let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
                                     let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
                                     let tempTaxAmount = taxableIncome - taxRelief
                                     let cTax;
@@ -1086,7 +1092,19 @@ router.post('/pull-emolument', auth,  async function(req, res, next) {
 router.get('/salary-test-routine',   async function(req, res, next) {
     try{
 
-        let taxableIncome = 675805;
+        // let taxableIncome = 660805;
+
+        let taxableIncome = 0;
+        let taxableIncomeData = await salary.getEmployeeSalary('01', '2022', 5).then((data)=>{
+            return data
+        })
+
+        for(const income of taxableIncomeData){
+            if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
+                taxableIncome = parseFloat(income.salary_amount) + taxableIncome
+            }
+        }
+
 
 
         let taxRatesData = await taxRates.findAllTaxRate().then((data)=>{
@@ -1151,8 +1169,11 @@ router.get('/salary-test-routine',   async function(req, res, next) {
         if(totalTaxAmount <= minimumTax) {
             totalTaxAmount = minimumTax
         }
-
-        return res.status(200).json(totalTaxAmount)
+        let object = {
+            taxable: taxableIncome,
+            tax: totalTaxAmount
+        }
+        return res.status(200).json(object)
 
 
     }catch (err) {
