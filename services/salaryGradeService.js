@@ -17,7 +17,7 @@ async function addSalaryGrade(salaryGradeData){
 
 async function updateSalaryGrade(sgId, salaryGradeData){
     return await SalaryGrade.update({
-        tsg_name: salaryGradeData.sg_name,
+        sg_name: salaryGradeData.sg_name,
         sg_minimum: salaryGradeData.sg_minimum,
         sg_midpoint: salaryGradeData.sg_midpoint,
         sg_maximum: salaryGradeData.sg_maximum,
