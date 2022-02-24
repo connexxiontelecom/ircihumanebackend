@@ -122,6 +122,7 @@ module.exports = {
     findBasicPaymentDefinition,
     getVariationalPayments,
     findTax,
-    getComputedPayments
+    getComputedPayments,
+    getWelfare
 
 }

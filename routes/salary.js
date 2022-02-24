@@ -351,10 +351,8 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         }
                                     }
 
-
-
                                     //tax computation
-
+                                    let welfareIncomes = 0;
                                     let taxableIncome = 0;
                                     let taxableIncomeData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
                                         return data
@@ -364,6 +362,11 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                        if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
                                          taxableIncome = parseFloat(income.salary_amount) + taxableIncome
                                        }
+
+                                       if(parseInt(income.payment.pd_welfare) === 1){
+                                           welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
+                                       }
+
                                     }
 
 
@@ -400,7 +403,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                         })
                                     }
-
+                                    taxableIncome = taxableIncome - welfareIncomes
                                     let checka = parseFloat(200000/12)
                                     let checkb = parseFloat((1/100)  * taxableIncome)
                                     let allowableSum = checka
