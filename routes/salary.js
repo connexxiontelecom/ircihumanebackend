@@ -403,7 +403,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                         })
                                     }
-                                    taxableIncome = taxableIncome - welfareIncomes
+                                    let newTaxableIncome = taxableIncome - welfareIncomes
                                     let checka = parseFloat(200000/12)
                                     let checkb = parseFloat((1/100)  * taxableIncome)
                                     let allowableSum = checka
@@ -412,7 +412,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     }
                                     let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
                                     let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
-                                    let tempTaxAmount = taxableIncome - taxRelief
+                                    let tempTaxAmount = newTaxableIncome - taxRelief
                                     let cTax;
                                     let totalTaxAmount = 0;
                                     let i = 0;
