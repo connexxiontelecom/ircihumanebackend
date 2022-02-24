@@ -964,6 +964,8 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
                         grossSalary: grossSalary,
+                        nsitf:(1/100) * grossSalary,
+                        pension:(10/100) * grossSalary,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
@@ -1170,6 +1172,96 @@ router.post('/pull-emolument', auth,  async function(req, res, next) {
                 }
                 return res.status(200).json(employeeSalary)
             }
+
+
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+
+router.post('/deduction-report', auth,  async function(req, res, next) {
+    try{
+
+
+        const schema = Joi.object( {
+            pym_month: Joi.number().required(),
+            pym_year: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+        //check if payroll routine has been run
+        let employeeSalary = [ ]
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            return data
+        })
+
+        if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+            return res.status(400).json(`Payroll Routine has not been run`)
+
+
+
+        }
+        else{
+
+            const employees = await employee.getActiveEmployees().then((data)=>{
+                return data
+            })
+
+            for (const emp of employees) {
+
+
+                let totalDeduction = 0
+
+                let deductions = [ ]
+
+
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
+
+                    for (const empSalary of employeeSalaries) {
+                        if(parseInt(empSalary.payment.pd_payment_type) === 2){
+                            const deductionDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
+                            deductions.push(deductionDetails)
+                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                        }
+                    }
+
+
+                    let salaryObject = {
+                        employeeId: emp.emp_id,
+                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                        employeeUniqueId: emp.emp_unique_id,
+                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        jobRole :`${emp.JobRole.job_role}`,
+                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        totalDeduction: totalDeduction,
+                        deductions: deductions,
+                        month:payrollMonth,
+                        year: payrollYear
+                    }
+
+                    employeeSalary.push(salaryObject)
+
+                }
+
+            }
+            return res.status(200).json(employeeSalary)
+        }
 
 
 
