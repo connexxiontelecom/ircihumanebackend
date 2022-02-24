@@ -1281,8 +1281,9 @@ router.get('/salary-test-routine',   async function(req, res, next) {
 
         // let taxableIncome = 660805;
 
+        let welfareIncomes = 0;
         let taxableIncome = 0;
-        let taxableIncomeData = await salary.getEmployeeSalary('01', '2022', 5).then((data)=>{
+        let taxableIncomeData = await salary.getEmployeeSalary('01', '2022', '5').then((data)=>{
             return data
         })
 
@@ -1290,6 +1291,11 @@ router.get('/salary-test-routine',   async function(req, res, next) {
             if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
                 taxableIncome = parseFloat(income.salary_amount) + taxableIncome
             }
+
+            if(parseInt(income.payment.pd_welfare) === 1){
+                welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
+            }
+
         }
 
 
@@ -1310,7 +1316,7 @@ router.get('/salary-test-routine',   async function(req, res, next) {
         })
 
         if(_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)){
-            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            await salary.undoSalaryMonthYear('01', '2022').then((data)=>{
                 return res.status(400).json(`Minimum Tax Rate Not Setup `)
 
             })
@@ -1322,15 +1328,22 @@ router.get('/salary-test-routine',   async function(req, res, next) {
         })
 
         if(_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)){
-            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            await salary.undoSalaryMonthYear('01', '2022').then((data)=>{
                 return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
 
             })
         }
 
-        let taxRelief = ((20/100) * taxableIncome) + (200000/12)
+        let newTaxableIncome = taxableIncome - welfareIncomes
+        let checka = parseFloat(200000/12)
+        let checkb = parseFloat((1/100)  * taxableIncome)
+        let allowableSum = checka
+        if(checkb > checka){
+            allowableSum = checkb
+        }
+        let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
         let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
-        let tempTaxAmount = taxableIncome - taxRelief
+        let tempTaxAmount = newTaxableIncome - taxRelief
         let cTax;
         let totalTaxAmount = 0;
         let i = 0;
