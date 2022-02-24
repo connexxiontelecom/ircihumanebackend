@@ -32,7 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     pd_amount: DataTypes.INTEGER,
     pd_percentage: DataTypes.DOUBLE,
     pd_tax: DataTypes.INTEGER,
-    pd_total_gross: DataTypes.INTEGER
+    pd_total_gross: DataTypes.INTEGER,
+    pd_welfare: DataTypes.INTEGER
 
   }, {
     sequelize,
