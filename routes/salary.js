@@ -411,32 +411,95 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         allowableSum = checkb
                                     }
                                     let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
-                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
+                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome);
                                     let tempTaxAmount = newTaxableIncome - taxRelief
+                                    let TtempTaxAmount = tempTaxAmount
                                     let cTax;
                                     let totalTaxAmount = 0;
-                                    let i = 0;
-                                    for(const tax of taxRatesData){
-                                        if(i < parseInt(taxRatesData.length)){
-                                            if(tempTaxAmount >= tax.tr_band/12){
-                                                cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
-                                            } else{
-                                                cTax = (tax.tr_rate/100) * (tempTaxAmount)
-                                                totalTaxAmount = cTax + totalTaxAmount
-                                                break;
-                                            }
-                                        }else {
-                                            cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                    let i = 1;
 
+                                    let taxObjects = [ ]
+                                    if(parseFloat(tempTaxAmount) > 0){
+                                        for(const tax of taxRatesData){
+                                            if(i < parseInt(taxRatesData.length)){
+                                                if((tempTaxAmount - tax.tr_band/12) > 0){
+
+                                                    if(tempTaxAmount >= tax.tr_band/12){
+                                                        cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                                                        let taxObject = {
+                                                            band: tax.tr_band/12,
+                                                            rate: tax.tr_rate,
+                                                            amount: cTax
+                                                        }
+                                                        taxObjects.push(taxObject)
+                                                    }
+                                                    else{
+                                                        cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                        totalTaxAmount = cTax + totalTaxAmount
+                                                        let taxObject = {
+                                                            band: tax.tr_band/12,
+                                                            rate: tax.tr_rate,
+                                                            amount: cTax
+                                                        }
+                                                        taxObjects.push(taxObject)
+                                                        break;
+                                                    }
+
+                                                }
+                                                else{
+                                                    cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                    totalTaxAmount = cTax + totalTaxAmount
+                                                    let taxObject = {
+                                                        band: tax.tr_band/12,
+                                                        rate: tax.tr_rate,
+                                                        amount: cTax
+                                                    }
+                                                    taxObjects.push(taxObject)
+                                                    break;
+                                                }
+
+
+                                            }
+                                            else {
+                                                cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                let taxObject = {
+                                                    band: tax.tr_band/12,
+                                                    rate: tax.tr_rate,
+                                                    amount: cTax
+                                                }
+                                                taxObjects.push(taxObject)
+
+                                            }
+                                            tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
+
+                                            totalTaxAmount = cTax + totalTaxAmount
+                                            i++;
                                         }
 
-                                        tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
-                                        totalTaxAmount = cTax + totalTaxAmount
-                                        i++;
+                                        if(totalTaxAmount <= minimumTax) {
+                                            totalTaxAmount = minimumTax
+                                        }
+
+                                    }else{
+                                        totalTaxAmount = minimumTax
                                     }
 
-                                    if(totalTaxAmount <= minimumTax) {
-                                        totalTaxAmount = minimumTax
+
+
+
+                                    let object = {
+                                        taxable: taxableIncome,
+                                        tax: totalTaxAmount,
+                                        welfare: welfareIncomes,
+                                        newTax: newTaxableIncome,
+                                        onepercent: checkb,
+                                        twohundred: checka,
+                                        real: allowableSum,
+                                        temptaxamount: TtempTaxAmount,
+                                        newTaxableIncome: newTaxableIncome,
+                                        taxRelief: taxRelief,
+                                        taxObjects: taxObjects
+
                                     }
 
                                     salaryObject = {
@@ -1281,22 +1344,22 @@ router.get('/salary-test-routine',   async function(req, res, next) {
 
         // let taxableIncome = 660805;
 
-        let welfareIncomes = 0;
-        let taxableIncome = 0;
-        let taxableIncomeData = await salary.getEmployeeSalary('01', '2022', '5').then((data)=>{
-            return data
-        })
-
-        for(const income of taxableIncomeData){
-            if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
-                taxableIncome = parseFloat(income.salary_amount) + taxableIncome
-            }
-
-            if(parseInt(income.payment.pd_welfare) === 1){
-                welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
-            }
-
-        }
+        let welfareIncomes = 287679.625;
+        let taxableIncome = 3030575;
+        // let taxableIncomeData = await salary.getEmployeeSalary('01', '2022', '5').then((data)=>{
+        //     return data
+        // })
+        //
+        // for(const income of taxableIncomeData){
+        //     if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
+        //         taxableIncome = parseFloat(income.salary_amount) + taxableIncome
+        //     }
+        //
+        //     if(parseInt(income.payment.pd_welfare) === 1){
+        //         welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
+        //     }
+        //
+        // }
 
 
 
@@ -1342,36 +1405,95 @@ router.get('/salary-test-routine',   async function(req, res, next) {
             allowableSum = checkb
         }
         let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
-        let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome - taxRelief);
+        let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome);
         let tempTaxAmount = newTaxableIncome - taxRelief
+        let TtempTaxAmount = tempTaxAmount
         let cTax;
         let totalTaxAmount = 0;
-        let i = 0;
-        for(const tax of taxRatesData){
-            if(i < parseInt(taxRatesData.length)){
-                if(tempTaxAmount >= tax.tr_band/12){
-                    cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
-                } else{
-                    cTax = (tax.tr_rate/100) * (tempTaxAmount)
-                    totalTaxAmount = cTax + totalTaxAmount
-                    break;
-                }
-            }else {
-                cTax = (tax.tr_rate/100) * (tempTaxAmount)
+        let i = 1;
 
+        let taxObjects = [ ]
+        if(parseFloat(tempTaxAmount) > 0){
+            for(const tax of taxRatesData){
+                if(i < parseInt(taxRatesData.length)){
+                    if((tempTaxAmount - tax.tr_band/12) > 0){
+
+                        if(tempTaxAmount >= tax.tr_band/12){
+                            cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                            let taxObject = {
+                                band: tax.tr_band/12,
+                                rate: tax.tr_rate,
+                                amount: cTax
+                            }
+                            taxObjects.push(taxObject)
+                        }
+                        else{
+                            cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                            totalTaxAmount = cTax + totalTaxAmount
+                            let taxObject = {
+                                band: tax.tr_band/12,
+                                rate: tax.tr_rate,
+                                amount: cTax
+                            }
+                            taxObjects.push(taxObject)
+                            break;
+                        }
+
+                    }
+                    else{
+                        cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                        totalTaxAmount = cTax + totalTaxAmount
+                        let taxObject = {
+                            band: tax.tr_band/12,
+                            rate: tax.tr_rate,
+                            amount: cTax
+                        }
+                        taxObjects.push(taxObject)
+                        break;
+                    }
+
+
+                }
+                else {
+                    cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                    let taxObject = {
+                        band: tax.tr_band/12,
+                        rate: tax.tr_rate,
+                        amount: cTax
+                    }
+                    taxObjects.push(taxObject)
+
+                }
+                tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
+
+                totalTaxAmount = cTax + totalTaxAmount
+                i++;
             }
 
-            tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
-            totalTaxAmount = cTax + totalTaxAmount
-            i++;
-        }
+            if(totalTaxAmount <= minimumTax) {
+                totalTaxAmount = minimumTax
+            }
 
-        if(totalTaxAmount <= minimumTax) {
+        }else{
             totalTaxAmount = minimumTax
         }
+
+
+
+
         let object = {
             taxable: taxableIncome,
-            tax: totalTaxAmount
+            tax: totalTaxAmount,
+            welfare: welfareIncomes,
+            newTax: newTaxableIncome,
+            onepercent: checkb,
+            twohundred: checka,
+            real: allowableSum,
+            temptaxamount: TtempTaxAmount,
+            newTaxableIncome: newTaxableIncome,
+            taxRelief: taxRelief,
+            taxObjects: taxObjects
+
         }
         return res.status(200).json(object)
 
