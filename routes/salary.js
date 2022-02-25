@@ -1393,7 +1393,7 @@ router.post('/variation-report', auth,  async function(req, res, next) {
                 if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
 
                     for (const empSalary of employeeSalaries) {
-                        if(parseInt(empSalary.payment.pd_payment_variant) === 1) {
+                        if(parseInt(empSalary.payment.pd_payment_variant) === 2) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                                 const incomeDetails = {
                                     paymentName: empSalary.payment.pd_payment_name,
@@ -1402,7 +1402,7 @@ router.post('/variation-report', auth,  async function(req, res, next) {
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                             }
-                            if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+                            else {
                                 const deductionDetails = {
                                     paymentName: empSalary.payment.pd_payment_name,
                                     amount: empSalary.salary_amount
