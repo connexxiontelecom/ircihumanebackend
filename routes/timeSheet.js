@@ -408,6 +408,18 @@ router.post('/update-status', auth, async function (req, res) {
     }
 });
 
+/*
+router.get('/ref/ref/ref/ref/ref/ref/:ref', async (req, res)=>{
+    try{
+        const par = req.params.ref;
+        const ref = await timeSheetAllocation.findOneTimeAllocationByRefNo(par).then((r)=>{
+            return r;
+        });
+        return res.status(200).json(ref.ta_emp_id);
+    }catch (e) {
+        return res.status(400).json(e.message);
+    }
+});*/
 
 function getDaysInMonth(month, year) {
     let date = new Date(year, month, 1);
