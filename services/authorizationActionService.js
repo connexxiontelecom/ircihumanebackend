@@ -129,17 +129,18 @@ const updateAuthorizationStatus = async (req, res)=>{
                             });
                             const grossSalary = employee.emp_gross;
                             let payable = parseFloat(grossSalary/22) * daysAbsent;
-                            const setData = {
-                                tsp_emp_id: timealloc.ta_emp_id,
-                                tsp_month: timealloc.ta_month,
-                                tsp_year: timealloc.ta_year,
-                                tsp_days_absent: daysAbsent.length,
-                                tsp_amount: payable,
-                            };
-                            await timeSheetPenaltyService.addTimeSheetPenalty(setData).then((n)=>{
+                            if(payable > 0){
+                                const setData = {
+                                    tsp_emp_id: timealloc.ta_emp_id,
+                                    tsp_month: timealloc.ta_month,
+                                    tsp_year: timealloc.ta_year,
+                                    tsp_days_absent: daysAbsent.length,
+                                    tsp_amount: payable,
+                                };
+                                await timeSheetPenaltyService.addTimeSheetPenalty(setData).then((n)=>{
 
-                            })
-
+                                })
+                            }
                         }
                         break;
                     case 3: //travel application
