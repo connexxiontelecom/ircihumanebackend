@@ -94,7 +94,7 @@ router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res,
 
         return res.status(200).json(responseData)
     } catch (err) {
-        console.error(`Error while fetching time allocation `, err.message);
+        return res.status(400).json(`Error while fetching time allocation `);
         next(err);
     }
 });
