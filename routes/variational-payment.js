@@ -66,7 +66,7 @@ router.post('/', auth, async (req, res, next)=>{
                     })
 
                     if (!(_.isNull(checkExisting) || _.isEmpty(checkExisting))) {
-                        if(parseInt(checkExisting.vp_confirm) === 0){
+                        if((parseInt(checkExisting.vp_confirm) === 0) || (parseInt(checkExisting.vp_confirm) === 2 )){
                             await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
                         }else{
 
