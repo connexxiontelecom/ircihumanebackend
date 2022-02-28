@@ -89,7 +89,7 @@ router.post('/add-time-sheet', auth,  async function(req, res, next) {
             })
         }
       } catch (err) {
-        console.error(`Error while adding time sheet `, err.message);
+        return res.status(400).json(`Error while adding time sheet `);
         next(err);
     }
 });
@@ -273,7 +273,7 @@ router.get('/preload-date/:emp_id', auth,  async function(req, res, next) {
         }
 
     } catch (err) {
-        console.error(`Error while adding time sheet `, err.message);
+        return res.status(400).json(`Error while adding time sheet `);
         next(err);
     }
 });
@@ -443,6 +443,36 @@ async function updateTimeSheet(timeSheetId, timeSheetData){
       return data
   })
 }
+
+router.get('/get-attendance-status/:status/:emp_id/:month/:year', async (req, res)=>{
+    try{
+        const empId = parseInt(req.params.emp_id);
+        const status = parseInt(req.params.status);
+        const month = parseInt(req.params.month);
+        const year = parseInt(req.params.year);
+        const count = await timeSheet.getAttendanceStatus(status,empId,month,year).then((data)=>{
+            return data;
+        })
+        return res.status(200).json(count.length);
+    }catch (e) {
+        return res.status(400).json("Something went wrong.");
+    }
+});
+
+router.patch('/update-attendance-status/:emp_id/:day/:month/:year', async  (req, res)=>{
+    try{
+        const emp_id = parseInt(req.params.emp_id);
+        const day = parseInt(req.params.day);
+        const month = parseInt(req.params.month);
+        const year = parseInt(req.params.year);
+        await timeSheet.updateTimeSheetDayEntryStatus(emp_id, day, month, year).then((data)=>{
+            return res.status(200).json(data);
+        })
+
+    }catch (e) {
+        return res.status(400).json("Something went wrong. Try again."+e.message);
+    }
+});
 
 router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
     try{

@@ -1,7 +1,9 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
+const _ = require('lodash')
 const TimeSheet = require("../models/timesheet")(sequelize, Sequelize.DataTypes)
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const employeeService = require("../services/employeeService");
 
 const helper  = require('../helper');
 
@@ -15,6 +17,7 @@ async function addTimeSheet(timeSheetData){
         ts_start: timeSheetData.ts_start,
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
+        ts_is_present:timeSheetData.is_present,
      });
 }
 
@@ -28,12 +31,66 @@ async function updateTimeSheet(ts_id, timeSheetData){
         ts_start: timeSheetData.ts_start,
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
+        ts_is_present:timeSheetData.is_present,
 
     }, {
             where:{
                 ts_id:ts_id
             }
         });
+}
+
+async function getAttendanceStatus(status, empId, month, year){
+    return await TimeSheet.findAll({
+        where:{
+            ts_month:month,
+            ts_year:year,
+            ts_is_present:status,
+            ts_emp_id:empId
+        }
+    })
+}
+async function updateTimeSheetDayEntryStatus(empId, day, month, year){
+      const timesheet = await getTimeSheetDayEntry(empId, day, month, year).then((data)=>{
+          return data;
+      });
+
+      let status = timesheet.ts_is_present === 1 ? 0 : 1;
+
+      if(!_.isEmpty(timesheet) || !_.isNull(timesheet)){
+          return  await TimeSheet.update({
+              ts_is_present:status,
+          }, {
+              where: {
+                  ts_day: day,
+                  ts_month: month,
+                  ts_year: year,
+                  ts_emp_id: empId
+              }
+          });
+
+      }
+
+}
+async function getTimeSheetDayEntry(empId, day, month, year){
+    return  await TimeSheet.findOne( {
+        where: {
+            ts_day: day,
+            ts_month: month,
+            ts_year: year,
+            ts_emp_id: empId
+        }
+    });
+}
+
+
+async function computeSalaryPayableByTimesheet(daysAbsent, divisor, empId){
+    const employee = await employeeService.getEmployeeById(empId).then((data)=>{
+        return data;
+    });
+    const grossSalary = employee.emp_gross;
+    let payable = parseFloat(grossSalary/22) * daysAbsent;
+
 }
 
 async function findTimeSheet(empId, day, month, year){
@@ -108,5 +165,9 @@ module.exports = {
     updateTimeSheetStatus,
     getTimeSheetApplicationsForAuthorization,
     findTimeSheetMonthEmployee,
-    findTimeSheetByMonthOnly
+    findTimeSheetByMonthOnly,
+    getAttendanceStatus,
+    computeSalaryPayableByTimesheet,
+    getTimeSheetDayEntry,
+    updateTimeSheetDayEntryStatus
 }

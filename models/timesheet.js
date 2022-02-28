@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
     ts_day: DataTypes.TEXT,
     ts_start: DataTypes.TEXT,
     ts_end: DataTypes.TEXT,
-    ts_duration: DataTypes.DOUBLE
+    ts_duration: DataTypes.DOUBLE,
+    ts_is_present: DataTypes.INTEGER,
 
   }, {
     sequelize,
