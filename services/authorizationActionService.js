@@ -9,6 +9,9 @@ const timeAllocationModel = require("../models/timeallocation")(sequelize, Seque
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const Joi = require('joi');
 const logs = require('../services/logService');
+const timeSheetPenaltyService = require('../services/timesheetPenaltyService');
+const timeSheetService = require('../services/timeSheetService');
+const timeAllocationService = require('../services/timeAllocationService');
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
@@ -111,6 +114,15 @@ const updateAuthorizationStatus = async (req, res)=>{
                                 ta_ref_no:appId
                             }
                         });
+                       /* const timealloc = await timeAllocationService.findOneTimeAllocationByRefNo(appId).then((val)=>{
+                            return val;
+                        });*/
+                        //return res.status(200).json(timealloc.ta_emp_id);
+                        //days absent
+                        /*const daysAbsent = await timeSheetService.getAttendanceStatus(0,timealloc.ta_emp_id, timealloc.ta_month, timealloc.ta_year ).then((res)=>{
+                            return res;
+                        })*/
+
                         break;
                     case 3: //travel application
                         await travelApplicationModel.update({
