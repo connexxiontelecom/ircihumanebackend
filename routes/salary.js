@@ -50,9 +50,13 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                         return data
                     })
 
+                    let GrossArray = [ ]
+
                     for (const emp of employees) {
-                        let empAdjustedGross = parseFloat(emp.emp_gross)
-                        if(empAdjustedGross > 0){
+
+                        let empGross = parseFloat(emp.emp_gross)
+
+                        if(empGross > 0){
                             //check employee variational payments
                             const employeeVariationalPayments = await variationalPayment.getVariationalPaymentEmployeeMonthYear(emp.emp_id, payrollMonth, payrollYear).then((data)=>{
                                 return data
@@ -63,20 +67,6 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                 for(const empVP of employeeVariationalPayments){
 
-                                    if(parseInt(empVP.payment.pd_total_gross) === 1){
-                                        if(parseInt(empVP.payment.pd_payment_type) === 1 ){
-                                            empAdjustedGross = empAdjustedGross + parseFloat(empVP.vp_amount)
-
-                                        }
-
-                                        if(parseInt(empVP.payment.pd_payment_type) === 0 ){
-                                            empAdjustedGross = empAdjustedGross - parseFloat(empVP.vp_amount)
-
-                                        }
-
-
-
-                                    }
 
                                     salaryObject = {
                                         salary_empid: emp.emp_id,
@@ -128,18 +118,19 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                     })
 
                                 }else {
-                                    let amount
-                                    let percent
-                                    let basicSalary;
+                                    let amount = 0;
+                                    let percent = 0;
+
                                     let paymentDefinitionData = await paymentDefinition.findBasicPaymentDefinition().then((data)=>{
                                         return data
                                     })
+                                    let basicSalaryPercent = parseFloat(paymentDefinitionData.pd_pr_gross)
 
                                     //  splitting into percentages
 
                                     for(const percentage of grossPercentage){
                                         percent = parseFloat(percentage.pd_pr_gross)
-                                        amount = (percent/100)*empAdjustedGross
+                                        amount = (percent/100)*empGross
 
                                         salaryObject = {
                                             salary_empid: emp.emp_id,
@@ -151,16 +142,14 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             salary_tax: 0
                                         }
 
-                                        if(parseInt(paymentDefinitionData.pd_id) === parseInt(percentage.pd_id)){
-                                            basicSalary = amount
-                                        }
+
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
                                             return data
                                         })
 
                                         if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
                                             await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
-                                                return res.status(400).json(`An error Occurred while Processing Routine spliting gross `)
+                                                return res.status(400).json(`An error Occurred while Processing Routine splitting gross `)
 
                                             })
 
@@ -210,9 +199,42 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         return data
                                     })
 
+                                    let fullGross = 0;
+                                    let empAdjustedGross = 0
+
+                                    let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                                        return data
+                                    })
+
+
+                                    for(const salary of fullSalaryData){
+                                        if(parseInt(salary.payment.pd_payment_type) === 1){
+                                            fullGross = parseFloat(salary.salary_amount) + fullGross
+                                        }
+
+
+                                        if(parseInt(salary.payment.pd_total_gross) === 1){
+                                            if(parseInt(salary.payment.pd_payment_type) === 1 ){
+                                                empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                                            }
+
+                                            if(parseInt(salary.payment.pd_payment_type) === 0 ){
+                                                empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                                            }
+
+                                        }
+                                    }
+
+
+                                    let basicFullGross = (basicSalaryPercent/100)*fullGross
+
+                                    let basicAdjustedGross = (basicSalaryPercent/100)*empAdjustedGross;
+
                                     for(const computationalPayment of computationalPayments ){
 
-                                        //gross computation
+                                        //adjusted gross computation
                                         if(parseInt(computationalPayment.pd_amount) === 1){
 
                                             amount = (parseFloat(computationalPayment.pd_percentage)/100)*empAdjustedGross
@@ -240,9 +262,10 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             }
                                         }
 
-                                        //basic computation
+
+                                        //adjusted gross basic computation
                                         if(parseInt(computationalPayment.pd_amount) === 2){
-                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*basicSalary
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)* basicAdjustedGross
 
                                             salaryObject = {
                                                 salary_empid: emp.emp_id,
@@ -267,9 +290,86 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             }
 
                                         }
+
+
+
+                                        // Full Gross
+                                        if(parseInt(computationalPayment.pd_amount) === 3){
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*fullGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                                return data
+                                            })
+
+                                            if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
+
+
+                                        // Full basic Gross
+                                        if(parseInt(computationalPayment.pd_amount) === 4){
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*basicFullGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                                return data
+                                            })
+
+                                            if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
                                     }
 
                                     //tax computation
+                                    let welfareIncomes = 0;
+                                    let taxableIncome = 0;
+                                    let taxableIncomeData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                                        return data
+                                    })
+
+                                    for(const income of taxableIncomeData){
+                                       if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
+                                         taxableIncome = parseFloat(income.salary_amount) + taxableIncome
+                                       }
+
+                                       if(parseInt(income.payment.pd_welfare) === 1){
+                                           welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
+                                       }
+
+                                    }
+
+
                                     let taxRatesData = await taxRates.findAllTaxRate().then((data)=>{
                                         return data
                                     })
@@ -281,7 +381,6 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         })
 
                                     }
-
                                     let minimumTaxRateData = await minimumTaxRate.findAllMinimumTaxRate().then((data)=>{
                                         return data
                                     })
@@ -304,27 +403,103 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                         })
                                     }
-
-                                    let taxRelief = ((20/100) * empAdjustedGross) + (200000/12)
-                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (empAdjustedGross - taxRelief);
-                                    let tempTaxAmount = empAdjustedGross - taxRelief
+                                    let newTaxableIncome = taxableIncome - welfareIncomes
+                                    let checka = parseFloat(200000/12)
+                                    let checkb = parseFloat((1/100)  * taxableIncome)
+                                    let allowableSum = checka
+                                    if(checkb > checka){
+                                        allowableSum = checkb
+                                    }
+                                    let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
+                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome);
+                                    let tempTaxAmount = newTaxableIncome - taxRelief
+                                    let TtempTaxAmount = tempTaxAmount
                                     let cTax;
                                     let totalTaxAmount = 0;
+                                    let i = 1;
 
-                                    for(const tax of taxRatesData){
-                                        if(tempTaxAmount >= tax.tr_band/12){
-                                            cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
-                                        } else{
-                                            cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                    let taxObjects = [ ]
+                                    if(parseFloat(tempTaxAmount) > 0){
+                                        for(const tax of taxRatesData){
+                                            if(i < parseInt(taxRatesData.length)){
+                                                if((tempTaxAmount - tax.tr_band/12) > 0){
+
+                                                    if(tempTaxAmount >= tax.tr_band/12){
+                                                        cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                                                        let taxObject = {
+                                                            band: tax.tr_band/12,
+                                                            rate: tax.tr_rate,
+                                                            amount: cTax
+                                                        }
+                                                        taxObjects.push(taxObject)
+                                                    }
+                                                    else{
+                                                        cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                        totalTaxAmount = cTax + totalTaxAmount
+                                                        let taxObject = {
+                                                            band: tax.tr_band/12,
+                                                            rate: tax.tr_rate,
+                                                            amount: cTax
+                                                        }
+                                                        taxObjects.push(taxObject)
+                                                        break;
+                                                    }
+
+                                                }
+                                                else{
+                                                    cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                    totalTaxAmount = cTax + totalTaxAmount
+                                                    let taxObject = {
+                                                        band: tax.tr_band/12,
+                                                        rate: tax.tr_rate,
+                                                        amount: cTax
+                                                    }
+                                                    taxObjects.push(taxObject)
+                                                    break;
+                                                }
+
+
+                                            }
+                                            else {
+                                                cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                                                let taxObject = {
+                                                    band: tax.tr_band/12,
+                                                    rate: tax.tr_rate,
+                                                    amount: cTax
+                                                }
+                                                taxObjects.push(taxObject)
+
+                                            }
+                                            tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
+
                                             totalTaxAmount = cTax + totalTaxAmount
-                                            break;
+                                            i++;
                                         }
-                                        tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
-                                        totalTaxAmount = cTax + totalTaxAmount
+
+                                        if(totalTaxAmount <= minimumTax) {
+                                            totalTaxAmount = minimumTax
+                                        }
+
+                                    }else{
+                                        totalTaxAmount = minimumTax
                                     }
 
-                                    if(totalTaxAmount <= minimumTax) {
-                                        totalTaxAmount = minimumTax
+
+
+
+                                    let object = {
+                                        taxable: taxableIncome,
+                                        tax: totalTaxAmount,
+                                        welfare: welfareIncomes,
+                                        newTax: newTaxableIncome,
+                                        onepercent: checkb,
+                                        twohundred: checka,
+                                        real: allowableSum,
+                                        temptaxamount: TtempTaxAmount,
+                                        newTaxableIncome: newTaxableIncome,
+                                        taxRelief: taxRelief,
+                                        taxObjects: taxObjects
+
                                     }
 
                                     salaryObject = {
@@ -382,13 +557,22 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                         }
                                     }
 
+                                    let grossObject = {
+                                        empGross, empAdjustedGross
+                                    }
 
+                                    GrossArray.push(grossObject)
                                 }
 
 
                             }
 
                         }
+
+
+
+
+
 
                     }
 
@@ -398,7 +582,8 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                         "log_date": new Date()
                     }
                     await logs.addLog(logData).then((logRes)=>{
-                        return  res.status(200).json(`Action Successful`)
+
+                        return  res.status(200).json('Action Successful')
                     })
 
                 }
@@ -842,6 +1027,8 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
                         grossSalary: grossSalary,
+                        nsitf:(1/100) * grossSalary,
+                        pension:(10/100) * grossSalary,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
@@ -934,6 +1121,8 @@ router.post('/pull-salary-routine/:empId', auth,  async function(req, res, next)
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
                         grossSalary: grossSalary,
+                        nsitf:(1/100) * grossSalary,
+                        pension:(10/100) * grossSalary,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
@@ -1058,4 +1247,407 @@ router.post('/pull-emolument', auth,  async function(req, res, next) {
     }
 });
 
+
+router.post('/deduction-report', auth,  async function(req, res, next) {
+    try{
+
+
+        const schema = Joi.object( {
+            pym_month: Joi.number().required(),
+            pym_year: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+        //check if payroll routine has been run
+        let employeeSalary = [ ]
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            return data
+        })
+
+        if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+            return res.status(400).json(`Payroll Routine has not been run`)
+
+
+
+        }
+        else{
+
+            const employees = await employee.getActiveEmployees().then((data)=>{
+                return data
+            })
+
+            for (const emp of employees) {
+
+
+                let totalDeduction = 0
+
+                let deductions = [ ]
+
+
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
+
+                    for (const empSalary of employeeSalaries) {
+                        if(parseInt(empSalary.payment.pd_payment_type) === 2){
+                            const deductionDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
+                            deductions.push(deductionDetails)
+                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                        }
+                    }
+
+
+                    let salaryObject = {
+                        employeeId: emp.emp_id,
+                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                        employeeUniqueId: emp.emp_unique_id,
+                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        jobRole :`${emp.JobRole.job_role}`,
+                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        totalDeduction: totalDeduction,
+                        deductions: deductions,
+                        month:payrollMonth,
+                        year: payrollYear
+                    }
+
+                    employeeSalary.push(salaryObject)
+
+                }
+
+            }
+            return res.status(200).json(employeeSalary)
+        }
+
+
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+
+router.post('/variation-report', auth,  async function(req, res, next) {
+    try{
+
+
+        const schema = Joi.object( {
+            pym_month: Joi.number().required(),
+            pym_year: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+        //check if payroll routine has been run
+        let employeeSalary = [ ]
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+            return data
+        })
+
+        if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+
+            return res.status(400).json(`Payroll Routine has not been run`)
+
+
+
+        }
+        else{
+
+            const employees = await employee.getActiveEmployees().then((data)=>{
+                return data
+            })
+
+            for (const emp of employees) {
+
+
+                let grossSalary = 0
+                let netSalary = 0
+                let totalDeduction = 0
+
+                let deductions = [ ]
+                let incomes = [ ]
+
+
+
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
+
+                    for (const empSalary of employeeSalaries) {
+                        if(parseInt(empSalary.payment.pd_payment_variant) === 2) {
+                            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                const incomeDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                incomes.push(incomeDetails)
+                                grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                            }
+                            else {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                deductions.push(deductionDetails)
+                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                            }
+                        }
+                    }
+
+
+                    let salaryObject = {
+                        employeeId: emp.emp_id,
+                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                        employeeUniqueId: emp.emp_unique_id,
+                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        jobRole :`${emp.JobRole.job_role}`,
+                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        totalDeduction: totalDeduction,
+                        deductions: deductions,
+                        incomes: incomes,
+                        totalIncomes: grossSalary,
+                        month:payrollMonth,
+                        year: payrollYear
+                    }
+
+                    employeeSalary.push(salaryObject)
+
+                }
+
+            }
+            return res.status(200).json(employeeSalary)
+        }
+
+
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+
+
+
+/* run salary routine */
+router.get('/salary-test-routine',   async function(req, res, next) {
+    try{
+
+        // let taxableIncome = 660805;
+
+        let welfareIncomes = 287679.625;
+        let taxableIncome = 3030575;
+        // let taxableIncomeData = await salary.getEmployeeSalary('01', '2022', '5').then((data)=>{
+        //     return data
+        // })
+        //
+        // for(const income of taxableIncomeData){
+        //     if((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1) ){
+        //         taxableIncome = parseFloat(income.salary_amount) + taxableIncome
+        //     }
+        //
+        //     if(parseInt(income.payment.pd_welfare) === 1){
+        //         welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
+        //     }
+        //
+        // }
+
+
+
+        let taxRatesData = await taxRates.findAllTaxRate().then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(taxRatesData) || _.isNull(taxRatesData)){
+            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return res.status(400).json(`No tax Rate Setup `)
+
+            })
+
+        }
+        let minimumTaxRateData = await minimumTaxRate.findAllMinimumTaxRate().then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)){
+            await salary.undoSalaryMonthYear('01', '2022').then((data)=>{
+                return res.status(400).json(`Minimum Tax Rate Not Setup `)
+
+            })
+        }
+
+
+        let paymentDefinitionTaxData = await paymentDefinition.findTax().then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)){
+            await salary.undoSalaryMonthYear('01', '2022').then((data)=>{
+                return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
+
+            })
+        }
+
+        let newTaxableIncome = taxableIncome - welfareIncomes
+        let checka = parseFloat(200000/12)
+        let checkb = parseFloat((1/100)  * taxableIncome)
+        let allowableSum = checka
+        if(checkb > checka){
+            allowableSum = checkb
+        }
+        let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
+        let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome);
+        let tempTaxAmount = newTaxableIncome - taxRelief
+        let TtempTaxAmount = tempTaxAmount
+        let cTax;
+        let totalTaxAmount = 0;
+        let i = 1;
+
+        let taxObjects = [ ]
+        if(parseFloat(tempTaxAmount) > 0){
+            for(const tax of taxRatesData){
+                if(i < parseInt(taxRatesData.length)){
+                    if((tempTaxAmount - tax.tr_band/12) > 0){
+
+                        if(tempTaxAmount >= tax.tr_band/12){
+                            cTax =  (tax.tr_rate/100) * (tax.tr_band/12);
+                            let taxObject = {
+                                band: tax.tr_band/12,
+                                rate: tax.tr_rate,
+                                amount: cTax
+                            }
+                            taxObjects.push(taxObject)
+                        }
+                        else{
+                            cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                            totalTaxAmount = cTax + totalTaxAmount
+                            let taxObject = {
+                                band: tax.tr_band/12,
+                                rate: tax.tr_rate,
+                                amount: cTax
+                            }
+                            taxObjects.push(taxObject)
+                            break;
+                        }
+
+                    }
+                    else{
+                        cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                        totalTaxAmount = cTax + totalTaxAmount
+                        let taxObject = {
+                            band: tax.tr_band/12,
+                            rate: tax.tr_rate,
+                            amount: cTax
+                        }
+                        taxObjects.push(taxObject)
+                        break;
+                    }
+
+
+                }
+                else {
+                    cTax = (tax.tr_rate/100) * (tempTaxAmount)
+                    let taxObject = {
+                        band: tax.tr_band/12,
+                        rate: tax.tr_rate,
+                        amount: cTax
+                    }
+                    taxObjects.push(taxObject)
+
+                }
+                tempTaxAmount = tempTaxAmount - (tax.tr_band/12);
+
+                totalTaxAmount = cTax + totalTaxAmount
+                i++;
+            }
+
+            if(totalTaxAmount <= minimumTax) {
+                totalTaxAmount = minimumTax
+            }
+
+        }else{
+            totalTaxAmount = minimumTax
+        }
+
+
+
+
+        let object = {
+            taxable: taxableIncome,
+            tax: totalTaxAmount,
+            welfare: welfareIncomes,
+            newTax: newTaxableIncome,
+            onepercent: checkb,
+            twohundred: checka,
+            real: allowableSum,
+            temptaxamount: TtempTaxAmount,
+            newTaxableIncome: newTaxableIncome,
+            taxRelief: taxRelief,
+            taxObjects: taxObjects
+
+        }
+        return res.status(200).json(object)
+
+
+    }catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
 module.exports = router;
+
+// DO While NOT rsA.EOF
+// i = i + 1
+// xBand = rsA("Band")
+// xRate = rsA("Rate")
+//
+// If xTaxPay > 0 Then
+// x_Diff = cdbl(x_TempPay) - cdbl(xBand)
+//
+// If x_Diff >= 0 Then
+// 'If i <> 5 Then
+// If i <> xTaxCount Then
+// x_Percent = cdbl(xRate) * 0.01 * cdbl(xBand)
+// Else
+// x_Percent = cdbl(xRate) * 0.01 * cdbl(x_TempPay)
+// End If
+// Else
+// x_Percent = cdbl(xRate) * 0.01 * cdbl(x_TempPay)
+// x_PerTotal = cdbl(x_PerTotal) + cdbl(x_Percent)
+// Exit Do
+// End If
+//
+//
+// Else
+// x_Percent = cdbl(xTaxIncome) * cdbl(xSpecMinTax) * 0.01
+//
+// End If
+//
+//
+// x_TempPay = cdbl(x_TempPay) - cdbl(xBand)
+// x_PerTotal = cdbl(x_PerTotal) + cdbl(x_Percent)
+//
+// rsA.MoveNext
+// Loop
