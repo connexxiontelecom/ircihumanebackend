@@ -40,7 +40,8 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'TimeSheetPenalty',
-        tableName: 'time_sheet_penalties'
+        tableName: 'time_sheet_penalties',
+        timestamps:false
     });
     return TimeSheetPenalty;
 };

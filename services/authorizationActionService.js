@@ -12,6 +12,7 @@ const logs = require('../services/logService');
 const timeSheetPenaltyService = require('../services/timesheetPenaltyService');
 const timeSheetService = require('../services/timeSheetService');
 const timeAllocationService = require('../services/timeAllocationService');
+const employeeService = require('../services/employeeService');
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
@@ -114,15 +115,34 @@ const updateAuthorizationStatus = async (req, res)=>{
                                 ta_ref_no:appId
                             }
                         });
-                       /* const timealloc = await timeAllocationService.findOneTimeAllocationByRefNo(appId).then((val)=>{
-                            return val;
-                        });*/
-                        //return res.status(200).json(timealloc.ta_emp_id);
-                        //days absent
-                        /*const daysAbsent = await timeSheetService.getAttendanceStatus(0,timealloc.ta_emp_id, timealloc.ta_month, timealloc.ta_year ).then((res)=>{
-                            return res;
-                        })*/
 
+                        const timealloc = await timeAllocationService.findOneTimeAllocationByRefNo(appId).then((val)=>{
+                            return val;
+                        });
+                        return res.status(200).json(timealloc);
+                        if(!_.isEmpty(timealloc) || !_.isNull(timealloc)){
+                            const employee = await employeeService.getEmployeeById(timealloc.ta_emp_id).then((data)=>{
+                                return data;
+                            });
+                            //return res.status(200).json(timealloc.ta_emp_id);
+                            //days absent
+                            const daysAbsent = await timeSheetService.getAttendanceStatus(0,timealloc.ta_emp_id, timealloc.ta_month, timealloc.ta_year ).then((res)=>{
+                                return res;
+                            });
+                            const grossSalary = 120000; //employee.emp_gross;
+                            let payable = parseFloat(grossSalary/22) * daysAbsent;
+                            const setData = {
+                                tsp_emp_id: timealloc.ta_emp_id,
+                                tsp_month: timealloc.ta_month,
+                                tsp_year: timealloc.ta_year,
+                                tsp_days_absent: daysAbsent.length,
+                                tsp_amount: payable,
+                            };
+                            await timeSheetPenaltyService.addTimeSheetPenalty(setData).then((n)=>{
+
+                            })
+
+                        }
                         break;
                     case 3: //travel application
                         await travelApplicationModel.update({
