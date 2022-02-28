@@ -97,6 +97,7 @@ async  function undoVariationalPaymentMonthYear( month, year){
         }, {where: {
             vp_payment_month: month,
             vp_payment_year: year,
+            vp_confirm: [1, 3, 0]
         }
     })
 

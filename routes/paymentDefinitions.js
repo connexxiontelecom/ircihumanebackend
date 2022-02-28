@@ -48,7 +48,9 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             pd_value:Joi.number(),
             pd_amount: Joi.number(),
             pd_percentage: Joi.number().precision(2),
-            pd_tax: Joi.number()
+            pd_tax: Joi.number(),
+            pd_total_gross: Joi.number(),
+            pd_welfare: Joi.number()
         })
 
         const paymentDefinitionRequest = req.body
@@ -57,6 +59,27 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
+
+        if((parseInt(paymentDefinitionRequest.pd_payment_type) === 2)  && (parseInt(paymentDefinitionRequest.pd_payment_taxable) === 1)){
+            return res.status(400).json(`Deductions cannot be taxable`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_welfare) === 1)  && (parseInt(paymentDefinitionRequest.pd_payment_type) === 1)){
+            return res.status(400).json(`Welfare  cannot be income`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_tax) === 1)  && (parseInt(paymentDefinitionRequest.pd_payment_type) === 1)){
+            return res.status(400).json(`Tax should be a deduction not income`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_basic) === 1)  && (parseInt(paymentDefinitionRequest.pd_payment_type) === 2)){
+            return res.status(400).json(`Basic should be an income`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_value) === 1)  && (parseInt(paymentDefinitionRequest.pd_amount) > 0)){
+            return res.status(400).json(`Flat is Flat not computed`)
+        }
+
 
         let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) =>{
             return data
