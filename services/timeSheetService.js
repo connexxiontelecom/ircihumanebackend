@@ -4,6 +4,7 @@ const _ = require('lodash')
 const TimeSheet = require("../models/timesheet")(sequelize, Sequelize.DataTypes)
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 const employeeService = require("../services/employeeService");
+const timesheetPenaltyService = require("../services/timesheetPenaltyService");
 
 const helper  = require('../helper');
 
@@ -90,6 +91,16 @@ async function computeSalaryPayableByTimesheet(daysAbsent, divisor, empId){
     });
     const grossSalary = employee.emp_gross;
     let payable = parseFloat(grossSalary/22) * daysAbsent;
+    const data = {
+        tsp_emp_id: empId,
+        tsp_month: 2,//data.month,
+        tsp_year: 2022,//data.year,
+        tsp_days_absent: daysAbsent,
+        tsp_amount: payable,
+    };
+    await timesheetPenaltyService.addTimeSheetPenalty(data).then((res)=>{
+        return res.status(200).json(res);
+    });
 
 }
 

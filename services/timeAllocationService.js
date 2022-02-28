@@ -80,6 +80,11 @@ async function findTimeAllocationsByRefNo(ref_no){
         include: [Employee]
     })
 }
+async function findOneTimeAllocationByRefNo(ref_no){
+    return await TimeAllocation.findOne({  where: { ta_ref_no: ref_no },
+        include: [Employee]
+    })
+}
 
 async function sumTimeAllocation(empId, month, year){
     return await TimeAllocation.sum('ta_charge',{
@@ -106,5 +111,6 @@ module.exports = {
     findTimeAllocationsEmployee,
     findTimeAllocationsByRefNo,
     findAllTimeAllocations,
-    findTimeAllocationDetailMonthYear
+    findTimeAllocationDetailMonthYear,
+    findOneTimeAllocationByRefNo
 }

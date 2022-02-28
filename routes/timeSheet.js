@@ -51,6 +51,7 @@ router.post('/add-time-sheet', auth,  async function(req, res, next) {
             ts_start: Joi.string().required(),
             ts_end: Joi.string().required(),
             ts_duration: Joi.number().required(),
+            ts_is_present: Joi.number().required(),
              })
 
         const timeSheetRequest = req.body
@@ -479,7 +480,6 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
         const supervisorId = req.params.id;
         await authorizationAction.getAuthorizationByOfficerId(supervisorId,2).then((data)=>{
 
-            ;
             const ids = [];
             data.map((app)=>{
                 ids.push(app.auth_travelapp_id);
