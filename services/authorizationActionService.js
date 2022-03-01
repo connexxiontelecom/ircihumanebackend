@@ -136,6 +136,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                                     tsp_year: timealloc.ta_year,
                                     tsp_days_absent: daysAbsent.length,
                                     tsp_amount: payable,
+                                    tsp_ref_no:timealloc.ta_ref_no
                                 };
                                 await timeSheetPenaltyService.addTimeSheetPenalty(setData).then((n)=>{
 
