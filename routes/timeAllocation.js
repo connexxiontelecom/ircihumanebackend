@@ -71,6 +71,7 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
     }
 });
 
+
 router.post('/update-time-allocation', auth,  async function(req, res, next) {
     try {
         const schema = Joi.object( {
@@ -99,7 +100,7 @@ router.post('/update-time-allocation', auth,  async function(req, res, next) {
             const timeall = await timeAllocation.addTimeAllocation(timeAllocationRequest).then((data)=>{
                 return data;
             });
-            const auth = await authorizationAction.registerNewAction(2,data.ta_ref_no, sup.sa_supervisor_id,0,"Time allocation/time sheet initialized.")
+            const auth = await authorizationAction.registerNewAction(2,timeall.ta_ref_no, supervise.sa_supervisor_id,0,"Time allocation/time sheet initialized.")
                 .then((val)=>{
                     const logData = {
                         "log_user_id": req.user.username.user_id,
@@ -107,18 +108,20 @@ router.post('/update-time-allocation', auth,  async function(req, res, next) {
                         "log_date": new Date()
                     }
                     logs.addLog(logData).then((logRes)=>{
-                        return res.status(200).json('Action Successful')
+                        //return res.status(200).json('Action Successful')
                     })
-                })
+                });
+            return res.status(200).json('Action Successful')
         }else{
             return res.status(400).json("You currently have no supervisor assigned to you.");
         }
 
     } catch (err) {
-        console.error(`Error while adding time sheet `, err.message);
-        next(err);
+        return res.status(400).error(`Error while adding time sheet `);
+
     }
 });
+
 
 router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res, next) {
     try {
