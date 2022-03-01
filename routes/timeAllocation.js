@@ -71,6 +71,58 @@ router.post('/add-time-allocation', auth,  async function(req, res, next) {
     }
 });
 
+
+router.post('/update-time-allocation', auth,  async function(req, res, next) {
+    try {
+        const schema = Joi.object( {
+            ta_emp_id: Joi.number().required(),
+            ta_month: Joi.string().required(),
+            ta_year: Joi.string().required(),
+            ta_tcode: Joi.string().required(),
+            ta_charge: Joi.number().precision(2).required(),
+            ta_ref_no: Joi.string().required()
+        })
+
+        const timeAllocationRequest = req.body
+        const validationResult = schema.validate(timeAllocationRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const supervise = await supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup)=>{
+            return sup;
+        });
+        if(supervise){
+            const destroyTimeAllo = await timeAllocation.deleteTimeAllocation(timeAllocationRequest).then((deldata)=>{
+                return deldata;
+            });
+
+            const timeall = await timeAllocation.addTimeAllocation(timeAllocationRequest).then((data)=>{
+                return data;
+            });
+            const auth = await authorizationAction.registerNewAction(2,timeall.ta_ref_no, supervise.sa_supervisor_id,0,"Time allocation/time sheet initialized.")
+                .then((val)=>{
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Added Time Allocation",
+                        "log_date": new Date()
+                    }
+                    logs.addLog(logData).then((logRes)=>{
+                        //return res.status(200).json('Action Successful')
+                    })
+                });
+            return res.status(200).json('Action Successful')
+        }else{
+            return res.status(400).json("You currently have no supervisor assigned to you.");
+        }
+
+    } catch (err) {
+        return res.status(400).error(`Error while adding time sheet `);
+
+    }
+});
+
+
 router.get('/get-time-allocation/:emp_id/:date', auth,  async function(req, res, next) {
     try {
         let empId = req.params.emp_id

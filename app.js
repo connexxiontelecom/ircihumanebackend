@@ -90,6 +90,9 @@
     const timeSheet = require('./routes/timeSheet')
     app.use('/time-sheet', timeSheet)
 
+    const timeSheetPenalty = require('./routes/time-sheet-penalty')
+    app.use('/time-sheet-penalty', timeSheetPenalty)
+
     const timeAllocation = require('./routes/timeAllocation')
     app.use('/time-allocation', timeAllocation)
 
