@@ -250,6 +250,12 @@ async function getEmployeeByIdOnly(employeeId) {
     })
 }
 
+async function getEmployeeList(empIds) {
+    return await employee.findAll({ where: { emp_id: empIds },
+       // include: ['supervisor', 'location', {model: JobRole, include: Department}]
+    })
+}
+
 async function getEmployeeByPersonalEmail(employeePEmail) {
     return await employee.findOne({ where: { emp_personal_email: employeePEmail } })
 }
@@ -354,7 +360,8 @@ module.exports = {
     updateEmployee,
     updateGrossSalary,
     getActiveEmployees,
-    getEmployeeByIdOnly
+    getEmployeeByIdOnly,
+    getEmployeeList
     //updateDepartment,
     //setNewDepartment,
 }

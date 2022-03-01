@@ -24,6 +24,23 @@ async function addTimeAllocation(timeAllocationData){
      });
 }
 
+async function updateTimeAllocation(timeAllocationData){
+    return await TimeAllocation.create({
+        ta_emp_id: timeAllocationData.ta_emp_id,
+        ta_month: timeAllocationData.ta_month,
+        ta_year: timeAllocationData.ta_year,
+        ta_tcode: timeAllocationData.ta_tcode,
+        ta_charge: timeAllocationData.ta_charge,
+        ta_ref_no: timeAllocationData.ta_ref_no
+
+     });
+}
+async function deleteTimeAllocation(timeAllocationData){
+    return await TimeAllocation.destroy({
+        where:{ta_ref_no: timeAllocationData.ta_ref_no}
+     });
+}
+/*
 async function updateTimeAllocation(ta_id, timeAllocationData){
     return await TimeAllocation.update({
         ta_emp_id: timeAllocationData.ta_emp_id,
@@ -37,7 +54,7 @@ async function updateTimeAllocation(ta_id, timeAllocationData){
                 ta_id:ta_id
             }
         });
-}
+}*/
 
 async function findTimeAllocation(empId, month, year){
     return await TimeAllocation.findAll({  where: { ta_emp_id: empId, ta_month: month, ta_year: year },
@@ -105,6 +122,7 @@ module.exports = {
     findTimeAllocation,
     updateTimeAllocation,
     sumTimeAllocation,
+    deleteTimeAllocation,
     getTimeAllocationApplicationsForAuthorization,
     findTimeAllocationDetail,
     findTimeAllocationsDetail,
