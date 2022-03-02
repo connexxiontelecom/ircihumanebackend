@@ -5,7 +5,7 @@ const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes
 const helper  = require('../helper');
 
 
-async function addPaymentDefinition(pd){
+async function addPaymentDefinition(pd) {
 
 
     return await Pd.create({
@@ -21,9 +21,13 @@ async function addPaymentDefinition(pd){
         pd_amount: pd.pd_amount,
         pd_value: pd.pd_value,
         pd_percentage: pd.pd_percentage,
-        pd_tax: pd.pd_tax
+        pd_tax: pd.pd_tax,
+        pd_total_gross: pd.pd_total_gross,
+        pd_welfare: pd.pd_welfare
     });
 }
+
+
 
 async function findPaymentByCode(code){
     return await Pd.findOne({ where: { pd_payment_code: code } })
@@ -48,7 +52,9 @@ async function updatePaymentDefinition(pd, pd_id){
         pd_amount: pd.pd_amount,
         pd_value: pd.pd_value,
         pd_percentage: pd.pd_percentage,
-        pd_tax: pd.pd_tax
+        pd_tax: pd.pd_tax,
+        pd_total_gross: pd.pd_total_gross,
+        pd_welfare: pd.pd_welfare
 
     },{
         where:{
