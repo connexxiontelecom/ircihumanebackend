@@ -62,11 +62,14 @@ async function findTimeAllocation(empId, month, year){
     })
 }
 async function findTimeAllocationDetail(month, year, empId){
+    return await TimeAllocation.findAll({
+        where: { ta_emp_id: empId, ta_month: month, ta_year: year },
+        order:[['ta_id', 'DESC']],
+        include: [Employee]
+    })
+}
+async function findOneTimeAllocationDetail(month, year, empId){
     return await TimeAllocation.findOne({
-        /*group:['ta_month', 'ta_year'],
-        attributes:['ta_month', 'ta_year', 'ta_id', 'ta_emp_id',
-            'ta_tcode', 'ta_charge', 'createdAt', 'updatedAt',
-            'ta_ref_no', 'ta_comment', 'ta_date_approved', 'ta_approved_by', 'ta_status'],*/
         where: { ta_emp_id: empId, ta_month: month, ta_year: year },
         order:[['ta_id', 'DESC']],
         include: [Employee]
@@ -130,5 +133,6 @@ module.exports = {
     findTimeAllocationsByRefNo,
     findAllTimeAllocations,
     findTimeAllocationDetailMonthYear,
-    findOneTimeAllocationByRefNo
+    findOneTimeAllocationByRefNo,
+    findOneTimeAllocationDetail
 }
