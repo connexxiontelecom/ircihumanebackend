@@ -193,11 +193,13 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
             pd_desc: Joi.alternatives().try(Joi.string(), Joi.number()),
             pd_basic: Joi.number().required(),
             pd_tie_number: Joi.alternatives().try(Joi.string(), Joi.number()),
-            pd_pr_gross: Joi.number().precision(2).required(),
-            pd_value:Joi.alternatives().try(Joi.string(), Joi.number()),
-            pd_amount: Joi.alternatives().try(Joi.string(), Joi.number()),
-            pd_percentage: Joi.alternatives().try(Joi.string(), Joi.number()),
-            pd_tax: Joi.number().required()
+            pd_pr_gross: Joi.number().precision(2),
+            pd_value:Joi.number(),
+            pd_amount: Joi.number(),
+            pd_percentage: Joi.number().precision(2),
+            pd_tax: Joi.number(),
+            pd_total_gross: Joi.number(),
+            pd_welfare: Joi.number()
         })
         let updateResponse
         const paymentDefinitionRequest = req.body
@@ -206,6 +208,26 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
 
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_payment_type) === 2)  && (parseInt(paymentDefinitionRequest.pd_payment_taxable) === 1)){
+            return res.status(400).json(`Deductions cannot be taxable`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_welfare) === 1)  && (parseInt(paymentDefinitionRequest.pd_payment_type) === 1)){
+            return res.status(400).json(`Welfare  cannot be income`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_tax) === 1)  && (parseInt(paymentDefinitionRequest.pd_payment_type) === 1)){
+            return res.status(400).json(`Tax should be a deduction not income`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_basic) === 1)  && (parseInt(paymentDefinitionRequest.pd_payment_type) === 2)){
+            return res.status(400).json(`Basic should be an income`)
+        }
+
+        if((parseInt(paymentDefinitionRequest.pd_value) === 1)  && (parseInt(paymentDefinitionRequest.pd_amount) > 0)){
+            return res.status(400).json(`Flat is Flat not computed`)
         }
         const paymentDefinitionDetails = await paymentDefinition.findPaymentById(req.params['pd_id']).then((data) =>{
         return data
