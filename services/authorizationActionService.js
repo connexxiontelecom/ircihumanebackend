@@ -57,6 +57,7 @@ const updateAuthorizationStatus = async (req, res)=>{
 
         const {appId,role, status, officer, type, comment, markAsFinal, nextOfficer} = req.body;
 
+
         const application = await authorizationModel.findOne(
             {
                 where:{auth_travelapp_id: appId, auth_type: type, auth_status: 0, auth_officer_id:officer},
@@ -64,6 +65,7 @@ const updateAuthorizationStatus = async (req, res)=>{
 
         if(!_.isNull(application) || !_.isEmpty(application)){
             if(application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
+
 
             const auth = await authorizationModel.update({
                 auth_status: status,
@@ -74,6 +76,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                     auth_travelapp_id: appId, auth_type: type, auth_officer_id:officer
                 }
             });
+
             if(markAsFinal === 0 ){
                 await authorizationModel.create({
                     auth_officer_id: nextOfficer,
@@ -105,6 +108,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                         });
                         break;
                     case 2: //time sheet
+
                         const taData = await timeAllocationModel.update({
                             ta_status:status,
                             ta_comment:comment,
@@ -116,26 +120,37 @@ const updateAuthorizationStatus = async (req, res)=>{
                             }
                         });
 
+
                         const timealloc = await timeAllocationService.findOneTimeAllocationByRefNo(appId).then((val)=>{
                             return val;
                         });
-                        //return res.status(200).json(timealloc);*/
-                        if(!_.isEmpty(timealloc) || !_.isNull(timealloc)){
+
+                        if(_.isEmpty(timealloc) || _.isNull(timealloc)){
+                            return res.status(400).json("Whoops! Record does not exist. yeess" );
+
+                        }else{
+
                             const employee = await employeeService.getEmployeeByIdOnly(timealloc.ta_emp_id).then((data)=>{
                                 return data;
                             });
+
                             const daysAbsent = await timeSheetService.getAttendanceStatus(0,timealloc.ta_emp_id, timealloc.ta_month, timealloc.ta_year ).then((res)=>{
-                                return res;
+                                return res.length;
                             });
+
+
                             const grossSalary = employee.emp_gross;
-                            let payable = parseFloat(grossSalary/22) * daysAbsent;
+                            let charge = (grossSalary / 22);
+                            let payable = charge * parseInt(daysAbsent);
+
+                            //return res.status(200).json(payable.toFixed(2));
                             if(payable > 0){
                                 const setData = {
                                     tsp_emp_id: timealloc.ta_emp_id,
                                     tsp_month: timealloc.ta_month,
                                     tsp_year: timealloc.ta_year,
-                                    tsp_days_absent: daysAbsent.length,
-                                    tsp_amount: payable,
+                                    tsp_days_absent: daysAbsent,
+                                    tsp_amount: payable.toFixed(2),
                                     tsp_ref_no:timealloc.ta_ref_no
                                 };
                                 await timeSheetPenaltyService.addTimeSheetPenalty(setData).then((n)=>{
@@ -143,6 +158,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                                 })
                             }
                         }
+
                         break;
                     case 3: //travel application
                         await travelApplicationModel.update({
