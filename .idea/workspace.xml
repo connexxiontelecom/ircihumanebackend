@@ -3,9 +3,26 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="67f33839-83c3-4bdc-9248-38886dfe9e17" name="Changes" comment="log on undo payroll routine">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -40,7 +57,10 @@
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="67f33839-83c3-4bdc-9248-38886dfe9e17" name="Changes" comment="" />
@@ -80,10 +100,21 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
     <option name="LAST_COMMIT_MESSAGE" value="log on undo payroll routine" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="147" y="64" key="MergeDialog" timestamp="1646300834408">
+      <screen x="0" y="0" width="1536" height="816" />
+    </state>
+    <state x="147" y="64" key="MergeDialog/0.0.1536.816@0.0.1536.816" timestamp="1646300834408" />
+    <state x="649" y="274" key="MultipleFileMergeDialog" timestamp="1646300834412">
+      <screen x="0" y="0" width="1536" height="816" />
+    </state>
+    <state x="649" y="274" key="MultipleFileMergeDialog/0.0.1536.816@0.0.1536.816" timestamp="1646300834412" />
   </component>
 </project>
