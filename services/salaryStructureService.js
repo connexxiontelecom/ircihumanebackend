@@ -1,6 +1,7 @@
 const { QueryTypes } = require('sequelize')
 const { sequelize, Sequelize } = require('./db');
 const SalaryStructure = require("../models/salarystructure")(sequelize, Sequelize.DataTypes)
+//const SalaryGradeModel = require("../models/salarygrade")(sequelize, Sequelize.DataTypes)
 
 
 
@@ -32,7 +33,7 @@ async function findSalaryStructures(){
             [sequelize.fn('sum', sequelize.col('ss_amount')), 'total_amount'],
         ],
         group: ['ss_empid'],
-         include: ['employee']
+         include: ['employee','salary_grade']
     });
 }
 
