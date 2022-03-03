@@ -285,10 +285,14 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
         const month = parseInt(req.params.month);
         const year = parseInt(req.params.year);
         const userId = req.user.username.user_id;
-        const timeAllocation= await timeSheetAllocation.findTimeAllocationDetail(month, year,empId).then((data)=>{
+        const oneTimeAllocation = await timeSheetAllocation.findOneTimeAllocationDetail(month, year,empId).then((data)=>{
             return data;
-        })
-        if(_.isNull(timeAllocation) || _.isEmpty(timeAllocation)){
+        });
+        const timeAllocation = await timeSheetAllocation.findTimeAllocationDetail(month, year,empId).then((data)=>{
+            return data;
+        });
+
+        if(_.isNull(oneTimeAllocation) || _.isEmpty(oneTimeAllocation)){
             return res.status(404).json("No time allocation found.");
         }
           const timesheet = await  timeSheet.findTimeSheetMonth(empId, month, year).then((time)=>{
@@ -297,7 +301,7 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
         if(_.isEmpty(timesheet) || _.isNull(timesheet)){
             return res.status(400).json("No time sheet record found.");
         }
-           await  authorizationAction.getAuthorizationLog(timeAllocation.ta_ref_no, 2).then((log)=>{
+           await  authorizationAction.getAuthorizationLog(oneTimeAllocation.ta_ref_no, 2).then((log)=>{
                 return res.status(200).json({timesheet, timeAllocation, log});
             })
 
@@ -408,6 +412,18 @@ router.post('/update-status', auth, async function (req, res) {
     }
 });
 
+/*
+router.get('/ref/ref/ref/ref/ref/ref/:ref', async (req, res)=>{
+    try{
+        const par = req.params.ref;
+        const ref = await timeSheetAllocation.findOneTimeAllocationByRefNo(par).then((r)=>{
+            return r;
+        });
+        return res.status(200).json(ref.ta_emp_id);
+    }catch (e) {
+        return res.status(400).json(e.message);
+    }
+});*/
 
 function getDaysInMonth(month, year) {
     let date = new Date(year, month, 1);

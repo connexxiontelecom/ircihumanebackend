@@ -18,7 +18,7 @@ async function addTimeSheet(timeSheetData){
         ts_start: timeSheetData.ts_start,
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
-        ts_is_present:timeSheetData.is_present,
+        ts_is_present:timeSheetData.ts_is_present,
      });
 }
 
