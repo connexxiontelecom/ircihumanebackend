@@ -134,7 +134,7 @@ const updateAuthorizationStatus = async (req, res)=>{
                                 return data;
                             });
 
-                            const daysAbsent = await timeSheetService.getAttendanceStatus(0,timealloc.ta_emp_id, timealloc.ta_month, timealloc.ta_year ).then((res)=>{
+                            const daysAbsent = await timeSheetService.getAttendanceStatus(0,timealloc.ta_emp_id, parseInt(timealloc.ta_month), parseInt(timealloc.ta_year) ).then((res)=>{
                                 return res.length;
                             });
 
