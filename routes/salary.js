@@ -675,7 +675,17 @@ router.get('/undo-salary-routine', auth,  async function(req, res, next) {
             return data
         })
 
-        return res.status(200).json(`Action Successful`)
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": "Undo Payroll Routine",
+            "log_date": new Date()
+        }
+        await logs.addLog(logData).then((logRes)=>{
+
+            return  res.status(200).json('Action Successful')
+        })
+
+
 
     }catch (err) {
         console.log(err.message)
