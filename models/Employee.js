@@ -73,6 +73,8 @@ module.exports = (sequelize, DataTypes) => {
         emp_supervisor_status:DataTypes.INTEGER,
         emp_supervisor_id:DataTypes.INTEGER,
         emp_gross: DataTypes.DOUBLE,
+        emp_hire_date: DataTypes.DATE,
+        emp_contract_end_date: DataTypes.DATE,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

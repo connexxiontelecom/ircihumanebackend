@@ -222,6 +222,8 @@ async function updateEmployee(employeeId, employeeData){
         emp_genotype:employeeData.emp_genotype,
         emp_emergency_name:employeeData.emp_emergency_name,
         emp_emergency_contact:employeeData.emp_emergency_contact,
+        emp_contract_end_date:employeeData.emp_contract_end_date,
+        emp_hire_date:employeeData.emp_hire_date,
     }, {
         where:{
             emp_id: employeeId

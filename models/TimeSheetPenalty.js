@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         tsp_year: DataTypes.INTEGER,
         tsp_amount: DataTypes.DOUBLE,
         tsp_days_absent: DataTypes.INTEGER,
-        time_sheet_penalties: DataTypes.STRING,
+        tsp_ref_no: DataTypes.STRING,
         tsp_status: {
             type:DataTypes.INTEGER,
             defaultValue:0,
