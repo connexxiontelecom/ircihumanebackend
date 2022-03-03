@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     ss_empid: DataTypes.INTEGER,
     ss_pd: DataTypes.INTEGER,
-    ss_amount: DataTypes.DOUBLE
+    ss_amount: DataTypes.DOUBLE,
+    ss_grade: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'salaryStructure',

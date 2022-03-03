@@ -103,7 +103,8 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
                                     salaryObject = {
                                         ss_empid: empId,
                                         ss_pd: percentage.pd_id,
-                                        ss_amount: amount
+                                        ss_amount: amount,
+                                        ss_grade:ss_grade
 
                                     }
 
@@ -292,7 +293,8 @@ router.patch('/update-salary-structure/:emp_id', auth,  async function(req, res,
                                     salaryObject = {
                                         ss_empid: empId,
                                         ss_pd: percentage.pd_id,
-                                        ss_amount: amount
+                                        ss_amount: amount,
+                                        ss_grade:ss_grade
 
                                     }
 
