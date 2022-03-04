@@ -24,8 +24,9 @@
   <component name="ChangeListManager">
     <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/salarystructure.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/salarystructure.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/salaryStructureService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/salaryStructureService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/VariationalPayment.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/VariationalPayment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/variational-payment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/variational-payment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/variationalPaymentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/variationalPaymentService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,5 +119,9 @@
       <screen x="0" y="0" width="1536" height="816" />
     </state>
     <state x="649" y="274" key="MultipleFileMergeDialog/0.0.1536.816@0.0.1536.816" timestamp="1646300834412" />
+    <state x="480" y="127" width="576" height="562" key="find.popup" timestamp="1646393376813">
+      <screen x="0" y="0" width="1536" height="816" />
+    </state>
+    <state x="480" y="127" width="576" height="562" key="find.popup/0.0.1536.816@0.0.1536.816" timestamp="1646393376813" />
   </component>
 </project>
