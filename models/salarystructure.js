@@ -5,6 +5,7 @@ const {
 const {sequelize, Sequelize} = require("../services/db");
 const PaymentDefinition = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const SalaryGrade = require("../models/salarygrade")(sequelize, Sequelize.DataTypes)
 
 module.exports = (sequelize, DataTypes) => {
   class salaryStructure extends Model {
@@ -38,6 +39,8 @@ module.exports = (sequelize, DataTypes) => {
 
   salaryStructure.belongsTo(Employee, {as: 'employee', foreignKey: 'ss_empid'})
   salaryStructure.hasMany(Employee, { foreignKey: 'emp_id' })
+
+  salaryStructure.belongsTo(SalaryGrade, {as: 'salary_grade', foreignKey: 'ss_grade'})
 
   return salaryStructure;
 };
