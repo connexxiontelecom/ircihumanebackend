@@ -1009,6 +1009,8 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                 let totalDeduction = 0
                 let deductions = [ ]
                 let incomes = [ ]
+                let empAdjustedGross = 0
+
 
                 let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
                     return data
@@ -1017,6 +1019,20 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                 if(!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))){
 
                     for (const empSalary of employeeSalaries) {
+
+                        if(parseInt(empSalary.payment.pd_total_gross) === 1){
+                            if(parseInt(salary.payment.pd_payment_type) === 1 ){
+                                empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                            }
+
+                            if(parseInt(salary.payment.pd_payment_type) === 2 ){
+                                empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                            }
+
+                        }
+
                         if(parseInt(empSalary.payment.pd_payment_type) === 1){
                             const incomeDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
                             incomes.push(incomeDetails)
@@ -1037,8 +1053,8 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
                         grossSalary: grossSalary,
-                        nsitf:(1/100) * grossSalary,
-                        pension:(10/100) * grossSalary,
+                        nsitf:(1/100) * empAdjustedGross,
+                        pension:(10/100) * empAdjustedGross,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
