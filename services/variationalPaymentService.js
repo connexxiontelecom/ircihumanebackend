@@ -21,6 +21,18 @@ const errHandler = (err) =>{
 
 
 }
+async function setNewSingleVariationalPayment(variationalData){
+       return  await variationalPaymentModel.create({
+            vp_emp_id: variationalData.vp_emp_id,
+            vp_payment_def_id: variationalData.vp_payment_def_id,
+            vp_amount: variationalData.vp_amount,
+            vp_payment_month: variationalData.vp_payment_month,
+            vp_payment_year: variationalData.vp_payment_year,
+            vp_default_id: variationalData.vp_default_id,
+        });
+
+
+}
 
 const getVariationalPayments = async ()=>{
     return await variationalPaymentModel.findAll({
@@ -103,6 +115,19 @@ async  function undoVariationalPaymentMonthYear( month, year){
 
 }
 
+async  function getVariationalPaymentMonthYear( month, year, employee){
+
+    return await variationalPaymentModel.findOne(
+    {where: {
+            vp_payment_month: month,
+            vp_payment_year: year,
+            vp_emp_id:employee
+            //vp_confirm: [1, 3, 0]
+        }
+    })
+
+}
+
 
 module.exports = {
     setNewVariationalPayment,
@@ -118,5 +143,7 @@ module.exports = {
     findPayment,
     updateAmount,
     getCurrentPendingPayment,
-    undoVariationalPaymentMonthYear
+    undoVariationalPaymentMonthYear,
+    setNewSingleVariationalPayment,
+    getVariationalPaymentMonthYear
 }

@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         vp_payment_month: DataTypes.INTEGER,
         vp_payment_year: DataTypes.INTEGER,
         vp_confirmed_by: DataTypes.INTEGER,
+        vp_default_id: DataTypes.INTEGER,
     }, {
         sequelize,
         modelName: 'VariationalPayment',
