@@ -22,15 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-<<<<<<< HEAD
-=======
-
-      <change beforePath="$PROJECT_DIR$/models/salarystructure.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/salarystructure.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/salaryStructureService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/salaryStructureService.js" afterDir="false" />
-
->>>>>>> 87b4c1015d4b809780fd1a88102b2ae6f29b0bfa
+      <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
