@@ -24,10 +24,8 @@
   <component name="ChangeListManager">
     <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-
-      <change beforePath="$PROJECT_DIR$/models/salarystructure.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/salarystructure.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/salaryStructureService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/salaryStructureService.js" afterDir="false" />
-
+      <change beforePath="$PROJECT_DIR$/routes/variational-payment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/variational-payment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/variationalPaymentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/variationalPaymentService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

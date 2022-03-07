@@ -115,6 +115,19 @@ async  function undoVariationalPaymentMonthYear( month, year){
 
 }
 
+async  function getVariationalPaymentMonthYear( month, year, employee){
+
+    return await variationalPaymentModel.findOne(
+    {where: {
+            vp_payment_month: month,
+            vp_payment_year: year,
+            vp_emp_id:employee
+            //vp_confirm: [1, 3, 0]
+        }
+    })
+
+}
+
 
 module.exports = {
     setNewVariationalPayment,
@@ -131,5 +144,6 @@ module.exports = {
     updateAmount,
     getCurrentPendingPayment,
     undoVariationalPaymentMonthYear,
-    setNewSingleVariationalPayment
+    setNewSingleVariationalPayment,
+    getVariationalPaymentMonthYear
 }
