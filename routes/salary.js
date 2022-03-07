@@ -1021,12 +1021,12 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                     for (const empSalary of employeeSalaries) {
 
                         if(parseInt(empSalary.payment.pd_total_gross) === 1){
-                            if(parseInt(salary.payment.pd_payment_type) === 1 ){
+                            if(parseInt(empSalary.payment.pd_payment_type) === 1 ){
                                 empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
 
                             }
 
-                            if(parseInt(salary.payment.pd_payment_type) === 2 ){
+                            if(parseInt(empSalary.payment.pd_payment_type) === 2 ){
                                 empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
 
                             }

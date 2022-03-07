@@ -22,8 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="check for deduction to hanlde adjusted gross">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="employee Adjusted Gross on payslip">
       <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -71,7 +70,7 @@
       <workItem from="1646224865223" duration="7704000" />
       <workItem from="1646367836089" duration="2042000" />
       <workItem from="1646382799192" duration="1224000" />
-      <workItem from="1646647873061" duration="660000" />
+      <workItem from="1646647873061" duration="1039000" />
     </task>
     <task id="LOCAL-00001" summary="test push">
       <created>1646229916957</created>
@@ -94,7 +93,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646368579685</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="employee Adjusted Gross on payslip">
+      <created>1646648569885</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1646648569885</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -115,6 +121,7 @@
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
     <MESSAGE value="check for deduction to hanlde adjusted gross" />
-    <option name="LAST_COMMIT_MESSAGE" value="check for deduction to hanlde adjusted gross" />
+    <MESSAGE value="employee Adjusted Gross on payslip" />
+    <option name="LAST_COMMIT_MESSAGE" value="employee Adjusted Gross on payslip" />
   </component>
 </project>
