@@ -154,6 +154,15 @@ router.post('/single-payment', auth, async (req, res)=>{
         if(_.isEmpty(payroll) || _.isNull(payroll)){
             return res.status(400).json("There's currently no payroll record");
         }
+
+        const existingRecord = await variationalPayment.getVariationalPaymentMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year),requestBody.employee).then((r)=>{
+            return r;
+        });
+        if(existingRecord){
+            return res.status(400).json("There's an existing record in variational payment");
+        }
+
+
         const payment = {
             vp_emp_id: parseInt(requestBody.employee),
             vp_default_id: parseInt(requestBody.default_id),
