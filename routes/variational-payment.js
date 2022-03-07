@@ -144,6 +144,32 @@ router.post('/', auth, async (req, res, next)=>{
     }
 });
 
+router.post('/single-payment', auth, async (req, res)=>{
+    try{
+        const requestBody = req.body;
+        const payroll = await payrollMonthYear.findPayrollMonthYear().then((res)=>{
+            return res;
+        });
+
+        if(_.isEmpty(payroll) || _.isNull(payroll)){
+            return res.status(400).json("There's currently no payroll record");
+        }
+        const payment = {
+            vp_emp_id: parseInt(requestBody.employee),
+            vp_default_id: parseInt(requestBody.default_id),
+            vp_amount: parseFloat(requestBody.amount),
+            vp_payment_month: parseInt(payroll.pym_month), //parseInt(requestBody.month),
+            vp_payment_year: parseInt(payroll.pym_year) //parseInt(requestBody.year)
+        }
+        await variationalPayment.setNewSingleVariationalPayment(payment).then((data)=>{
+            return res.status(200).json("Action successful.");
+        })
+
+    }catch (e) {
+        return res.status(400).json("Something went wrong.");
+    }
+});
+
 router.get('/:id', auth, async (req, res, next)=>{
     try{
         const id = req.params.id;
