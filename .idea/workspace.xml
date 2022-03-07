@@ -22,14 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="check for deduction to hanlde adjusted gross">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-
+    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="employee Adjusted Gross on payslip">
       <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
-
-      <change beforePath="$PROJECT_DIR$/routes/variational-payment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/variational-payment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/variationalPaymentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/variationalPaymentService.js" afterDir="false" />
-
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,28 +54,23 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-
-  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
-
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="67f33839-83c3-4bdc-9248-38886dfe9e17" name="Changes" comment="" />
       <created>1646224861873</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1646224861873</updated>
       <workItem from="1646224865223" duration="7704000" />
-
       <workItem from="1646367836089" duration="2042000" />
       <workItem from="1646382799192" duration="1224000" />
-      <workItem from="1646647873061" duration="660000" />
-
+      <workItem from="1646647873061" duration="1039000" />
     </task>
     <task id="LOCAL-00001" summary="test push">
       <created>1646229916957</created>
@@ -104,7 +93,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646368579685</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="employee Adjusted Gross on payslip">
+      <created>1646648569885</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1646648569885</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,16 +121,7 @@
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
     <MESSAGE value="check for deduction to hanlde adjusted gross" />
-    <option name="LAST_COMMIT_MESSAGE" value="check for deduction to hanlde adjusted gross" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="147" y="64" key="MergeDialog" timestamp="1646300834408">
-      <screen x="0" y="0" width="1536" height="816" />
-    </state>
-    <state x="147" y="64" key="MergeDialog/0.0.1536.816@0.0.1536.816" timestamp="1646300834408" />
-    <state x="649" y="274" key="MultipleFileMergeDialog" timestamp="1646300834412">
-      <screen x="0" y="0" width="1536" height="816" />
-    </state>
-    <state x="649" y="274" key="MultipleFileMergeDialog/0.0.1536.816@0.0.1536.816" timestamp="1646300834412" />
+    <MESSAGE value="employee Adjusted Gross on payslip" />
+    <option name="LAST_COMMIT_MESSAGE" value="employee Adjusted Gross on payslip" />
   </component>
 </project>
