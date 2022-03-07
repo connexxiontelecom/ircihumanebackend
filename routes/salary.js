@@ -1052,6 +1052,7 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                 let deductions = [ ]
                 let incomes = [ ]
                 let empAdjustedGross = 0
+                let empAdjustedGrossII = 0
 
 
                 let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
@@ -1072,13 +1073,21 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                                 empAdjustedGross = empAdjustedGross + parseFloat(empSalary.salary_amount)
 
                             }
+
+
+                            if(parseInt(empSalary.payment.pd_total_gross_ii) === 1){
+                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
+                            }
+
                         }else{
                             const deductionDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
                             deductions.push(deductionDetails)
                             totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                             if(parseInt(empSalary.payment.pd_total_gross) === 1 ){
                                 empAdjustedGross = empAdjustedGross - parseFloat(empSalary.salary_amount)
-
+                            }
+                            if(parseInt(empSalary.payment.pd_total_gross_ii) === 1){
+                                empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount)
                             }
                         }
                     }
@@ -1092,13 +1101,14 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                         jobRole :`${emp.JobRole.job_role}`,
                         sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
                         grossSalary: grossSalary,
-                        nsitf:(1/100) * empAdjustedGross,
-                        pension:(10/100) * empAdjustedGross,
+                        nsitf:(1/100) * empAdjustedGrossII,
+                        pension:(10/100) * empAdjustedGrossII,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
                         deductions: deductions,
-                        adjustedGross: empAdjustedGross
+                        adjustedGross: empAdjustedGross,
+                        adjustedGrossII: empAdjustedGrossII
                     }
 
                     return res.status(200).json(employeeSalary)
