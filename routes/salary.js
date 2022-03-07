@@ -1020,27 +1020,24 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
 
                     for (const empSalary of employeeSalaries) {
 
-                        if(parseInt(empSalary.payment.pd_total_gross) === 1){
-                            if(parseInt(salary.payment.pd_payment_type) === 1 ){
-                                empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
-
-                            }
-
-                            if(parseInt(salary.payment.pd_payment_type) === 2 ){
-                                empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
-
-                            }
-
-                        }
 
                         if(parseInt(empSalary.payment.pd_payment_type) === 1){
                             const incomeDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
                             incomes.push(incomeDetails)
                             grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+
+                            if(parseInt(empSalary.payment.pd_total_gross) === 1 ){
+                                empAdjustedGross = empAdjustedGross + parseFloat(empSalary.salary_amount)
+
+                            }
                         }else{
                             const deductionDetails = { paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount}
                             deductions.push(deductionDetails)
                             totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                            if(parseInt(empSalary.payment.pd_total_gross) === 1 ){
+                                empAdjustedGross = empAdjustedGross - parseFloat(empSalary.salary_amount)
+
+                            }
                         }
                     }
                     netSalary = grossSalary - totalDeduction
@@ -1058,7 +1055,8 @@ router.get('/pull-salary-routine/:empId', auth,  async function(req, res, next) 
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
-                        deductions: deductions
+                        deductions: deductions,
+                        adjustedGross: empAdjustedGross
                     }
 
                     return res.status(200).json(employeeSalary)
