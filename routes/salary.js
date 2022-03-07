@@ -201,6 +201,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                     let fullGross = 0;
                                     let empAdjustedGross = 0
+                                    let empAdjustedGrossII = 0;
 
                                     let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data)=>{
                                         return data
@@ -221,6 +222,19 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                             if(parseInt(salary.payment.pd_payment_type) === 2 ){
                                                 empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                                            }
+
+                                        }
+
+                                        if(parseInt(salary.payment.pd_total_gross_ii) === 1){
+                                            if(parseInt(salary.payment.pd_payment_type) === 1 ){
+                                                empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                                            }
+
+                                            if(parseInt(salary.payment.pd_payment_type) === 2 ){
+                                                empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
 
                                             }
 
@@ -349,6 +363,34 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                             }
                                         }
+
+                                        //adjusted gross II
+                                        if(parseInt(computationalPayment.pd_amount) === 5){
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage)/100)*empAdjustedGrossII
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data)=>{
+                                                return data
+                                            })
+
+                                            if(_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)){
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
                                     }
 
                                     //tax computation
@@ -403,15 +445,15 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                         })
                                     }
-                                    let newTaxableIncome = taxableIncome - welfareIncomes
+                                    let newTaxableIncome = empAdjustedGrossII - welfareIncomes
                                     let checka = parseFloat(200000/12)
-                                    let checkb = parseFloat((1/100)  * taxableIncome)
+                                    let checkb = parseFloat((1/100)  * empAdjustedGrossII)
                                     let allowableSum = checka
                                     if(checkb > checka){
                                         allowableSum = checkb
                                     }
-                                    let taxRelief = ((20/100) * taxableIncome) + (allowableSum)
-                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (taxableIncome);
+                                    let taxRelief = ((20/100) * empAdjustedGrossII) + (allowableSum)
+                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate)/100) * (empAdjustedGrossII);
                                     let tempTaxAmount = newTaxableIncome - taxRelief
                                     let TtempTaxAmount = tempTaxAmount
                                     let cTax;

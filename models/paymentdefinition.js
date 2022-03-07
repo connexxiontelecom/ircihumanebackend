@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     pd_percentage: DataTypes.DOUBLE,
     pd_tax: DataTypes.INTEGER,
     pd_total_gross: DataTypes.INTEGER,
+    pd_total_gross_ii: DataTypes.INTEGER,
     pd_welfare: DataTypes.INTEGER
 
   }, {
@@ -58,7 +59,7 @@ pd_basic (1 basic, 0 not basic)
 pd_tax ( 1= Tax, 0 = not tax)
 pd_welfare ( 1 = welfare, 0 = non welfare)
 pd_value ( 1 = flat, 2 is computed)
-pd_amount ( 1 adjusted gross, 2 is adjusted basic, 3 full gross)
+pd_amount ( 1 adjusted gross, 2 is adjusted basic, 3 full gross, 5 adjusted gross 2)
 pd_total_gross ( 1 = sum to gross, 0 = No)
 
 
