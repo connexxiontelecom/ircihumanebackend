@@ -219,7 +219,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                             }
 
-                                            if(parseInt(salary.payment.pd_payment_type) === 0 ){
+                                            if(parseInt(salary.payment.pd_payment_type) === 2 ){
                                                 empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
 
                                             }
