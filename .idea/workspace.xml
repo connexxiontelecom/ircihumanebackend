@@ -22,7 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8bbf150-7542-4dad-933b-9d485fd0d062" name="Default Changelist" comment="employee Adjusted Gross on payslip">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="adjusted Gross to show on pay slip">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/paymentdefinition.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/paymentdefinition.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -100,7 +102,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646648569885</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="adjusted Gross to show on pay slip">
+      <created>1646650247662</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1646650247662</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -122,6 +131,7 @@
     <MESSAGE value="log on undo payroll routine" />
     <MESSAGE value="check for deduction to hanlde adjusted gross" />
     <MESSAGE value="employee Adjusted Gross on payslip" />
-    <option name="LAST_COMMIT_MESSAGE" value="employee Adjusted Gross on payslip" />
+    <MESSAGE value="adjusted Gross to show on pay slip" />
+    <option name="LAST_COMMIT_MESSAGE" value="adjusted Gross to show on pay slip" />
   </component>
 </project>
