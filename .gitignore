@@ -81,7 +81,8 @@ web_modules/
 .env
 
 # workspace xml
-**/.idea/workspace.xml **/.idea/tasks.xml
+.idea/workspace.xml
+**/.idea/tasks.xml
 
 config/
 
