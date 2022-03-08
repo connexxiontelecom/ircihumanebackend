@@ -157,7 +157,7 @@ router.post('/single-payment', auth, async (req, res)=>{
         if(_.isEmpty(payroll) || _.isNull(payroll)){
             return res.status(400).json("There's currently no payroll record");
         }
-      const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data)=>{
+      const salaryRoutineCheck = await salary.getSalaryMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year)).then((data)=>{
         return data
       });
 
