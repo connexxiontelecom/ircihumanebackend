@@ -22,9 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="pension and nsitf reflect on adjusted grossII">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +55,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="web-ide.project.structure" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -115,7 +115,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646655310977</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="pension and nsitf reflect on adjusted grossII">
+      <created>1646656263463</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1646656263463</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -139,6 +146,7 @@
     <MESSAGE value="employee Adjusted Gross on payslip" />
     <MESSAGE value="adjusted Gross to show on pay slip" />
     <MESSAGE value="tax module edit to use employeeadjuested gross ii" />
-    <option name="LAST_COMMIT_MESSAGE" value="tax module edit to use employeeadjuested gross ii" />
+    <MESSAGE value="pension and nsitf reflect on adjusted grossII" />
+    <option name="LAST_COMMIT_MESSAGE" value="pension and nsitf reflect on adjusted grossII" />
   </component>
 </project>
