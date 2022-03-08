@@ -42,6 +42,9 @@ build/Release
 node_modules/
 config/
 jspm_packages/
+.idea/workspace.xml
+.idea/ircihumanebackend.iml
+.idea/.gitignore
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -80,8 +83,7 @@ web_modules/
 .env.local
 .env
 
-# workspace xml
-**/.idea/workspace.xml **/.idea/tasks.xml
+
 
 config/
 
