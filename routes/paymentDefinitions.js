@@ -50,7 +50,8 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
             pd_percentage: Joi.number().precision(2),
             pd_tax: Joi.number(),
             pd_total_gross: Joi.number(),
-            pd_welfare: Joi.number()
+            pd_welfare: Joi.number(),
+            pd_total_gross_ii: Joi.number(),
         })
 
         const paymentDefinitionRequest = req.body
@@ -79,7 +80,6 @@ router.post('/add-payment-definition', auth,  async function(req, res, next) {
         if((parseInt(paymentDefinitionRequest.pd_value) === 1)  && (parseInt(paymentDefinitionRequest.pd_amount) > 0)){
             return res.status(400).json(`Flat is Flat not computed`)
         }
-
 
         let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) =>{
             return data
@@ -199,7 +199,8 @@ router.patch('/update-payment-definition/:pd_id', auth,  async function(req, res
             pd_percentage: Joi.number().precision(2),
             pd_tax: Joi.number(),
             pd_total_gross: Joi.number(),
-            pd_welfare: Joi.number()
+            pd_welfare: Joi.number(),
+            pd_total_gross_ii: Joi.number(),
         })
         let updateResponse
         const paymentDefinitionRequest = req.body

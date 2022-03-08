@@ -25,7 +25,6 @@ coverage
 
 # nyc test coverage
 .nyc_output
-.idea/
 
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
@@ -82,7 +81,7 @@ web_modules/
 .env
 
 # workspace xml
-.idea/
+**/.idea/workspace.xml **/.idea/tasks.xml
 
 config/
 
