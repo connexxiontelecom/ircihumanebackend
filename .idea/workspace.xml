@@ -24,7 +24,10 @@
   <component name="ChangeListManager">
     <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/variational-payment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/variational-payment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/timesheetPenaltyService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/timesheetPenaltyService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/variationalPaymentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/variationalPaymentService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,23 +58,22 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="false" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+      <changelist id="67f33839-83c3-4bdc-9248-38886dfe9e17" name="Changes" comment="" />
       <created>1646224861873</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1646224861873</updated>
       <workItem from="1646224865223" duration="7704000" />
-      <workItem from="1646367836089" duration="2042000" />
-      <workItem from="1646382799192" duration="1224000" />
-      <workItem from="1646647873061" duration="1039000" />
     </task>
     <task id="LOCAL-00001" summary="test push">
       <created>1646229916957</created>
@@ -87,35 +89,7 @@
       <option name="project" value="LOCAL" />
       <updated>1646283237614</updated>
     </task>
-    <task id="LOCAL-00003" summary="check for deduction to hanlde adjusted gross">
-      <created>1646368579685</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1646368579685</updated>
-    </task>
-    <task id="LOCAL-00004" summary="employee Adjusted Gross on payslip">
-      <created>1646648569885</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1646648569885</updated>
-    </task>
-    <task id="LOCAL-00005" summary="adjusted Gross to show on pay slip">
-      <created>1646650247662</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1646650247662</updated>
-    </task>
-    <task id="LOCAL-00006" summary="tax module edit to use employeeadjuested gross ii">
-      <created>1646655310977</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1646655310977</updated>
-    </task>
-    <option name="localTasksCounter" value="7" />
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -135,10 +109,6 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
-    <MESSAGE value="check for deduction to hanlde adjusted gross" />
-    <MESSAGE value="employee Adjusted Gross on payslip" />
-    <MESSAGE value="adjusted Gross to show on pay slip" />
-    <MESSAGE value="tax module edit to use employeeadjuested gross ii" />
-    <option name="LAST_COMMIT_MESSAGE" value="tax module edit to use employeeadjuested gross ii" />
+    <option name="LAST_COMMIT_MESSAGE" value="log on undo payroll routine" />
   </component>
 </project>

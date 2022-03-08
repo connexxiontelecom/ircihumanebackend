@@ -144,7 +144,7 @@
 
 
     if(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION' ){
-        port = process.env.PORT || 9500
+        port = process.env.PORT || 8081
     }
 
     if(process.env.NODE_ENV === 'TEST'){
@@ -155,7 +155,7 @@
 
     const server =   app.listen(port, ()=>{
         console.log(`Listening on ${port}`);
-    })
+    });
 
 
     module.exports = server
