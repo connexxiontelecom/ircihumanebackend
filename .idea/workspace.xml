@@ -22,9 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="payment definitions to include sum up to gross 2">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="salary routine to handle hire date and deduct accordingly">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,7 +143,21 @@
       <option name="project" value="LOCAL" />
       <updated>1646730273955</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="salary routine to handle hire date and deduct accordingly">
+      <created>1646734089359</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1646734089359</updated>
+    </task>
+    <task id="LOCAL-00012" summary="salary routine to handle hire date and deduct accordingly">
+      <created>1646734190644</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1646734190644</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,6 +183,7 @@
     <MESSAGE value="tax module edit to use employeeadjuested gross ii" />
     <MESSAGE value="pension and nsitf reflect on adjusted grossII" />
     <MESSAGE value="payment definitions to include sum up to gross 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="payment definitions to include sum up to gross 2" />
+    <MESSAGE value="salary routine to handle hire date and deduct accordingly" />
+    <option name="LAST_COMMIT_MESSAGE" value="salary routine to handle hire date and deduct accordingly" />
   </component>
 </project>
