@@ -22,10 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="pension and nsitf reflect on adjusted grossII">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="payment definitions to include sum up to gross 2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/paymentDefinitions.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/paymentDefinitions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -138,7 +136,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646710013619</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="payment definitions to include sum up to gross 2">
+      <created>1646730273954</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1646730273955</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -163,6 +168,7 @@
     <MESSAGE value="adjusted Gross to show on pay slip" />
     <MESSAGE value="tax module edit to use employeeadjuested gross ii" />
     <MESSAGE value="pension and nsitf reflect on adjusted grossII" />
-    <option name="LAST_COMMIT_MESSAGE" value="pension and nsitf reflect on adjusted grossII" />
+    <MESSAGE value="payment definitions to include sum up to gross 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="payment definitions to include sum up to gross 2" />
   </component>
 </project>
