@@ -144,7 +144,7 @@
 
 
     if(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION' ){
-        port = process.env.PORT || 8081
+        port = process.env.PORT || 4321
     }
 
     if(process.env.NODE_ENV === 'TEST'){
