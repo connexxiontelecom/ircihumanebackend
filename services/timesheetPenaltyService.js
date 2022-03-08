@@ -23,11 +23,26 @@ async function filterTimeSheetPenalty(month, year){
     return await timesheetPenaltyModel.findAll({where:{tsp_month:month, tsp_year:year}, order:['tsp_id', 'DESC']});
 }
 
+async function getTimeSheetPenaltyMonthYearEmpId(empId, month, year){
+    return await timesheetPenaltyModel.findOne(
+      {where:{tsp_month:month, tsp_year:year, tsp_emp_id:empId}});
+}
+
+async function updateTimeSheetPenaltyMonthYearEmpIdStatus(empId, month, year, status){
+    return await timesheetPenaltyModel.update({
+        tsp_status: status,
+      },{
+        where:{tsp_month:month, tsp_year:year, tsp_emp_id:empId}
+      });
+}
+
 
 
 
 module.exports = {
     addTimeSheetPenalty,
     getTimeSheetPenalty,
-    filterTimeSheetPenalty
+    filterTimeSheetPenalty,
+  getTimeSheetPenaltyMonthYearEmpId,
+  updateTimeSheetPenaltyMonthYearEmpIdStatus
 }
