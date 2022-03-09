@@ -184,7 +184,7 @@ router.post('/single-payment', auth, async (req, res)=>{
             return data; //res.status(200).json("Action successful.");
         });
 
-      const upTsp = await timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(requestBody.employee, parseInt(payroll.pym_month), parseInt(payroll.pym_year), 1).then((res)=>{
+      const upTsp = await timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(parseInt(requestBody.employee), parseInt(payroll.pym_month), parseInt(payroll.pym_year), 1).then((res)=>{
         return res;
       });
       res.status(200).json("Action successful.");
