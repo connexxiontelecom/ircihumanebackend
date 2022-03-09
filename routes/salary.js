@@ -3,6 +3,8 @@ const _ = require('lodash')
 const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
+const  differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+const isBefore = require('date-fns/isBefore')
 const salaryGrade =  require('../services/salaryGradeService')
 const salaryStructure = require('../services/salaryStructureService')
 const paymentDefinition = require('../services/paymentDefinitionService')
@@ -55,6 +57,18 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                     for (const emp of employees) {
 
                         let empGross = parseFloat(emp.emp_gross)
+
+                        let hiredDate = new Date(emp.emp_hire_date)
+
+                        const hireYear = hiredDate.getFullYear()
+                        const hireMonth = hiredDate.getMonth() + 1
+
+                        const payrollDate = new Date(parseInt(payrollYear), parseInt(payrollMonth)-1, 2)
+                        let daysBeforeStart
+                        if((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))){
+                             daysBeforeStart =  await differenceInBusinessDays(hiredDate, payrollDate)
+                            empGross = empGross - (daysBeforeStart * (empGross/22))
+                       }
 
                         if(empGross > 0){
                             //check employee variational payments
@@ -611,13 +625,9 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                         }
 
-
-
-
-
-
                     }
 
+                    //return  res.status(200).json(GrossArray)
                     const logData = {
                         "log_user_id": req.user.username.user_id,
                         "log_description": "Ran Payroll Routine",
