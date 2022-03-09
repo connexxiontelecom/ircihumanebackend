@@ -22,9 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="salary routine to handle hire date and deduct accordingly">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +55,6 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="web-ide.project.structure" />
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
     <property name="vue.rearranger.settings.migration" value="true" />
@@ -88,77 +87,7 @@
       <option name="project" value="LOCAL" />
       <updated>1646283237614</updated>
     </task>
-    <task id="LOCAL-00003" summary="check for deduction to hanlde adjusted gross">
-      <created>1646368579685</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1646368579685</updated>
-    </task>
-    <task id="LOCAL-00004" summary="employee Adjusted Gross on payslip">
-      <created>1646648569885</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1646648569885</updated>
-    </task>
-    <task id="LOCAL-00005" summary="adjusted Gross to show on pay slip">
-      <created>1646650247662</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1646650247662</updated>
-    </task>
-    <task id="LOCAL-00006" summary="tax module edit to use employeeadjuested gross ii">
-      <created>1646655310977</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1646655310977</updated>
-    </task>
-    <task id="LOCAL-00007" summary="pension and nsitf reflect on adjusted grossII">
-      <created>1646656263463</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1646656263463</updated>
-    </task>
-    <task id="LOCAL-00008" summary="pension and nsitf reflect on adjusted grossII">
-      <created>1646709983525</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1646709983525</updated>
-    </task>
-    <task id="LOCAL-00009" summary="pension and nsitf reflect on adjusted grossII">
-      <created>1646710013619</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1646710013619</updated>
-    </task>
-    <task id="LOCAL-00010" summary="payment definitions to include sum up to gross 2">
-      <created>1646730273954</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1646730273955</updated>
-    </task>
-    <task id="LOCAL-00011" summary="salary routine to handle hire date and deduct accordingly">
-      <created>1646734089359</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1646734089359</updated>
-    </task>
-    <task id="LOCAL-00012" summary="salary routine to handle hire date and deduct accordingly">
-      <created>1646734190644</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1646734190644</updated>
-    </task>
-    <option name="localTasksCounter" value="13" />
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -178,13 +107,6 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
-    <MESSAGE value="check for deduction to hanlde adjusted gross" />
-    <MESSAGE value="employee Adjusted Gross on payslip" />
-    <MESSAGE value="adjusted Gross to show on pay slip" />
-    <MESSAGE value="tax module edit to use employeeadjuested gross ii" />
-    <MESSAGE value="pension and nsitf reflect on adjusted grossII" />
-    <MESSAGE value="payment definitions to include sum up to gross 2" />
-    <MESSAGE value="salary routine to handle hire date and deduct accordingly" />
-    <option name="LAST_COMMIT_MESSAGE" value="salary routine to handle hire date and deduct accordingly" />
+    <option name="LAST_COMMIT_MESSAGE" value="log on undo payroll routine" />
   </component>
 </project>
