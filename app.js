@@ -2,11 +2,15 @@
     const dotenv = require("dotenv");
     const bodyParser = require('body-parser');
     const cors = require('cors');
+    const fileUpload = require('express-fileupload');
 
     const app = express();
     app.use(cors());
     app.use(express.json());
     dotenv.config();
+    app.use(fileUpload({
+        createParentPath: true
+    }));
     //Routes
     const employeeRouter = require('./routes/employees');
     const bankRouter = require('./routes/bank');

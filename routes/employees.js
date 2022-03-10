@@ -6,6 +6,15 @@ const logs = require('../services/logService')
 const employees = require('../services/employeeService');
 const auth = require("../middleware/auth");
 const Joi = require("joi");
+const fs = require('fs');
+const AWS = require('aws-sdk');
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+var path = require('path')
+const s3 = new AWS.S3({
+    accessKeyId: 'AKIATYY72EVXSJWLSFK7',
+    secretAccessKey: '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'
+});
 
 
 /* GET employees. */
@@ -139,6 +148,40 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function(req, res, n
 
     } catch (err) {
         console.error(`An error occurred while fetching`, err.message);
+        next(err);
+    }
+});
+
+router.post('/upload-files', auth,  async function(req, res, next) {
+    try {
+
+        const fileRequest = req.files.test
+        const fileExt = path.extname(fileRequest.name)
+        const timeStamp = new Date().getTime()
+        const fileContent  = Buffer.from(req.files.test.data, 'binary');
+        const fileName = `${timeStamp}${fileExt}`;
+        const uploadFile = () => {
+            const params = {
+                Bucket: 'irc-ihumane', // pass your bucket name
+                Key: fileName, // file will be saved as testBucket/contacts.csv
+                Body: fileContent
+            };
+            s3.upload(params, function(s3Err, data) {
+                if (s3Err) {
+                    return  res.status(400).json(s3Err)
+                }
+
+                return  res.status(200).json(`File uploaded successfully at ${data.Location}`)
+                // console.log(`File uploaded successfully at ${data.Location}`)
+            });
+
+
+
+        };
+
+        uploadFile();
+    } catch (err) {
+        console.error(`An error occurred while updating supervisor status `, err.message);
         next(err);
     }
 });

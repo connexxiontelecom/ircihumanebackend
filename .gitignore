@@ -46,6 +46,7 @@ jspm_packages/
 .idea/ircihumanebackend.iml
 .idea/.gitignore
 .idea/php.xml
+.idea/vcs.xml
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
