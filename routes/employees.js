@@ -91,7 +91,6 @@ router.patch('/upload-profile-pic/:empId', auth,  async function(req, res, next)
             const employeeData = {
                 emp_passport: uploadResonse
             }
-        //return res.status(400).json(employeeData)
        let employeeUpdateResponse = await employees.updateProfilePicture(empId, employeeData).then((data)=>{
                return data
             })
