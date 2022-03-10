@@ -8,13 +8,13 @@ const auth = require("../middleware/auth");
 const Joi = require("joi");
 const fs = require('fs');
 const AWS = require('aws-sdk');
-const multer = require("multer");
-const multerS3 = require("multer-s3");
+const dotenv = require('dotenv');
 var path = require('path')
 const s3 = new AWS.S3({
-    accessKeyId: 'AKIATYY72EVXSJWLSFK7',
-    secretAccessKey: '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'
+    accessKeyId: `${process.env.ACCESS_KEY}`,
+    secretAccessKey: `${process.env.SECRET_KEY}`
 });
+
 
 
 /* GET employees. */
@@ -63,6 +63,54 @@ router.patch('/update-employee/:emp_id', auth,  async function(req, res, next) {
 
             }
         })
+
+    } catch (err) {
+        console.error(`An error occurred while updating Employee `, err.message);
+        next(err);
+    }
+});
+
+
+router.patch('/upload-profile-pic/:empId', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params['empId']
+       const employeeDatum =  await employees.getEmployee(empId).then((data)=>{
+          return data
+        })
+
+        if(_.isEmpty(employeeDatum)){
+            return res.status(400).json(`Employee Doesn't Exist`)
+        }
+
+            const uploadResonse =  await uploadFile(req.files.profilepic).then((response) => {
+                return response
+            }).catch(err => {
+                return res.status(400).json(err)
+            })
+
+            const employeeData = {
+                emp_passport: uploadResonse
+            }
+        //return res.status(400).json(employeeData)
+       let employeeUpdateResponse = await employees.updateProfilePicture(empId, employeeData).then((data)=>{
+               return data
+            })
+
+        if(_.isEmpty(employeeUpdateResponse)){
+            return res.status(400).json('An error occurred, please try again')
+        }
+
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": "Updated Employee Profile",
+            "log_date": new Date()
+        }
+        await logs.addLog(logData).then((logRes)=>{
+
+            return  res.status(200).json('Action Successful')
+        })
+
+
 
     } catch (err) {
         console.error(`An error occurred while updating Employee `, err.message);
@@ -152,39 +200,49 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function(req, res, n
     }
 });
 
+
+
+
+
 router.post('/upload-files', auth,  async function(req, res, next) {
-    try {
-
-        const fileRequest = req.files.test
-        const fileExt = path.extname(fileRequest.name)
-        const timeStamp = new Date().getTime()
-        const fileContent  = Buffer.from(req.files.test.data, 'binary');
-        const fileName = `${timeStamp}${fileExt}`;
-        const uploadFile = () => {
-            const params = {
-                Bucket: 'irc-ihumane', // pass your bucket name
-                Key: fileName, // file will be saved as testBucket/contacts.csv
-                Body: fileContent
-            };
-            s3.upload(params, function(s3Err, data) {
-                if (s3Err) {
-                    return  res.status(400).json(s3Err)
-                }
-
-                return  res.status(200).json(`File uploaded successfully at ${data.Location}`)
-                // console.log(`File uploaded successfully at ${data.Location}`)
-            });
-
-
-
-        };
-
-        uploadFile();
+    try{
+        // return res.status(200).json({
+        //     accessKeyId: 'AKIATYY72EVXSJWLSFK7',
+        //     secretAccessKey: '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'
+        // })
+       let uploadResonse =  await uploadFile(req.files.test).then((response) => {
+            return response
+        }).catch(err => {
+            return res.status(400).json(err)
+        })
+        return res.status(200).json(uploadResonse)
     } catch (err) {
         console.error(`An error occurred while updating supervisor status `, err.message);
         next(err);
     }
 });
 
+const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
+    return new Promise(async (resolve, reject) => {
+        let s3Res;
+        const fileExt = path.extname(fileRequest.name)
+        const timeStamp = new Date().getTime()
+        const fileContent  = Buffer.from(fileRequest.data, 'binary');
+        const fileName = `${timeStamp}${fileExt}`;
+        const params = {
+            Bucket: 'irc-ihumane', // pass your bucket name
+            Key: fileName, // file will be saved as testBucket/contacts.csv
+            Body: fileContent
+        };
+        await s3.upload(params, function(s3Err, data) {
+            if (s3Err) {
+                reject(s3Err)
+            }
+            s3Res = data.Location
+            resolve(s3Res)
+        });
+    })
+
+}
 
 module.exports = router;
