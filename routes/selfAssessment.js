@@ -8,6 +8,7 @@ const selfAssessment =  require('../services/selfAssessmentService');
 const employees = require('../services/employeeService');
 const endYearRating = require('../services/endYearRatingService');
 const logs = require('../services/logService')
+const goalSettingYear =  require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 
 /* Add Self Assessment */
@@ -359,6 +360,51 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth,  async function(req, res
     }
 });
 
+router.get('/get-self-assessments/:emp_id', auth,  async function(req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+        const employeeData = await employees.getEmployee(empId).then((data)=>{
+            return data
+        })
+        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+        }
+
+        const goalSettingYearData = await goalSettingYear.getGoalSettingYear().then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(goalSettingYearData) || _.isNull(goalSettingYearData)) {
+            return res.status(400).json(`No goal Setting Year Set Up`)
+        }
+
+        const year = goalSettingYearData.gsy_year
+
+        const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(yearGoalSettings) || _.isNull(yearGoalSettings)){
+            return res.status(400).json(`No goal Setting for the year`)
+        }
+        let goalSettingIds = []
+        for (const ygs of yearGoalSettings){
+            goalSettingIds.push(ygs.gs_id)
+        }
+
+            let empQuestions =  await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data)=>{
+                return  data
+
+            })
+            return res.status(200).json(empQuestions)
+    } catch (err) {
+        console.error(`Error while fetching Goals `, err.message);
+        next(err);
+    }
+});
+
+
 /* Update Self Assessment */
 
 router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res, next) {
@@ -534,8 +580,5 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
         next(err);
     }
 });
-
-
-
 
 module.exports = router;

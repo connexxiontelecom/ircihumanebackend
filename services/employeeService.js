@@ -232,6 +232,7 @@ async function updateEmployee(employeeId, employeeData){
 
 }
 
+
 async function updateGrossSalary(employeeId, employeeGross){
     return await employee.update({
         emp_gross: employeeGross
@@ -293,6 +294,19 @@ async function getSupervisorEmployee(supervisorId){
 async function getActiveEmployees(){
     return await employee.findAll({include: ['supervisor', 'location', {model: JobRole, include: Department}]})
 }
+
+async function updateProfilePicture(employeeId, employeeData){
+    return await employee.update({
+        emp_passport: employeeData.emp_passport
+    }, {
+        where:{
+            emp_id: employeeId
+        }
+    })
+
+}
+
+
 
 
 
@@ -363,7 +377,8 @@ module.exports = {
     updateGrossSalary,
     getActiveEmployees,
     getEmployeeByIdOnly,
-    getEmployeeList
+    getEmployeeList,
+    updateProfilePicture
     //updateDepartment,
     //setNewDepartment,
 }
