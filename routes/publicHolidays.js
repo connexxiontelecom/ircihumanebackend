@@ -8,6 +8,7 @@ const publicHolidays = require('../services/publicHolidayServiceSetup');
 
 router.get('/', auth, publicHolidays.getAllPublicHolidays);
 router.post('/add-public-holiday',auth, publicHolidays.setNewPublicHoliday);
+router.patch('/:id',auth, publicHolidays.updatePublicHoliday);
 
 
 module.exports = router;

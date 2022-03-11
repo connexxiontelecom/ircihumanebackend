@@ -155,7 +155,7 @@ router.post('/single-payment', auth, async (req, res)=>{
         });
 
         if(_.isEmpty(payroll) || _.isNull(payroll)){
-            return res.status(400).json("There's currently no payroll record");
+            return res.status(400).json("There's currently no payroll year record");
         }
       const salaryRoutineCheck = await salary.getSalaryMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year)).then((data)=>{
         return data
@@ -165,28 +165,42 @@ router.post('/single-payment', auth, async (req, res)=>{
         return res.status(400).json(`Payroll Routine has already been run`)
       }
 
-        const existingRecord = await variationalPayment.getVariationalPaymentMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year),requestBody.employee).then((r)=>{
+        const existingRecord = await variationalPayment.getVariationalPaymentMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year),requestBody.employee, parseInt(requestBody.default_id)).then((r)=>{
             return r;
         });
         if(existingRecord){
             return res.status(400).json("There's an existing record in variational payment");
         }
+
         const payment = {
           vp_emp_id: parseInt(requestBody.employee),
           vp_payment_def_id: parseInt(requestBody.default_id),
           vp_amount: requestBody.amount,
           vp_payment_month: parseInt(payroll.pym_month), //parseInt(requestBody.month),
           vp_payment_year: parseInt(payroll.pym_year), //parseInt(requestBody.year)
-          vp_default_id: parseInt(requestBody.default_id),
+          vp_default_id: 1,
         }
 
         const val = await variationalPayment.setNewSingleVariationalPayment(payment).then((data)=>{
-            return data; //res.status(200).json("Action successful.");
+            return data;
         });
+
+
+      if(_.isEmpty(val) || _.isNull(val)){
+          return res.status(400).json("Something went wrong (adding variational payment).");
+        }
 
       const upTsp = await timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(parseInt(requestBody.employee), parseInt(payroll.pym_month), parseInt(payroll.pym_year), 1).then((res)=>{
         return res;
       });
+
+      if(_.isNull(upTsp) || _.isEmpty(upTsp)){
+        const deleteResponse = variationalPayment.deletePaymentEntry(val.vp_id).then((data)=>{
+          return data
+        })
+        return res.status(400).json("Something went wrong (updating timesheet).");
+      }
+
       res.status(200).json("Action successful.");
     }catch (e) {
         return res.status(400).json("Something went wrong.");

@@ -9,8 +9,12 @@ const errHandler = (err) =>{
     console.log("Error: ", err);
 }
 
-const getAllAuthorizationRoles = async  (type)=>{
+const getAllAuthorizationRolesByType = async  (type)=>{
     return await authorizationRoleModel.findAll({where:{ar_type:type}});
+}
+
+const getAllAuthorizationRoles = async  ()=>{
+    return await authorizationRoleModel.findAll();
 }
 
 const addAuthorizationRole = async (requestBody)=>  {
@@ -49,5 +53,6 @@ module.exports = {
     addAuthorizationRole,
     updateAuthorizationRole,
     getAuthorizationRoleById,
+  getAllAuthorizationRolesByType
 
 }
