@@ -13,6 +13,7 @@ async function addEmployeeDocument (documentData) {
     return await employeeDocumentsModel.create({
         ed_empid: documentData.ed_empid,
         ed_doc: documentData.ed_doc,
+        ed_filename: documentData.ed_filename
     });
 }
 

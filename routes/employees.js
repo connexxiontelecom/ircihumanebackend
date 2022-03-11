@@ -151,7 +151,8 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
                 }
                 const documentData = {
                     ed_empid: empId,
-                    ed_doc: uploadResponse
+                    ed_doc: uploadResponse,
+                    ed_filename: doc.name
                 }
                 let documentAddResponse = await documents.addEmployeeDocument(documentData).then((data) => {
                     return data
@@ -181,7 +182,8 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
 
             const documentData = {
                 ed_empid: empId,
-                ed_doc: uploadResponse
+                ed_doc: uploadResponse,
+                ed_filename: docs.name
             }
 
             let documentAddResponse = await documents.addEmployeeDocument(documentData).then((data) => {
