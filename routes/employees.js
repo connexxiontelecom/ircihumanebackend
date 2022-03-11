@@ -149,12 +149,10 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
                     }
                     return res.status(400).json(`An error occurred while uploading documents`)
                 }
-
                 const documentData = {
                     ed_empid: empId,
                     ed_doc: uploadResponse
                 }
-
                 let documentAddResponse = await documents.addEmployeeDocument(documentData).then((data) => {
                     return data
                 })
@@ -170,8 +168,6 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
 
                     return res.status(400).json(`An error occurred while uploading documents`)
                 }
-
-
                 success.push(uploadResponse)
             }
 
