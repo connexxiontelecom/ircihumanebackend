@@ -11,7 +11,18 @@ router.get('/:typeId', auth, async function(req, res, next) {
     try {
         const typeId = parseInt(req.params.typeId);
 
-        await authorizationRoleService.getAllAuthorizationRoles(typeId).then((data) =>{
+        await authorizationRoleService.getAllAuthorizationRolesByType(typeId).then((data) =>{
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`We couldn't fetch authorization roles at the moment. Try again`)
+    }
+});
+
+router.get('/', auth, async function(req, res, next) {
+    try {
+
+        await authorizationRoleService.getAllAuthorizationRoles().then((data) =>{
             return res.status(200).json(data);
         })
     } catch (err) {

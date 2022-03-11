@@ -128,17 +128,18 @@ async function undoVariationalPaymentMonthYear(month, year) {
 
 }
 
-async function getVariationalPaymentMonthYear(month, year, employee) {
+
+async  function getVariationalPaymentMonthYear( month, year, employee, payment_type){
 
     return await variationalPaymentModel.findOne(
-        {
-            where: {
-                vp_payment_month: month,
-                vp_payment_year: year,
-                vp_emp_id: employee
-                //vp_confirm: [1, 3, 0]
-            }
-        })
+    {where: {
+            vp_payment_month: month,
+            vp_payment_year: year,
+            vp_emp_id:employee,
+            vp_payment_def_id: payment_type,
+            vp_confirm: [0, 1, 3]
+        }
+    })
 
 }
 
