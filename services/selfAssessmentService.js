@@ -77,6 +77,11 @@ async function updateQuestion(eyaId, question){
         })
 }
 
+async  function findSelfAssessmentsEmployeeYear(empId, gsId){
+    return await SelfAssessment.findAll({ where: { sa_gs_id: gsId, sa_emp_id: empId }})
+
+}
+
 
 
 
@@ -91,5 +96,6 @@ module.exports = {
     respondSelfAssessment,
     updateQuestion,
     updateSelfAssessment,
-    supervisorUpdateSelfAssessment
+    supervisorUpdateSelfAssessment,
+    findSelfAssessmentsEmployeeYear
 }
