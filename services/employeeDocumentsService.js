@@ -17,6 +17,14 @@ async function addEmployeeDocument (documentData) {
     });
 }
 
+async function getEmployeeDocument (empId) {
+    return await employeeDocumentsModel.findAll({
+        where:{
+            ed_empid: empId
+        }
+    });
+}
+
 
 async function deleteEmployeeDocument(ed_doc) {
     return await employeeDocumentsModel.destroy({where: {ed_doc: ed_doc}})
@@ -25,5 +33,6 @@ async function deleteEmployeeDocument(ed_doc) {
 
 module.exports = {
     addEmployeeDocument,
-    deleteEmployeeDocument
+    deleteEmployeeDocument,
+    getEmployeeDocument
 }
