@@ -42,9 +42,9 @@ build/Release
 node_modules/
 config/
 jspm_packages/
+.idea/*
 .idea/workspace.xml
-.idea/ircihumanebackend.iml
-.idea/ihumaneback.iml
+.idea/ircihumane.iml
 .idea/.gitignore
 .idea/php.xml
 .idea/vcs.xml
