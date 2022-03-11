@@ -12,7 +12,9 @@ const errHandler = (err) =>{
 }
 const getAllPublicHolidays = async (req, res)=>{
     try {
-        const holidays =  await PublicHoliday.findAll({attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year']});
+        const holidays =  await PublicHoliday.findAll({
+          attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year','ph_to_day', 'ph_to_month', 'ph_to_year']
+        });
         return res.status(200).json(holidays)
     } catch (err) {
         return res.status(500).json({message: `Error while fetching public holidays ${err.message}`})
@@ -23,10 +25,8 @@ const setNewPublicHoliday = async (req, res)=>  {
     try{
         const schema = Joi.object( {
             public_name: Joi.string().required(),
-            //public_day: Joi.string().required(),
-            //public_month: Joi.string().required(),
             public_date: Joi.date().required(),
-            //public_year: Joi.string().required(),
+            public_date_to: Joi.date().required(),
         })
         const publicRequest = req.body
         const validationResult = schema.validate(publicRequest)
@@ -34,11 +34,18 @@ const setNewPublicHoliday = async (req, res)=>  {
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        const { public_name, public_date } = req.body;
+        const { public_name, public_date, public_date_to } = req.body;
         const date = new Date(public_date);
         const day = date.getUTCDate();
         const month = date.getUTCMonth() + 1;
         const year = date.getUTCFullYear();
+
+         const to_date = new Date(public_date_to);
+        const to_day = to_date.getUTCDate();
+        const to_month = to_date.getUTCMonth() + 1;
+        const to_year = to_date.getUTCFullYear();
+
+
         const existPeriod = await PublicHoliday.findOne({
             attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year'],
             where:{
@@ -47,8 +54,20 @@ const setNewPublicHoliday = async (req, res)=>  {
                 ph_year: year
             }});
         if(existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");
+        const pubData = {
+          ph_name: public_name,
+          ph_day:day,
+          ph_month:month,
+          ph_year:year,
+          ph_date: public_date,
 
-        await PublicHoliday.create({ph_name: public_name, ph_day:day, ph_month:month, ph_year:year, ph_date: public_date})
+          ph_to_date: public_date_to,
+          ph_to_day: to_day,
+          ph_to_month: to_month,
+          ph_to_year: to_year,
+        };
+
+        await PublicHoliday.create(pubData)
             .catch(errHandler);
         //Log
         const logData = {
@@ -67,13 +86,11 @@ const setNewPublicHoliday = async (req, res)=>  {
 const updatePublicHoliday = async (req, res)=>  {
     try{
         const publicHolidayId = req.params.id;
-        const schema = Joi.object( {
-            public_name: Joi.string().required(),
-            public_day: Joi.string().required(),
-            public_month: Joi.string().required(),
-            //public_date: Joi.date().required(),
-            public_year: Joi.string().required(),
-        })
+      const schema = Joi.object( {
+        public_name: Joi.string().required(),
+        public_date: Joi.date().required(),
+        public_date_to: Joi.date().required(),
+      })
         const publicRequest = req.body
         const validationResult = schema.validate(publicRequest)
 
@@ -81,9 +98,33 @@ const updatePublicHoliday = async (req, res)=>  {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        const { public_name, public_day, public_month, public_year} = req.body;
+        //const { public_name, public_day, public_month, public_year} = req.body;
+        const { public_name, public_date, public_date_to } = req.body;
+        const date = new Date(public_date);
+        const day = date.getUTCDate();
+        const month = date.getUTCMonth() + 1;
+        const year = date.getUTCFullYear();
+
+        const to_date = new Date(public_date_to);
+        const to_day = to_date.getUTCDate();
+        const to_month = to_date.getUTCMonth() + 1;
+        const to_year = to_date.getUTCFullYear();
+      const pubData = {
+        ph_name: public_name,
+        ph_day:day,
+        ph_month:month,
+        ph_year:year,
+        ph_date: public_date,
+
+        ph_to_date: public_date_to,
+        ph_to_day: to_day,
+        ph_to_month: to_month,
+        ph_to_year: to_year,
+      };
+      //console.log(public_date_to);
+      //return res.status(200).json(public_date_to);
         const updateRecord = await PublicHoliday.update(
-          {ph_name:public_name, ph_day:public_day,ph_month:public_month,ph_year:public_year},
+          pubData,
           {where:{
                 ph_id:publicHolidayId
             }});
@@ -99,7 +140,7 @@ const updatePublicHoliday = async (req, res)=>  {
             return res.status(200).json(`New public holiday added successfully.`);
         });
     }catch (e) {
-        return res.status(500).json({message:"Something went wrong. Try again later."});;
+        return res.status(400).json("Something went wrong. Try again later."+e.message);
 
     }
 }
