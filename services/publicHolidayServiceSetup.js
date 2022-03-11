@@ -64,6 +64,45 @@ const setNewPublicHoliday = async (req, res)=>  {
 
     }
 }
+const updatePublicHoliday = async (req, res)=>  {
+    try{
+        const publicHolidayId = req.params.id;
+        const schema = Joi.object( {
+            public_name: Joi.string().required(),
+            public_day: Joi.string().required(),
+            public_month: Joi.string().required(),
+            //public_date: Joi.date().required(),
+            public_year: Joi.string().required(),
+        })
+        const publicRequest = req.body
+        const validationResult = schema.validate(publicRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const { public_name, public_day, public_month, public_year} = req.body;
+        const updateRecord = await PublicHoliday.update(
+          {ph_name:public_name, ph_day:public_day,ph_month:public_month,ph_year:public_year},
+          {where:{
+                ph_id:publicHolidayId
+            }});
+        if(!updateRecord) return res.status(400).json("There's an existing public holiday with these entry.");
+
+        //Log
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": `Log on public holiday: Added a new public holiday`,
+            "log_date": new Date()
+        }
+        logs.addLog(logData).then((logRes)=>{
+            return res.status(200).json(`New public holiday added successfully.`);
+        });
+    }catch (e) {
+        return res.status(500).json({message:"Something went wrong. Try again later."});;
+
+    }
+}
 const getPublicHolidayById = async (req, res) =>{
     const holiday_id  = req.params.id;
     try{
@@ -106,4 +145,5 @@ module.exports = {
     fetchAllPublicHolidays,
     fetchPublicHolidayByYear,
     fetchSpecificPublicHoliday,
+    updatePublicHoliday
 }
