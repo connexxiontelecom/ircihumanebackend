@@ -115,6 +115,7 @@ const createNewEmployee = async (req, res, next)=>  {
                                             emp_account_no:req.body.account_no,
                                             emp_bank_id:req.body.bank,
                                             emp_salary_structure_setup:0,
+                                            emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg'
                                         }).catch(errHandler);
 
                                         const userData = {

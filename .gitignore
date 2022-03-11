@@ -42,13 +42,7 @@ build/Release
 node_modules/
 config/
 jspm_packages/
-.idea/workspace.xml
-.idea/ircihumanebackend.iml
-.idea/ihumaneback.iml
-.idea/.gitignore
-.idea/php.xml
-.idea/vcs.xml
-.idea/modules.xml
+.idea
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

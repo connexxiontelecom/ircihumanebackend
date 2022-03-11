@@ -1,6 +1,6 @@
 const { QueryTypes } = require('sequelize')
 const Joi = require('joi')
-
+const isBefore = require('date-fns/isBefore')
 const { sequelize, Sequelize } = require('./db');
 const PublicHoliday = require("../models/PublicHoliday")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
@@ -100,6 +100,14 @@ const updatePublicHoliday = async (req, res)=>  {
 
         //const { public_name, public_day, public_month, public_year} = req.body;
         const { public_name, public_date, public_date_to } = req.body;
+      let startDate = new Date(public_date);
+      let endDate = new Date(public_date_to);
+      if(isBefore(startDate, new Date()) ) {
+        return res.status(400).json('Start date cannot be before today or today.')
+      }
+      if(isBefore(endDate, new Date()) ) {
+        return res.status(400).json('End date cannot be before today or today')
+      }
         const date = new Date(public_date);
         const day = date.getUTCDate();
         const month = date.getUTCMonth() + 1;
