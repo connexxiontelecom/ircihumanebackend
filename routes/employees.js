@@ -151,7 +151,8 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
                 }
                 const documentData = {
                     ed_empid: empId,
-                    ed_doc: uploadResponse
+                    ed_doc: uploadResponse,
+                    ed_filename: doc.name
                 }
                 let documentAddResponse = await documents.addEmployeeDocument(documentData).then((data) => {
                     return data
@@ -181,7 +182,8 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
 
             const documentData = {
                 ed_empid: empId,
-                ed_doc: uploadResponse
+                ed_doc: uploadResponse,
+                ed_filename: docs.name
             }
 
             let documentAddResponse = await documents.addEmployeeDocument(documentData).then((data) => {
@@ -280,7 +282,6 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function (req, res, 
     }
 });
 
-
 router.post('/upload-files', auth, async function (req, res, next) {
     try {
 
@@ -293,6 +294,27 @@ router.post('/upload-files', auth, async function (req, res, next) {
         return res.status(200).json(uploadResponse)
     } catch (err) {
         console.error(`An error occurred while updating supervisor status `, err.message);
+        next(err);
+    }
+});
+
+router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
+            return res.status(400).json(` Employee Does Not exist`)
+        } else {
+            await documents.getEmployeeDocument(empId).then((data) => {
+                return res.status(200).json(data)
+            })
+        }
+
+    } catch (err) {
+        console.error(`An error occurred while fetching`, err.message);
         next(err);
     }
 });
