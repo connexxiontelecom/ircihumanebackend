@@ -20,10 +20,11 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
     ed_empid: DataTypes.INTEGER,
-    ed_docs: DataTypes.STRING
+    ed_doc: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'EmployeeDocuments',
+    tableName: 'employee_documents'
   });
   return EmployeeDocuments;
 };
