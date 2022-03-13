@@ -59,6 +59,10 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                         let empGross = parseFloat(emp.emp_gross)
 
                         let hiredDate = new Date(emp.emp_hire_date)
+                        let contractEndDate = new Date(emp.emp_contract_end_date)
+
+                        const contractEndYear = contractEndDate.getFullYear()
+                        const contractEndMonth = contractEndDate.getMonth() + 1
 
                         const hireYear = hiredDate.getFullYear()
                         const hireMonth = hiredDate.getMonth() + 1
@@ -69,6 +73,12 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                              daysBeforeStart =  await differenceInBusinessDays(hiredDate, payrollDate)
                             empGross = empGross - ((daysBeforeStart + 1) * (empGross/22))
                        }
+
+                        if((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))){
+                            daysBeforeStart =  await differenceInBusinessDays(contractEndDate, payrollDate)
+                            daysBeforeStart = 22 - (daysBeforeStart + 1)
+                            empGross = empGross - (daysBeforeStart * (empGross/22))
+                        }
 
                         if(empGross > 0){
                             //check employee variational payments
