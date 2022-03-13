@@ -54,6 +54,10 @@ async function findAllUsers(){
     return await User.findOne({ where: { user_username: username } })
 }
 
+async function suspendUser(username){
+    return await User.update({ user_status: 0},{ where: { user_username: username } })
+}
+
  async function findUserByUserId(userId){
     return await User.findOne({ where: { user_id: userId } })
 }
@@ -151,5 +155,6 @@ module.exports = {
    findUserByUserId,
     updateUser,
     findAllUsers,
-    changePassword
+    changePassword,
+    suspendUser
     }

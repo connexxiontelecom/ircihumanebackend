@@ -307,6 +307,18 @@ async function updateProfilePicture(employeeId, employeeData){
 
 }
 
+async function suspendEmployee(employeeId, suspensionReason){
+    return await employee.update({
+        emp_status: 0,
+        emp_suspension_reason: suspensionReason
+    }, {
+        where:{
+            emp_id: employeeId
+        }
+    })
+
+}
+
 
 
 
@@ -379,7 +391,8 @@ module.exports = {
     getActiveEmployees,
     getEmployeeByIdOnly,
     getEmployeeList,
-    updateProfilePicture
+    updateProfilePicture,
+    suspendEmployee
     //updateDepartment,
     //setNewDepartment,
 }
