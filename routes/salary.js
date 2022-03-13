@@ -75,6 +75,9 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                        }
 
                         if((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))){
+
+
+
                             daysBeforeStart =  await differenceInBusinessDays(contractEndDate, payrollDate)
                             daysBeforeStart = 22 - (daysBeforeStart + 1)
                             empGross = empGross - (daysBeforeStart * (empGross/22))

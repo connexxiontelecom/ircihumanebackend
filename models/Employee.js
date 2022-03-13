@@ -66,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
         emp_emergency_contact:DataTypes.STRING,
         emp_employment_date:DataTypes.DATE,
         emp_status:DataTypes.INTEGER,
+        emp_suspension_reason: DataTypes.STRING,
         emp_stop_date:DataTypes.DATE,
         emp_salary_structure_setup:DataTypes.INTEGER,
         emp_salary_structure_category:DataTypes.INTEGER,
