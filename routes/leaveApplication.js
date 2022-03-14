@@ -74,68 +74,97 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
 
         if(isBefore(startDate, new Date()) ){
             return  res.status(400).json('Leave start date cannot be before today or today')
-        }else{
-            if(String(startYear) === String(endYear)){
-                let daysRequested =  await differenceInBusinessDays(endDate, startDate)
-                const empId = req.user.username.user_id;
-                if(parseInt(daysRequested) >= 1) {
-                    supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val)=>{
-                        if(!(_.isEmpty(val) || _.isNull(val))){
+        }
+
+            if(String(startYear) !== String(endYear)){
+                return  res.status(400).json('Leave period must be within the same year')
+            }
 
 
-                            const accrualData = {
-                                lea_emp_id: leaveApplicationRequest.leapp_empid,
-                                lea_year: startYear,
-                                lea_leave_type: leaveApplicationRequest.leapp_leave_type,
-
-                            }
-
-                            computeLeaveAccruals(accrualData).then((accruedDays) => {
-                                if(_.isNull(accruedDays) || parseInt(accruedDays) === 0){
-                                    return  res.status(400).json('No Leave Accrued for Selected Leave')
-                                }
-
-                                else{
-                                    leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((sumLeave) => {
-
-                                        // return res.status(200).json(`${accruedDays} ${sumLeave}`)
-                                        if (parseInt(daysRequested) > (parseInt(accruedDays) - parseInt(sumLeave))) {
-                                            return res.status(400).json("Days Requested Greater than Accrued Days")
-                                        } else {
-
-                                            leaveApplicationRequest['leapp_year'] = startYear
-                                            leaveApplicationRequest['leapp_total_days'] = daysRequested
-                                            leaveApplicationRequest['leapp_status'] = 0;
-                                            leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
-                                                //Register authorization
-                                                const leaveAppId = data.leapp_id;
-                                                authorizationAction.registerNewAction(1,leaveAppId, val.sa_supervisor_id,0,"Leave application initiated");
-                                                return res.status(200).json('Action Successful')
-                                            })
+            let daysRequested =  await differenceInBusinessDays(endDate, startDate)
+            daysRequested = daysRequested + 1
+            const empId = req.user.username.user_id;
+            if(parseInt(daysRequested) <= 0){
+                return  res.status(400).json('Leave duration must be greater or equal to 1')
+            }
 
 
-                                        }
+                const supervisorAssignment =  await supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val)=>{
+                    return  val
+                });
 
-                                    })
-                                }
-                            })
-
-                        }
-                        else{
-                            return  res.status(400).json( 'You currently have no supervisor assigned to you. Contact admin.');
-                        }
-                    });
-                }else{
-                    return  res.status(400).json('Leave duration must be greater or equal to 1')
+                if(_.isEmpty(supervisorAssignment) || _.isNull(supervisorAssignment)){
+                    return  res.status(400).json( 'You currently have no supervisor assigned to you. Contact admin.');
                 }
 
-            }
 
-            else{
-                return  res.status(400).json('Leave period must be within the same year')
+                const leaveTypeData = await leaveTypeService.getLeaveType(leaveApplicationRequest.leapp_leave_type).then((data)=>{
+                    return data
+                })
 
-            }
-        }
+                if(_.isEmpty(leaveTypeData) || (_.isNull(leaveTypeData))){
+                    return  res.status(400).json( 'Invalid Leave Type');
+
+                }
+
+                if(parseInt(leaveTypeData.lt_accrue) === 1){
+                    const accrualData = {
+                        lea_emp_id: leaveApplicationRequest.leapp_empid,
+                        lea_year: startYear,
+                        lea_leave_type: leaveApplicationRequest.leapp_leave_type,
+
+                    }
+
+                    const accruedDays =  await computeLeaveAccruals(accrualData).then((data) => {
+                        return data
+                    })
+
+                    if(_.isNull(accruedDays) || accruedDays === 0){
+                        return  res.status(400).json('No Leave Accrued for Selected Leave')
+                    }
+
+
+                    const sumLeave = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((data) => {
+                        return  data
+                    })
+
+
+                    if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
+                        return res.status(400).json("Days Requested Greater than Accrued Days")
+                    }
+                }
+
+                    leaveApplicationRequest['leapp_year'] = startYear
+                    leaveApplicationRequest['leapp_total_days'] = daysRequested
+                    leaveApplicationRequest['leapp_status'] = 0;
+
+
+                   const leaveApplicationResponse = await leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
+
+                        return data
+                    })
+
+                 const leaveAppId = leaveApplicationResponse.leapp_id;
+                  const authorizationResponse = await authorizationAction.registerNewAction(1,leaveAppId, val.sa_supervisor_id,0,"Leave application initiated").then((data)=>{
+                      return data
+                  });
+
+                  if(_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))){
+                      return res.status(400).json('An Error Occured')
+                  }
+                return res.status(200).json('Action Successful')
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     } catch (err) {
