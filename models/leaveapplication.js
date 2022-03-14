@@ -40,6 +40,8 @@ module.exports = (sequelize, DataTypes) => {
     leapp_approve_comment: DataTypes.STRING,
     leapp_status: DataTypes.INTEGER,
     leapp_year: DataTypes.INTEGER,
+    leapp_alt_email: DataTypes.STRING,
+    leapp_alt_phone: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'leaveApplication',
