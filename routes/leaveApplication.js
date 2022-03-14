@@ -145,7 +145,7 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                     })
 
                  const leaveAppId = leaveApplicationResponse.leapp_id;
-                  const authorizationResponse = await authorizationAction.registerNewAction(1,leaveAppId, val.sa_supervisor_id,0,"Leave application initiated").then((data)=>{
+                  const authorizationResponse = await authorizationAction.registerNewAction(1,leaveAppId, supervisorAssignment.sa_supervisor_id,0,"Leave application initiated").then((data)=>{
                       return data
                   });
 
