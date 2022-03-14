@@ -20,6 +20,8 @@ async function addLeaveApplication(leaveApplicationData){
         leapp_end_date: leaveApplicationData.leapp_end_date,
         leapp_total_days: leaveApplicationData.leapp_total_days,
         leapp_year: leaveApplicationData.leapp_year,
+        leapp_alt_phone: leaveApplicationData.leapp_alt_phone,
+        leapp_alt_email: leaveApplicationData.leapp_alt_phone,
         // leapp_verify_by: leaveApplicationData.leapp_verify_by,
         // leapp_verify_date: leaveApplicationData.leapp_verify_date,
         // leapp_verify_comment: leaveApplicationData.leapp_verify_comment,

@@ -13,7 +13,7 @@ module.exports = {
 
         queryInterface.addColumn(
           'leave_applications',
-          'la_alt_email',
+          'leapp_alt_email',
           {
             type: Sequelize.STRING,
             allowNull:true
@@ -22,7 +22,7 @@ module.exports = {
 
       queryInterface.addColumn(
           'leave_applications',
-          'la_alt_phone',
+          'leapp_alt_phone',
           {
             type: Sequelize.STRING,
             allowNull:true
