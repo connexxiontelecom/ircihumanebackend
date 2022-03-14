@@ -8,17 +8,17 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    return Promise.all([
-      queryInterface.addColumn(
-        'salary_structures',
-        'ss_grade',
-        {
-          type: Sequelize.INTEGER,
-          allowNull:true,
-        }
-      ),
-
-    ]);
+    // return Promise.all([
+    //   queryInterface.addColumn(
+    //     'salary_structures',
+    //     'ss_grade',
+    //     {
+    //       type: Sequelize.INTEGER,
+    //       allowNull:true,
+    //     }
+    //   ),
+    //
+    // ]);
   },
 
   down: async (queryInterface, Sequelize) => {
