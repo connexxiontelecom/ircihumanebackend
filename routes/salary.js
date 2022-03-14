@@ -599,7 +599,7 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
 
                                     }
 
-                                    const leaveTypesData = await leaveTypeService.getAllLeaves().then((data)=>{
+                                    const leaveTypesData = await leaveTypeService.getAccruableLeaves().then((data)=>{
                                         return data
                                     })
 
@@ -608,7 +608,6 @@ router.get('/salary-routine', auth,  async function(req, res, next) {
                                             return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
 
                                         })
-
                                     }
 
                                     for(const leaveType of leaveTypesData){
