@@ -22,16 +22,20 @@ const setNewLeaveType = async (req, res, next)=>  {
             leave_mode: Joi.number().required(),
             leave_rate: Joi.number().precision(2).required(),
             leave_duration: Joi.number().required(),
+            leave_accrue: Joi.number().required()
         });
         const leaveRequest = req.body
         const validationResult = schema.validate(leaveRequest)
         if(validationResult.error){
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        await leaveType.create({leave_name: req.body.leave_name,
+
+        await leaveType.create({
+            leave_name: req.body.leave_name,
             leave_duration:req.body.leave_duration,
             lt_mode:req.body.leave_mode,
-            lt_rate:req.body.leave_rate
+            lt_rate:req.body.leave_rate,
+            lt_accrue: req.body.leave_accrue
         })
             .catch(errHandler);
         res.send(`New leave :  ${req.body.leave_name} was successfully saved in the database`)
@@ -62,6 +66,7 @@ const updateLeaveType = async (req, res)=>{
             leave_duration: Joi.number().required(),
             leave_mode: Joi.number().required(),
             leave_rate: Joi.number().precision(2).required(),
+            leave_accrue: Joi.number().required()
         });
         const leaveRequest = req.body
         const validationResult = schema.validate(leaveRequest)
@@ -74,7 +79,8 @@ const updateLeaveType = async (req, res)=>{
             leave_name: req.body.leave_name,
             leave_duration: req.body.leave_duration,
             lt_mode:req.body.leave_mode,
-            lt_rate:req.body.leave_rate
+            lt_rate:req.body.leave_rate,
+            lt_accrue:req.body.leave_accrue
         },{
             where:{
                 leave_type_id:leave_id
@@ -101,10 +107,17 @@ async function getAllLeaves(){
     return await leaveType.findAll()
 }
 
+async function getAccruableLeaves(){
+    return await  leaveType.findAll({where:{
+        lt_accrue: 1
+        }})
+}
+
 module.exports = {
     getLeaveTypes,
     getLeaveTypeById,
     updateLeaveType,
     setNewLeaveType,
-    getAllLeaves
+    getAllLeaves,
+    getAccruableLeaves
 }

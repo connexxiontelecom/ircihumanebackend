@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         leave_duration: DataTypes.INTEGER,
         lt_mode: DataTypes.INTEGER,
         lt_rate: DataTypes.DOUBLE,
+        lt_accrue: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

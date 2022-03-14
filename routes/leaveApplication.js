@@ -10,6 +10,7 @@ const leaveApplication =  require('../services/leaveApplicationService')
 const { addLeaveAccrual, computeLeaveAccruals } = require("../routes/leaveAccrual");
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
+const leaveTypeService = require('../services/leaveTypeService');
 const logs = require('../services/logService')
 const employees = require("../services/employeeService");
 
@@ -80,6 +81,8 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                 if(parseInt(daysRequested) >= 1) {
                     supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val)=>{
                         if(!(_.isEmpty(val) || _.isNull(val))){
+
+
                             const accrualData = {
                                 lea_emp_id: leaveApplicationRequest.leapp_empid,
                                 lea_year: startYear,
@@ -90,7 +93,9 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                             computeLeaveAccruals(accrualData).then((accruedDays) => {
                                 if(_.isNull(accruedDays) || parseInt(accruedDays) === 0){
                                     return  res.status(400).json('No Leave Accrued for Selected Leave')
-                                }else{
+                                }
+
+                                else{
                                     leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((sumLeave) => {
 
                                         // return res.status(200).json(`${accruedDays} ${sumLeave}`)
