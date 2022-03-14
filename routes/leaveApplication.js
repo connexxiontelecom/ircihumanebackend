@@ -150,22 +150,10 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
                   });
 
                   if(_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))){
-                      return res.status(400).json('An Error Occured')
+                      return res.status(400).json('An Error Occurred')
                   }
+
                 return res.status(200).json('Action Successful')
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     } catch (err) {
         console.error(`Error while adding location allowance `, err.message);

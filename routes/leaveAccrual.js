@@ -79,31 +79,38 @@ router.get('/get-leave-acrruals/:emp_id', auth,  async function(req, res, next) 
             else{
                 let responseData = [ ]
                 for (const leave of leaves) {
+                    let finalLeaveAccrualObject;
+                    if(parseInt(leave.lt_accrue) === 1){
+                        let usedLeaveValue = 0
 
-                    let usedLeaveValue = 0
+                        let usedLeavesData = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((sumLeave) => {
+                            return sumLeave
+                        })
 
-                    let usedLeavesData = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((sumLeave) => {
-                        return sumLeave
-                      })
-
-                    if(!(_.isNull(usedLeavesData) || parseInt(usedLeavesData) === 0)){
-                        usedLeaveValue = usedLeavesData
-                    }
-
+                        if(!(_.isNull(usedLeavesData) || parseInt(usedLeavesData) === 0)){
+                            usedLeaveValue = usedLeavesData
+                        }
                         let leaveSumAccruals = await leaveAccrual.sumLeaveAccrualByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((data)=>{
                             return data
                         })
 
                         let accrualValue = 0;
                         if(!(_.isNull(leaveSumAccruals) || parseInt(leaveSumAccruals) === 0)){
-                          accrualValue = leaveSumAccruals
+                            accrualValue = leaveSumAccruals
                         }
-
-
-                        const finalLeaveAccrualObject = {
+                        finalLeaveAccrualObject = {
                             leave: leave,
                             accrual: accrualValue - usedLeaveValue
                         }
+                    }else{
+                        finalLeaveAccrualObject = {
+                            leave: leave,
+                            accrual: 'Not Accruable'
+                        }
+                    }
+
+
+
 
                      responseData.push(finalLeaveAccrualObject)
                }
