@@ -46,6 +46,8 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
             leapp_leave_type: Joi.number().required(),
             leapp_start_date: Joi.string().required(),
             leapp_end_date: Joi.string().required(),
+            leapp_alt_email: Joi.string(),
+            leapp_alt_phone: Joi.string()
             // leapp_verify_by: Joi.number().required(),
             // leapp_verify_date: Joi.string().required(),
             // leapp_verify_comment: Joi.string().required(),
