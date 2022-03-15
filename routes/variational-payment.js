@@ -3,11 +3,11 @@ const express = require('express');
 const router = express.Router();
 const auth = require("../middleware/auth");
 const _ = require('lodash')
-const variationalPayment =  require('../services/variationalPaymentService');
-const paymentDefinition =  require('../services/paymentDefinitionService');
-const payrollMonthYear =  require('../services/payrollMonthYearService');
-const timesheetPenaltyService =  require('../services/timesheetPenaltyService');
-const timesheetPenaltyModel =  require('../models/TimeSheetPenalty');
+const variationalPayment = require('../services/variationalPaymentService');
+const paymentDefinition = require('../services/paymentDefinitionService');
+const payrollMonthYear = require('../services/payrollMonthYearService');
+const timesheetPenaltyService = require('../services/timesheetPenaltyService');
+const timesheetPenaltyModel = require('../models/TimeSheetPenalty');
 const employees = require('../services/employeeService');
 const logs = require('../services/logService')
 const salary = require("../services/salaryService");
@@ -15,9 +15,9 @@ const {sequelize} = require("../services/db");
 
 
 /* Get All variational payments */
-router.get('/', auth, async function(req, res, next) {
+router.get('/', auth, async function (req, res, next) {
     try {
-        await variationalPayment.getVariationalPayments().then((data) =>{
+        await variationalPayment.getVariationalPayments().then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {
@@ -25,8 +25,8 @@ router.get('/', auth, async function(req, res, next) {
     }
 });
 
-router.post('/', auth, async (req, res, next)=>{
-    try{
+router.post('/', auth, async (req, res, next) => {
+    try {
         // const scheme = Joi.array().items(Joi.object().keys({
         //     name: Joi.string().required(),
         //     value: Joi.required()
@@ -49,11 +49,11 @@ router.post('/', auth, async (req, res, next)=>{
 
         //return  res.status(200).json(vpRequest)
 
-        const salaryRoutineCheck = await salary.getSalaryMonthYear(req.body.month, req.body.year).then((data)=>{
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(req.body.month, req.body.year).then((data) => {
             return data
         })
 
-        if(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)){
+        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
 
             let employeeId = req.body.employee
             let payments = req.body.payments
@@ -69,25 +69,25 @@ router.post('/', auth, async (req, res, next)=>{
                     })
 
                     if (!(_.isNull(checkExisting) || _.isEmpty(checkExisting))) {
-                        if((parseInt(checkExisting.vp_confirm) === 0) || (parseInt(checkExisting.vp_confirm) === 2 )){
+                        if ((parseInt(checkExisting.vp_confirm) === 0) || (parseInt(checkExisting.vp_confirm) === 2)) {
                             await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
-                        }else{
+                        } else {
 
                             return res.status(400).json(`${checkExisting.payment.pd_payment_name} already actioned for employee, consider updating`)
                         }
 
                     }
 
-                if(parseFloat(payment.amount) > 0){
-                    const vpObject = {
-                        vp_emp_id: parseInt(employeeId),
-                        vp_payment_def_id: parseInt(payment.payment_definition),
-                        vp_amount: parseFloat(payment.amount),
-                        vp_payment_month: parseInt(req.body.month),
-                        vp_payment_year: parseInt(req.body.year)
+                    if (parseFloat(payment.amount) > 0) {
+                        const vpObject = {
+                            vp_emp_id: parseInt(employeeId),
+                            vp_payment_def_id: parseInt(payment.payment_definition),
+                            vp_amount: parseFloat(payment.amount),
+                            vp_payment_month: parseInt(req.body.month),
+                            vp_payment_year: parseInt(req.body.year)
+                        }
+                        await variationalPayment.setNewVariationalPayment(vpObject).then()
                     }
-                    await variationalPayment.setNewVariationalPayment(vpObject).then()
-                }
 
                 }
 
@@ -97,7 +97,7 @@ router.post('/', auth, async (req, res, next)=>{
                 return res.status(404).json('Employee Does not Exists')
             }
 
-        }else {
+        } else {
             return res.status(400).json("Payroll Routine already run for this period");
 
         }
@@ -142,183 +142,182 @@ router.post('/', auth, async (req, res, next)=>{
         //     return res.status(200).json('Action Successful')
         // }
 
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json(`Error while posting variational payment.${e.message}`);
     }
 });
 
-router.post('/single-payment', auth, async (req, res)=>{
-    try{
+router.post('/single-payment', auth, async (req, res) => {
+    try {
         const requestBody = req.body;
-        const payroll = await payrollMonthYear.findPayrollMonthYear().then((res)=>{
+        const payroll = await payrollMonthYear.findPayrollMonthYear().then((res) => {
             return res;
         });
 
-        if(_.isEmpty(payroll) || _.isNull(payroll)){
+        if (_.isEmpty(payroll) || _.isNull(payroll)) {
             return res.status(400).json("There's currently no payroll year record");
         }
-      const salaryRoutineCheck = await salary.getSalaryMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year)).then((data)=>{
-        return data
-      });
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year)).then((data) => {
+            return data
+        });
 
-      if(!(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck))){
-        return res.status(400).json(`Payroll Routine has already been run`)
-      }
+        if (!(_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck))) {
+            return res.status(400).json(`Payroll Routine has already been run`)
+        }
 
-        const existingRecord = await variationalPayment.getVariationalPaymentMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year),requestBody.employee, parseInt(requestBody.default_id)).then((r)=>{
+        const existingRecord = await variationalPayment.getVariationalPaymentMonthYear(parseInt(payroll.pym_month), parseInt(payroll.pym_year), requestBody.employee, parseInt(requestBody.default_id)).then((r) => {
             return r;
         });
-        if(existingRecord){
+        if (existingRecord) {
             return res.status(400).json("There's an existing record in variational payment");
         }
 
         const payment = {
-          vp_emp_id: parseInt(requestBody.employee),
-          vp_payment_def_id: parseInt(requestBody.default_id),
-          vp_amount: requestBody.amount,
-          vp_payment_month: parseInt(payroll.pym_month), //parseInt(requestBody.month),
-          vp_payment_year: parseInt(payroll.pym_year), //parseInt(requestBody.year)
-          vp_default_id: 1,
+            vp_emp_id: parseInt(requestBody.employee),
+            vp_payment_def_id: parseInt(requestBody.default_id),
+            vp_amount: requestBody.amount,
+            vp_payment_month: parseInt(payroll.pym_month), //parseInt(requestBody.month),
+            vp_payment_year: parseInt(payroll.pym_year), //parseInt(requestBody.year)
+            vp_default_id: 1,
         }
 
-        const val = await variationalPayment.setNewSingleVariationalPayment(payment).then((data)=>{
+        const val = await variationalPayment.setNewSingleVariationalPayment(payment).then((data) => {
             return data;
         });
 
 
-      if(_.isEmpty(val) || _.isNull(val)){
-          return res.status(400).json("Something went wrong (adding variational payment).");
+        if (_.isEmpty(val) || _.isNull(val)) {
+            return res.status(400).json("Something went wrong (adding variational payment).");
         }
 
-      const upTsp = await timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(parseInt(requestBody.employee), parseInt(payroll.pym_month), parseInt(payroll.pym_year), 1).then((res)=>{
-        return res;
-      });
+        const upTsp = await timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(parseInt(requestBody.employee), parseInt(payroll.pym_month), parseInt(payroll.pym_year), 1).then((res) => {
+            return res;
+        });
 
-      if(_.isNull(upTsp) || _.isEmpty(upTsp)){
-        const deleteResponse = variationalPayment.deletePaymentEntry(val.vp_id).then((data)=>{
-          return data
-        })
-        return res.status(400).json("Something went wrong (updating timesheet).");
-      }
+        if (_.isNull(upTsp) || _.isEmpty(upTsp)) {
+            const deleteResponse = variationalPayment.deletePaymentEntry(val.vp_id).then((data) => {
+                return data
+            })
+            return res.status(400).json("Something went wrong (updating timesheet).");
+        }
 
-      res.status(200).json("Action successful.");
-    }catch (e) {
+        res.status(200).json("Action successful.");
+    } catch (e) {
         return res.status(400).json("Something went wrong.");
     }
 });
 
-router.get('/:id', auth, async (req, res, next)=>{
-    try{
+router.get('/:id', auth, async (req, res, next) => {
+    try {
         const id = req.params.id;
-        variationalPayment.getVariationalPaymentById(id).then((data)=>{
+        variationalPayment.getVariationalPaymentById(id).then((data) => {
             return res.status(200).json(data);
         })
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json('Something went wrong. Try again.');
     }
 });
 
-router.post('/confirm-payment', auth, async (req, res, next)=>{
-    try{
+router.post('/confirm-payment', auth, async (req, res, next) => {
+    try {
         const schema = Joi.object({
             status: Joi.number().required(),
-           variational_payment: Joi.array().items(Joi.number().required()),
+            variational_payment: Joi.array().items(Joi.number().required()),
         });
         const vpRequest = req.body
         const validationResult = schema.validate(vpRequest)
-        if(validationResult.error) {
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
         let payments = req.body.variational_payment
         let status = req.body.status
         for (const payment of payments) {
-            const vp = await variationalPayment.getVariationalPaymentById(payment).then((data)=>{
+            const vp = await variationalPayment.getVariationalPaymentById(payment).then((data) => {
                 return data;
             });
-            if(!(_.isNull(vp) || _.isEmpty(vp))){
+            if (!(_.isNull(vp) || _.isEmpty(vp))) {
                 const userId = req.user.username.user_id
                 await variationalPayment.updateVariationalPaymentStatus(payment, status, userId).then()
             }
         }
         return res.status(200).json('Action Successful');
-    }catch (e) {
-        return res.status(400).json('Something went wrong. Try again.'+e.message);
+    } catch (e) {
+        return res.status(400).json('Something went wrong. Try again.' + e.message);
     }
 });
 
-router.get('/current-payment/:year/:month', auth, async (req, res, next)=>{
-    try{
+router.get('/current-payment/:year/:month', auth, async (req, res, next) => {
+    try {
         let month = req.params.month
         let year = req.params.year
-        await variationalPayment.getCurrentPayment(year, month).then((data)=>{
+        await variationalPayment.getCurrentPayment(year, month).then((data) => {
             return res.status(200).json(data);
         })
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json(`Something went wrong. Try again. ${e.message}`);
     }
 });
 
-router.get('/current-pending-payment/:year/:month', auth, async (req, res, next)=>{
-    try{
+router.get('/current-pending-payment/:year/:month', auth, async (req, res, next) => {
+    try {
         let month = req.params.month
         let year = req.params.year
-        await variationalPayment.getCurrentPendingPayment(year, month).then((data)=>{
+        await variationalPayment.getCurrentPendingPayment(year, month).then((data) => {
             return res.status(200).json(data);
         })
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json(`Something went wrong. Try again. ${e.message}`);
     }
 });
 
-router.patch('/update-payment-amount/:id', auth, async (req, res, next)=>{
-    try{
+router.patch('/update-payment-amount/:id', auth, async (req, res, next) => {
+    try {
         const schema = Joi.object({
             vp_amount: Joi.number().required(),
 
         });
         const vpRequest = req.body
         const validationResult = schema.validate(vpRequest)
-        if(validationResult.error) {
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
         const vpId = req.params.id
 
 
-        const payments = await variationalPayment.findPayment(vpId).then((data)=>{
+        const payments = await variationalPayment.findPayment(vpId).then((data) => {
             return data
         })
 
-        if(_.isEmpty(payments) || _.isNull(payments)){
+        if (_.isEmpty(payments) || _.isNull(payments)) {
             return res.status(400).json('Payment does not exists');
         }
 
 
-        const updateResponse = await variationalPayment.updateAmount(vpId, vpRequest.vp_amount).then((data)=>{
+        const updateResponse = await variationalPayment.updateAmount(vpId, vpRequest.vp_amount).then((data) => {
             return data
         })
 
-        if(_.isEmpty(updateResponse) || _.isNull(updateResponse)){
+        if (_.isEmpty(updateResponse) || _.isNull(updateResponse)) {
             return res.status(400).json('An error occurred');
         }
 
         return res.status(200).json('Action Successful');
 
-    }catch (e) {
-        return res.status(400).json('Something went wrong. Try again.'+e.message);
+    } catch (e) {
+        return res.status(400).json('Something went wrong. Try again.' + e.message);
     }
 });
 
 
-router.get('/unconfirmed-payment', auth, async (req, res, next)=>{
-    try{
-        await variationalPayment.getUnconfirmedVariationalPayment().then((data)=>{
+router.get('/unconfirmed-payment', auth, async (req, res, next) => {
+    try {
+        await variationalPayment.getUnconfirmedVariationalPayment().then((data) => {
             return res.status(200).json(data);
         })
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json('Something went wrong. Try again.');
     }
 });
-
 
 
 module.exports = router;

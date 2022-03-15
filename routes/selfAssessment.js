@@ -3,60 +3,60 @@ const express = require('express');
 const router = express.Router();
 const auth = require("../middleware/auth");
 const _ = require('lodash')
-const goalSetting =  require('../services/goalSettingService');
-const selfAssessment =  require('../services/selfAssessmentService');
+const goalSetting = require('../services/goalSettingService');
+const selfAssessment = require('../services/selfAssessmentService');
 const employees = require('../services/employeeService');
 const endYearRating = require('../services/endYearRatingService');
 const logs = require('../services/logService')
-const goalSettingYear =  require('../services/goalSettingYearService');
+const goalSettingYear = require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 
 /* Add Self Assessment */
-router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
+router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
-        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
             return data
         })
 
-        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
 
-        }else{
+        } else {
 
-            if(parseInt(gsData.gs_status) === 1){
+            if (parseInt(gsData.gs_status) === 1) {
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
                 })
                 const schemas = Joi.array().items(schema)
                 const saRequests = req.body
 
-                let validationResult = schemas.validate( saRequests )
-                if(validationResult.error){
+                let validationResult = schemas.validate(saRequests)
+                if (validationResult.error) {
                     return res.status(400).json(validationResult.error.details[0].message)
                 }
                 let addResponse;
                 let destroyResponse;
                 let i = 0;
 
-            await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                     return data
                 })
 
-                for(const sa of saRequests){
+                for (const sa of saRequests) {
                     sa.sa_emp_id = empId
                     sa.sa_gs_id = gsId
-                    addResponse = await selfAssessment.addSelfAssessment(sa).then((data)=>{
+                    addResponse = await selfAssessment.addSelfAssessment(sa).then((data) => {
                         return data
                     })
 
-                    if(_.isEmpty(addResponse) || _.isNull(addResponse)){
-                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                    if (_.isEmpty(addResponse) || _.isNull(addResponse)) {
+                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                             return data
                         })
 
@@ -66,26 +66,23 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, re
 
                 }
 
-                if(i > 0){
+                if (i > 0) {
                     return res.status(400).json(`An error Occurred while adding`)
-                }
-                else{
+                } else {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
                         "log_description": "Responded to Goal Setting",
                         "log_date": new Date()
                     }
-                    await logs.addLog(logData).then((logRes)=>{
+                    await logs.addLog(logData).then((logRes) => {
 
-                        return  res.status(200).json(`Action Successful`)
+                        return res.status(200).json(`Action Successful`)
                     })
 
                 }
-            }
-            else{
+            } else {
                 return res.status(400).json(`Goal Setting Not Opened`)
             }
-
 
 
         }
@@ -98,80 +95,77 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth,  async function(req, re
 });
 
 /* Pre Fill Self Assessment  */
-router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
+router.get('/prefill-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
 
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
 
-        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
             return data
         })
 
 
-        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Goal Setting or Employee Does Not exist`)
 
-        }else{
-            if(parseInt(gsData.gs_status) === 1){
+        } else {
+            if (parseInt(gsData.gs_status) === 1) {
 
-                let latestClosedGoal = await goalSetting.findLatestClosedGoal().then((data)=>{
+                let latestClosedGoal = await goalSetting.findLatestClosedGoal().then((data) => {
                     return data
                 })
 
-                if(_.isEmpty(latestClosedGoal) || _.isNull(latestClosedGoal)){
+                if (_.isEmpty(latestClosedGoal) || _.isNull(latestClosedGoal)) {
                     return res.status(400).json(`No Previous Goal Setting`)
-                }
-                else{
+                } else {
                     let latestClosedGoalId = latestClosedGoal.gs_id
                     let latestClosedGoalActivity = latestClosedGoal.gs_activity
                     let finalGsData = {}
 
                     //return  res.status(200).json(latestClosedGoal)
-                    if(parseInt(gsData.gs_activity) === 1){
+                    if (parseInt(gsData.gs_activity) === 1) {
                         finalGsData.goalSetting = gsData
                         return res.status(200).json(finalGsData)
                     }
 
-                    if(parseInt(gsData.gs_activity) === 2 && parseInt(latestClosedGoalActivity) === 1){
-                        await selfAssessment.findSelfAssessment(latestClosedGoalId, empId).then((data)=>{
+                    if (parseInt(gsData.gs_activity) === 2 && parseInt(latestClosedGoalActivity) === 1) {
+                        await selfAssessment.findSelfAssessment(latestClosedGoalId, empId).then((data) => {
                             finalGsData.goalSetting = gsData
                             finalGsData.questions = data
                             return res.status(200).json(finalGsData)
                         })
                     }
 
-                    if(parseInt(gsData.gs_activity) === 3 && parseInt(latestClosedGoalActivity) === 2){
+                    if (parseInt(gsData.gs_activity) === 3 && parseInt(latestClosedGoalActivity) === 2) {
                         let currentYear = gsData.gs_year;
                         //fetch questions from end of year
 
-                        const endYearQuestions = await endYearAssessment.getEndOfYearAssessmentQuestionByGoal(gsData.gs_id).then((data)=>{
+                        const endYearQuestions = await endYearAssessment.getEndOfYearAssessmentQuestionByGoal(gsData.gs_id).then((data) => {
                             return data
                         })
 
-                        if(_.isEmpty(endYearQuestions) || _.isNull(endYearQuestions)){
-                            return  res.status(400).json(`No End of year questions set yet`)
-                        }
+                        if (_.isEmpty(endYearQuestions) || _.isNull(endYearQuestions)) {
+                            return res.status(400).json(`No End of year questions set yet`)
+                        } else {
 
-                        else{
-
-                            let empQuestions =  await selfAssessment.findSelfAssessment(gsId, empId).then((data)=>{
-                                return  data
+                            let empQuestions = await selfAssessment.findSelfAssessment(gsId, empId).then((data) => {
+                                return data
 
                             })
 
-                            if(_.isEmpty(empQuestions) || _.isNull(empQuestions)){
+                            if (_.isEmpty(empQuestions) || _.isNull(empQuestions)) {
 
                                 let eyaObject
                                 let addResponse
                                 let destroyResponse
                                 let i = 0;
-                                for(const eya of endYearQuestions){
+                                for (const eya of endYearQuestions) {
                                     eyaObject = {
                                         sa_gs_id: gsId,
                                         sa_emp_id: empId,
@@ -184,41 +178,40 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                                         return data
                                     })
 
-                                    if(_.isNull(addResponse) || _.isEmpty(addResponse)){
+                                    if (_.isNull(addResponse) || _.isEmpty(addResponse)) {
                                         i++
-                                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                                             return data
                                         })
                                         break
                                     }
                                 }
 
-                                if( i > 0){
-                                    destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data)=>{
+                                if (i > 0) {
+                                    destroyResponse = selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                                         return data
                                     })
 
-                                    return  res.status(400).json(`There was an error while fetching questions`)
+                                    return res.status(400).json(`There was an error while fetching questions`)
 
                                 }
 
 
-                                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data) => {
                                     return data
                                 })
 
-                                if(_.isEmpty(gss) || _.isNull(gss)){
+                                if (_.isEmpty(gss) || _.isNull(gss)) {
                                     return res.status(404).json(`No Goal Setting found`)
-                                }
-                                else{
+                                } else {
 
-                                    let gsIdArray = [ ]
+                                    let gsIdArray = []
 
-                                    for (const gs of gss){
+                                    for (const gs of gss) {
                                         gsIdArray.push(gs.gs_id)
                                     }
 
-                                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data) => {
                                         return data
                                     })
 
@@ -230,24 +223,21 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                                 }
 
 
-                            }
-
-                            else{
-                                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                            } else {
+                                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data) => {
                                     return data
                                 })
-                                if(_.isEmpty(gss) || _.isNull(gss)){
+                                if (_.isEmpty(gss) || _.isNull(gss)) {
                                     return res.status(404).json(`No Goal Setting found`)
-                                }
-                                else{
+                                } else {
 
-                                    let gsIdArray = [ ]
+                                    let gsIdArray = []
 
-                                    for (const gs of gss){
+                                    for (const gs of gss) {
                                         gsIdArray.push(gs.gs_id)
                                     }
 
-                                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data) => {
                                         return data
                                     })
 
@@ -265,8 +255,7 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
                     }
                 }
 
-            }
-            else{
+            } else {
                 return res.status(400).json(`Goal Setting Not Opened`)
             }
 
@@ -279,21 +268,20 @@ router.get('/prefill-self-assessment/:emp_id/:gs_id', auth,  async function(req,
     }
 });
 
-router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+router.patch('/respond-self-assessment/:emp_id/', auth, async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
 
-
-        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(` Employee Does Not exist`)
 
-        }else{
+        } else {
 
             const schema = Joi.object().keys({
                 sa_id: Joi.number().required(),
@@ -304,13 +292,13 @@ router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res
             const schemas = Joi.array().items(schema)
             const selfAssessmentRequests = req.body
 
-            let validationResult = schemas.validate( selfAssessmentRequests )
-            if(validationResult.error){
+            let validationResult = schemas.validate(selfAssessmentRequests)
+            if (validationResult.error) {
                 return res.status(400).json(validationResult.error.details[0].message)
             }
 
-            for(const sa of selfAssessmentRequests){
-                await selfAssessment.respondSelfAssessment(sa.sa_id, sa.sa_response).then((data)=>{
+            for (const sa of selfAssessmentRequests) {
+                await selfAssessment.respondSelfAssessment(sa.sa_id, sa.sa_response).then((data) => {
                     return data
                 })
             }
@@ -325,27 +313,27 @@ router.patch('/respond-self-assessment/:emp_id/', auth,  async function(req, res
 });
 
 /* Get Self Assessment  */
-router.get('/get-self-assessment/:emp_id/:gs_id', auth,  async function(req, res, next) {
+router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
 
-        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
             return data
         })
 
 
-        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Goal Setting or Employee Does Not exist`)
 
-        }else{
-            let empQuestions =  await selfAssessment.findSelfAssessment(gsId, empId).then((data)=>{
-                return  data
+        } else {
+            let empQuestions = await selfAssessment.findSelfAssessment(gsId, empId).then((data) => {
+                return data
 
             })
 
@@ -360,14 +348,14 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth,  async function(req, res
     }
 });
 
-router.get('/get-self-assessments/:emp_id', auth,  async function(req, res, next) {
+router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
-        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(`Goal Setting or Employee Does Not exist`)
         }
 
@@ -381,23 +369,23 @@ router.get('/get-self-assessments/:emp_id', auth,  async function(req, res, next
 
         const year = goalSettingYearData.gsy_year
 
-        const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data)=>{
+        const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data) => {
             return data
         })
 
-        if(_.isEmpty(yearGoalSettings) || _.isNull(yearGoalSettings)){
+        if (_.isEmpty(yearGoalSettings) || _.isNull(yearGoalSettings)) {
             return res.status(400).json(`No goal Setting for the year`)
         }
         let goalSettingIds = []
-        for (const ygs of yearGoalSettings){
+        for (const ygs of yearGoalSettings) {
             goalSettingIds.push(ygs.gs_id)
         }
 
-            let empQuestions =  await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data)=>{
-                return  data
+        let empQuestions = await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data) => {
+            return data
 
-            })
-            return res.status(200).json(empQuestions)
+        })
+        return res.status(200).json(empQuestions)
     } catch (err) {
         console.error(`Error while fetching Goals `, err.message);
         next(err);
@@ -407,22 +395,20 @@ router.get('/get-self-assessments/:emp_id', auth,  async function(req, res, next
 
 /* Update Self Assessment */
 
-router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+router.patch('/update-self-assessment/:emp_id/', auth, async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
 
-
-        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(` Employee Does Not exist`)
 
-        }
-        else{
+        } else {
 
             const schema = Joi.object().keys({
                 sa_id: Joi.number().required(),
@@ -432,14 +418,14 @@ router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res,
             const schemas = Joi.array().items(schema)
             const selfAssessmentRequests = req.body
 
-            let validationResult = schemas.validate( selfAssessmentRequests )
-            if(validationResult.error){
+            let validationResult = schemas.validate(selfAssessmentRequests)
+            if (validationResult.error) {
                 return res.status(400).json(validationResult.error.details[0].message)
             }
 
 
-            for(const sa of selfAssessmentRequests){
-                await selfAssessment.updateSelfAssessment(sa.sa_id, sa.sa_comment).then((data)=>{
+            for (const sa of selfAssessmentRequests) {
+                await selfAssessment.updateSelfAssessment(sa.sa_id, sa.sa_comment).then((data) => {
                     return data
                 })
             }
@@ -453,22 +439,20 @@ router.patch('/update-self-assessment/:emp_id/', auth,  async function(req, res,
     }
 });
 
-router.patch('/supervisor-update-self-assessment/:emp_id/', auth,  async function(req, res, next) {
+router.patch('/supervisor-update-self-assessment/:emp_id/', auth, async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
 
-
-        if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(` Employee Does Not exist`)
 
-        }
-        else{
+        } else {
 
             const schema = Joi.object().keys({
                 sa_id: Joi.number().required(),
@@ -479,14 +463,14 @@ router.patch('/supervisor-update-self-assessment/:emp_id/', auth,  async functio
             const schemas = Joi.array().items(schema)
             const selfAssessmentRequests = req.body
 
-            let validationResult = schemas.validate( selfAssessmentRequests )
-            if(validationResult.error){
+            let validationResult = schemas.validate(selfAssessmentRequests)
+            if (validationResult.error) {
                 return res.status(400).json(validationResult.error.details[0].message)
             }
 
 
-            for(const sa of selfAssessmentRequests){
-                await selfAssessment.supervisorUpdateSelfAssessment(sa.sa_id, sa.sa_comment, sa.sa_status).then((data)=>{
+            for (const sa of selfAssessmentRequests) {
+                await selfAssessment.supervisorUpdateSelfAssessment(sa.sa_id, sa.sa_comment, sa.sa_status).then((data) => {
                     return data
                 })
             }
@@ -500,53 +484,52 @@ router.patch('/supervisor-update-self-assessment/:emp_id/', auth,  async functio
     }
 });
 
-router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, next) {
+router.get('/get-end-questions/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
 
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
 
-        const employeeData = await employees.getEmployee(empId).then((data)=>{
+        const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
 
 
-        const gsData = await goalSetting.getGoalSetting(gsId).then((data)=>{
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
             return data
         })
 
 
-        if(_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)){
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Goal Setting or Employee Does Not exist`)
 
-        }else{
-            if(parseInt(gsData.gs_status) === 1){
+        } else {
+            if (parseInt(gsData.gs_status) === 1) {
                 let currentYear = gsData.gs_year;
-                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data)=>{
+                let gss = await goalSetting.getGoalSettingYear(currentYear).then((data) => {
                     return data
                 })
 
-                if(_.isEmpty(gss) || _.isNull(gss)){
+                if (_.isEmpty(gss) || _.isNull(gss)) {
                     return res.status(404).json(`No Goal Setting found`)
-                }
-                else{
+                } else {
                     let ratingStatus = 0
                     let ratingDetails;
-                    let gsIdArray = [ ]
+                    let gsIdArray = []
 
-                    for (const gs of gss){
+                    for (const gs of gss) {
                         gsIdArray.push(gs.gs_id)
                     }
 
-                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data)=>{
+                    let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data) => {
                         return data
                     })
 
-                    let employeeRating = await endYearRating.findEmployeeRating(empId, currentYear).then((data)=>{
+                    let employeeRating = await endYearRating.findEmployeeRating(empId, currentYear).then((data) => {
                         return data
                     })
 
-                    if(!(_.isEmpty(employeeRating) || _.isNull(employeeRating))){
+                    if (!(_.isEmpty(employeeRating) || _.isNull(employeeRating))) {
                         ratingStatus = 1
                         ratingDetails = employeeRating
 
@@ -561,14 +544,10 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth,  async function(req, res, 
                     return res.status(200).json(resData)
 
 
-
-
                 }
 
 
-
-            }
-            else{
+            } else {
                 return res.status(400).json(`Goal Setting Not Opened`)
             }
 

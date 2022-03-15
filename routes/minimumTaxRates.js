@@ -3,14 +3,14 @@ const _ = require('lodash')
 const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
-const minimumTaxRate =  require('../services/minimumTaxRateService')
+const minimumTaxRate = require('../services/minimumTaxRateService')
 const logs = require('../services/logService')
 
 
 /* Get minimum tax rate */
-router.get('/', auth, async function(req, res, next) {
+router.get('/', auth, async function (req, res, next) {
     try {
-        await minimumTaxRate.findAllMinimumTaxRate().then((data) =>{
+        await minimumTaxRate.findAllMinimumTaxRate().then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {
@@ -19,36 +19,36 @@ router.get('/', auth, async function(req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-minimum-tax-rate', auth,  async function(req, res, next) {
+router.post('/add-minimum-tax-rate', auth, async function (req, res, next) {
     try {
-        const schema = Joi.object( {
+        const schema = Joi.object({
             mtr_rate: Joi.number().precision(2).required(),
-          })
+        })
 
         const minimumTaxRateRequest = req.body
         const validationResult = schema.validate(minimumTaxRateRequest)
 
-        if(validationResult.error){
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        await minimumTaxRate.findAllMinimumTaxRate().then((data) =>{
-            if(_.isEmpty(data)){
-                minimumTaxRate.addMinimumTaxRate(minimumTaxRateRequest).then((data)=>{
+        await minimumTaxRate.findAllMinimumTaxRate().then((data) => {
+            if (_.isEmpty(data)) {
+                minimumTaxRate.addMinimumTaxRate(minimumTaxRateRequest).then((data) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
                         "log_description": "Added new minimum tax rate",
                         "log_date": new Date()
                     }
-                    logs.addLog(logData).then((logRes)=>{
+                    logs.addLog(logData).then((logRes) => {
                         //return res.status(200).json(logRes);
-                        return  res.status(200).json(data)
+                        return res.status(200).json(data)
                     })
 
                 })
 
-            }else{
-                return  res.status(403).json('Minimum Tax Rate Set Up Already')
+            } else {
+                return res.status(403).json('Minimum Tax Rate Set Up Already')
             }
         })
 
@@ -60,10 +60,10 @@ router.post('/add-minimum-tax-rate', auth,  async function(req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-minimum-tax-rate/:mtr_id', auth,  async function(req, res, next) {
+router.patch('/update-minimum-tax-rate/:mtr_id', auth, async function (req, res, next) {
     try {
 
-        const schema = Joi.object( {
+        const schema = Joi.object({
             mtr_rate: Joi.number().precision(2).required(),
 
         })
@@ -72,22 +72,22 @@ router.patch('/update-minimum-tax-rate/:mtr_id', auth,  async function(req, res,
         const validationResult = schema.validate(minimumTaxRateRequest)
 
 
-        if(validationResult.error){
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        await minimumTaxRate.findMinimumTaxRateById(req.params['mtr_id']).then((data) =>{
-            if(_.isEmpty(data)){
+        await minimumTaxRate.findMinimumTaxRateById(req.params['mtr_id']).then((data) => {
+            if (_.isEmpty(data)) {
                 return res.status(404).json(`Minimum Tax Rate doesn't exist`)
-            }else{
-                minimumTaxRate.updateMinimumTaxRate(minimumTaxRateRequest, req.params['mtr_id']).then((data)=>{
+            } else {
+                minimumTaxRate.updateMinimumTaxRate(minimumTaxRateRequest, req.params['mtr_id']).then((data) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
                         "log_description": "Updated Tax Rate",
                         "log_date": new Date()
                     }
-                    logs.addLog(logData).then((logRes)=>{
+                    logs.addLog(logData).then((logRes) => {
                         //return res.status(200).json(logRes);
-                        return  res.status(200).json(`Minimum Tax Rate Updated`)
+                        return res.status(200).json(`Minimum Tax Rate Updated`)
                     })
                 })
             }

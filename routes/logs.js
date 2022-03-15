@@ -6,10 +6,10 @@ const logs = require('../services/logService');
 
 
 /* Get All Logs */
-router.get('/', auth, async function(req, res, next) {
+router.get('/', auth, async function (req, res, next) {
     try {
 
-        await logs.findAllLogs().then((data) =>{
+        await logs.findAllLogs().then((data) => {
             return res.status(200).json(data);
 
         })
@@ -20,9 +20,9 @@ router.get('/', auth, async function(req, res, next) {
 
 
 /* Add User */
-router.post('/add-log', auth,  async function(req, res, next) {
+router.post('/add-log', auth, async function (req, res, next) {
     try {
-        const schema = Joi.object( {
+        const schema = Joi.object({
             log_user_id: Joi.string().required(),
             log_description: Joi.string().required(),
             log_date: Joi.string().required(),
@@ -31,11 +31,11 @@ router.post('/add-log', auth,  async function(req, res, next) {
         const log = req.body
         const validationResult = schema.validate(log)
 
-        if(validationResult.error){
-          return res.status(400).json(validationResult.error.details[0].message)
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        await logs.addLog(log).then((data)=>{
+        await logs.addLog(log).then((data) => {
             return res.status(200).json(data)
         })
 
@@ -46,10 +46,10 @@ router.post('/add-log', auth,  async function(req, res, next) {
 });
 
 /* UpdateUser */
-router.patch('/update-user/:user_id', auth,  async function(req, res, next) {
+router.patch('/update-user/:user_id', auth, async function (req, res, next) {
     try {
 
-        const schemaWithoutPassword = Joi.object( {
+        const schemaWithoutPassword = Joi.object({
             user_username: Joi.string().min(5).required(),
             user_name: Joi.string().min(5).required(),
             user_email: Joi.string().email().required(),
@@ -58,7 +58,7 @@ router.patch('/update-user/:user_id', auth,  async function(req, res, next) {
             user_status: Joi.number().required(),
         })
 
-        const schemaWithPassword = Joi.object( {
+        const schemaWithPassword = Joi.object({
             user_username: Joi.string().min(5).required(),
             user_name: Joi.string().min(5).required(),
             user_email: Joi.string().email().required(),
@@ -71,29 +71,29 @@ router.patch('/update-user/:user_id', auth,  async function(req, res, next) {
 
         const user = req.body
 
-            let validationResult;
-            if(user.user_password){
-               validationResult = schemaWithPassword.validate(user)
-            }else{
-                validationResult = schemaWithoutPassword.validate(user)
+        let validationResult;
+        if (user.user_password) {
+            validationResult = schemaWithPassword.validate(user)
+        } else {
+            validationResult = schemaWithoutPassword.validate(user)
+        }
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+
+        await users.findUserByUserId(req.params['user_id']).then((data) => {
+            if (data) {
+                users.updateUser(user, req.params['user_id']).then((data) => {
+                    return res.status(200).json(`User updated ${data}`)
+                })
+
+
+            } else {
+                return res.status(404).json('User does not exist in database')
             }
-
-           if(validationResult.error){
-                return res.status(400).json(validationResult.error.details[0].message)
-            }
-
-
-            await users.findUserByUserId(req.params['user_id']).then((data) =>{
-                if(data){
-                    users.updateUser(user, req.params['user_id']).then((data)=>{
-                        return res.status(200).json(`User updated ${data}`)
-                    })
-
-
-                }else{
-                    return res.status(404).json('User does not exist in database')
-                }
-            })
+        })
     } catch (err) {
 
         console.error(`Error while updating user `, err.message);
@@ -102,30 +102,29 @@ router.patch('/update-user/:user_id', auth,  async function(req, res, next) {
 });
 
 /* Login User */
-router.post('/login', async function(req, res, next) {
+router.post('/login', async function (req, res, next) {
     try {
         const user = req.body
-        await users.findUserByUsername(user.user_username).then((data) =>{
-            if(data){
-                if(parseInt(data.user_status) === 1){
-                    bcrypt.compare(user.user_password, data.user_password,  function(err, response){
-                        if(err){
+        await users.findUserByUsername(user.user_username).then((data) => {
+            if (data) {
+                if (parseInt(data.user_status) === 1) {
+                    bcrypt.compare(user.user_password, data.user_password, function (err, response) {
+                        if (err) {
                             return res.status(400).json(`${err} occurred while logging in`)
                         }
-                        if(response){
+                        if (response) {
                             let token = generateAccessToken(data)
                             return res.status(200).json(token);
-                        }else{
+                        } else {
                             return res.status(400).json('Incorrect Password')
                         }
                     })
-                }else{
+                } else {
                     return res.status(400).json('User Account Suspended')
                 }
 
-            }
-            else{
-              return res.status(404).json('Invalid Username')
+            } else {
+                return res.status(404).json('Invalid Username')
             }
         })
     } catch (err) {
@@ -134,7 +133,7 @@ router.post('/login', async function(req, res, next) {
 });
 
 function generateAccessToken(username) {
-    return jwt.sign({username},  process.env.TOKEN_SECRET, { expiresIn: '18000s' });
+    return jwt.sign({username}, process.env.TOKEN_SECRET, {expiresIn: '18000s'});
 }
 
 

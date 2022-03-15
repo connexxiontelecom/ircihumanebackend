@@ -3,36 +3,36 @@ const _ = require('lodash')
 const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
-const { QueryTypes } = require('sequelize')
-const { sequelize, Sequelize } = require('../services/db');
-const timeSheetPenalty =  require('../services/timesheetPenaltyService');
-const employeeService =  require('../services/employeeService');
+const {QueryTypes} = require('sequelize')
+const {sequelize, Sequelize} = require('../services/db');
+const timeSheetPenalty = require('../services/timesheetPenaltyService');
+const employeeService = require('../services/employeeService');
 const logs = require('../services/logService');
 
 
 /* Add to time sheet penalty */
-router.get('/', auth,  async function(req, res) {
+router.get('/', auth, async function (req, res) {
     try {
-        const defaultCharges = await timeSheetPenalty.getTimeSheetPenalty().then((data)=>{
+        const defaultCharges = await timeSheetPenalty.getTimeSheetPenalty().then((data) => {
             return data;
         });
         //return res.status(200).json('hello');
 
-            let empIds = [];
-            defaultCharges.map((charge)=>{
-                empIds.push(charge.tsp_emp_id);
-            });
-            const employees = await employeeService.getEmployeeList(empIds).then((emps)=>{
-                return emps;
-            })
+        let empIds = [];
+        defaultCharges.map((charge) => {
+            empIds.push(charge.tsp_emp_id);
+        });
+        const employees = await employeeService.getEmployeeList(empIds).then((emps) => {
+            return emps;
+        })
         let penaltyObj = {
-          defaultCharges,
-          employees
+            defaultCharges,
+            employees
         };
-            return res.status(200).json(penaltyObj);
+        return res.status(200).json(penaltyObj);
 
     } catch (err) {
-        return res.status(400).json(`Error while fetching default charges `+err.message);
+        return res.status(400).json(`Error while fetching default charges ` + err.message);
 
     }
 });

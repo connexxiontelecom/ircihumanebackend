@@ -1,23 +1,23 @@
-const { QueryTypes } = require('sequelize')
-const { sequelize, Sequelize } = require('./db');
+const {QueryTypes} = require('sequelize')
+const {sequelize, Sequelize} = require('./db');
 const authorizationRoleModel = require("../models/AuthorizationRole")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService');
 
 
-const helper  =require('../helper');
-const errHandler = (err) =>{
+const helper = require('../helper');
+const errHandler = (err) => {
     console.log("Error: ", err);
 }
 
-const getAllAuthorizationRolesByType = async  (type)=>{
-    return await authorizationRoleModel.findAll({where:{ar_type:type}});
+const getAllAuthorizationRolesByType = async (type) => {
+    return await authorizationRoleModel.findAll({where: {ar_type: type}});
 }
 
-const getAllAuthorizationRoles = async  ()=>{
+const getAllAuthorizationRoles = async () => {
     return await authorizationRoleModel.findAll();
 }
 
-const addAuthorizationRole = async (requestBody)=>  {
+const addAuthorizationRole = async (requestBody) => {
     return await authorizationRoleModel.create({
         ar_title: requestBody.title,
         ar_type: requestBody.type,
@@ -26,26 +26,23 @@ const addAuthorizationRole = async (requestBody)=>  {
 }
 
 
-
-const updateAuthorizationRole = async (requestBody, id)=>{
-      return      await authorizationRoleModel.update({
-                ar_title: requestBody.title,
-                ar_type:requestBody.type
-            },{
-                where:{
-                    ar_id:id
-                }
-            });
+const updateAuthorizationRole = async (requestBody, id) => {
+    return await authorizationRoleModel.update({
+        ar_title: requestBody.title,
+        ar_type: requestBody.type
+    }, {
+        where: {
+            ar_id: id
+        }
+    });
 
 
 }
 
 
-const getAuthorizationRoleById = async (id)=>{
-    return await authorizationRoleModel.findOne({where:{ar_id:id}})
+const getAuthorizationRoleById = async (id) => {
+    return await authorizationRoleModel.findOne({where: {ar_id: id}})
 }
-
-
 
 
 module.exports = {
@@ -53,6 +50,6 @@ module.exports = {
     addAuthorizationRole,
     updateAuthorizationRole,
     getAuthorizationRoleById,
-  getAllAuthorizationRolesByType
+    getAllAuthorizationRolesByType
 
 }

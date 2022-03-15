@@ -9,7 +9,7 @@ const errHandler = (err) => {
     console.log("Error: ", err);
 }
 
-async function addEmployeeDocument (documentData) {
+async function addEmployeeDocument(documentData) {
     return await employeeDocumentsModel.create({
         ed_empid: documentData.ed_empid,
         ed_doc: documentData.ed_doc,
@@ -17,9 +17,9 @@ async function addEmployeeDocument (documentData) {
     });
 }
 
-async function getEmployeeDocument (empId) {
+async function getEmployeeDocument(empId) {
     return await employeeDocumentsModel.findAll({
-        where:{
+        where: {
             ed_empid: empId
         }
     });
