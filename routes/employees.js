@@ -113,16 +113,19 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
         })
 
         if(_.isEmpty(suspendUser) || _.isNull(suspendUser)){
-
-
+            const unsuspendEmployee = await employees.unSuspendEmployee(empId).then((data)=>{
+                return data
+            })
+            return res.status(400).json(`An Error Occurred`)
         }
+
 
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": "Suspended Employee Details",
+            "log_description": "Suspended Employee",
             "log_date": new Date()
         }
-        logs.addLog(logData).then((logRes) => {
+        await logs.addLog(logData).then((logRes) => {
 
             return res.status(200).json('Action Successful')
         })
