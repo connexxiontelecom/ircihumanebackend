@@ -78,7 +78,7 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
     try {
         let empId = req.params['emp_id']
         const schema = Joi.object( {
-            emp_suspend_reason: Joi.string().required(),
+            emp_suspension_reason: Joi.string().required(),
         })
 
         const suspensionRequest = req.body
@@ -101,7 +101,7 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
             return data
         })
 
-        if(supervisorCheck){
+        if(!_.isEmpty(supervisorCheck)){
             return res.status(400).json('Employee is assigned as supervisor to an employee')
         }
 
@@ -109,7 +109,7 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
         //     return res.status(400).json(`Employee is a supervisor, kindly remove from supervisor role`)
         // }
 
-       const suspendResponse = await employees.suspendEmployee(empId, employeeData).then((data) => {
+       const suspendResponse = await employees.suspendEmployee(empId, suspensionRequest.emp_suspension_reason).then((data) => {
             return data
         })
 
@@ -126,18 +126,21 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
                 return data
             })
             return res.status(400).json(`An Error Occurred`)
+        }else{
+            const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": "Suspended Employee",
+                "log_date": new Date()
+            }
+            await logs.addLog(logData).then((logRes) => {
+
+                return res.status(200).json('Action Successful')
+            })
+
         }
 
 
-        const logData = {
-            "log_user_id": req.user.username.user_id,
-            "log_description": "Suspended Employee",
-            "log_date": new Date()
-        }
-        await logs.addLog(logData).then((logRes) => {
 
-            return res.status(200).json('Action Successful')
-        })
 
     } catch (err) {
         console.error(`An error occurred while updating Employee `, err.message);
