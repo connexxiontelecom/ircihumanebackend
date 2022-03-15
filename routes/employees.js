@@ -5,6 +5,7 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService')
 const documents = require('../services/employeeDocumentsService')
+const supervisorAssignment =  require('../services/supervisorAssignmentService');
 const auth = require("../middleware/auth");
 const Joi = require("joi");
 const fs = require('fs');
@@ -96,9 +97,17 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
             return res.status(400).json(`Employee Doesn't Exist`)
         }
 
-        if(parseInt(employeeData.emp_supervisor_status) ===1 ){
-            return res.status(400).json(`Employee is a supervisor, kindly remove from supervisor role`)
+        const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(empId).then((data)=>{
+            return data
+        })
+
+        if(supervisorCheck){
+            return res.status(400).json('Employee is assigned as supervisor to an employee')
         }
+
+        // if(parseInt(employeeData.emp_supervisor_status) ===1 ){
+        //     return res.status(400).json(`Employee is a supervisor, kindly remove from supervisor role`)
+        // }
 
        const suspendResponse = await employees.suspendEmployee(empId, employeeData).then((data) => {
             return data
@@ -279,6 +288,17 @@ router.post('/set-supervisor', auth, async function (req, res, next) {
 
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
+        }
+        if(parseInt(supervisorRequest.emp_supervisor_status) === 0){
+            const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(supervisorRequest.emp_id).then((data)=>{
+                return data
+            })
+
+            if(supervisorCheck){
+                return res.status(400).json('Employee is assigned as supervisor to an employee')
+            }
+
+
         }
 
         await employees.setSupervisorStatus(supervisorRequest).then((data) => {
