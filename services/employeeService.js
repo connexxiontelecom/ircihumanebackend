@@ -319,6 +319,17 @@ async function suspendEmployee(employeeId, suspensionReason){
 
 }
 
+async function unSuspendEmployee(employeeId){
+    return await employee.update({
+        emp_status: 1,
+    }, {
+        where:{
+            emp_id: employeeId
+        }
+    })
+
+}
+
 
 
 
@@ -392,7 +403,8 @@ module.exports = {
     getEmployeeByIdOnly,
     getEmployeeList,
     updateProfilePicture,
-    suspendEmployee
+    suspendEmployee,
+    unSuspendEmployee
     //updateDepartment,
     //setNewDepartment,
 }

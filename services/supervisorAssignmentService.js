@@ -42,10 +42,17 @@ async function getEmployeeSupervisor(emp_id){
     });
 }
 
+async function getSupervisorEmployee(emp_id){
+    return await SupervisorAssignment.findAll({
+        where:{sa_supervisor_id:emp_id, sa_status: 1},
+    });
+}
+
 module.exports = {
     addAssignment,
     findAllAssignments,
     findLastActiveAssignment,
     updateAssignment,
     getEmployeeSupervisor,
+    getSupervisorEmployee
 }
