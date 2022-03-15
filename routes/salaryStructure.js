@@ -104,7 +104,7 @@ router.post('/add-salary-structure', auth,  async function(req, res, next) {
                                         ss_empid: empId,
                                         ss_pd: percentage.pd_id,
                                         ss_amount: amount,
-                                        ss_grade:ss_grade
+                                        ss_grade:salaryStructureRequest.ss_grade
 
                                     }
 
