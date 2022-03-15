@@ -10,7 +10,8 @@ const Joi = require("joi");
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
-var path = require('path')
+const path = require('path')
+const user = require("../services/userService");
 const s3 = new AWS.S3({
     accessKeyId: `${process.env.ACCESS_KEY}`,
     secretAccessKey: `${process.env.SECRET_KEY}`
@@ -63,6 +64,67 @@ router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
                 })
 
             }
+        })
+
+    } catch (err) {
+        console.error(`An error occurred while updating Employee `, err.message);
+        next(err);
+    }
+});
+
+
+router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params['emp_id']
+        const schema = Joi.object( {
+            emp_suspend_reason: Joi.string().required(),
+        })
+
+        const suspensionRequest = req.body
+        const validationResult = schema.validate(suspensionRequest)
+
+        if(validationResult.error){
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+           return data
+        })
+
+        if (_.isEmpty(employeeData)) {
+            return res.status(400).json(`Employee Doesn't Exist`)
+        }
+
+        if(parseInt(employeeData.emp_supervisor_status) ===1 ){
+            return res.status(400).json(`Employee is a supervisor, kindly remove from supervisor role`)
+        }
+
+       const suspendResponse = await employees.suspendEmployee(empId, employeeData).then((data) => {
+            return data
+        })
+
+        if(_.isEmpty(suspendResponse) || _.isNull(suspendResponse)){
+            return res.status(400).json(`An Error Occurred`)
+        }
+
+        let suspendUser = await user.suspendUser(employeeData.emp_unique_id).then((data) => {
+            return data
+        })
+
+        if(_.isEmpty(suspendUser) || _.isNull(suspendUser)){
+
+
+        }
+
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": "Suspended Employee Details",
+            "log_date": new Date()
+        }
+        logs.addLog(logData).then((logRes) => {
+
+            return res.status(200).json('Action Successful')
         })
 
     } catch (err) {
