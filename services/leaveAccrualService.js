@@ -22,6 +22,20 @@ async function removeLeaveAccrual(accrualData) {
         where: {
             lea_month: accrualData.lea_month,
             lea_year: accrualData.lea_year,
+
+        }
+    });
+}
+
+async function removeLeaveAccrualEmployees(accrualData) {
+
+
+    return await LeaveAccrual.destroy({
+        where: {
+            lea_month: accrualData.lea_month,
+            lea_year: accrualData.lea_year,
+            lea_emp_id: accrualData.lea_emp_id
+
         }
     });
 }

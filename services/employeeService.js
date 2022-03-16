@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const {QueryTypes, Op} = require('sequelize')
+const {QueryTypes, Op, where} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
@@ -329,6 +329,11 @@ async function suspendEmployee(employeeId, suspensionReason) {
 
 }
 
+async function getActiveEmployeesByLocation(locationId) {
+    return await employee.findAll({ where:{emp_location_id: locationId, emp_status: 1 }})
+
+}
+
 async function unSuspendEmployee(employeeId) {
     return await employee.update({
         emp_status: 1,
@@ -408,7 +413,8 @@ module.exports = {
     getEmployeeList,
     updateProfilePicture,
     suspendEmployee,
-    unSuspendEmployee
+    unSuspendEmployee,
+    getActiveEmployeesByLocation
     //updateDepartment,
     //setNewDepartment,
 }

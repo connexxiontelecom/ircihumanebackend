@@ -27,11 +27,12 @@ async function getSalaryMonthYear(month, year) {
     })
 }
 
-async function undoSalaryMonthYear(month, year) {
+async function undoSalaryMonthYear(month, year, employees) {
     return await Salary.destroy({
         where: {
             salary_paymonth: month,
-            salary_payyear: year
+            salary_payyear: year,
+            salary_empid: employees
         }
     })
 }
