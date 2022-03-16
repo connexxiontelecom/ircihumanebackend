@@ -11,10 +11,12 @@ const helper = require('../helper');
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
-const getLeaveTypes = async (req, res) => {
-    const leaves = await leaveType.findAll({attributes: ['leave_name', 'leave_type_id', 'leave_duration', 'lt_rate', 'lt_mode']});
+
+const getLeaveTypes = async (req, res)=>{
+    const leaves =  await leaveType.findAll({attributes: ['leave_name','leave_type_id', 'leave_duration', 'lt_rate', 'lt_mode', 'lt_accrue']});
     res.status(200).json(leaves)
 }
+
 const setNewLeaveType = async (req, res, next) => {
     try {
         const schema = Joi.object({
