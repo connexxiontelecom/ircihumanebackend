@@ -60,6 +60,7 @@ module.exports = {
     addLeaveAccrual,
     findLeaveAccrualByYearEmployeeLeaveType,
     sumLeaveAccrualByYearEmployeeLeaveType,
-    removeLeaveAccrual
+    removeLeaveAccrual,
+    removeLeaveAccrualEmployees
 
 }

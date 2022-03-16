@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'payrollmonthyearlocation',
-    tableName: 'payroll_month_year_location'
+    tableName: 'payroll_month_year_locations'
   });
   return payrollmonthyearlocation;
 };

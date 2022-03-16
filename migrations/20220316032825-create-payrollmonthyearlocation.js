@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('payrollmonthyearlocations', {
+    await queryInterface.createTable('payroll_month_year_locations', {
       pmyl_id: {
         allowNull: false,
         autoIncrement: true,
@@ -28,6 +28,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('payrollmonthyearlocations');
+    await queryInterface.dropTable('payroll_month_year_locations');
   }
 };

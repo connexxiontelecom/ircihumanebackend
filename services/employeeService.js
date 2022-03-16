@@ -303,7 +303,12 @@ async function getSupervisorEmployee(supervisorId) {
 }
 
 async function getActiveEmployees() {
-    return await employee.findAll({include: ['supervisor', 'location', {model: JobRole, include: Department}]})
+    return await employee.findAll({
+        where:{
+         emp_status: 1
+        },
+        include: ['supervisor', 'location', {model: JobRole, include: Department}]
+    })
 }
 
 async function updateProfilePicture(employeeId, employeeData) {

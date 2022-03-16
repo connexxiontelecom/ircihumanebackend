@@ -34,7 +34,7 @@ async function findPayrollMonthYearLocation() {
 }
 
 async function findPayrollByMonthYearLocation(month, year, locationId) {
-    return await Pmyl.findOne({where: {pmyl_month: month, pmyl_year: locationId}})
+    return await Pmyl.findOne({where: {pmyl_month: month, pmyl_year: year, pmyl_location_id: locationId}})
 }
 
 module.exports = {

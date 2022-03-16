@@ -17,7 +17,7 @@ const payrollMonthYear = require('../services/payrollMonthYearService')
 const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
-const {addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual} = require("../routes/leaveAccrual");
+const {addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees} = require("../routes/leaveAccrual");
 const leaveTypeService = require('../services/leaveTypeService');
 const logs = require('../services/logService')
 
@@ -707,10 +707,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
             return data
         })
 
+
         for (const emp of employees) {
             employeeIdsLocation.push(emp.emp_id)
         }
-
 
         // check for pending variational payments
         const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYearEmployees(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
@@ -723,6 +723,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
             const salaryRoutineCheck = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                 return data
             })
+
 
             if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
 
@@ -1308,6 +1309,16 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                 }
 
+                const pmylObject = {
+                    pmyl_month: payrollMonth,
+                    pmyl_year: payrollYear,
+                    pmyl_location_id: pmylLocationId
+                }
+
+                await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data)=>{
+                    return data
+                })
+
                 //return  res.status(200).json(GrossArray)
                 const logData = {
                     "log_user_id": req.user.username.user_id,
@@ -1319,9 +1330,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                     return res.status(200).json('Action Successful')
                 })
 
-            } else {
+            }
+            else {
 
-                return res.status(400).json(`Payroll Routine has already been run`)
+                return res.status(400).json(`Payroll Routine has already been run for selected location`)
             }
 
 
@@ -1436,41 +1448,80 @@ router.get('/undo-salary-routine', auth, async function (req, res, next) {
 });
 
 
-router.get('/undo-salary-routine', auth, async function (req, res, next) {
+router.post('/undo-salary-routine', auth, async function (req, res, next) {
     try {
 
-        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
-            return data
+        const schema = Joi.object({
+            pmyl_location_id: Joi.number().required(),
         })
 
-        const payrollMonth = payrollMonthYearData.pym_month
-        const payrollYear = payrollMonthYearData.pym_year
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
 
-        const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
-            return data
-        })
-
-        const leaveAccrualData = {
-            lea_month: payrollMonth,
-            lea_year: payrollYear,
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
         }
-        const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data) => {
-            return data
-        })
 
-        const reverseVariationalPayments = await variationalPayment.undoVariationalPaymentMonthYear(payrollMonth, payrollYear).then((data) => {
-            return data
-        })
+        const pmylLocationId = payrollRequest.pmyl_location_id
+        const employeeIdsLocation = []
+        if(parseInt(pmylLocationId) > 0) {
 
-        const logData = {
-            "log_user_id": req.user.username.user_id,
-            "log_description": "Undo Payroll Routine",
-            "log_date": new Date()
+            const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+                return data
+            })
+
+            for (const emp of employees) {
+                employeeIdsLocation.push(emp.emp_id)
+            }
+        }else{
+
+            const employees = await employee.getActiveEmployees().then((data) => {
+                return data
+            })
+
+            for (const emp of employees) {
+                employeeIdsLocation.push(emp.emp_id)
+            }
         }
-        await logs.addLog(logData).then((logRes) => {
 
-            return res.status(200).json('Action Successful')
-        })
+
+            const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+                return data
+            })
+
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+
+            const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                return data
+            })
+
+            const leaveAccrualData = {
+                lea_month: payrollMonth,
+                lea_year: payrollYear,
+                lea_emp_id: employeeIdsLocation
+            }
+            const leaveAccrualsUndo = await removeLeaveAccrualEmployees(leaveAccrualData).then((data) => {
+                return data
+            })
+
+            const reverseVariationalPayments = await variationalPayment.undoVariationalPaymentMonthYearEmployee(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                return data
+            })
+
+            const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": "Undo Payroll Routine",
+                "log_date": new Date()
+            }
+            await logs.addLog(logData).then((logRes) => {
+
+                return res.status(200).json('Action Successful')
+            })
+
+
+
+
 
 
     } catch (err) {

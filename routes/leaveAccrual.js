@@ -36,6 +36,10 @@ async function removeLeaveAccrual(data) {
 
 }
 
+async function removeLeaveAccrualEmployees(data){
+    return await leaveAccrual.removeLeaveAccrualEmployees(data)
+}
+
 async function computeLeaveAccruals(data) {
     const schema = Joi.object({
         lea_emp_id: Joi.number().required(),
@@ -129,6 +133,7 @@ module.exports = {
     router,
     addLeaveAccrual,
     computeLeaveAccruals,
-    removeLeaveAccrual
+    removeLeaveAccrual,
+    removeLeaveAccrualEmployees
 
 }

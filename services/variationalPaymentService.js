@@ -141,6 +141,21 @@ async function undoVariationalPaymentMonthYear(month, year) {
 
 }
 
+async function undoVariationalPaymentMonthYearEmployee(month, year, employees) {
+
+    return await variationalPaymentModel.update({
+        vp_confirm: 0
+    }, {
+        where: {
+            vp_payment_month: month,
+            vp_payment_year: year,
+            vp_confirm: [1, 3, 0],
+            vp_emp_id: employees
+        }
+    })
+
+}
+
 
 async function getVariationalPaymentMonthYear(month, year, employee, payment_type) {
 
@@ -175,5 +190,6 @@ module.exports = {
     undoVariationalPaymentMonthYear,
     setNewSingleVariationalPayment,
     getVariationalPaymentMonthYear,
-    getUnconfirmedVariationalPaymentMonthYearEmployees
+    getUnconfirmedVariationalPaymentMonthYearEmployees,
+    undoVariationalPaymentMonthYearEmployee
 }
