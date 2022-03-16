@@ -145,9 +145,7 @@ router.get('/salary-routine', auth, async function (req, res, next) {
                                 if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
                                     await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
                                         return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
-
                                     })
-
                                 } else {
                                     let amount = 0;
                                     let percent = 0;
@@ -301,7 +299,658 @@ router.get('/salary-routine', auth, async function (req, res, next) {
                                             if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
                                                 await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
                                                     return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+                                                })
 
+                                            }
+                                        }
+
+
+                                        //adjusted gross basic computation
+                                        if (parseInt(computationalPayment.pd_amount) === 2) {
+                                            amount = (parseFloat(computationalPayment.pd_percentage) / 100) * basicAdjustedGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                                return data
+                                            })
+
+                                            if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                    return res.status(400).json(`An error Occurred while Processing Routine basic computation `)
+
+                                                })
+
+                                            }
+
+                                        }
+
+
+                                        // Full Gross
+                                        if (parseInt(computationalPayment.pd_amount) === 3) {
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage) / 100) * fullGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                                return data
+                                            })
+
+                                            if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
+
+
+                                        // Full basic Gross
+                                        if (parseInt(computationalPayment.pd_amount) === 4) {
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage) / 100) * basicFullGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                                return data
+                                            })
+
+                                            if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
+
+                                        //adjusted gross II
+                                        if (parseInt(computationalPayment.pd_amount) === 5) {
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empAdjustedGrossII
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                                return data
+                                            })
+
+                                            if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                                })
+
+                                            }
+                                        }
+                                    }
+
+                                    //tax computation
+                                    let welfareIncomes = 0;
+                                    let taxableIncome = 0;
+                                    let taxableIncomeData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                                        return data
+                                    })
+
+                                    for (const income of taxableIncomeData) {
+                                        if ((parseInt(income.payment.pd_payment_type) === 1) && (parseInt(income.payment.pd_payment_taxable) === 1)) {
+                                            taxableIncome = parseFloat(income.salary_amount) + taxableIncome
+                                        }
+
+                                        if (parseInt(income.payment.pd_welfare) === 1) {
+                                            welfareIncomes = welfareIncomes + parseFloat(income.salary_amount)
+                                        }
+
+                                    }
+
+
+                                    let taxRatesData = await taxRates.findAllTaxRate().then((data) => {
+                                        return data
+                                    })
+
+                                    if (_.isEmpty(taxRatesData) || _.isNull(taxRatesData)) {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                            return res.status(400).json(`No tax Rate Setup `)
+
+                                        })
+
+                                    }
+                                    let minimumTaxRateData = await minimumTaxRate.findAllMinimumTaxRate().then((data) => {
+                                        return data
+                                    })
+
+                                    if (_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)) {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                            return res.status(400).json(`Minimum Tax Rate Not Setup `)
+
+                                        })
+                                    }
+
+
+                                    let paymentDefinitionTaxData = await paymentDefinition.findTax().then((data) => {
+                                        return data
+                                    })
+
+                                    if (_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)) {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                            return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
+
+                                        })
+                                    }
+                                    let newTaxableIncome = empAdjustedGrossII - welfareIncomes
+                                    let checka = parseFloat(200000 / 12)
+                                    let checkb = parseFloat((1 / 100) * empAdjustedGrossII)
+                                    let allowableSum = checka
+                                    if (checkb > checka) {
+                                        allowableSum = checkb
+                                    }
+                                    let taxRelief = ((20 / 100) * empAdjustedGrossII) + (allowableSum)
+                                    let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate) / 100) * (empAdjustedGrossII);
+                                    let tempTaxAmount = newTaxableIncome - taxRelief
+                                    let TtempTaxAmount = tempTaxAmount
+                                    let cTax;
+                                    let totalTaxAmount = 0;
+                                    let i = 1;
+
+                                    let taxObjects = []
+                                    if (parseFloat(tempTaxAmount) > 0) {
+                                        for (const tax of taxRatesData) {
+                                            if (i < parseInt(taxRatesData.length)) {
+                                                if ((tempTaxAmount - tax.tr_band / 12) > 0) {
+
+                                                    if (tempTaxAmount >= tax.tr_band / 12) {
+                                                        cTax = (tax.tr_rate / 100) * (tax.tr_band / 12);
+                                                        let taxObject = {
+                                                            band: tax.tr_band / 12,
+                                                            rate: tax.tr_rate,
+                                                            amount: cTax
+                                                        }
+                                                        taxObjects.push(taxObject)
+                                                    } else {
+                                                        cTax = (tax.tr_rate / 100) * (tempTaxAmount)
+                                                        totalTaxAmount = cTax + totalTaxAmount
+                                                        let taxObject = {
+                                                            band: tax.tr_band / 12,
+                                                            rate: tax.tr_rate,
+                                                            amount: cTax
+                                                        }
+                                                        taxObjects.push(taxObject)
+                                                        break;
+                                                    }
+
+                                                } else {
+                                                    cTax = (tax.tr_rate / 100) * (tempTaxAmount)
+                                                    totalTaxAmount = cTax + totalTaxAmount
+                                                    let taxObject = {
+                                                        band: tax.tr_band / 12,
+                                                        rate: tax.tr_rate,
+                                                        amount: cTax
+                                                    }
+                                                    taxObjects.push(taxObject)
+                                                    break;
+                                                }
+
+
+                                            } else {
+                                                cTax = (tax.tr_rate / 100) * (tempTaxAmount)
+                                                let taxObject = {
+                                                    band: tax.tr_band / 12,
+                                                    rate: tax.tr_rate,
+                                                    amount: cTax
+                                                }
+                                                taxObjects.push(taxObject)
+
+                                            }
+                                            tempTaxAmount = tempTaxAmount - (tax.tr_band / 12);
+
+                                            totalTaxAmount = cTax + totalTaxAmount
+                                            i++;
+                                        }
+
+                                        if (totalTaxAmount <= minimumTax) {
+                                            totalTaxAmount = minimumTax
+                                        }
+
+                                    } else {
+                                        totalTaxAmount = minimumTax
+                                    }
+
+
+                                    let object = {
+                                        taxable: taxableIncome,
+                                        tax: totalTaxAmount,
+                                        welfare: welfareIncomes,
+                                        newTax: newTaxableIncome,
+                                        onepercent: checkb,
+                                        twohundred: checka,
+                                        real: allowableSum,
+                                        temptaxamount: TtempTaxAmount,
+                                        newTaxableIncome: newTaxableIncome,
+                                        taxRelief: taxRelief,
+                                        taxObjects: taxObjects
+
+                                    }
+
+                                    salaryObject = {
+                                        salary_empid: emp.emp_id,
+                                        salary_paymonth: payrollMonth,
+                                        salary_payyear: payrollYear,
+                                        salary_pd: paymentDefinitionTaxData.pd_id,
+                                        salary_amount: totalTaxAmount,
+                                        salary_share: 0,
+                                        salary_tax: 1
+                                    }
+
+                                    let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                        return data
+                                    })
+
+                                    if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                            return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
+
+                                        })
+
+                                    }
+
+                                    const leaveTypesData = await leaveTypeService.getAccruableLeaves().then((data) => {
+                                        return data
+                                    })
+
+                                    if (_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)) {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                            return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
+
+                                        })
+                                    }
+
+                                    for (const leaveType of leaveTypesData) {
+                                        const leaveAccrual = {
+                                            lea_emp_id: emp.emp_id,
+                                            lea_month: payrollMonth,
+                                            lea_year: payrollYear,
+                                            lea_leave_type: leaveType.leave_type_id,
+                                            lea_rate: parseFloat(leaveType.lt_rate)
+                                        }
+
+                                        const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                                            return data
+                                        })
+
+                                        if (_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)) {
+                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
+
+                                            })
+                                        }
+                                    }
+
+                                    let grossObject = {
+                                        empGross, empAdjustedGross
+                                    }
+
+                                    GrossArray.push(grossObject)
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+
+                    //return  res.status(200).json(GrossArray)
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Ran Payroll Routine",
+                        "log_date": new Date()
+                    }
+                    await logs.addLog(logData).then((logRes) => {
+
+                        return res.status(200).json('Action Successful')
+                    })
+
+                } else {
+
+                    return res.status(400).json(`Payroll Routine has already been run`)
+                }
+
+
+            } else {
+
+                return res.status(400).json(`There are pending Variational Payments`)
+            }
+
+        }
+
+    } catch (err) {
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+
+        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+            console.log(err.message)
+            next(err);
+        })
+
+    }
+});
+
+router.post('/salary-routine', auth, async function (req, res, next) {
+    try {
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        } else {
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            let salaryObject = {}
+
+            // check for pending variational payments
+            const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(pendingVariationalPayment) || _.isNull(pendingVariationalPayment)) {
+
+                //check if payroll routine has been run
+                const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                    return data
+                })
+
+                if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+                    const employees = await employee.getActiveEmployees().then((data) => {
+                        return data
+                    })
+
+                    let GrossArray = []
+
+                    for (const emp of employees) {
+
+                        let empGross = parseFloat(emp.emp_gross)
+
+                        let hiredDate = new Date(emp.emp_hire_date)
+                        let contractEndDate = new Date(emp.emp_contract_end_date)
+
+                        const contractEndYear = contractEndDate.getFullYear()
+                        const contractEndMonth = contractEndDate.getMonth() + 1
+
+                        const hireYear = hiredDate.getFullYear()
+                        const hireMonth = hiredDate.getMonth() + 1
+
+                        const payrollDate = new Date(parseInt(payrollYear), parseInt(payrollMonth) - 1, 2)
+                        let daysBeforeStart
+                        if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
+                            daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
+                            empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
+                        }
+
+                        if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                            let suspendEmployee = await employee.suspendEmployee(emp.emp_id, 'Contract Ended').then((data) => {
+                                return data
+                            })
+
+                            let suspendUser = await user.suspendUser(emp.emp_unique_id).then((data) => {
+                                return data
+                            })
+
+                            daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
+                            daysBeforeStart = 22 - (daysBeforeStart + 1)
+                            empGross = empGross - (daysBeforeStart * (empGross / 22))
+                        }
+
+                        if (empGross > 0) {
+                            //check employee variational payments
+                            const employeeVariationalPayments = await variationalPayment.getVariationalPaymentEmployeeMonthYear(emp.emp_id, payrollMonth, payrollYear).then((data) => {
+                                return data
+                            })
+
+                            if (!(_.isEmpty(employeeVariationalPayments) || _.isNull(employeeVariationalPayments))) {
+
+
+                                for (const empVP of employeeVariationalPayments) {
+
+
+                                    salaryObject = {
+                                        salary_empid: emp.emp_id,
+                                        salary_paymonth: payrollMonth,
+                                        salary_payyear: payrollYear,
+                                        salary_pd: empVP.vp_payment_def_id,
+                                        salary_amount: empVP.vp_amount,
+                                        salary_share: 0,
+                                        salary_tax: 0
+                                    }
+
+                                    let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                        return data
+                                    })
+
+                                    if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                            return res.status(400).json(`An error Occurred while Processing Routine variational payments `)
+
+                                        })
+
+                                    }
+
+
+                                }
+                            }
+
+                            const grossPercentage = await paymentDefinition.findCodeWithGross().then((data) => {
+                                return data
+                            })
+                            if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
+
+                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
+
+                                })
+
+                            } else {
+
+                                const totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
+                                    return data
+                                })
+
+                                if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                        return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
+                                    })
+                                } else {
+                                    let amount = 0;
+                                    let percent = 0;
+
+                                    let paymentDefinitionData = await paymentDefinition.findBasicPaymentDefinition().then((data) => {
+                                        return data
+                                    })
+                                    let basicSalaryPercent = parseFloat(paymentDefinitionData.pd_pr_gross)
+
+                                    //  splitting into percentages
+
+                                    for (const percentage of grossPercentage) {
+                                        percent = parseFloat(percentage.pd_pr_gross)
+                                        amount = (percent / 100) * empGross
+
+                                        salaryObject = {
+                                            salary_empid: emp.emp_id,
+                                            salary_paymonth: payrollMonth,
+                                            salary_payyear: payrollYear,
+                                            salary_pd: percentage.pd_id,
+                                            salary_amount: amount,
+                                            salary_share: percent,
+                                            salary_tax: 0
+                                        }
+
+
+                                        let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                            return data
+                                        })
+
+                                        if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                return res.status(400).json(`An error Occurred while Processing Routine splitting gross `)
+
+                                            })
+
+                                        }
+
+                                    }
+
+
+                                    // hazard allowances
+                                    const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(emp.emp_location_id).then((data) => {
+                                        return data
+                                    })
+
+                                    if (!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)) {
+                                        for (const allowance of hazardAllowances) {
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: allowance.la_payment_id,
+                                                salary_amount: allowance.la_amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                                return data
+                                            })
+
+                                            if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                    return res.status(400).json(`An error Occurred while Processing Routine hazard allowance `)
+
+                                                })
+
+                                            }
+
+
+                                        }
+                                    }
+
+
+                                    //computational Payments
+
+                                    const computationalPayments = await paymentDefinition.getComputedPayments().then((data) => {
+                                        return data
+                                    })
+
+                                    let fullGross = 0;
+                                    let empAdjustedGross = 0
+                                    let empAdjustedGrossII = 0;
+
+                                    let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                                        return data
+                                    })
+
+
+                                    for (const salary of fullSalaryData) {
+                                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                                            fullGross = parseFloat(salary.salary_amount) + fullGross
+                                        }
+
+
+                                        if (parseInt(salary.payment.pd_total_gross) === 1) {
+                                            if (parseInt(salary.payment.pd_payment_type) === 1) {
+                                                empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                                            }
+
+                                            if (parseInt(salary.payment.pd_payment_type) === 2) {
+                                                empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                                            }
+
+                                        }
+
+                                        if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                                            if (parseInt(salary.payment.pd_payment_type) === 1) {
+                                                empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                                            }
+
+                                            if (parseInt(salary.payment.pd_payment_type) === 2) {
+                                                empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+
+                                            }
+
+                                        }
+                                    }
+
+
+                                    let basicFullGross = (basicSalaryPercent / 100) * fullGross
+
+                                    let basicAdjustedGross = (basicSalaryPercent / 100) * empAdjustedGross;
+
+                                    for (const computationalPayment of computationalPayments) {
+
+                                        //adjusted gross computation
+                                        if (parseInt(computationalPayment.pd_amount) === 1) {
+
+                                            amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empAdjustedGross
+
+                                            salaryObject = {
+                                                salary_empid: emp.emp_id,
+                                                salary_paymonth: payrollMonth,
+                                                salary_payyear: payrollYear,
+                                                salary_pd: computationalPayment.pd_id,
+                                                salary_amount: amount,
+                                                salary_share: 0,
+                                                salary_tax: 0
+                                            }
+
+                                            let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
+                                                return data
+                                            })
+
+                                            if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                                    return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
                                                 })
 
                                             }
