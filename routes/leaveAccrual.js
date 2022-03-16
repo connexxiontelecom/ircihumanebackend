@@ -36,7 +36,7 @@ async function removeLeaveAccrual(data) {
 
 }
 
-async function removeLeaveAccrualEmployees(data){
+async function removeLeaveAccrualEmployees(data) {
     return await leaveAccrual.removeLeaveAccrualEmployees(data)
 }
 

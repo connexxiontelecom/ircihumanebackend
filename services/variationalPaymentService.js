@@ -115,7 +115,6 @@ async function getUnconfirmedVariationalPaymentMonthYearEmployees(month, year, e
 }
 
 
-
 async function getVariationalPaymentEmployeeMonthYear(empId, month, year) {
     return await variationalPaymentModel.findAll({
         where: {
