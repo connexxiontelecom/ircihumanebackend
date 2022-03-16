@@ -1346,7 +1346,6 @@ router.post('/salary-routine', auth, async function (req, res, next) {
             return res.status(400).json(`There are pending Variational Payments`)
         }
 
-
     } catch (err) {
 
         const payrollRequest = req.body

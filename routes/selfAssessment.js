@@ -94,6 +94,47 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
     }
 });
 
+
+/* Approve Self Assessment */
+
+router.post('/approve-assessment/', auth, async function (req, res, next) {
+    try {
+        const schema = Joi.object().keys({
+            sa_id: Joi.number().required(),
+        })
+        const schemas = Joi.array().items(schema)
+        const saRequests = req.body
+
+        let validationResult = schemas.validate(saRequests)
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const updateResponse = await selfAssessment.selfAssessmentStatusUpdate(saRequests, 1).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(updateResponse) || _.isNull(updateResponse)){
+            return res.status(400).json('An Error Occurred while updating status')
+        }
+
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": "Approved Goal Setting for Employee",
+            "log_date": new Date()
+        }
+        await logs.addLog(logData).then((logRes) => {
+
+            return res.status(200).json(`Action Successful`)
+        })
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
+
+
 /* Pre Fill Self Assessment  */
 router.get('/prefill-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
