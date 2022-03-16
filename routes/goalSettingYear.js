@@ -39,7 +39,8 @@ router.post('/add-year', auth, async function (req, res, next) {
             const removeResponse = await goalSettingYear.removeGoalSettingYear().then((data) => {
                 return data
             })
-            if (!removeResponse) {
+            //return res.status(400).json(removeResponse)
+            if (removeResponse > 0) {
                 return res.status(400).json(`Existing record was not removed`)
             }
 
