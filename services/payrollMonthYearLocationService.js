@@ -37,10 +37,20 @@ async function findPayrollByMonthYearLocation(month, year, locationId) {
     return await Pmyl.findOne({where: {pmyl_month: month, pmyl_year: year, pmyl_location_id: locationId}})
 }
 
+async function removePayrollMonthYear(month, year) {
+    return await Pmyl.destroy({where: {pmyl_month: month, pmyl_year: year}})
+}
+
+async function removePayrollMonthYearLocation(month, year, locationId) {
+    return await Pmyl.destroy({where: {pmyl_month: month, pmyl_year: year, pmyl_location_id: locationId}})
+}
+
 module.exports = {
     addPayrollMonthYearLocation,
     updatePayrollMonthYearLocation,
     findPayrollByMonthYearLocation,
-    findPayrollMonthYearLocation
+    findPayrollMonthYearLocation,
+    removePayrollMonthYear,
+    removePayrollMonthYearLocation
 
 }

@@ -1463,8 +1463,17 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
         }
 
         const pmylLocationId = payrollRequest.pmyl_location_id
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
         const employeeIdsLocation = []
         if(parseInt(pmylLocationId) > 0) {
+            await payrollMonthYearLocation.removePayrollMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data)=>{
+                return data
+            })
 
             const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
                 return data
@@ -1474,7 +1483,9 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
                 employeeIdsLocation.push(emp.emp_id)
             }
         }else{
-
+            await payrollMonthYearLocation.removePayrollMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return data
+            })
             const employees = await employee.getActiveEmployees().then((data) => {
                 return data
             })
@@ -1485,12 +1496,7 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
         }
 
 
-            const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
-                return data
-            })
 
-            const payrollMonth = payrollMonthYearData.pym_month
-            const payrollYear = payrollMonthYearData.pym_year
 
             const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                 return data
