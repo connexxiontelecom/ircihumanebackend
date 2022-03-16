@@ -74,6 +74,7 @@ const createNewEmployee = async (req, res, next) => {
             // salary_structure: Joi.number().required().messages({"any.required":"Select salary structure "}),
             // salary_structure_category: Joi.number().required().messages({"any.required":"Select salary structure category"}),
             // tax_amount: Joi.date().required().messages({"any.required":"Enter tax amount"}),
+            emp_status: 1
         })
         const employeeRequest = req.body
         const validationResult = schema.validate(employeeRequest, {abortEarly: false});
