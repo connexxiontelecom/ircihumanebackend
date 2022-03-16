@@ -5,7 +5,7 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService')
 const documents = require('../services/employeeDocumentsService')
-const supervisorAssignment =  require('../services/supervisorAssignmentService');
+const supervisorAssignment = require('../services/supervisorAssignmentService');
 const auth = require("../middleware/auth");
 const Joi = require("joi");
 const fs = require('fs');
@@ -77,31 +77,31 @@ router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
 router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
-        const schema = Joi.object( {
+        const schema = Joi.object({
             emp_suspension_reason: Joi.string().required(),
         })
 
         const suspensionRequest = req.body
         const validationResult = schema.validate(suspensionRequest)
 
-        if(validationResult.error){
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
 
         const employeeData = await employees.getEmployee(empId).then((data) => {
-           return data
+            return data
         })
 
         if (_.isEmpty(employeeData)) {
             return res.status(400).json(`Employee Doesn't Exist`)
         }
 
-        const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(empId).then((data)=>{
+        const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(empId).then((data) => {
             return data
         })
 
-        if(!_.isEmpty(supervisorCheck)){
+        if (!_.isEmpty(supervisorCheck)) {
             return res.status(400).json('Employee is assigned as supervisor to an employee')
         }
 
@@ -109,11 +109,11 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
         //     return res.status(400).json(`Employee is a supervisor, kindly remove from supervisor role`)
         // }
 
-       const suspendResponse = await employees.suspendEmployee(empId, suspensionRequest.emp_suspension_reason).then((data) => {
+        const suspendResponse = await employees.suspendEmployee(empId, suspensionRequest.emp_suspension_reason).then((data) => {
             return data
         })
 
-        if(_.isEmpty(suspendResponse) || _.isNull(suspendResponse)){
+        if (_.isEmpty(suspendResponse) || _.isNull(suspendResponse)) {
             return res.status(400).json(`An Error Occurred`)
         }
 
@@ -121,12 +121,12 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
             return data
         })
 
-        if(_.isEmpty(suspendUser) || _.isNull(suspendUser)){
-            const unsuspendEmployee = await employees.unSuspendEmployee(empId).then((data)=>{
+        if (_.isEmpty(suspendUser) || _.isNull(suspendUser)) {
+            const unsuspendEmployee = await employees.unSuspendEmployee(empId).then((data) => {
                 return data
             })
             return res.status(400).json(`An Error Occurred`)
-        }else{
+        } else {
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": "Suspended Employee",
@@ -138,8 +138,6 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
             })
 
         }
-
-
 
 
     } catch (err) {
@@ -292,12 +290,12 @@ router.post('/set-supervisor', auth, async function (req, res, next) {
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        if(parseInt(supervisorRequest.emp_supervisor_status) === 0){
-            const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(supervisorRequest.emp_id).then((data)=>{
+        if (parseInt(supervisorRequest.emp_supervisor_status) === 0) {
+            const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(supervisorRequest.emp_id).then((data) => {
                 return data
             })
 
-            if(supervisorCheck){
+            if (supervisorCheck) {
                 return res.status(400).json('Employee is assigned as supervisor to an employee')
             }
 

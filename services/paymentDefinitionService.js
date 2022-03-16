@@ -1,8 +1,8 @@
-const { QueryTypes, Op } = require('sequelize')
-const { sequelize, Sequelize } = require('./db');
+const {QueryTypes, Op} = require('sequelize')
+const {sequelize, Sequelize} = require('./db');
 const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
 
-const helper  = require('../helper');
+const helper = require('../helper');
 
 
 async function addPaymentDefinition(pd) {
@@ -28,18 +28,17 @@ async function addPaymentDefinition(pd) {
 }
 
 
-
-async function findPaymentByCode(code){
-    return await Pd.findOne({ where: { pd_payment_code: code } })
+async function findPaymentByCode(code) {
+    return await Pd.findOne({where: {pd_payment_code: code}})
 }
 
-async function findPaymentById(id){
-    return await Pd.findOne({ where: { pd_id: id } })
+async function findPaymentById(id) {
+    return await Pd.findOne({where: {pd_id: id}})
 }
 
-async function updatePaymentDefinition(pd, pd_id){
+async function updatePaymentDefinition(pd, pd_id) {
 
-    return  await Pd.update({
+    return await Pd.update({
         pd_payment_code: pd.pd_payment_code,
         pd_payment_name: pd.pd_payment_name,
         pd_payment_type: pd.pd_payment_type,
@@ -56,65 +55,67 @@ async function updatePaymentDefinition(pd, pd_id){
         pd_total_gross: pd.pd_total_gross,
         pd_welfare: pd.pd_welfare
 
-    },{
-        where:{
-            pd_id:pd_id
-        } })
+    }, {
+        where: {
+            pd_id: pd_id
+        }
+    })
 }
 
-async function findBasicPaymentDefinition(){
+async function findBasicPaymentDefinition() {
     return await Pd.findOne({
-        where:{
+        where: {
             pd_basic: 1
         }
     })
 }
 
-async function findAllCodes(){
+async function findAllCodes() {
     return await Pd.findAll()
 }
 
-async function getVariationalPayments(){
-    return await Pd.findAll({ where:{ pd_payment_variant: 2}})
+async function getVariationalPayments() {
+    return await Pd.findAll({where: {pd_payment_variant: 2}})
 }
 
-async function findSumPercentage(){
+async function findSumPercentage() {
     return await Pd.sum('pd_pr_gross')
 
 }
 
-async function findCodeWithGross(){
-    return await Pd.findAll({ where:{
+async function findCodeWithGross() {
+    return await Pd.findAll({
+        where: {
             pd_pr_gross: {
                 [Op.ne]: 0
             }
-        }})
+        }
+    })
 }
 
-async function findTax(){
+async function findTax() {
     return await Pd.findOne({
-        where:{
+        where: {
             pd_tax: 1
         }
     })
 }
 
-async function getComputedPayments(){
+async function getComputedPayments() {
     return await Pd.findAll({
-        where:{
+        where: {
             pd_value: 2
         }
     })
 }
 
-async function getWelfare(){
-    return await  Pd.findAll({
-        where:{
+async function getWelfare() {
+    return await Pd.findAll({
+        where: {
             pd_welfare: 1
         }
     })
 }
-
 
 
 module.exports = {

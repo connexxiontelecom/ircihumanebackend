@@ -103,6 +103,18 @@ async function getUnconfirmedVariationalPaymentMonthYear(month, year) {
     })
 }
 
+async function getUnconfirmedVariationalPaymentMonthYearEmployees(month, year, employees) {
+    return await variationalPaymentModel.findAll({
+        where: {
+            vp_payment_month: month,
+            vp_payment_year: year,
+            vp_confirm: [0, 3],
+            vp_emp_id: employees
+        }
+    })
+}
+
+
 async function getVariationalPaymentEmployeeMonthYear(empId, month, year) {
     return await variationalPaymentModel.findAll({
         where: {
@@ -128,18 +140,34 @@ async function undoVariationalPaymentMonthYear(month, year) {
 
 }
 
+async function undoVariationalPaymentMonthYearEmployee(month, year, employees) {
 
-async  function getVariationalPaymentMonthYear( month, year, employee, payment_type){
-
-    return await variationalPaymentModel.findOne(
-    {where: {
+    return await variationalPaymentModel.update({
+        vp_confirm: 0
+    }, {
+        where: {
             vp_payment_month: month,
             vp_payment_year: year,
-            vp_emp_id:employee,
-            vp_payment_def_id: payment_type,
-            vp_confirm: [0, 1, 3]
+            vp_confirm: [1, 3, 0],
+            vp_emp_id: employees
         }
     })
+
+}
+
+
+async function getVariationalPaymentMonthYear(month, year, employee, payment_type) {
+
+    return await variationalPaymentModel.findOne(
+        {
+            where: {
+                vp_payment_month: month,
+                vp_payment_year: year,
+                vp_emp_id: employee,
+                vp_payment_def_id: payment_type,
+                vp_confirm: [0, 1, 3]
+            }
+        })
 
 }
 
@@ -160,5 +188,7 @@ module.exports = {
     getCurrentPendingPayment,
     undoVariationalPaymentMonthYear,
     setNewSingleVariationalPayment,
-    getVariationalPaymentMonthYear
+    getVariationalPaymentMonthYear,
+    getUnconfirmedVariationalPaymentMonthYearEmployees,
+    undoVariationalPaymentMonthYearEmployee
 }

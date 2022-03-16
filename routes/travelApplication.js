@@ -3,7 +3,7 @@ const router = express.Router();
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
 const _ = require('lodash');
 const {format} = require('date-fns');
-const  differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
 const isBefore = require('date-fns/isBefore')
 const auth = require("../middleware/auth");
 const Joi = require('joi');
@@ -22,23 +22,25 @@ const employeeService = require('../services/employeeService');
 router.get('/', auth, travelApplicationService.getTravelApplications);
 router.get('/my-travel-applications', auth, travelApplicationService.getTravelApplicationsByEmployeeId);
 
-router.post('/new-travel-application', auth, async (req, res)=>{
+router.post('/new-travel-application', auth, async (req, res) => {
     try {
         const schema = Joi.object({
             employee: Joi.number().required(),
-            travel_category: Joi.number().required().valid(1,2),
-            per_diem: Joi.alternatives().conditional('travel_category',{is: 1, then: Joi.number().required()}),
-            t2_code: Joi.alternatives().conditional('travel_category', { is: 1, then: Joi.array().items(Joi.object({
+            travel_category: Joi.number().required().valid(1, 2),
+            per_diem: Joi.alternatives().conditional('travel_category', {is: 1, then: Joi.number().required()}),
+            t2_code: Joi.alternatives().conditional('travel_category', {
+                is: 1, then: Joi.array().items(Joi.object({
                     code: Joi.number().required()
-                }))}),
+                }))
+            }),
             /*t2_code: Joi.alternatives().conditional('travel_category', { is: 2, then: Joi.array().items(Joi.object({
                     code: Joi.number().allow('')
                 }))}),*/
-            hotel:Joi.number().required().valid(1,2),
-            city: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
-            arrival_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
-            departure_date: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
-            preferred_hotel: Joi.alternatives().conditional('hotel',{is: 1, then: Joi.string().required()}),
+            hotel: Joi.number().required().valid(1, 2),
+            city: Joi.alternatives().conditional('hotel', {is: 1, then: Joi.string().required()}),
+            arrival_date: Joi.alternatives().conditional('hotel', {is: 1, then: Joi.string().required()}),
+            departure_date: Joi.alternatives().conditional('hotel', {is: 1, then: Joi.string().required()}),
+            preferred_hotel: Joi.alternatives().conditional('hotel', {is: 1, then: Joi.string().required()}),
 
 
             purpose: Joi.string().required(),
@@ -49,145 +51,145 @@ router.post('/new-travel-application', auth, async (req, res)=>{
             total: Joi.number().allow(null, ''),
 
             breakdown: Joi.array().items(Joi.object({
-                depart_from:Joi.string().required(),
-                actual_date:Joi.string().required(),
-                means:Joi.number().required(),
-                prompt:Joi.number().required(),
-                destination:Joi.string().required()
+                depart_from: Joi.string().required(),
+                actual_date: Joi.string().required(),
+                means: Joi.number().required(),
+                prompt: Joi.number().required(),
+                destination: Joi.string().required()
             })),
         });
         const travelRequest = req.body
         const validationResult = schema.validate(travelRequest)
 
-        if(validationResult.error) {
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
 
-        const { start_date, end_date } = req.body;
+        const {start_date, end_date} = req.body;
         let startDate = new Date(start_date);
         let startYear = startDate.getFullYear();
         let endDate = new Date(end_date);
         let endYear = endDate.getFullYear();
-        if(isBefore(startDate, new Date())) return res.status(400).json("Your start date cannot be before today.");
-        if(isBefore(endDate, new Date())) return res.status(400).json("Your end date cannot be before today.");
-        if(String(startYear) === String(endYear)){
+        if (isBefore(startDate, new Date())) return res.status(400).json("Your start date cannot be before today.");
+        if (isBefore(endDate, new Date())) return res.status(400).json("Your end date cannot be before today.");
+        if (String(startYear) === String(endYear)) {
             //sector lead instead
-            const emp  = await employeeService.getEmployeeByIdOnly(req.body.employee).then((user)=>{
+            const emp = await employeeService.getEmployeeByIdOnly(req.body.employee).then((user) => {
                 return user;
 
             })
             //return res.status(200).json(emp);
-            if(_.isEmpty(emp) || _.isNull(emp)){
+            if (_.isEmpty(emp) || _.isNull(emp)) {
                 return res.status(400).json("Could not find employee record.");
             }
             const empSectorId = emp.emp_job_role_id;
 
-            const sectorLeads = await sectorService.getDepartmentSectorLeadBySectorId(empSectorId).then((sec)=>{
+            const sectorLeads = await sectorService.getDepartmentSectorLeadBySectorId(empSectorId).then((sec) => {
                 return sec;
             });
-            if(_.isNull(sectorLeads) || _.isEmpty(sectorLeads)){
+            if (_.isNull(sectorLeads) || _.isEmpty(sectorLeads)) {
                 return res.status(400).json("Employee sector does not exist. Either set it up or contact admin.");
             }
 
             //supervisorAssignmentService.getEmployeeSupervisor(req.body.employee).then((sup)=>{
-                //if(sup){
-                    let daysRequested =   differenceInBusinessDays(endDate, startDate);
-                    if(parseInt(daysRequested) >= 1) {
-                        travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
-                            const travelapp_id = data.travelapp_id;
-                            const breakdowns = req.body.breakdown;
-                            breakdowns.map((breakdown) => {
-                                travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
-                            });
-                            if (req.body.travel_category === 1) {
+            //if(sup){
+            let daysRequested = differenceInBusinessDays(endDate, startDate);
+            if (parseInt(daysRequested) >= 1) {
+                travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
+                    const travelapp_id = data.travelapp_id;
+                    const breakdowns = req.body.breakdown;
+                    breakdowns.map((breakdown) => {
+                        travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
+                    });
+                    if (req.body.travel_category === 1) {
 
-                                const t2CodeArray = req.body.t2_code;
-                                t2CodeArray.map((t2Data) => {
-                                    travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
-                                });
-                            }
-                            sectorLeads.map((sectorLead)=>{
-                                authorizationAction.registerNewAction(3,travelapp_id, sectorLead.d_sector_lead_id,0,"Travel application initialized.")
-                                    .then((outcome)=>{
-                                        const logData = {
-                                            "log_user_id": req.user.username.user_id,
-                                            "log_description": "Travel application ",
-                                            "log_date": new Date()
-                                        }
-                                        logs.addLog(logData).then((logRes)=>{
-                                            /*return res.status(200).json('Your travel application was successfully registered.');*/
-                                        })
-                                    });
-                            });
-                            return res.status(200).json('Your travel application was successfully registered.');
-
+                        const t2CodeArray = req.body.t2_code;
+                        t2CodeArray.map((t2Data) => {
+                            travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                         });
-                    }else{
-                        return  res.status(400).json('Travel duration must be greater or equal to 1');
                     }
-                /*}else{
-                    return res.status(400).json("You currently have no supervisor assigned to you.");
-                }*/
+                    sectorLeads.map((sectorLead) => {
+                        authorizationAction.registerNewAction(3, travelapp_id, sectorLead.d_sector_lead_id, 0, "Travel application initialized.")
+                            .then((outcome) => {
+                                const logData = {
+                                    "log_user_id": req.user.username.user_id,
+                                    "log_description": "Travel application ",
+                                    "log_date": new Date()
+                                }
+                                logs.addLog(logData).then((logRes) => {
+                                    /*return res.status(200).json('Your travel application was successfully registered.');*/
+                                })
+                            });
+                    });
+                    return res.status(200).json('Your travel application was successfully registered.');
+
+                });
+            } else {
+                return res.status(400).json('Travel duration must be greater or equal to 1');
+            }
+            /*}else{
+                return res.status(400).json("You currently have no supervisor assigned to you.");
+            }*/
             //});
-        }else{
-            return  res.status(400).json('Travel period must be within the same year')
+        } else {
+            return res.status(400).json('Travel period must be within the same year')
         }
 
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json(`Something went wrong. Inspect and try again.${e.message}`);
     }
 });
 
-router.get('/get-travel-application/:id', auth, async (req, res)=>{
+router.get('/get-travel-application/:id', auth, async (req, res) => {
     const employee = req.params.id
-    try{
+    try {
         let travelObj = {};
         let appId = [];
-         await travelApplicationService.getTravelApplicationsByEmployeeId(employee).then((data)=>{
-             data.map((app)=>{
-                 appId.push(app.travelapp_id);
-             });
-              authorizationAction.getAuthorizationLog(_.uniq(appId), 3).then((officers)=>{
-                  travelObj = {
-                      data,
-                      officers
-                  }
-                  return res.status(200).json(travelObj);
-              });
-         });
-    }catch (e) {
+        await travelApplicationService.getTravelApplicationsByEmployeeId(employee).then((data) => {
+            data.map((app) => {
+                appId.push(app.travelapp_id);
+            });
+            authorizationAction.getAuthorizationLog(_.uniq(appId), 3).then((officers) => {
+                travelObj = {
+                    data,
+                    officers
+                }
+                return res.status(200).json(travelObj);
+            });
+        });
+    } catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
-router.get('/:id', auth, async (req, res)=>{ //get travel application details
+router.get('/:id', auth, async (req, res) => { //get travel application details
     const id = req.params.id
-    try{
+    try {
         const application = await travelApplicationService.getTravelApplicationsById(id);
         const breakdown = await travelApplicationBreakdownService.getDetailsByTravelApplicationId(id);
         const expenses = await travelApplicationT2Service.getT2DetailsByTravelApplicationId(id);
         //return res.status(200).json(application.travelapp_id);
-        const log = await authorizationAction.getAuthorizationLog(application.travelapp_id,3);
+        const log = await authorizationAction.getAuthorizationLog(application.travelapp_id, 3);
         return res.status(200).json({application, breakdown, expenses, log});
-    }catch (e) {
-        return res.status(400).json("Something went wrong. Try again."+e.message);
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again." + e.message);
     }
 });
 
-router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
-    try{
+router.get('/authorization/supervisor/:id', auth, async (req, res) => {
+    try {
         const supervisorId = req.params.id;
         let travelObj = {};
-        await authorizationAction.getAuthorizationByOfficerId(supervisorId,3).then((data)=>{
+        await authorizationAction.getAuthorizationByOfficerId(supervisorId, 3).then((data) => {
             const ids = [];
-            data.map((app)=>{
+            data.map((app) => {
                 ids.push(parseInt(app.auth_travelapp_id));
             });
-            travelApplicationService.getTravelApplicationsForAuthorization(_.uniq(ids)).then((data)=>{
+            travelApplicationService.getTravelApplicationsForAuthorization(_.uniq(ids)).then((data) => {
                 let appId = [];
-                data.map((app)=>{
+                data.map((app) => {
                     appId.push(app.travelapp_id);
                 });
-                 authorizationAction.getAuthorizationLog(appId, 3).then((officers)=>{
+                authorizationAction.getAuthorizationLog(appId, 3).then((officers) => {
                     travelObj = {
                         data,
                         officers
@@ -197,11 +199,10 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
 
             });
         })
-    }catch (e) {
-        return res.status(400).json("Something went wrong. Try again."+e.message);
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again." + e.message);
     }
 });
-
 
 
 /*router.get('/authorization/supervisor/:id',auth, async (req, res)=>{

@@ -4,10 +4,10 @@ const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
 const {format} = require('date-fns');
-const  differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
 const isBefore = require('date-fns/isBefore')
-const leaveApplication =  require('../services/leaveApplicationService')
-const { addLeaveAccrual, computeLeaveAccruals } = require("../routes/leaveAccrual");
+const leaveApplication = require('../services/leaveApplicationService')
+const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual");
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const leaveTypeService = require('../services/leaveTypeService');
@@ -15,20 +15,19 @@ const logs = require('../services/logService')
 const employees = require("../services/employeeService");
 
 
-
 /* Get leave application */
-router.get('/', auth, async function(req, res, next) {
+router.get('/', auth, async function (req, res, next) {
     try {
         let appId = [];
         let leaveObj = {};
-        await leaveApplication.findAllLeaveApplication().then((data) =>{
-            data.map((app)=>{
+        await leaveApplication.findAllLeaveApplication().then((data) => {
+            data.map((app) => {
                 appId.push(app.leapp_id);
             });
-            authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
+            authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                 leaveObj = {
-                  data,
-                  officers
+                    data,
+                    officers
                 };
                 return res.status(200).json(leaveObj);
             });
@@ -39,9 +38,9 @@ router.get('/', auth, async function(req, res, next) {
 });
 
 /* Add Location Allowance */
-router.post('/add-leave-application', auth,  async function(req, res, next) {
+router.post('/add-leave-application', auth, async function (req, res, next) {
     try {
-        const schema = Joi.object( {
+        const schema = Joi.object({
             leapp_empid: Joi.number().required(),
             leapp_leave_type: Joi.number().required(),
             leapp_start_date: Joi.string().required(),
@@ -58,12 +57,12 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
             // leapp_approve_date: Joi.string().required(),
             // leapp_approve_comment: Joi.string().required(),
             // leapp_status: Joi.string().required(),
-                     })
+        })
 
         const leaveApplicationRequest = req.body
         const validationResult = schema.validate(leaveApplicationRequest)
 
-        if(validationResult.error){
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
@@ -74,88 +73,88 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
         let endDate = new Date(leaveApplicationRequest.leapp_end_date);
         let endYear = endDate.getFullYear();
 
-        if(isBefore(startDate, new Date()) ){
-            return  res.status(400).json('Leave start date cannot be before today or today')
+        if (isBefore(startDate, new Date())) {
+            return res.status(400).json('Leave start date cannot be before today or today')
         }
 
-            if(String(startYear) !== String(endYear)){
-                return  res.status(400).json('Leave period must be within the same year')
+        if (String(startYear) !== String(endYear)) {
+            return res.status(400).json('Leave period must be within the same year')
+        }
+
+
+        let daysRequested = await differenceInBusinessDays(endDate, startDate)
+        daysRequested = daysRequested + 1
+        const empId = req.user.username.user_id;
+        if (parseInt(daysRequested) <= 0) {
+            return res.status(400).json('Leave duration must be greater or equal to 1')
+        }
+
+
+        const supervisorAssignment = await supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val) => {
+            return val
+        });
+
+        if (_.isEmpty(supervisorAssignment) || _.isNull(supervisorAssignment)) {
+            return res.status(400).json('You currently have no supervisor assigned to you. Contact admin.');
+        }
+
+
+        const leaveTypeData = await leaveTypeService.getLeaveType(leaveApplicationRequest.leapp_leave_type).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(leaveTypeData) || (_.isNull(leaveTypeData))) {
+            return res.status(400).json('Invalid Leave Type');
+
+        }
+
+        if (parseInt(leaveTypeData.lt_accrue) === 1) {
+            const accrualData = {
+                lea_emp_id: leaveApplicationRequest.leapp_empid,
+                lea_year: startYear,
+                lea_leave_type: leaveApplicationRequest.leapp_leave_type,
+
+            }
+
+            const accruedDays = await computeLeaveAccruals(accrualData).then((data) => {
+                return data
+            })
+
+            if (_.isNull(accruedDays) || accruedDays === 0) {
+                return res.status(400).json('No Leave Accrued for Selected Leave')
             }
 
 
-            let daysRequested =  await differenceInBusinessDays(endDate, startDate)
-            daysRequested = daysRequested + 1
-            const empId = req.user.username.user_id;
-            if(parseInt(daysRequested) <= 0){
-                return  res.status(400).json('Leave duration must be greater or equal to 1')
+            const sumLeave = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((data) => {
+                return data
+            })
+
+
+            if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
+                return res.status(400).json("Days Requested Greater than Accrued Days")
             }
+        }
+
+        leaveApplicationRequest['leapp_year'] = startYear
+        leaveApplicationRequest['leapp_total_days'] = daysRequested
+        leaveApplicationRequest['leapp_status'] = 0;
 
 
-                const supervisorAssignment =  await supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val)=>{
-                    return  val
-                });
+        const leaveApplicationResponse = await leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
 
-                if(_.isEmpty(supervisorAssignment) || _.isNull(supervisorAssignment)){
-                    return  res.status(400).json( 'You currently have no supervisor assigned to you. Contact admin.');
-                }
+            return data
+        })
 
+        const leaveAppId = leaveApplicationResponse.leapp_id;
+        const authorizationResponse = await authorizationAction.registerNewAction(1, leaveAppId, supervisorAssignment.sa_supervisor_id, 0, "Leave application initiated").then((data) => {
+            return data
+        });
 
-                const leaveTypeData = await leaveTypeService.getLeaveType(leaveApplicationRequest.leapp_leave_type).then((data)=>{
-                    return data
-                })
+        if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
+            return res.status(400).json('An Error Occurred')
+        }
 
-                if(_.isEmpty(leaveTypeData) || (_.isNull(leaveTypeData))){
-                    return  res.status(400).json( 'Invalid Leave Type');
-
-                }
-
-                if(parseInt(leaveTypeData.lt_accrue) === 1){
-                    const accrualData = {
-                        lea_emp_id: leaveApplicationRequest.leapp_empid,
-                        lea_year: startYear,
-                        lea_leave_type: leaveApplicationRequest.leapp_leave_type,
-
-                    }
-
-                    const accruedDays =  await computeLeaveAccruals(accrualData).then((data) => {
-                        return data
-                    })
-
-                    if(_.isNull(accruedDays) || accruedDays === 0){
-                        return  res.status(400).json('No Leave Accrued for Selected Leave')
-                    }
-
-
-                    const sumLeave = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((data) => {
-                        return  data
-                    })
-
-
-                    if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
-                        return res.status(400).json("Days Requested Greater than Accrued Days")
-                    }
-                }
-
-                    leaveApplicationRequest['leapp_year'] = startYear
-                    leaveApplicationRequest['leapp_total_days'] = daysRequested
-                    leaveApplicationRequest['leapp_status'] = 0;
-
-
-                   const leaveApplicationResponse = await leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
-
-                        return data
-                    })
-
-                 const leaveAppId = leaveApplicationResponse.leapp_id;
-                  const authorizationResponse = await authorizationAction.registerNewAction(1,leaveAppId, supervisorAssignment.sa_supervisor_id,0,"Leave application initiated").then((data)=>{
-                      return data
-                  });
-
-                  if(_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))){
-                      return res.status(400).json('An Error Occurred')
-                  }
-
-                return res.status(200).json('Action Successful')
+        return res.status(200).json('Action Successful')
 
     } catch (err) {
         console.error(`Error while adding location allowance `, err.message);
@@ -165,21 +164,21 @@ router.post('/add-leave-application', auth,  async function(req, res, next) {
 
 
 /* Get Employee Leave application */
-router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
+router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) {
     try {
 
         let empId = req.params['emp_id'];
         let leaveObj = {};
         let appId = [];
-        await employees.getEmployee(empId).then((data)=>{
-            if(_.isEmpty(data)){
+        await employees.getEmployee(empId).then((data) => {
+            if (_.isEmpty(data)) {
                 return res.status(404).json(`Employee Doesn't Exist`)
-            }else{
-                leaveApplication.findEmployeeLeaveApplication(empId).then((data) =>{
-                    data.map((app)=>{
+            } else {
+                leaveApplication.findEmployeeLeaveApplication(empId).then((data) => {
+                    data.map((app) => {
                         appId.push(app.leapp_id);
                     });
-                    authorizationAction.getAuthorizationLog(appId, 1).then((officers)=>{
+                    authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                         leaveObj = {
                             data,
                             officers
@@ -196,35 +195,35 @@ router.get('/get-employee-leave/:emp_id', auth, async function(req, res, next) {
     }
 });
 
-router.get('/:id', auth, async (req, res)=>{ //get leave application details
+router.get('/:id', auth, async (req, res) => { //get leave application details
     const id = req.params.id
-    try{
+    try {
         const application = await leaveApplication.getLeaveApplicationsById(id);
-        const log = await authorizationAction.getAuthorizationLog(application.leapp_id,1);
+        const log = await authorizationAction.getAuthorizationLog(application.leapp_id, 1);
         return res.status(200).json({application, log});
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
 
-router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
-    try{
+router.get('/authorization/supervisor/:id', auth, async (req, res) => {
+    try {
         const supervisorId = req.params.id;
         let leaveObj = {};
         let ids = [];
         let authId = [];
-        const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId,1).then((data)=>{
+        const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId, 1).then((data) => {
             return data
         })
-        authAction.map((app)=>{
+        authAction.map((app) => {
             ids.push(parseInt(app.auth_travelapp_id));
             authId.push(parseInt(app.auth_officer_id));
         });
-        let data =   await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((apps)=>{
-             return  apps
+        let data = await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((apps) => {
+            return apps
 
         });
-        const officers =  await authorizationAction.getAuthorizationLog(ids, 1).then((off)=>{
+        const officers = await authorizationAction.getAuthorizationLog(ids, 1).then((off) => {
             return off
         });
 
@@ -234,7 +233,7 @@ router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
         }
 
         return res.status(200).json(leaveObj)
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
