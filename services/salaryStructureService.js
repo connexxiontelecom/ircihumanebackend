@@ -11,6 +11,7 @@ async function addSalaryStructure(salaryStructureData){
         ss_empid: salaryStructureData.ss_empid,
         ss_pd: salaryStructureData.ss_pd,
         ss_amount: salaryStructureData.ss_amount,
+        ss_grade: salaryStructureData.ss_grade
      });
 }
 

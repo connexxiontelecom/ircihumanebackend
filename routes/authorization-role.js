@@ -7,11 +7,11 @@ const logs = require('../services/logService')
 const authorizationRoleService = require('../services/authorizationRoleService')
 
 
-router.get('/:typeId', auth, async function(req, res, next) {
+router.get('/:typeId', auth, async function (req, res, next) {
     try {
         const typeId = parseInt(req.params.typeId);
 
-        await authorizationRoleService.getAllAuthorizationRolesByType(typeId).then((data) =>{
+        await authorizationRoleService.getAllAuthorizationRolesByType(typeId).then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {
@@ -19,10 +19,10 @@ router.get('/:typeId', auth, async function(req, res, next) {
     }
 });
 
-router.get('/', auth, async function(req, res, next) {
+router.get('/', auth, async function (req, res, next) {
     try {
 
-        await authorizationRoleService.getAllAuthorizationRoles().then((data) =>{
+        await authorizationRoleService.getAllAuthorizationRoles().then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {
@@ -30,8 +30,8 @@ router.get('/', auth, async function(req, res, next) {
     }
 });
 
-router.post('/', async (req, res)=>{
-    try{
+router.post('/', async (req, res) => {
+    try {
         const schema = Joi.object({
             title: Joi.string().required(),
             type: Joi.number().required(),
@@ -40,19 +40,19 @@ router.post('/', async (req, res)=>{
 
         const authRequest = req.body
         const validationResult = schema.validate(authRequest)
-        if(validationResult.error) {
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        authorizationRoleService.addAuthorizationRole(authRequest).then((data)=>{
+        authorizationRoleService.addAuthorizationRole(authRequest).then((data) => {
             return res.status(201).json("New authorization role added.");
         })
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
 
-router.patch('/:id', async (req, res)=>{
-    try{
+router.patch('/:id', async (req, res) => {
+    try {
         const id = parseInt(req.params.id);
         const schema = Joi.object({
             title: Joi.string().required(),
@@ -62,21 +62,21 @@ router.patch('/:id', async (req, res)=>{
 
         const authRequest = req.body
         const validationResult = schema.validate(authRequest)
-        if(validationResult.error) {
+        if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        authorizationRoleService.updateAuthorizationRole(authRequest,id).then((data)=>{
+        authorizationRoleService.updateAuthorizationRole(authRequest, id).then((data) => {
             return res.status(200).json("Role updated");
         })
-    }catch (e) {
+    } catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
 
-router.get('/:id', auth, async function(req, res) {
+router.get('/:id', auth, async function (req, res) {
     try {
         const id = req.params.id;
-        await authorizationRoleService.getAuthorizationRoleById(parseInt(id)).then((data) =>{
+        await authorizationRoleService.getAuthorizationRoleById(parseInt(id)).then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {
