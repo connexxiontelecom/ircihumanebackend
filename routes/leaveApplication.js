@@ -83,7 +83,6 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
 
 
         let daysRequested = await differenceInBusinessDays(endDate, startDate)
-        daysRequested = daysRequested + 1
         const empId = req.user.username.user_id;
         if (parseInt(daysRequested) <= 0) {
             return res.status(400).json('Leave duration must be greater or equal to 1')
