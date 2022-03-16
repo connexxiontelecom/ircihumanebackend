@@ -71,6 +71,10 @@ async function getActiveGoalSetting(gsId) {
     return await GoalSetting.findOne({where: {gs_id: gsId, gs_status: 1}})
 }
 
+async function getEndOfYearActivityYear(year){
+    return await GoalSetting.findOne({where: {gs_year: year, gs_activity: 3}})
+}
+
 
 async function closeAllGoals() {
     return await GoalSetting.update({
@@ -120,6 +124,7 @@ module.exports = {
     findLatestClosedGoal,
     findEndYearGoals,
     getActiveGoalSetting,
-    getGoalSettingYear
+    getGoalSettingYear,
+    getEndOfYearActivityYear
 
 }

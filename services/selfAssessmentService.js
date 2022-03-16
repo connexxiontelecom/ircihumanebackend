@@ -54,6 +54,16 @@ async function updateSelfAssessment(saId, saComment) {
     })
 }
 
+async function selfAssessmentStatusUpdate(saId, saStatus) {
+    return await SelfAssessment.update({
+        sa_status: saStatus
+    }, {
+        where: {
+            sa_id: saId
+        }
+    })
+}
+
 async function supervisorUpdateSelfAssessment(saId, saComment, saStatus) {
     return await SelfAssessment.update({
         sa_comment: saComment,
@@ -92,5 +102,6 @@ module.exports = {
     updateQuestion,
     updateSelfAssessment,
     supervisorUpdateSelfAssessment,
-    findSelfAssessmentsEmployeeYear
+    findSelfAssessmentsEmployeeYear,
+    selfAssessmentStatusUpdate
 }
