@@ -113,7 +113,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
                 gs_from: gsRequest.gs_from,
                 gs_to: gsRequest.gs_to,
                 gs_activity: gsRequest.gs_activity,
-                gs_year: year
+                gs_year: year,
+                gs_status: 1,
             }
 
             let addGoalSettingData = await goalSetting.addGoalSetting(goalSettingObject).then((data) => {
