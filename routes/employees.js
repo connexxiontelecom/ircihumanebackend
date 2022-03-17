@@ -70,6 +70,34 @@ router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
         next(err);
     }
 });
+router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params['emp_id']
+        await employees.getEmployee(empId).then((data) => {
+            if (_.isEmpty(data)) {
+                return res.status(400).json(`Employee Doesn't Exist`)
+            } else {
+                const employeeData = req.body
+                employees.updateEmployeeFromBackoffice(empId, employeeData).then((data) => {
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Updated Employee Details",
+                        "log_date": new Date()
+                    }
+                    logs.addLog(logData).then((logRes) => {
+
+                        return res.status(200).json('Action Successful')
+                    })
+                })
+
+            }
+        })
+
+    } catch (err) {
+        console.error(`An error occurred while updating Employee `, err.message);
+        next(err);
+    }
+});
 
 
 router.patch('/upload-profile-pic/:empId', auth, async function (req, res, next) {

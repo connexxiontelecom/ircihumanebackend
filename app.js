@@ -44,7 +44,22 @@
     app.use('/users', userRouter);
 
     const paymentDefinitionRouter = require('./routes/paymentDefinitions')
-    app.use('/payment-definitions', paymentDefinitionRouter)
+    app.use('/payment-definitions', paymentDefinitionRouter);
+
+    const lgaRouter = require('./routes/lga')
+    app.use('/local-government', lgaRouter)
+
+    const educationRouter = require('./routes/education')
+    app.use('/education', educationRouter)
+
+    const workExperienceRouter = require('./routes/work-experience')
+    app.use('/work-experience', workExperienceRouter)
+
+    const announcementRouter = require('./routes/announcement')
+    app.use('/announcements', announcementRouter)
+
+    const queryRouter = require('./routes/query')
+    app.use('/queries', queryRouter)
 
     const logRouter = require('./routes/logs')
     app.use('/logs', logRouter)
