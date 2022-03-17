@@ -414,11 +414,14 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                 return res.status(400).json(`No Goals for the year`)
             }
 
+
+
             const gsIds = []
 
             for(const goalYear of goalsYear){
-                gsIds.push(goalsYear.gs_id)
+                gsIds.push(goalYear.gs_id)
             }
+            //return res.status(200).json(gsIds)
 
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
