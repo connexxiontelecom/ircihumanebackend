@@ -2587,71 +2587,64 @@ router.post('/pay-order', auth, async function (req, res, next) {
         const payrollMonth = payrollRequest.pym_month
         const payrollYear = payrollRequest.pym_year
         const location = payrollRequest.pym_location
-
-        const employeeIdsLocation = []
-        let salaryObject = {}
-        const employees = await employee.getActiveEmployeesByLocation(location).then((data) => {
+        let employees
+        if (parseInt(location) > 0) {
+            employees = await employee.getActiveEmployeesByLocation(location).then((data) => {
+                return data
+            })
+        } else {
+            employees = await employee.getActiveEmployees(location).then((data) => {
+                return data
+            })
+        }
+        //check if payroll routine has been run
+        let employeeSalary = []
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
             return data
         })
 
-        for (const emp of employees) {
-            employeeIdsLocation.push(emp.emp_id)
+        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+            return res.status(400).json(`Payroll Routine has not been run`)
         }
 
+        for (const emp of employees) {
 
+            let grossSalary = 0
+            let netSalary = 0
+            let totalDeduction = 0
 
-        //check if payroll routine has been run
-        let employeeSalary = []
-        // const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
-        //     return data
-        // })
-        //
-        // if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
-        //
-        //     return res.status(400).json(`Payroll Routine has not been run`)
-        //
-        //
-        // }
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                return data
+            })
 
-
-            for (const emp of employees) {
-
-                let grossSalary = 0
-                let netSalary = 0
-                let totalDeduction = 0
-
-                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
-                    return data
-                })
-
-                if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-                    for (const empSalary of employeeSalaries) {
-                        if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                        } else {
-                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
-                        }
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+                for (const empSalary of employeeSalaries) {
+                    if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                        grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                    } else {
+                        totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                     }
-                    netSalary = grossSalary - totalDeduction
+                }
+                netSalary = grossSalary - totalDeduction
 
-                    let salaryObject = {
-                        employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
-                        grossSalary: grossSalary,
-                        totalDeduction: totalDeduction,
-                        netSalary: netSalary
-                    }
-
-                    employeeSalary.push(salaryObject)
-
+                let salaryObject = {
+                    employeeId: emp.emp_id,
+                    employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                    employeeUniqueId: emp.emp_unique_id,
+                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    jobRole: `${emp.JobRole.job_role}`,
+                    sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                    grossSalary: grossSalary,
+                    totalDeduction: totalDeduction,
+                    netSalary: netSalary
                 }
 
+                employeeSalary.push(salaryObject)
+
             }
-            return res.status(200).json(employeeSalary)
+
+        }
+        return res.status(200).json(employeeSalary)
 
 
     } catch (err) {
