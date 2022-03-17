@@ -128,6 +128,9 @@
     const goalSettingRouter = require('./routes/goalSetting')
     app.use('/goal-setting', goalSettingRouter)
 
+    const goalSettingYearRouter = require('./routes/goalSettingYear')
+    app.use('/goal-setting-year', goalSettingYearRouter)
+
     const selfAssessmentRouter = require('./routes/selfAssessment')
     app.use('/self-assessment', selfAssessmentRouter)
 

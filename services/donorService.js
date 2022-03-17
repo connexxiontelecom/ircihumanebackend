@@ -1,39 +1,40 @@
-const { QueryTypes } = require('sequelize')
-const { sequelize, Sequelize } = require('./db');
+const {QueryTypes} = require('sequelize')
+const {sequelize, Sequelize} = require('./db');
 const Donor = require("../models/donor")(sequelize, Sequelize.DataTypes)
 
-const helper  = require('../helper');
+const helper = require('../helper');
 
 
-async function addDonor(donorData){
+async function addDonor(donorData) {
 
 
     return await Donor.create({
         donor_code: donorData.donor_code,
         donor_description: donorData.donor_description,
-     });
+    });
 }
 
-async function findDonorByCode(donorCode){
-    return await Donor.findOne({ where: { donor_code: donorCode } })
+async function findDonorByCode(donorCode) {
+    return await Donor.findOne({where: {donor_code: donorCode}})
 }
 
-async function findDonorById(donorId){
-    return await Donor.findOne({ where: { donor_id: donorId } })
+async function findDonorById(donorId) {
+    return await Donor.findOne({where: {donor_id: donorId}})
 }
 
-async function updateDonor(donorData, donorId){
+async function updateDonor(donorData, donorId) {
 
-    return  await Donor.update({
+    return await Donor.update({
         donor_code: donorData.donor_code,
         donor_description: donorData.donor_description,
-    },{
-        where:{
-            donor_id:donorId
-        } })
+    }, {
+        where: {
+            donor_id: donorId
+        }
+    })
 }
 
-async function findAllDonors(){
+async function findAllDonors() {
     return await Donor.findAll()
 }
 

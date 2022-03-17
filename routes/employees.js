@@ -5,12 +5,14 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService')
 const documents = require('../services/employeeDocumentsService')
+const supervisorAssignment = require('../services/supervisorAssignmentService');
 const auth = require("../middleware/auth");
 const Joi = require("joi");
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
-var path = require('path')
+const path = require('path')
+const user = require("../services/userService");
 const s3 = new AWS.S3({
     accessKeyId: `${process.env.ACCESS_KEY}`,
     secretAccessKey: `${process.env.SECRET_KEY}`
@@ -92,6 +94,79 @@ router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, r
 
             }
         })
+
+    } catch (err) {
+        console.error(`An error occurred while updating Employee `, err.message);
+        next(err);
+    }
+});
+
+
+router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params['emp_id']
+        const schema = Joi.object({
+            emp_suspension_reason: Joi.string().required(),
+        })
+
+        const suspensionRequest = req.body
+        const validationResult = schema.validate(suspensionRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData)) {
+            return res.status(400).json(`Employee Doesn't Exist`)
+        }
+
+        const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (!_.isEmpty(supervisorCheck)) {
+            return res.status(400).json('Employee is assigned as supervisor to an employee')
+        }
+
+        // if(parseInt(employeeData.emp_supervisor_status) ===1 ){
+        //     return res.status(400).json(`Employee is a supervisor, kindly remove from supervisor role`)
+        // }
+
+        const suspendResponse = await employees.suspendEmployee(empId, suspensionRequest.emp_suspension_reason).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(suspendResponse) || _.isNull(suspendResponse)) {
+            return res.status(400).json(`An Error Occurred`)
+        }
+
+        let suspendUser = await user.suspendUser(employeeData.emp_unique_id).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(suspendUser) || _.isNull(suspendUser)) {
+            const unsuspendEmployee = await employees.unSuspendEmployee(empId).then((data) => {
+                return data
+            })
+            return res.status(400).json(`An Error Occurred`)
+        } else {
+            const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": "Suspended Employee",
+                "log_date": new Date()
+            }
+            await logs.addLog(logData).then((logRes) => {
+
+                return res.status(200).json('Action Successful')
+            })
+
+        }
+
 
     } catch (err) {
         console.error(`An error occurred while updating Employee `, err.message);
@@ -242,6 +317,17 @@ router.post('/set-supervisor', auth, async function (req, res, next) {
 
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
+        }
+        if (parseInt(supervisorRequest.emp_supervisor_status) === 0) {
+            const supervisorCheck = await supervisorAssignment.getSupervisorEmployee(supervisorRequest.emp_id).then((data) => {
+                return data
+            })
+
+            if (supervisorCheck) {
+                return res.status(400).json('Employee is assigned as supervisor to an employee')
+            }
+
+
         }
 
         await employees.setSupervisorStatus(supervisorRequest).then((data) => {

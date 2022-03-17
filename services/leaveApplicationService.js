@@ -1,16 +1,16 @@
-const { QueryTypes } = require('sequelize')
+const {QueryTypes} = require('sequelize')
 
 
-const { sequelize, Sequelize } = require('./db');
+const {sequelize, Sequelize} = require('./db');
 const LeaveApplication = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes)
 const Leave = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const LeaveType = require("../models/LeaveType")(sequelize, Sequelize.DataTypes);
 
-const helper  = require('../helper');
+const helper = require('../helper');
 
 
-async function addLeaveApplication(leaveApplicationData){
+async function addLeaveApplication(leaveApplicationData) {
 
 
     return await LeaveApplication.create({
@@ -20,6 +20,8 @@ async function addLeaveApplication(leaveApplicationData){
         leapp_end_date: leaveApplicationData.leapp_end_date,
         leapp_total_days: leaveApplicationData.leapp_total_days,
         leapp_year: leaveApplicationData.leapp_year,
+        leapp_alt_phone: leaveApplicationData.leapp_alt_phone,
+        leapp_alt_email: leaveApplicationData.leapp_alt_phone,
         // leapp_verify_by: leaveApplicationData.leapp_verify_by,
         // leapp_verify_date: leaveApplicationData.leapp_verify_date,
         // leapp_verify_comment: leaveApplicationData.leapp_verify_comment,
@@ -34,17 +36,19 @@ async function addLeaveApplication(leaveApplicationData){
 }
 
 
-async function findAllLeaveApplication(){
-
-    return await LeaveApplication.findAll({ order: [
-            ['leapp_id', 'DESC'],
-        ], include: [Leave, 'employee', 'verify', 'recommend', 'approve'] })
-}
-
-async function findEmployeeLeaveApplication(empId){
+async function findAllLeaveApplication() {
 
     return await LeaveApplication.findAll({
-        where:{ leapp_empid: empId },
+        order: [
+            ['leapp_id', 'DESC'],
+        ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+    })
+}
+
+async function findEmployeeLeaveApplication(empId) {
+
+    return await LeaveApplication.findAll({
+        where: {leapp_empid: empId},
         order: [
             ['leapp_id', 'DESC'],
         ],
@@ -52,14 +56,14 @@ async function findEmployeeLeaveApplication(empId){
     })
 }
 
-const getLeaveApplicationsById = async (id)=>{
-    return await LeaveApplication.findOne({where:{leapp_id :id}, include:['employee', LeaveType]});
+const getLeaveApplicationsById = async (id) => {
+    return await LeaveApplication.findOne({where: {leapp_id: id}, include: ['employee', LeaveType]});
 }
 
-async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type){
-    return await LeaveApplication.sum('leapp_total_days',{
+async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type) {
+    return await LeaveApplication.sum('leapp_total_days', {
         where: {
-     leapp_empid: employee_id, leapp_leave_type: leave_type, leapp_year: year
+            leapp_empid: employee_id, leapp_leave_type: leave_type, leapp_year: year
         }
     })
 }
@@ -85,7 +89,7 @@ async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type
 //     return await LocationAllowance.findOne({ where: { la_payment_id: payment_id, la_location_id: location_id }, include: [Location, Pd] })
 // }
 
-const getLeaveApplicationsForAuthorization = async (leaveAppIds)=>{
+const getLeaveApplicationsForAuthorization = async (leaveAppIds) => {
     return await LeaveApplication.findAll({
         where: {leapp_id: leaveAppIds},
         include: [Leave, 'employee', 'verify', 'recommend', 'approve']
@@ -94,10 +98,10 @@ const getLeaveApplicationsForAuthorization = async (leaveAppIds)=>{
 
 
 module.exports = {
-  addLeaveApplication,
+    addLeaveApplication,
     sumLeaveUsedByYearEmployeeLeaveType,
     findAllLeaveApplication,
     findEmployeeLeaveApplication,
     getLeaveApplicationsForAuthorization,
     getLeaveApplicationsById
-   }
+}
