@@ -2631,9 +2631,12 @@ router.post('/pay-order', auth, async function (req, res, next) {
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                     employeeUniqueId: emp.emp_unique_id,
+                    accountNumber: emp.emp_account_no,
                     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                     jobRole: `${emp.JobRole.job_role}`,
                     sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                    bankName: `${emp.bank.bank_name}`,
+                    bankSortCode: `${emp.bank.bank_code}`,
                     grossSalary: grossSalary,
                     totalDeduction: totalDeduction,
                     netSalary: netSalary
