@@ -1,33 +1,26 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('notifications', {
-      n_id: {
+    await queryInterface.createTable('query_replies', {
+      qr_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      n_subject: {
-        type: Sequelize.STRING
+      qr_reply: {
+        type: Sequelize.TEXT
       },
-      n_body: {
-        type: Sequelize.STRING
+      qr_emp_id: {
+        type: Sequelize.INTEGER
       },
-      n_is_read: {
+      qr_reply_source: {
         type: Sequelize.INTEGER,
-        defaultValue:0,
-        comment:'0=unread,1=read'
+        defaultValue:1,
+        comment:"1=offender,2=issuer"
       },
-      n_user_id: {
+      qr_query_id: {
         type: Sequelize.INTEGER
-      },
-      n_post_id: {
-        type: Sequelize.INTEGER
-      },
-      n_url: {
-        type: Sequelize.TEXT,
-        comment:'1=announcement,2=query'
       },
       createdAt: {
         allowNull: false,
@@ -40,6 +33,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('notifications');
+    await queryInterface.dropTable('query_replies');
   }
 };

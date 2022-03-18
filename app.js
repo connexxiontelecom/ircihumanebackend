@@ -61,6 +61,9 @@
     const queryRouter = require('./routes/query')
     app.use('/queries', queryRouter)
 
+    const queryReplyRouter = require('./routes/queryReply')
+    app.use('/query-reply', queryReplyRouter)
+
     const logRouter = require('./routes/logs')
     app.use('/logs', logRouter)
 

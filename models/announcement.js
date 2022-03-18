@@ -33,6 +33,27 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async getSpecificAnnouncements(){
+      return await Announcement.findAll({
+        where:{a_target:2}, order:[['a_id', 'DESC']],
+        include:[{model:employeeModel, as:'author'}]
+      })
+    }
+
+    static async getPublicAnnouncements(){
+      return await Announcement.findAll({
+        where:{a_target:1}, order:[['a_id', 'DESC']],
+        include:[{model:employeeModel, as:'author'}]
+      })
+    }
+
+    static async getAnnouncementsById(id){
+      return await Announcement.findAll({
+        where:{a_id:id}, order:[['a_id', 'DESC']],
+        include:[{model:employeeModel, as:'author'}]
+      })
+    }
+
   };
   Announcement.init({
     a_id: {

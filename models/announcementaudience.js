@@ -19,6 +19,13 @@ module.exports = (sequelize, DataTypes) => {
         aa_user_id:personId
       });
     }
+
+    static async getAudienceById(empId){
+      return await AnnouncementAudience.findAll({
+        where:{aa_user_id:empId},
+        order:[['aa_id', 'DESC']]
+      })
+    }
   };
   AnnouncementAudience.init({
     aa_id: {

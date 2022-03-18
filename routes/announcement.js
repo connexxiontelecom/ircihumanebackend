@@ -9,6 +9,7 @@ const announcementService = require('../services/announcementService');
 router.post('/',auth, announcementService.publishAnnouncement);
 router.get('/:id',auth, announcementService.getAnnouncementByAuthor);
 router.get('/all/announcements',auth, announcementService.getAllAnnouncements);
+router.get('/employee/:id',auth, announcementService.getEmployeeAnnouncements);
 
 
 

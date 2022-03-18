@@ -48,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async getQueryById(id){
+      return await Query.findOne({ where:{q_id:id},
+        include:[
+          {model: employeeModel, as: 'issuer' },
+          {model:employeeModel, as:'offender'}
+        ]})
+    }
+
   };
   Query.init({
     q_id: {

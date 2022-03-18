@@ -77,50 +77,35 @@ const getAllAnnouncements = async (req, res) =>{
     }
     return res.status(200).json(data);
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again later.");
+    return res.status(400).json("Something went wrong. Try again later."+e.message);
   }
 }
-const updateEducation = async (req, res)=>{
+const getEmployeeAnnouncements = async (req, res)=>{
+  const empId = req.params.id;
   try{
-    const schema = Joi.object( {
-      employee: Joi.number().required(),
-      institution: Joi.string().required(),
-      program: Joi.string().required(),
-      qualification: Joi.string().required(),
-      start_date: Joi.string().required(),
-      end_date: Joi.string().required(),
+    const specifics =  await announcementAudienceModel.getAudienceById(empId);
+    const publicAnnounce = await announcementModel.getPublicAnnouncements();
+    let announcementIds = [];
+    specifics.map((spec)=>{
+      announcementIds.push(spec.aa_announcement_id);
+    });
+    publicAnnounce.map((pub)=>{
+      announcementIds.push(pub.a_id);
+    });
 
-    })
-    const educationRequest = req.body
-    const validationResult = schema.validate(educationRequest)
-
-    if(validationResult.error){
-      return res.status(400).json(validationResult.error.details[0].message)
+    const announcements = await announcementModel.getAnnouncementsById(announcementIds)
+    const data = {
+      announcements
     }
-    const educationId = req.params.id;
-    const education = await educationModel.updateEducation(req, educationId);
-    if(!(_.isEmpty(education)) || !(_.isNull(education))){
-      //Log
-      const logData = {
-        "log_user_id": req.user.username.user_id,
-        "log_description": `Update on education`,
-        "log_date": new Date()
-      }
-      logs.addLog(logData).then((logRes)=>{
-        return res.status(200).json(`Your changes were saved.`);
-      });
-    }else{
-      return res.status(400).error(`Something went wrong `);
-    }
-
+    return res.status(200).json(data);
   }catch (e) {
-    return res.status(400).error(`Something went wrong `);
-
+    return res.status(400).json("Something went wrong. Try again later."+e.message);
   }
 }
 
 module.exports = {
   publishAnnouncement,
   getAllAnnouncements,
-  getAnnouncementByAuthor
+  getAnnouncementByAuthor,
+  getEmployeeAnnouncements
 }
