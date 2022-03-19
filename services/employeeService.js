@@ -336,7 +336,12 @@ async function suspendEmployee(employeeId, suspensionReason) {
 }
 
 async function getActiveEmployeesByLocation(locationId) {
-    return await employee.findAll({ where:{emp_location_id: locationId, emp_status: 1 }})
+    return await employee.findAll({
+        where:{
+            emp_location_id: locationId,
+            emp_status: 1
+        },
+        include: ['supervisor', 'location', 'bank', {model: JobRole, include: Department}]})
 
 }
 
