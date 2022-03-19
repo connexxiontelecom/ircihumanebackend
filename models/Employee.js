@@ -60,6 +60,8 @@ module.exports = (sequelize, DataTypes) => {
         emp_next_of_kin_name:DataTypes.STRING,
         emp_next_of_kin_address:DataTypes.STRING,
         emp_next_of_kin_phone_no:DataTypes.STRING,
+        emp_sex:DataTypes.STRING,
+        emp_religion:DataTypes.STRING,
         emp_ailments:DataTypes.STRING,
         emp_blood_group:DataTypes.STRING,
         emp_genotype:DataTypes.STRING,
