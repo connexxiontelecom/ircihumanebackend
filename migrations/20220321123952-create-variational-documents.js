@@ -14,6 +14,10 @@ module.exports = {
       vd_month: {
         type: Sequelize.INTEGER
       },
+      vd_emp_id: {
+        type: Sequelize.INTEGER
+      },
+
       vd_doc: {
         type: Sequelize.STRING
       },

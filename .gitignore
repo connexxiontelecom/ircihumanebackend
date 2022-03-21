@@ -40,13 +40,9 @@ build/Release
 
 # Dependency directories
 node_modules/
-config/
 jspm_packages/
 .idea/
-.idea/workspace.xml
-.idea/ircihumane.iml
-.idea/jsLibraryMappings.xml
-
+config
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
@@ -83,10 +79,6 @@ web_modules/
 .env.production.local
 .env.local
 .env
-
-
-
-config/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -134,5 +126,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-
