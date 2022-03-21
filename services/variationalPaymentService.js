@@ -85,6 +85,10 @@ async function deletePaymentEntry(vpId) {
     return await variationalPaymentModel.destroy({where: {vp_id: vpId}})
 }
 
+async function deletePaymentEntryEmployeeMonthYear(employee, month, year) {
+    return await variationalPaymentModel.destroy({where: {vp_emp_id: employee, vp_payment_year: year, vp_payment_month: month}})
+}
+
 async function findPayment(vpId) {
     return await variationalPaymentModel.findOne({where: {vp_id: vpId}})
 }
@@ -190,5 +194,6 @@ module.exports = {
     setNewSingleVariationalPayment,
     getVariationalPaymentMonthYear,
     getUnconfirmedVariationalPaymentMonthYearEmployees,
-    undoVariationalPaymentMonthYearEmployee
+    undoVariationalPaymentMonthYearEmployee,
+    deletePaymentEntryEmployeeMonthYear
 }

@@ -22,8 +22,12 @@ async function setNewVariationalDocument(variationalData) {
 
 }
 
+async function deletePaymentDocument(empid, month, year) {
+    return await variationalDocumentModel.destroy({where: {vd_emp_id: empid, vd_month: month, vd_year: year}})
+}
 
 
 module.exports = {
     setNewVariationalDocument,
+    deletePaymentDocument
 }
