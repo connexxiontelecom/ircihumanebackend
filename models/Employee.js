@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+
+        static async getEmployeeById(id){
+          return await Employee.findOne({where:{emp_id:id}})
+        }
     };
     Employee.init({
         emp_id: {
