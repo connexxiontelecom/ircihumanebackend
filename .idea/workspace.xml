@@ -22,13 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/Employee.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Employee.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/user.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/employees.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employees.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/employeeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/employeeService.js" afterDir="false" />
-    </list>
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -84,7 +78,7 @@
       <workItem from="1646224865223" duration="7704000" />
       <workItem from="1646730158397" duration="1375000" />
       <workItem from="1646835987263" duration="719000" />
-      <workItem from="1646837640406" duration="85992000" />
+      <workItem from="1646837640406" duration="86457000" />
     </task>
     <task id="LOCAL-00001" summary="test push">
       <created>1646229916957</created>
