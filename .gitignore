@@ -43,6 +43,9 @@ node_modules/
 config/
 jspm_packages/
 .idea/
+.idea/workspace.xml
+.idea/ircihumane.iml
+.idea/jsLibraryMappings.xml
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

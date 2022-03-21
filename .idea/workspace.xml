@@ -22,17 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
-      <change afterPath="$PROJECT_DIR$/migrations/20220317114252-create-query-reply.js" afterDir="false" />
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="gitignore">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20220316131028-create-notification.js" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20220316131028-create-notification.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/announcement.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/announcement.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/announcementaudience.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/announcementaudience.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/notification.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/notification.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/query.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/query.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/announcement.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/announcement.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/announcementService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/announcementService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +97,49 @@
       <option name="project" value="LOCAL" />
       <updated>1646283237614</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="employee new collumns (nhf, bvn, etc)">
+      <created>1647792335049</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1647792335049</updated>
+    </task>
+    <task id="LOCAL-00004" summary="payment Definition(employee type)">
+      <created>1647856566243</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1647856566243</updated>
+    </task>
+    <task id="LOCAL-00005" summary="salary routine">
+      <created>1647863779410</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1647863779410</updated>
+    </task>
+    <task id="LOCAL-00006" summary="variational Payment supporting documents models and migration">
+      <created>1647867022027</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1647867022027</updated>
+    </task>
+    <task id="LOCAL-00007" summary="gitignore">
+      <created>1647867203324</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1647867203324</updated>
+    </task>
+    <task id="LOCAL-00008" summary="gitignore">
+      <created>1647867280732</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1647867280732</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,6 +159,11 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
-    <option name="LAST_COMMIT_MESSAGE" value="log on undo payroll routine" />
+    <MESSAGE value="employee new collumns (nhf, bvn, etc)" />
+    <MESSAGE value="payment Definition(employee type)" />
+    <MESSAGE value="salary routine" />
+    <MESSAGE value="variational Payment supporting documents models and migration" />
+    <MESSAGE value="gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
   </component>
 </project>
