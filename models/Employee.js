@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
         static async getEmployeeById(id){
           return await Employee.findOne({where:{emp_id:id}})
         }
+
+        static async getEmployeeByLocationId(locationId){
+          return await Employee.findOne({where:{emp_location_id:locationId}})
+        }
     };
     Employee.init({
         emp_id: {

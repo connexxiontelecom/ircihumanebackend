@@ -1,3 +1,4 @@
+const {sequelize, Sequelize} = require('../services/db');
 const Joi = require('joi')
 const _ = require('lodash')
 const express = require('express')
@@ -11,6 +12,8 @@ const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual"
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const leaveTypeService = require('../services/leaveTypeService');
+const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize.DataTypes);
+const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
 const employees = require("../services/employeeService");
 
@@ -88,6 +91,16 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
             return res.status(400).json('Leave duration must be greater or equal to 1')
         }
 
+        const emp = await employees.getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid)).then((ed)=>{
+          return ed;
+        });
+        if(_.isEmpty(emp) || (_.isNull(emp))){
+          return res.status(400).json("Employee does not exist");
+        }
+
+        const hrpoints = await hrFocalPointModel.getHrFocalPointsByLocationId(emp.emp_location_id);
+        if(_.isEmpty(hrpoints) || _.isNull(hrpoints)) return res.status(400).json("There're currently no HR Focal Points at this location");
+        /*
 
         const supervisorAssignment = await supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val) => {
             return val
@@ -96,7 +109,7 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
         if (_.isEmpty(supervisorAssignment) || _.isNull(supervisorAssignment)) {
             return res.status(400).json('You currently have no supervisor assigned to you. Contact admin.');
         }
-
+*/
 
         const leaveTypeData = await leaveTypeService.getLeaveType(leaveApplicationRequest.leapp_leave_type).then((data) => {
             return data
@@ -145,13 +158,16 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
         })
 
         const leaveAppId = leaveApplicationResponse.leapp_id;
-        const authorizationResponse = await authorizationAction.registerNewAction(1, leaveAppId, supervisorAssignment.sa_supervisor_id, 0, "Leave application initiated").then((data) => {
-            return data
+      hrpoints.map((hrp)=>{
+        const authorizationResponse =  authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
+          return data
         });
+      })
 
-        if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
+
+       /* if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
             return res.status(400).json('An Error Occurred')
-        }
+        }*/
 
         return res.status(200).json('Action Successful')
 
@@ -161,6 +177,27 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
     }
 });
 
+//Get approved application
+router.get('/approved-applications', async (req, res)=>{
+  try {
+    let appId = [];
+    let leaveObj = {};
+    await leaveApplication.findAllApprovedLeaveApplications().then((data) => {
+      data.map((app) => {
+        appId.push(app.leapp_id);
+      });
+      authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
+        leaveObj = {
+          data,
+          officers
+        };
+        return res.status(200).json(leaveObj);
+      });
+    })
+  } catch (err) {
+    return res.status(400).json(`Error while fetching leaves ${err.message}`)
+  }
+});
 
 /* Get Employee Leave application */
 router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) {
@@ -195,13 +232,14 @@ router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) 
 });
 
 router.get('/:id', auth, async (req, res) => { //get leave application details
-    const id = req.params.id
+    const id = parseInt(req.params.id);
     try {
         const application = await leaveApplication.getLeaveApplicationsById(id);
         const log = await authorizationAction.getAuthorizationLog(application.leapp_id, 1);
-        return res.status(200).json({application, log});
+        const previousApplications = await leaveAppModel.getPreviousApplications(application.leapp_empid, id);
+        return res.status(200).json({application, log, previousApplications});
     } catch (e) {
-        return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again."+e.message);
     }
 });
 
