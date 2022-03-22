@@ -10,6 +10,7 @@ const auth = require("../middleware/auth");
 const leaveApplication = require("../services/leaveApplicationService");
 const {sequelize, Sequelize} = require("../services/db");
 const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize.DataTypes);
+const leaveTypeModel = require("../models/LeaveType")(sequelize, Sequelize.DataTypes);
 
 async function addLeaveAccrual(data) {
     const schema = Joi.object({
@@ -133,7 +134,13 @@ router.get('/get-leave-acrruals/:emp_id', auth, async function (req, res, next) 
 router.get('/employee-leave-accruals', async (req, res)=>{
   try{
     const accruals = await leaveAccrualModel.getAllLeaveAccruals();
-    return res.status(200).json(accruals);
+    const leave_types = await leaveTypeModel.getAllLeaveTypes();
+    const data = {
+      accruals,
+      leave_types
+    }
+
+    return res.status(200).json(data);
   }catch (e) {
     return res.status(400).json("Something went wrong.");
   }

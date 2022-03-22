@@ -5,6 +5,9 @@ const {
 const {sequelize, Sequelize} = require("../services/db");
 const employeeModel = require('./Employee')(sequelize, Sequelize)
 const leaveTypeModel = require('./LeaveType')(sequelize, Sequelize)
+const locationModel = require('./Location')(sequelize, Sequelize)
+const jobRoleModel = require('./JobRole')(sequelize, Sequelize)
+const departmentModel = require('./Department')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class leaveAccrual extends Model {
     /**
@@ -18,7 +21,16 @@ module.exports = (sequelize, DataTypes) => {
 
     static async getAllLeaveAccruals(){
       return await leaveAccrual.findAll({
-        include:[{model:employeeModel, as:'employee'}, {model:leaveTypeModel, as:'leave_type'}]
+        where:{lea_archives:0},
+        include:[
+          {model:employeeModel, as:'employee',
+              include:[
+                {model:locationModel, as:'location'},
+                {model:jobRoleModel, include:[{model:departmentModel}]}
+              ]},
+          {model:leaveTypeModel, as:'leave_type'},
+         // {model:locationModel, as:'emp_location'},
+        ]
       })
     }
   };
@@ -41,5 +53,6 @@ module.exports = (sequelize, DataTypes) => {
   });
   leaveAccrual.belongsTo(employeeModel, {as:'employee', foreignKey:'lea_emp_id'})
   leaveAccrual.belongsTo(leaveTypeModel, {as:'leave_type', foreignKey:'lea_leave_type'})
+  //employeeModel.belongsTo(locationModel, {as:'emp_location', foreignKey:'emp_location_id'})
   return leaveAccrual;
 };
