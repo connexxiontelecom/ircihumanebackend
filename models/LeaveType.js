@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+
+        static async getAllLeaveTypes(){
+          return await LeaveType.findAll();
+        }
     };
     LeaveType.init({
         leave_type_id: {

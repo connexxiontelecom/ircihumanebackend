@@ -45,6 +45,16 @@ async function findAllLeaveApplication() {
     })
 }
 
+async function findAllApprovedLeaveApplications() {
+
+  return await LeaveApplication.findAll({
+    where:{leapp_status:1}, //approved
+    order: [
+      ['leapp_id', 'DESC'],
+    ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+  })
+}
+
 async function findEmployeeLeaveApplication(empId) {
 
     return await LeaveApplication.findAll({
@@ -103,5 +113,6 @@ module.exports = {
     findAllLeaveApplication,
     findEmployeeLeaveApplication,
     getLeaveApplicationsForAuthorization,
-    getLeaveApplicationsById
+    getLeaveApplicationsById,
+  findAllApprovedLeaveApplications
 }

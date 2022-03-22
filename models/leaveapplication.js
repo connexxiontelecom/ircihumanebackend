@@ -17,6 +17,24 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getPreviousApplications(empId, currentAppId){
+      return await leaveApplication.findAll({
+        where:{leapp_empid:empId},
+        include:[{model:Employee, as:'employee'}, {model:LeaveType, as:'leave_type'}],
+        order:[['leapp_id', 'DESC']]
+      })
+    }
+
+    static async getApprovedApplications(){
+      return await leaveApplication.findAll({
+        where:{leapp_status:1}, //approved
+        include:[{model:Employee, as:'employee'}, {model:LeaveType, as:'leave_type'}],
+        order:[['leapp_id', 'DESC']]
+      })
+    }
+
+
   };
   leaveApplication.init({
     leapp_id: {
@@ -48,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'leave_applications'
   });
 
+  leaveApplication.belongsTo(LeaveType, { foreignKey: 'leapp_leave_type', as:'leave_type'})
   leaveApplication.belongsTo(LeaveType, { foreignKey: 'leapp_leave_type'})
   leaveApplication.hasMany(LeaveType, { foreignKey: 'leave_type_id' })
 
