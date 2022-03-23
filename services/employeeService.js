@@ -212,72 +212,73 @@ async function setSupervisor(employeeId, supervisorId) {
 async function updateEmployee(employeeId, employeeData) {
     return await employee.update({
         emp_first_name: employeeData.emp_first_name,
-        emp_last_name:employeeData.emp_last_name,
-        emp_other_name:employeeData.emp_other_name,
-        emp_qualification:employeeData.emp_qualification,
-        emp_phone_no:employeeData.emp_phone_no,
-        emp_account_no:employeeData.emp_account_no,
-        emp_bank_id:employeeData.emp_bank_id,
-        emp_state_id:employeeData.emp_state_id,
-        emp_lga_id:employeeData.emp_lga_id,
-        emp_marital_status:employeeData.emp_marital_status,
-        emp_spouse_name:employeeData.emp_spouse_name,
-        emp_spouse_phone_no:employeeData.emp_spouse_phone_no,
-        emp_next_of_kin_name:employeeData.emp_next_of_kin_name,
-        emp_next_of_kin_address:employeeData.emp_next_of_kin_address,
-        emp_next_of_kin_phone_no:employeeData.emp_next_of_kin_phone_no,
-        emp_ailments:employeeData.emp_ailments,
-        emp_blood_group:employeeData.emp_blood_group,
-        emp_genotype:employeeData.emp_genotype,
-        emp_emergency_name:employeeData.emp_emergency_name,
-        emp_emergency_contact:employeeData.emp_emergency_contact,
+        emp_last_name: employeeData.emp_last_name,
+        emp_other_name: employeeData.emp_other_name,
+        emp_qualification: employeeData.emp_qualification,
+        emp_phone_no: employeeData.emp_phone_no,
+        emp_account_no: employeeData.emp_account_no,
+        emp_bank_id: employeeData.emp_bank_id,
+        emp_state_id: employeeData.emp_state_id,
+        emp_lga_id: employeeData.emp_lga_id,
+        emp_marital_status: employeeData.emp_marital_status,
+        emp_spouse_name: employeeData.emp_spouse_name,
+        emp_spouse_phone_no: employeeData.emp_spouse_phone_no,
+        emp_next_of_kin_name: employeeData.emp_next_of_kin_name,
+        emp_next_of_kin_address: employeeData.emp_next_of_kin_address,
+        emp_next_of_kin_phone_no: employeeData.emp_next_of_kin_phone_no,
+        emp_ailments: employeeData.emp_ailments,
+        emp_blood_group: employeeData.emp_blood_group,
+        emp_genotype: employeeData.emp_genotype,
+        emp_emergency_name: employeeData.emp_emergency_name,
+        emp_emergency_contact: employeeData.emp_emergency_contact,
         //emp_contract_end_date:employeeData.emp_contract_end_date,
         //emp_hire_date:employeeData.emp_hire_date,
     }, {
-        where:{
+        where: {
             emp_id: employeeId
         }
     })
 
 }
-async function updateEmployeeFromBackoffice(employeeId, employeeData){
-  return await employee.update({
-    emp_first_name: employeeData.emp_first_name,
-    emp_last_name:employeeData.emp_last_name,
-    emp_other_name:employeeData.emp_other_name,
-    emp_qualification:employeeData.emp_qualification,
-    emp_phone_no:employeeData.emp_phone_no,
-    emp_account_no:employeeData.emp_account_no,
-    emp_bank_id:employeeData.emp_bank_id,
-    emp_state_id:employeeData.emp_state_id,
-    emp_lga_id:employeeData.emp_lga_id,
-    emp_marital_status:employeeData.emp_marital_status,
-    emp_spouse_name:employeeData.emp_spouse_name,
-    emp_spouse_phone_no:employeeData.emp_spouse_phone_no,
-    emp_next_of_kin_name:employeeData.emp_next_of_kin_name,
-    emp_next_of_kin_address:employeeData.emp_next_of_kin_address,
-    emp_next_of_kin_phone_no:employeeData.emp_next_of_kin_phone_no,
-    emp_ailments:employeeData.emp_ailments,
-    emp_blood_group:employeeData.emp_blood_group,
-    emp_genotype:employeeData.emp_genotype,
-    emp_emergency_name:employeeData.emp_emergency_name,
-    emp_emergency_contact:employeeData.emp_emergency_contact,
-    emp_contract_end_date:employeeData.emp_contract_end_date,
-    emp_hire_date:employeeData.emp_hire_date,
-    emp_dob:employeeData.emp_dob,
-    emp_job_role_id:employeeData.emp_job_role_id,
-    emp_department_id: employeeData.emp_department_id,
-    emp_sex:employeeData.emp_sex,
-    emp_religion:employeeData.emp_religion,
-    emp_bvn: employeeData.emp_bvn,
-    emp_nhf: employeeData.emp_nhf,
-    emp_paye_no: employeeData.emp_paye_no,
-    emp_pension_no: employeeData.emp_pension_no
-  }, {
-    where:{
-      emp_id: employeeId
-    }
-  })
+
+async function updateEmployeeFromBackoffice(employeeId, employeeData) {
+    return await employee.update({
+        emp_first_name: employeeData.emp_first_name,
+        emp_last_name: employeeData.emp_last_name,
+        emp_other_name: employeeData.emp_other_name,
+        emp_qualification: employeeData.emp_qualification,
+        emp_phone_no: employeeData.emp_phone_no,
+        emp_account_no: employeeData.emp_account_no,
+        emp_bank_id: employeeData.emp_bank_id,
+        emp_state_id: employeeData.emp_state_id,
+        emp_lga_id: employeeData.emp_lga_id,
+        emp_marital_status: employeeData.emp_marital_status,
+        emp_spouse_name: employeeData.emp_spouse_name,
+        emp_spouse_phone_no: employeeData.emp_spouse_phone_no,
+        emp_next_of_kin_name: employeeData.emp_next_of_kin_name,
+        emp_next_of_kin_address: employeeData.emp_next_of_kin_address,
+        emp_next_of_kin_phone_no: employeeData.emp_next_of_kin_phone_no,
+        emp_ailments: employeeData.emp_ailments,
+        emp_blood_group: employeeData.emp_blood_group,
+        emp_genotype: employeeData.emp_genotype,
+        emp_emergency_name: employeeData.emp_emergency_name,
+        emp_emergency_contact: employeeData.emp_emergency_contact,
+        emp_contract_end_date: employeeData.emp_contract_end_date,
+        emp_hire_date: employeeData.emp_hire_date,
+        emp_dob: employeeData.emp_dob,
+        emp_job_role_id: employeeData.emp_job_role_id,
+        emp_department_id: employeeData.emp_department_id,
+        emp_sex: employeeData.emp_sex,
+        emp_religion: employeeData.emp_religion,
+        emp_bvn: employeeData.emp_bvn,
+        emp_nhf: employeeData.emp_nhf,
+        emp_paye_no: employeeData.emp_paye_no,
+        emp_pension_no: employeeData.emp_pension_no
+    }, {
+        where: {
+            emp_id: employeeId
+        }
+    })
 
 }
 
@@ -349,8 +350,8 @@ async function getSupervisorEmployee(supervisorId) {
 
 async function getActiveEmployees() {
     return await employee.findAll({
-        where:{
-         emp_status: 1
+        where: {
+            emp_status: 1
         },
         include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
     })
@@ -381,12 +382,12 @@ async function suspendEmployee(employeeId, suspensionReason) {
 
 async function getActiveEmployeesByLocation(locationId) {
     return await employee.findAll({
-        where:{
-            emp_location_id: locationId,
-            emp_status: 1
-        },
+            where: {
+                emp_location_id: locationId,
+                emp_status: 1
+            },
             include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
-    }
+        }
     )
 
 }
@@ -402,63 +403,63 @@ async function unSuspendEmployee(employeeId) {
 
 }
 
-async function changePassword(req, res){
-  try{
-    const schema = Joi.object({
-      current_password: Joi.string().required(),
-      new_password: Joi.string().required(),
-      confirm_password: Joi.string().required(),
-      userId: Joi.number().required(),
-    })
-    const passwordRequest = req.body
-    const validationResult = schema.validate(passwordRequest)
+async function changePassword(req, res) {
+    try {
+        const schema = Joi.object({
+            current_password: Joi.string().required(),
+            new_password: Joi.string().required(),
+            confirm_password: Joi.string().required(),
+            userId: Joi.number().required(),
+        })
+        const passwordRequest = req.body
+        const validationResult = schema.validate(passwordRequest)
 
-    if (validationResult.error) {
-      return res.status(400).json(validationResult.error.details[0].message)
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const {current_password, new_password, confirm_password, userId} = req.body;
+        if (new_password !== confirm_password) return res.status(400).json("Password confirmation mis-match.");
+        const user = await userModel.geUserById(userId);
+
+        if (!user) return res.status(400).json("User does not exist.");
+
+        bcrypt.compare(current_password, user.user_password, function (err, response) {
+            if (err) {
+                return res.status(400).json(`${err} occurred while logging in`)
+            }
+
+            if (response) {
+                const hashedPassword = bcrypt.hashSync(new_password, 10);
+                const userDetail = userModel.update({
+                    user_password: hashedPassword
+                }, {
+                    where: {user_id: userId}
+                });
+                return res.status(200).json(user);
+            } else {
+                return res.status(400).json('Incorrect Password')
+            }
+        })
+
+        /*await bcrypt.compare( current_password,user.user_password,(err, response)=>{
+          return res.status(200).json('hello');
+          if(err) return res.status(400).json("The password you entered does not match our record. Try again.");
+
+          if(response){
+            return res.status(200).json("here");
+            const hashedPassword =  bcrypt.hashSync(new_password, 10);
+            const userDetail = userModel.update({
+              user_password: hashedPassword
+            },{
+              where:{user_id: userId}
+            });
+            return res.status(200).json(userDetail);
+          }
+
+        });*/
+    } catch (e) {
+        return res.status(400).json("Something went wrong.");
     }
-    const {current_password, new_password, confirm_password, userId} = req.body;
-    if(new_password !== confirm_password) return res.status(400).json("Password confirmation mis-match.");
-    const user = await userModel.geUserById(userId);
-
-    if(!user) return res.status(400).json("User does not exist.");
-
-    bcrypt.compare(current_password, user.user_password, function (err, response) {
-      if (err) {
-        return res.status(400).json(`${err} occurred while logging in`)
-      }
-
-      if (response) {
-        const hashedPassword =  bcrypt.hashSync(new_password, 10);
-        const userDetail = userModel.update({
-          user_password: hashedPassword
-        },{
-          where:{user_id: userId}
-        });
-        return res.status(200).json(user);
-      } else {
-        return res.status(400).json('Incorrect Password')
-      }
-    })
-
-    /*await bcrypt.compare( current_password,user.user_password,(err, response)=>{
-      return res.status(200).json('hello');
-      if(err) return res.status(400).json("The password you entered does not match our record. Try again.");
-
-      if(response){
-        return res.status(200).json("here");
-        const hashedPassword =  bcrypt.hashSync(new_password, 10);
-        const userDetail = userModel.update({
-          user_password: hashedPassword
-        },{
-          where:{user_id: userId}
-        });
-        return res.status(200).json(userDetail);
-      }
-
-    });*/
-  }catch (e) {
-    return res.status(400).json("Something went wrong.");
-  }
 
 
 }
