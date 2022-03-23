@@ -33,6 +33,7 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 
+
 router.post('/', auth, async (req, res, next) => {
     try {
         // const scheme = Joi.array().items(Joi.object().keys({
@@ -65,12 +66,15 @@ router.post('/', auth, async (req, res, next) => {
 
             let employeeId = req.body.employee
             let payments = req.body.payments
-            let docs = req.files.documents
+            //let docs = req.files.documents
+            //return res.status(200).json(payments)
 
             const employeeData = await employees.getEmployee(employeeId).then((data) => {
                 return data
             })
             if (!(_.isNull(employeeData) || _.isEmpty(employeeData))) {
+
+                //return res.status(400).json(employeeData);
 
                 for (const payment of payments) {
                     const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(employeeId), parseInt(req.body.year), parseInt(req.body.month), parseInt(payment.payment_definition)).then((data) => {
@@ -157,7 +161,8 @@ router.post('/', auth, async (req, res, next) => {
                         }
 
                     }
-                } else {
+                }
+                else {
                     const uploadResponse = await uploadFile(docs).then((response) => {
                         return response
                     }).catch(err => {
@@ -213,7 +218,7 @@ router.post('/', auth, async (req, res, next) => {
         }
 
     } catch (e) {
-        return res.status(400).json(`Error while posting variational payment.${e.message}`);
+        return res.status(400).json(`Error while posting variational payment  ${e.message}`);
     }
 });
 
