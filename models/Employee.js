@@ -92,6 +92,7 @@ module.exports = (sequelize, DataTypes) => {
         emp_bvn: DataTypes.STRING,
         emp_nhf: DataTypes.STRING,
         emp_type: DataTypes.INTEGER,
+        emp_master_id: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
