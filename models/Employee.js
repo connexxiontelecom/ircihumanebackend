@@ -21,6 +21,14 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+
+        static async getEmployeeById(id){
+          return await Employee.findOne({where:{emp_id:id}})
+        }
+
+        static async getEmployeeByLocationId(locationId){
+          return await Employee.findOne({where:{emp_location_id:locationId}})
+        }
     };
     Employee.init({
         emp_id: {
@@ -112,7 +120,7 @@ module.exports = (sequelize, DataTypes) => {
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
     //Employee.belongsTo(travelApplicationModel, { foreignKey:'emp_id', as: 'applicant' });
 
-    // JobRole.belongsTo(Department, { as: 'department', foreignKey: 'jb_department_id' })
+     //Employee.belongsTo(Department, { as: 'sector', foreignKey: 'jb_department_id' })
     // JobRole.hasMany(Department, { foreignKey: 'department_id' })
 
 

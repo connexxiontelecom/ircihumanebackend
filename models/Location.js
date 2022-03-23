@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+
+        static async addLocation(data){
+          return await Location.create(data);
+        }
     };
     Location.init({
         location_id: {

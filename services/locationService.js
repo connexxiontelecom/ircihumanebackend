@@ -2,6 +2,7 @@ const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const location = require("../models/Location")(sequelize, Sequelize.DataTypes);
 const State = require("../models/State")(sequelize, Sequelize.DataTypes);
+const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 const logs = require('../services/logService');
 const helper = require('../helper');
@@ -27,18 +28,30 @@ const setNewLocation = async (req, res, next) => {
             location_name: Joi.string().required(),
             location_state: Joi.number().required(),
             location_t6_code: Joi.string().required(),
+            focal_points: Joi.array().required(),
         });
         const locationRequest = req.body
         const validationResult = schema.validate(locationRequest)
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        await location.create({
-            location_name: req.body.location_name,
-            l_state_id: req.body.location_state,
-            l_t6_code: req.body.location_t6_code
+        const data = {
+          location_name: req.body.location_name,
+          l_state_id: req.body.location_state,
+          l_t6_code: req.body.location_t6_code
+        };
+
+
+        const loc = await location.addLocation(data)
+        const focal_points = req.body.focal_points;
+        focal_points.map((point)=>{
+          let fp = {
+            hfp_location_id:loc.location_id,
+            hfp_emp_id:point.value
+          };
+          hrFocalPointModel.addHrFocalPoint(fp);
         })
-            .catch(errHandler);
+
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,

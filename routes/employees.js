@@ -434,6 +434,7 @@ router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
     }
 });
 
+router.post('/change-password', employees.changePassword);
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     return new Promise(async (resolve, reject) => {
         let s3Res;

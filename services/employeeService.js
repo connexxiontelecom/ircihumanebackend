@@ -3,9 +3,11 @@ const {QueryTypes, Op, where} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
+const userModel = require("../models/user")(sequelize, Sequelize.DataTypes)
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const logs = require('../services/logService')
 const users = require('../services/userService')
 
@@ -395,6 +397,67 @@ async function unSuspendEmployee(employeeId) {
 
 }
 
+async function changePassword(req, res){
+  try{
+    const schema = Joi.object({
+      current_password: Joi.string().required(),
+      new_password: Joi.string().required(),
+      confirm_password: Joi.string().required(),
+      userId: Joi.number().required(),
+    })
+    const passwordRequest = req.body
+    const validationResult = schema.validate(passwordRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    const {current_password, new_password, confirm_password, userId} = req.body;
+    if(new_password !== confirm_password) return res.status(400).json("Password confirmation mis-match.");
+    const user = await userModel.geUserById(userId);
+
+    if(!user) return res.status(400).json("User does not exist.");
+
+    bcrypt.compare(current_password, user.user_password, function (err, response) {
+      if (err) {
+        return res.status(400).json(`${err} occurred while logging in`)
+      }
+
+      if (response) {
+        const hashedPassword =  bcrypt.hashSync(new_password, 10);
+        const userDetail = userModel.update({
+          user_password: hashedPassword
+        },{
+          where:{user_id: userId}
+        });
+        return res.status(200).json(user);
+      } else {
+        return res.status(400).json('Incorrect Password')
+      }
+    })
+
+    /*await bcrypt.compare( current_password,user.user_password,(err, response)=>{
+      return res.status(200).json('hello');
+      if(err) return res.status(400).json("The password you entered does not match our record. Try again.");
+
+      if(response){
+        return res.status(200).json("here");
+        const hashedPassword =  bcrypt.hashSync(new_password, 10);
+        const userDetail = userModel.update({
+          user_password: hashedPassword
+        },{
+          where:{user_id: userId}
+        });
+        return res.status(200).json(userDetail);
+      }
+
+    });*/
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+
+
+}
+
 
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
@@ -465,7 +528,8 @@ module.exports = {
     updateProfilePicture,
     suspendEmployee,
     unSuspendEmployee,
-    getActiveEmployeesByLocation
+    getActiveEmployeesByLocation,
+    changePassword
     //updateDepartment,
     //setNewDepartment,
 }
