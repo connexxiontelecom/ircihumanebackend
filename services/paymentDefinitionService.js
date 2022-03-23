@@ -24,7 +24,7 @@ async function addPaymentDefinition(pd) {
         pd_tax: pd.pd_tax,
         pd_total_gross: pd.pd_total_gross,
         pd_welfare: pd.pd_welfare,
-        pd_employee: pd.pd_employee
+        pd_employee: pd.pd_employee,
     });
 }
 
@@ -54,7 +54,8 @@ async function updatePaymentDefinition(pd, pd_id) {
         pd_percentage: pd.pd_percentage,
         pd_tax: pd.pd_tax,
         pd_total_gross: pd.pd_total_gross,
-        pd_welfare: pd.pd_welfare
+        pd_welfare: pd.pd_welfare,
+        pd_employee: pd.pd_employee,
 
     }, {
         where: {

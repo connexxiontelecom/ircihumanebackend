@@ -2410,8 +2410,8 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
             return res.status(400).json(`Payroll Routine has not been run`)
 
+        }
 
-        } else {
 
             const employees = await employee.getActiveEmployees().then((data) => {
                 return data
@@ -2462,7 +2462,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
             }
             return res.status(200).json(employeeSalary)
-        }
+
 
 
     } catch (err) {
