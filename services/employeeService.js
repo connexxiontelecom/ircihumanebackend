@@ -262,11 +262,14 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData){
     emp_emergency_contact:employeeData.emp_emergency_contact,
     emp_contract_end_date:employeeData.emp_contract_end_date,
     emp_hire_date:employeeData.emp_hire_date,
-
     emp_dob:employeeData.emp_dob,
     emp_job_role_id:employeeData.emp_job_role_id,
     emp_sex:employeeData.emp_sex,
     emp_religion:employeeData.emp_religion,
+    emp_bvn: employeeData.emp_bvn,
+    emp_nhf: employeeData.emp_nhf,
+    emp_paye_no: employeeData.emp_paye_no,
+    emp_pension_no: employeeData.emp_pension_no
   }, {
     where:{
       emp_id: employeeId

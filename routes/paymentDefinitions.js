@@ -52,6 +52,7 @@ router.post('/add-payment-definition', auth, async function (req, res, next) {
             pd_total_gross: Joi.number(),
             pd_welfare: Joi.number(),
             pd_total_gross_ii: Joi.number(),
+            pd_employee: Joi.number()
         })
 
         const paymentDefinitionRequest = req.body
@@ -195,6 +196,7 @@ router.patch('/update-payment-definition/:pd_id', auth, async function (req, res
             pd_total_gross: Joi.number(),
             pd_welfare: Joi.number(),
             pd_total_gross_ii: Joi.number(),
+            pd_employee: Joi.number()
         })
         let updateResponse
         const paymentDefinitionRequest = req.body
