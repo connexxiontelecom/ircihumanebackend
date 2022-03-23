@@ -3,7 +3,7 @@ const {
     Model
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
-const Department = require("../models/Department")(sequelize, Sequelize.DataTypes);
+
 
 module.exports = (sequelize, DataTypes) => {
     class JobRole extends Model {
@@ -38,8 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'JobRole',
         tableName: 'job_roles'
     });
-    JobRole.belongsTo(Department, { foreignKey: 'jb_department_id' })
-    JobRole.hasMany(Department, { foreignKey: 'department_id' })
 
 
     return JobRole;

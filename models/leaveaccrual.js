@@ -26,7 +26,9 @@ module.exports = (sequelize, DataTypes) => {
           {model:employeeModel, as:'employee',
               include:[
                 {model:locationModel, as:'location'},
-                {model:jobRoleModel, include:[{model:departmentModel}]}
+                {model:jobRoleModel},
+                {model:departmentModel, as:'sector'}
+
               ]},
           {model:leaveTypeModel, as:'leave_type'},
          // {model:locationModel, as:'emp_location'},

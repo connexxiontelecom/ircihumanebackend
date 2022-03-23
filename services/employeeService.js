@@ -18,7 +18,7 @@ const errHandler = (err) => {
 const getAllEmployee = async (req, res) => {
     try {
         const employees = await employee.findAll({
-            include: ['supervisor', 'location', {model: JobRole, include: Department}]
+            include: ['supervisor', 'location', 'jobrole', 'sector']
         });
         return res.status(200).json(employees)
     } catch (e) {
@@ -44,6 +44,7 @@ const createNewEmployee = async (req, res, next) => {
             location: Joi.number().required().messages({'any.required': 'Select employee location from the list provided'}),
             //subsidiary: Joi.number().required().messages({'any.required':'Which of the subsidiaries does this employee belongs to?'}),
             job_role: Joi.number().required().messages({"any.required": "What's this employee's job role?"}),
+            department: Joi.number().required().messages({"any.required": "What's this employee's Sector?"}),
             //grade_level: Joi.number().required().messages({"any.required":"What's this employee's grade level?"}),
             account_no: Joi.string().required().messages({"any.required": "Enter employee's account number"}),
             bank: Joi.number().required().messages({"any.required": "Choose the bank associated with the account number you entered?"}),
@@ -114,6 +115,7 @@ const createNewEmployee = async (req, res, next) => {
                                             emp_phone_no: req.body.phone_no,
                                             emp_location_id: req.body.location,
                                             emp_job_role_id: req.body.job_role,
+                                            emp_department_id: req.body.department,
                                             emp_account_no: req.body.account_no,
                                             emp_bank_id: req.body.bank,
                                             emp_salary_structure_setup: 0,
@@ -183,7 +185,7 @@ const createNewEmployee = async (req, res, next) => {
 async function getEmployee(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'bank', {model: JobRole, include: Department}]
+        include: ['supervisor', 'location', 'jobrole', 'sector']
     })
 }
 
@@ -264,6 +266,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData){
     emp_hire_date:employeeData.emp_hire_date,
     emp_dob:employeeData.emp_dob,
     emp_job_role_id:employeeData.emp_job_role_id,
+    emp_department_id: employeeData.emp_department_id,
     emp_sex:employeeData.emp_sex,
     emp_religion:employeeData.emp_religion,
     emp_bvn: employeeData.emp_bvn,
@@ -293,14 +296,14 @@ async function updateGrossSalary(employeeId, employeeGross) {
 async function getEmployeeById(employeeId) {
     return await employee.findOne({
         where: {emp_unique_id: employeeId},
-        include: ['supervisor', 'location', 'bank', {model: JobRole, include: Department}]
+        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
     })
 }
 
 async function getEmployeeByIdOnly(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'bank', {model: JobRole, include: Department}]
+        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
     })
 }
 
@@ -349,7 +352,7 @@ async function getActiveEmployees() {
         where:{
          emp_status: 1
         },
-        include: ['supervisor', 'location', 'bank', {model: JobRole, include: Department}]
+        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
     })
 }
 
@@ -382,7 +385,9 @@ async function getActiveEmployeesByLocation(locationId) {
             emp_location_id: locationId,
             emp_status: 1
         },
-        include: ['supervisor', 'location', 'bank', {model: JobRole, include: Department}]})
+            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+    }
+    )
 
 }
 

@@ -25,7 +25,7 @@ const setNewJobRole = async (req, res) => {
     try {
         const schema = Joi.object({
             job_role: Joi.string().required(),
-            department_id: Joi.number().required(),
+           // department_id: Joi.number().required(),
             description: Joi.string().required()
         });
         const jobRoleRequest = req.body
@@ -35,7 +35,7 @@ const setNewJobRole = async (req, res) => {
         }
         await jobRole.create({
             job_role: req.body.job_role,
-            jb_department_id: req.body.department_id,
+            //jb_department_id: req.body.department_id,
             description: req.body.description
         })
             .catch(errHandler);
@@ -63,7 +63,7 @@ const updateJobRole = async (req, res, next) => {
     try {
         const schema = Joi.object({
             job_role: Joi.string().required(),
-            department_id: Joi.number().required(),
+            //department_id: Joi.number().required(),
             description: Joi.string().required()
         });
         const jobRoleRequest = req.body
@@ -75,7 +75,7 @@ const updateJobRole = async (req, res, next) => {
         const role = await jobRole.update({
             job_role: req.body.job_role,
             description: req.body.description,
-            jb_department_id: req.body.department_id
+            //jb_department_id: req.body.department_id
         }, {
             where: {
                 job_role_id: role_id
