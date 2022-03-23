@@ -7,6 +7,7 @@ const {
 const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 const Bank = require("../models/Bank")(sequelize, Sequelize.DataTypes)
+const Department = require("../models/Department")(sequelize, Sequelize.DataTypes);
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 //const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
 //const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
@@ -48,6 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         emp_location_id: DataTypes.INTEGER,
         emp_subsidiary_id: DataTypes.INTEGER,
         emp_job_role_id: DataTypes.INTEGER,
+        emp_department_id: DataTypes.INTEGER,
         emp_grade_id: DataTypes.INTEGER,
         emp_account_no: DataTypes.STRING,
         emp_bank_id: DataTypes.INTEGER,
@@ -111,11 +113,18 @@ module.exports = (sequelize, DataTypes) => {
     Employee.belongsTo(Location, {as: 'location', foreignKey: 'emp_location_id'})
     Employee.hasMany(Location, {foreignKey: 'location_id'})
 
-    Employee.belongsTo(JobRole, { foreignKey: 'emp_job_role_id'})
+    // Employee.belongsTo(JobRole, { foreignKey: 'emp_job_role_id'})
+    // Employee.hasMany(JobRole, {foreignKey: 'job_role_id'})
+
+    Employee.belongsTo(JobRole, { as: 'jobrole', foreignKey: 'emp_job_role_id'})
     Employee.hasMany(JobRole, {foreignKey: 'job_role_id'})
 
     Employee.belongsTo(Bank, { as: 'bank', foreignKey: 'emp_bank_id'})
     Employee.hasMany(Bank, {foreignKey: 'bank_id'})
+
+    Employee.belongsTo(Department, { as: 'sector', foreignKey: 'emp_department_id'})
+    Employee.hasMany(Department, {foreignKey: 'department_id'})
+
 
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
     //Employee.belongsTo(travelApplicationModel, { foreignKey:'emp_id', as: 'applicant' });
