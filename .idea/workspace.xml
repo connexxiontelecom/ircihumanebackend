@@ -22,17 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="gitignore">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="master ID employee model">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-     <change afterPath="$PROJECT_DIR$/migrations/20220322073502-add_archive_column_to_leave_accruals_table.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/Employee.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Employee.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/LeaveType.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/LeaveType.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/leaveaccrual.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/leaveaccrual.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/leaveAccrual.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leaveAccrual.js" afterDir="false" />
-
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +138,49 @@
       <option name="project" value="LOCAL" />
       <updated>1647867280732</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="model to support new department Id on employee table">
+      <created>1648049314772</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1648049314772</updated>
+    </task>
+    <task id="LOCAL-00010" summary="test origin">
+      <created>1648049783666</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1648049783666</updated>
+    </task>
+    <task id="LOCAL-00011" summary="test origin">
+      <created>1648051245801</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1648051245801</updated>
+    </task>
+    <task id="LOCAL-00012" summary="master ID employee migration">
+      <created>1648063926191</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1648063926191</updated>
+    </task>
+    <task id="LOCAL-00013" summary="master ID employee model">
+      <created>1648064545486</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1648064545486</updated>
+    </task>
+    <task id="LOCAL-00014" summary="master ID employee model">
+      <created>1648111151884</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1648111151884</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -172,6 +205,10 @@
     <MESSAGE value="salary routine" />
     <MESSAGE value="variational Payment supporting documents models and migration" />
     <MESSAGE value="gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
+    <MESSAGE value="model to support new department Id on employee table" />
+    <MESSAGE value="test origin" />
+    <MESSAGE value="master ID employee migration" />
+    <MESSAGE value="master ID employee model" />
+    <option name="LAST_COMMIT_MESSAGE" value="master ID employee model" />
   </component>
 </project>
