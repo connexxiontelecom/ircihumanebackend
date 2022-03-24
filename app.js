@@ -89,6 +89,9 @@
     const leaveApplication = require('./routes/leaveApplication')
     app.use('/leave-application', leaveApplication)
 
+    const leaveDoc = require('./routes/leaveDoc')
+    app.use('/leavedoc', leaveDoc)
+
     const supervisorAssignment = require('./routes/supervisorAssignment')
     app.use('/supervisor-assignment', supervisorAssignment)
 
