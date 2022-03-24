@@ -26,12 +26,27 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+     static async getLeaveApplicationById(leaveId){
+      return await leaveApplication.findOne({
+        where:{leapp_id:leaveId}
+      })
+    }
+
+
+
     static async getApprovedApplications(){
       return await leaveApplication.findAll({
         where:{leapp_status:1}, //approved
         include:[{model:Employee, as:'employee'}, {model:LeaveType, as:'leave_type'}],
         order:[['leapp_id', 'DESC']]
       })
+    }
+
+    static async updateLeaveAppStatus(leaveId, status){
+      return await leaveApplication.update({
+      leapp_status:status},
+        {where:{leapp_id:leaveId}
+      });
     }
 
 
