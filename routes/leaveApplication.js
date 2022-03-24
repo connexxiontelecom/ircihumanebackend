@@ -12,6 +12,7 @@ const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual"
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const leaveTypeService = require('../services/leaveTypeService');
+const IRCMailerService = require('../services/IRCMailer');
 const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize.DataTypes);
 const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
@@ -164,12 +165,16 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
             });
         })
 
+      //send mail
+      const subject = 'Leave application';
+      const body = "Your leave application was received. ";
+      await IRCMailerService.sendMail('no-reply@irc.com',emp.emp_office_email,subject, body);
 
         /* if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
              return res.status(400).json('An Error Occurred')
          }*/
 
-        return res.status(200).json('Action Successful')
+        return res.status(200).json(leaveApplicationResponse)
 
     } catch (err) {
         console.error(`Error while adding location allowance `, err.message);

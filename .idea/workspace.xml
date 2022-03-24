@@ -22,17 +22,35 @@
     <select />
   </component>
   <component name="ChangeListManager">
-
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="gitignore">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
+      <change afterPath="$PROJECT_DIR$/migrations/20220320154747-employeeUpdateNhfBvn.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20220321095251-paymentDefinitionUpdateEmployee.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20220321123952-create-variational-documents.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20220323134903-employeeUpdateSectorId.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20220323192958-employeeUpdateMasterId.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20220324085939-employeeConstUpdate.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20220324092020-create-leave-app-document.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/leaveappdocument.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/variationaldocuments.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/variationalDocumentsService.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-     <change afterPath="$PROJECT_DIR$/migrations/20220322073502-add_archive_column_to_leave_accruals_table.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/Employee.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Employee.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/LeaveType.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/LeaveType.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/JobRole.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/JobRole.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/leaveaccrual.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/leaveaccrual.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/paymentdefinition.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/paymentdefinition.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/employees.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employees.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/leaveAccrual.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leaveAccrual.js" afterDir="false" />
-
+      <change beforePath="$PROJECT_DIR$/routes/leaveApplication.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leaveApplication.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/paymentDefinitions.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/paymentDefinitions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/variational-payment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/variational-payment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/employeeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/employeeService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/jobRoleService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/jobRoleService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/leaveAccrualService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/leaveAccrualService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/paymentDefinitionService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/paymentDefinitionService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/variationalPaymentService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/variationalPaymentService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +107,7 @@
       <workItem from="1646224865223" duration="7704000" />
       <workItem from="1646730158397" duration="1375000" />
       <workItem from="1646835987263" duration="719000" />
-      <workItem from="1646837640406" duration="104984000" />
+      <workItem from="1646837640406" duration="117187000" />
     </task>
     <task id="LOCAL-00001" summary="test push">
       <created>1646229916957</created>
@@ -105,49 +123,7 @@
       <option name="project" value="LOCAL" />
       <updated>1646283237614</updated>
     </task>
-    <task id="LOCAL-00003" summary="employee new collumns (nhf, bvn, etc)">
-      <created>1647792335049</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1647792335049</updated>
-    </task>
-    <task id="LOCAL-00004" summary="payment Definition(employee type)">
-      <created>1647856566243</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1647856566243</updated>
-    </task>
-    <task id="LOCAL-00005" summary="salary routine">
-      <created>1647863779410</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1647863779410</updated>
-    </task>
-    <task id="LOCAL-00006" summary="variational Payment supporting documents models and migration">
-      <created>1647867022027</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1647867022027</updated>
-    </task>
-    <task id="LOCAL-00007" summary="gitignore">
-      <created>1647867203324</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1647867203324</updated>
-    </task>
-    <task id="LOCAL-00008" summary="gitignore">
-      <created>1647867280732</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1647867280732</updated>
-    </task>
-    <option name="localTasksCounter" value="9" />
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -167,11 +143,6 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test push" />
     <MESSAGE value="log on undo payroll routine" />
-    <MESSAGE value="employee new collumns (nhf, bvn, etc)" />
-    <MESSAGE value="payment Definition(employee type)" />
-    <MESSAGE value="salary routine" />
-    <MESSAGE value="variational Payment supporting documents models and migration" />
-    <MESSAGE value="gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="log on undo payroll routine" />
   </component>
 </project>
