@@ -279,4 +279,33 @@ router.get('/authorization/supervisor/:id', auth, async (req, res) => {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
+
+router.patch('/update-leaveapp-status/:leaveId', auth, async (req, res)=>{
+  try{
+    const schema = Joi.object({
+      leave: Joi.number().required(),
+      status: Joi.number().required(),
+    })
+
+    const statusRequest = req.body
+    const validationResult = schema.validate(statusRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const leaveId = req.params.leaveId;
+    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId));
+    if(_.isNull(leave) || _.isEmpty(leave)){
+      return res.status(400).json("Leave application does not exist.");
+    }
+    const status = await leaveAppModel.updateLeaveAppStatus(parseInt(leaveId), req.body.status);
+    if(_.isNull(status) || _.isEmpty(status)){
+      return res.status(400).json("Could not update record. Try again.");
+    }
+    return res.status(200).json("Leave status updated.");
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+});
 module.exports = router;
