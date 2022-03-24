@@ -276,7 +276,8 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
             }
 
             return res.status(200).json(`Action Successful`)
-        } else {
+        }
+        else {
             const uploadResponse = await uploadFile(docs).then((response) => {
                 return response
             }).catch(err => {

@@ -1835,6 +1835,8 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                 let totalDeduction = 0
                 let deductions = []
                 let incomes = []
+                let employersIncomes = []
+                let employersDeductions = []
                 let empAdjustedGross = 0
                 let empAdjustedGrossII = 0
 
@@ -1848,38 +1850,60 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                     for (const empSalary of employeeSalaries) {
 
 
-                        if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                            const incomeDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
-                            }
-                            incomes.push(incomeDetails)
-                            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                        if (parseInt(empSalary.payment.pd_employee) === 1) {
+                            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                const incomeDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                incomes.push(incomeDetails)
+                                grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
 
-                            if (parseInt(empSalary.payment.pd_total_gross) === 1) {
-                                empAdjustedGross = empAdjustedGross + parseFloat(empSalary.salary_amount)
+                                if (parseInt(empSalary.payment.pd_total_gross) === 1) {
+                                    empAdjustedGross = empAdjustedGross + parseFloat(empSalary.salary_amount)
+
+                                }
+
+
+                                if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
+                                }
 
                             }
-
-
-                            if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
-                                empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
-                            }
-
-                        } else {
-                            const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
-                            }
-                            deductions.push(deductionDetails)
-                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
-                            if (parseInt(empSalary.payment.pd_total_gross) === 1) {
-                                empAdjustedGross = empAdjustedGross - parseFloat(empSalary.salary_amount)
-                            }
-                            if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
-                                empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount)
+                            else {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                deductions.push(deductionDetails)
+                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                                if (parseInt(empSalary.payment.pd_total_gross) === 1) {
+                                    empAdjustedGross = empAdjustedGross - parseFloat(empSalary.salary_amount)
+                                }
+                                if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount)
+                                }
                             }
                         }
+
+                        if (parseInt(empSalary.payment.pd_employee) === 2) {
+                            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                const incomeDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                employersIncomes.push(incomeDetails)
+
+                            } else {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                employersDeductions.push(deductionDetails)
+
+                            }
+                        }
+
                     }
                     netSalary = grossSalary - totalDeduction
 
@@ -1893,17 +1917,22 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                         grossSalary: grossSalary,
                         nsitf: (1 / 100) * empAdjustedGrossII,
                         pension: (10 / 100) * empAdjustedGrossII,
+                        employersDeductions: employersDeductions,
+                        employersIncomes: employersIncomes,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
                         deductions: deductions,
-                        adjustedGross: empAdjustedGross,
-                        adjustedGrossII: empAdjustedGrossII
+                        month: payrollMonth,
+                        year: payrollYear
                     }
 
                     return res.status(200).json(employeeSalary)
 
-                } else {
+                }
+
+
+                else {
                     return res.status(200).json(`No Salary for Employee`)
                 }
 
@@ -1958,6 +1987,8 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
             let totalDeduction = 0
             let deductions = []
             let incomes = []
+            let employersIncomes = []
+            let employersDeductions = []
 
             let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                 return data
@@ -1966,21 +1997,42 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
                 for (const empSalary of employeeSalaries) {
-                    if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                        const incomeDetails = {
-                            paymentName: empSalary.payment.pd_payment_name,
-                            amount: empSalary.salary_amount
+                    if (parseInt(empSalary.payment.pd_employee) === 1) {
+                        if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                            const incomeDetails = {
+                                paymentName: empSalary.payment.pd_payment_name,
+                                amount: empSalary.salary_amount
+                            }
+                            incomes.push(incomeDetails)
+                            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                        } else {
+                            const deductionDetails = {
+                                paymentName: empSalary.payment.pd_payment_name,
+                                amount: empSalary.salary_amount
+                            }
+                            deductions.push(deductionDetails)
+                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                         }
-                        incomes.push(incomeDetails)
-                        grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                    } else {
-                        const deductionDetails = {
-                            paymentName: empSalary.payment.pd_payment_name,
-                            amount: empSalary.salary_amount
-                        }
-                        deductions.push(deductionDetails)
-                        totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                     }
+
+                    if (parseInt(empSalary.payment.pd_employee) === 2) {
+                        if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                            const incomeDetails = {
+                                paymentName: empSalary.payment.pd_payment_name,
+                                amount: empSalary.salary_amount
+                            }
+                            employersIncomes.push(incomeDetails)
+
+                        } else {
+                            const deductionDetails = {
+                                paymentName: empSalary.payment.pd_payment_name,
+                                amount: empSalary.salary_amount
+                            }
+                            employersDeductions.push(deductionDetails)
+
+                        }
+                    }
+
                 }
                 netSalary = grossSalary - totalDeduction
 
@@ -1994,6 +2046,8 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                     grossSalary: grossSalary,
                     nsitf: (1 / 100) * grossSalary,
                     pension: (10 / 100) * grossSalary,
+                    employersDeductions: employersDeductions,
+                    employersIncomes: employersIncomes,
                     totalDeduction: totalDeduction,
                     netSalary: netSalary,
                     incomes: incomes,
@@ -2070,21 +2124,25 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
                     for (const empSalary of employeeSalaries) {
-                        if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                            const incomeDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                        if (parseInt(empSalary.payment.pd_employee) === 1) {
+                            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                const incomeDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                incomes.push(incomeDetails)
+                                grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                            } else {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                deductions.push(deductionDetails)
+                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                             }
-                            incomes.push(incomeDetails)
-                            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                        } else {
-                            const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
-                            }
-                            deductions.push(deductionDetails)
-                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                         }
+
+
                     }
                     netSalary = grossSalary - totalDeduction
 
@@ -2170,14 +2228,18 @@ router.post('/deduction-report', auth, async function (req, res, next) {
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
                     for (const empSalary of employeeSalaries) {
-                        if (parseInt(empSalary.payment.pd_payment_type) === 2) {
-                            const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+
+                        if (parseInt(empSalary.payment.pd_employee) === 1) {
+                            if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                deductions.push(deductionDetails)
+                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                             }
-                            deductions.push(deductionDetails)
-                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                         }
+
                     }
 
 
@@ -2263,23 +2325,28 @@ router.post('/variation-report', auth, async function (req, res, next) {
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
                     for (const empSalary of employeeSalaries) {
-                        if (parseInt(empSalary.payment.pd_payment_variant) === 2) {
-                            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                                const incomeDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+
+                        if (parseInt(empSalary.payment.pd_employee) === 1) {
+                            if (parseInt(empSalary.payment.pd_payment_variant) === 2) {
+                                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                    const incomeDetails = {
+                                        paymentName: empSalary.payment.pd_payment_name,
+                                        amount: empSalary.salary_amount
+                                    }
+                                    incomes.push(incomeDetails)
+                                    grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                                } else {
+                                    const deductionDetails = {
+                                        paymentName: empSalary.payment.pd_payment_name,
+                                        amount: empSalary.salary_amount
+                                    }
+                                    deductions.push(deductionDetails)
+                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
-                                incomes.push(incomeDetails)
-                                grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
-                                const deductionDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
-                                }
-                                deductions.push(deductionDetails)
-                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                             }
                         }
+
+
                     }
 
 
@@ -2343,8 +2410,8 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
             return res.status(400).json(`Payroll Routine has not been run`)
 
+        }
 
-        } else {
 
             const employees = await employee.getActiveEmployees().then((data) => {
                 return data
@@ -2395,7 +2462,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
             }
             return res.status(200).json(employeeSalary)
-        }
+
 
 
     } catch (err) {
@@ -2619,11 +2686,14 @@ router.post('/pay-order', auth, async function (req, res, next) {
 
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
                 for (const empSalary of employeeSalaries) {
-                    if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                        grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                    } else {
-                        totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                    if (parseInt(empSalary.payment.pd_employee) === 1) {
+                        if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                        } else {
+                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                        }
                     }
+
                 }
                 netSalary = grossSalary - totalDeduction
 
