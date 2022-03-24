@@ -32,6 +32,12 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static async destroyHrFocalPoints(locIds, empIds){
+      return await HrFocalPoint.destroy({
+        where:{	hfp_location_id:locIds, hfp_emp_id:empIds}
+      })
+    }
+
   };
   HrFocalPoint.init({
     hfp_id: {
