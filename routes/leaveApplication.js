@@ -120,6 +120,9 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
             return res.status(400).json('Invalid Leave Type');
 
         }
+      if(daysRequested > parseInt(leaveTypeData.leave_duration)){
+        return res.status(400).json('Leave duration exceed leave duration for this leave type.')
+      }
 
         if (parseInt(leaveTypeData.lt_accrue) === 1) {
             const accrualData = {
@@ -133,9 +136,7 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
                 return data
             });
 
-            if(daysRequested > parseInt(leaveTypeData.leave_duration)){
-              return res.status(400).json('Leave duration exceed leave duration for this leave type.')
-            }
+
 
             if (_.isNull(accruedDays) || accruedDays === 0) {
                 return res.status(400).json('No Leave Accrued for Selected Leave')
