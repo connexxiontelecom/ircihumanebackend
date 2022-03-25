@@ -137,9 +137,9 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
               return res.status(400).json('Leave duration exceed leave duration for this leave type.')
             }
 
-           /* if (_.isNull(accruedDays) || accruedDays === 0) {
+            if (_.isNull(accruedDays) || accruedDays === 0) {
                 return res.status(400).json('No Leave Accrued for Selected Leave')
-            }*/
+            }
 
 
             const sumLeave = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((data) => {
@@ -147,9 +147,9 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
             })
 
 
-            if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
+           /* if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
                 return res.status(400).json("Days Requested Greater than Accrued Days")
-            }
+            }*/
         }
 
         leaveApplicationRequest['leapp_year'] = startYear
