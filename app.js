@@ -140,6 +140,9 @@
     const selfAssessmentRouter = require('./routes/selfAssessment')
     app.use('/self-assessment', selfAssessmentRouter)
 
+    const hrFocalPointRouter = require('./routes/hrfocalpoint')
+    app.use('/hr-focal-point', hrFocalPointRouter)
+
     const endYearAssessmentRouter = require('./routes/endOfYearAssessment')
     app.use('/end-year-assessment', endYearAssessmentRouter)
 
