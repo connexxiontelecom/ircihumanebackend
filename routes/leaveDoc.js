@@ -5,7 +5,7 @@ const {sequelize, Sequelize} = require('../services/db');
 const leaveDocModel = require('../models/leaveappdocument')(sequelize, Sequelize.DataTypes);
 const leaveService = require('../services/leaveApplicationService');
 const _ = require('lodash')
-//const documents = require("../services/employeeDocumentsService");
+const leaveAppModel = require('../models/leaveapplication')(sequelize, Sequelize.DataTypes);
 const path = require("path");
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({
@@ -94,6 +94,20 @@ router.post('/leave-doc/:leaveId', auth, async (req, res)=>{
     return res.status(400).json("Something went wrong."+e.message);
   }
 
+});
+
+router.get('/:leaveId',auth, async (req, res)=>{
+  try{
+    const leaveId = req.params.leaveId;
+    const leave = await leaveAppModel.getLeaveApplicationById(leaveId);
+    if(_.isEmpty(leave) || _.isNull(leave)){
+      return res.status(400).json("No record found.");
+    }
+    const documents = await leaveDocModel.getDocumentsByLeaveId(leaveId);
+    return res.status(200).json(documents);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
+  }
 });
 
 const uploadFile = (fileRequest) => {
