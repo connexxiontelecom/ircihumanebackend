@@ -69,131 +69,133 @@ router.post('/add-salary-structure', auth, async function (req, res, next) {
                     let minimum = parseFloat(empSalaryGrade.sg_minimum)
                     let gross = parseFloat(salaryStructureRequest.ss_gross)
 
-                    if ((gross < minimum) || (gross > maximum)) {
-                        return res.status(400).json(`Gross Salary not within grade band`)
-                    } else {
-                        const grossPercentage = await paymentDefinition.findCodeWithGross().then((data) => {
+                    const grossPercentage = await paymentDefinition.findCodeWithGross().then((data) => {
+                        return data
+                    })
+
+                    if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
+                        return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
+                    }
+                    else {
+                        let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
                             return data
                         })
 
-                        if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
-                            return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
+                        if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
+                            return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
+
                         } else {
-                            let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
-                                return data
-                            })
+                            await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
+                            await employee.updateGrossSalary(empId, 0).then()
 
-                            if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
-                                return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
+                            let salaryObject = {}
+                            let amount
+                            let percent
+                            for (const percentage of grossPercentage) {
+                                percent = parseFloat(percentage.pd_pr_gross)
+                                amount = (percent / 100) * gross
 
-                            } else {
-                                await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
-                                await employee.updateGrossSalary(empId, 0).then()
-
-                                let salaryObject = {}
-                                let amount
-                                let percent
-                                for (const percentage of grossPercentage) {
-                                    percent = parseFloat(percentage.pd_pr_gross)
-                                    amount = (percent / 100) * gross
-
-                                    salaryObject = {
-                                        ss_empid: empId,
-                                        ss_pd: percentage.pd_id,
-                                        ss_amount: amount,
-                                        ss_grade: salaryStructureRequest.ss_grade
-
-                                    }
-
-                                    await salaryStructure.addSalaryStructure(salaryObject).then((data) => {
-                                        if (_.isEmpty(data) || _.isNull(data)) {
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
-                                                return res.status(400).json(`An error occurred while adding`)
-                                            })
-                                        }
-                                    })
-
-                                    await employee.updateGrossSalary(empId, gross).then((updateData) => {
-                                        if (!(_.isEmpty(updateData) || _.isNull(updateData))) {
-                                            const logData = {
-                                                "log_user_id": req.user.username.user_id,
-                                                "log_description": "Updated salary structure",
-                                                "log_date": new Date()
-                                            }
-                                            logs.addLog(logData).then((logRes) => {
-                                                //return res.status(200).json(logRes);
-                                                return res.status(200).json(`Action Successful`)
-                                            })
-                                        } else {
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
-                                                return res.status(400).json(`An error occurred while updating Employee's Gross`)
-                                            })
-
-                                        }
-                                    })
-
+                                salaryObject = {
+                                    ss_empid: empId,
+                                    ss_pd: percentage.pd_id,
+                                    ss_amount: amount,
+                                    ss_grade: salaryStructureRequest.ss_grade
 
                                 }
 
-                                // const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(employeeData.emp_location_id).then((data)=>{
-                                //     return data
-                                // })
-                                //
-                                // if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
-                                //     for(const allowance of hazardAllowances){
-                                //
-                                //         salaryObject = {
-                                //             ss_empid: empId,
-                                //             ss_pd: allowance.la_payment_id,
-                                //             ss_amount: allowance.la_amount
-                                //
-                                //         }
-                                //
-                                //         let salaryStructureAddResponse = await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                //             return  data
-                                //
-                                //         })
-                                //
-                                //         if(_.isEmpty(salaryStructureAddResponse) || _.isNull(salaryStructureAddResponse)){
-                                //             await salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                //                 return res.status(400).json(`An error occurred while adding`)
-                                //             })
-                                //         }
-                                //
-                                //     }
-                                //
-                                //     await employee.updateGrossSalary(empId, gross).then((updateData)=>{
-                                //         if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
-                                //             const logData = {
-                                //                 "log_user_id": req.user.username.user_id,
-                                //                 "log_description": "Updated salary structure",
-                                //                 "log_date": new Date()
-                                //             }
-                                //             logs.addLog(logData).then((logRes)=>{
-                                //                 //return res.status(200).json(logRes);
-                                //                 return  res.status(200).json(`Action Successful`)
-                                //             })
-                                //         } else {
-                                //             salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                //                 return res.status(400).json(`An error occurred while updating Employee's Gross`)
-                                //             })
-                                //
-                                //         }
-                                //     })
-                                //
-                                // }
-                                // else{
-                                //
-                                //     await salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                //         return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
-                                //     })
-                                // }
+                                await salaryStructure.addSalaryStructure(salaryObject).then((data) => {
+                                    if (_.isEmpty(data) || _.isNull(data)) {
+                                        salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
+                                            return res.status(400).json(`An error occurred while adding`)
+                                        })
+                                    }
+                                })
+
+                                await employee.updateGrossSalary(empId, gross).then((updateData) => {
+                                    if (!(_.isEmpty(updateData) || _.isNull(updateData))) {
+                                        const logData = {
+                                            "log_user_id": req.user.username.user_id,
+                                            "log_description": "Updated salary structure",
+                                            "log_date": new Date()
+                                        }
+                                        logs.addLog(logData).then((logRes) => {
+                                            //return res.status(200).json(logRes);
+                                            return res.status(200).json(`Action Successful`)
+                                        })
+                                    } else {
+                                        salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
+                                            return res.status(400).json(`An error occurred while updating Employee's Gross`)
+                                        })
+
+                                    }
+                                })
+
 
                             }
 
+                            // const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(employeeData.emp_location_id).then((data)=>{
+                            //     return data
+                            // })
+                            //
+                            // if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
+                            //     for(const allowance of hazardAllowances){
+                            //
+                            //         salaryObject = {
+                            //             ss_empid: empId,
+                            //             ss_pd: allowance.la_payment_id,
+                            //             ss_amount: allowance.la_amount
+                            //
+                            //         }
+                            //
+                            //         let salaryStructureAddResponse = await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
+                            //             return  data
+                            //
+                            //         })
+                            //
+                            //         if(_.isEmpty(salaryStructureAddResponse) || _.isNull(salaryStructureAddResponse)){
+                            //             await salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                            //                 return res.status(400).json(`An error occurred while adding`)
+                            //             })
+                            //         }
+                            //
+                            //     }
+                            //
+                            //     await employee.updateGrossSalary(empId, gross).then((updateData)=>{
+                            //         if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
+                            //             const logData = {
+                            //                 "log_user_id": req.user.username.user_id,
+                            //                 "log_description": "Updated salary structure",
+                            //                 "log_date": new Date()
+                            //             }
+                            //             logs.addLog(logData).then((logRes)=>{
+                            //                 //return res.status(200).json(logRes);
+                            //                 return  res.status(200).json(`Action Successful`)
+                            //             })
+                            //         } else {
+                            //             salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
+                            //                 return res.status(400).json(`An error occurred while updating Employee's Gross`)
+                            //             })
+                            //
+                            //         }
+                            //     })
+                            //
+                            // }
+                            // else{
+                            //
+                            //     await salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
+                            //         return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
+                            //     })
+                            // }
 
                         }
+
+
                     }
+                    // if ((gross < minimum) || (gross > maximum)) {
+                    //     return res.status(400).json(`Gross Salary not within grade band`)
+                    // } else {
+                    //
+                    // }
 
                 }
 
@@ -253,129 +255,132 @@ router.patch('/update-salary-structure/:emp_id', auth, async function (req, res,
                     let minimum = parseFloat(empSalaryGrade.sg_minimum)
                     let gross = parseFloat(salaryStructureRequest.ss_gross)
 
-                    if ((gross < minimum) || (gross > maximum)) {
-                        return res.status(400).json(`Gross Salary not within grade band`)
-                    } else {
-                        const grossPercentage = await paymentDefinition.findCodeWithGross().then((data) => {
+                    const grossPercentage = await paymentDefinition.findCodeWithGross().then((data) => {
+                        return data
+                    })
+
+                    if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
+                        return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
+                    }
+                    else {
+                        let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
                             return data
                         })
 
-                        if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
-                            return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
+                        if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
+                            return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
+
                         } else {
-                            let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
-                                return data
-                            })
+                            await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
 
-                            if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
-                                return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
+                            await employee.updateGrossSalary(empId, 0).then()
+                            let salaryObject = {}
+                            let amount
+                            let percent
+                            for (const percentage of grossPercentage) {
+                                percent = parseFloat(percentage.pd_pr_gross)
+                                amount = (percent / 100) * gross
 
-                            } else {
-                                await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
-
-                                await employee.updateGrossSalary(empId, 0).then()
-                                let salaryObject = {}
-                                let amount
-                                let percent
-                                for (const percentage of grossPercentage) {
-                                    percent = parseFloat(percentage.pd_pr_gross)
-                                    amount = (percent / 100) * gross
-
-                                    salaryObject = {
-                                        ss_empid: empId,
-                                        ss_pd: percentage.pd_id,
-                                        ss_amount: amount,
-                                        ss_grade: salaryStructureRequest.ss_grade
-
-                                    }
-
-                                    await salaryStructure.addSalaryStructure(salaryObject).then((data) => {
-                                        if (_.isEmpty(data) || _.isNull(data)) {
-                                            salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
-                                                return res.status(400).json(`An error occurred while adding`)
-                                            })
-                                        }
-                                    })
+                                salaryObject = {
+                                    ss_empid: empId,
+                                    ss_pd: percentage.pd_id,
+                                    ss_amount: amount,
+                                    ss_grade: salaryStructureRequest.ss_grade
 
                                 }
-                                await employee.updateGrossSalary(empId, gross).then((updateData) => {
-                                    if (!(_.isEmpty(updateData) || _.isNull(updateData))) {
-                                        const logData = {
-                                            "log_user_id": req.user.username.user_id,
-                                            "log_description": "Updated salary structure",
-                                            "log_date": new Date()
-                                        }
-                                        logs.addLog(logData).then((logRes) => {
-                                            //return res.status(200).json(logRes);
-                                            return res.status(200).json(`Action Successful`)
-                                        })
-                                    } else {
-                                        salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
-                                            return res.status(400).json(`An error occurred while updating Employee's Gross`)
-                                        })
 
+                                await salaryStructure.addSalaryStructure(salaryObject).then((data) => {
+                                    if (_.isEmpty(data) || _.isNull(data)) {
+                                        salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
+                                            return res.status(400).json(`An error occurred while adding`)
+                                        })
                                     }
                                 })
 
-                                // const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(employeeData.emp_location_id).then((data)=>{
-                                //     return data
-                                // })
-                                //
-                                // if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
-                                //     for(const allowance of hazardAllowances){
-                                //
-                                //         salaryObject = {
-                                //             ss_empid: empId,
-                                //             ss_pd: allowance.la_payment_id,
-                                //             ss_amount: allowance.la_amount
-                                //
-                                //         }
-                                //
-                                //         let salaryStructureAddResponse = await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
-                                //             return  data
-                                //
-                                //         })
-                                //
-                                //         if(_.isEmpty(salaryStructureAddResponse) || _.isNull(salaryStructureAddResponse)){
-                                //             await salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
-                                //                 return res.status(400).json(`An error occurred while adding`)
-                                //             })
-                                //         }
-                                //
-                                //     }
-                                //
-                                //    await employee.updateGrossSalary(empId, gross).then((updateData)=>{
-                                //         if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
-                                //             const logData = {
-                                //                 "log_user_id": req.user.username.user_id,
-                                //                 "log_description": "Updated salary structure",
-                                //                 "log_date": new Date()
-                                //             }
-                                //             logs.addLog(logData).then((logRes)=>{
-                                //                 //return res.status(200).json(logRes);
-                                //                 return  res.status(200).json(`Action Successful`)
-                                //             })
-                                //         } else {
-                                //             salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                //                 return res.status(400).json(`An error occurred while updating Employee's Gross`)
-                                //             })
-                                //
-                                //         }
-                                //     })
-                                //
-                                // }
-                                // else{
-                                //
-                                //     await salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
-                                //         return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
-                                //     })
-                                // }
-
                             }
+                            await employee.updateGrossSalary(empId, gross).then((updateData) => {
+                                if (!(_.isEmpty(updateData) || _.isNull(updateData))) {
+                                    const logData = {
+                                        "log_user_id": req.user.username.user_id,
+                                        "log_description": "Updated salary structure",
+                                        "log_date": new Date()
+                                    }
+                                    logs.addLog(logData).then((logRes) => {
+                                        //return res.status(200).json(logRes);
+                                        return res.status(200).json(`Action Successful`)
+                                    })
+                                } else {
+                                    salaryStructure.deleteSalaryStructuresEmployee(empId).then((data) => {
+                                        return res.status(400).json(`An error occurred while updating Employee's Gross`)
+                                    })
 
+                                }
+                            })
+
+                            // const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(employeeData.emp_location_id).then((data)=>{
+                            //     return data
+                            // })
+                            //
+                            // if(!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)){
+                            //     for(const allowance of hazardAllowances){
+                            //
+                            //         salaryObject = {
+                            //             ss_empid: empId,
+                            //             ss_pd: allowance.la_payment_id,
+                            //             ss_amount: allowance.la_amount
+                            //
+                            //         }
+                            //
+                            //         let salaryStructureAddResponse = await salaryStructure.addSalaryStructure(salaryObject).then((data)=>{
+                            //             return  data
+                            //
+                            //         })
+                            //
+                            //         if(_.isEmpty(salaryStructureAddResponse) || _.isNull(salaryStructureAddResponse)){
+                            //             await salaryStructure.deleteSalaryStructuresEmployee(salaryStructureRequest.ss_empid).then((data)=>{
+                            //                 return res.status(400).json(`An error occurred while adding`)
+                            //             })
+                            //         }
+                            //
+                            //     }
+                            //
+                            //    await employee.updateGrossSalary(empId, gross).then((updateData)=>{
+                            //         if(!(_.isEmpty(updateData) || _.isNull(updateData)) ) {
+                            //             const logData = {
+                            //                 "log_user_id": req.user.username.user_id,
+                            //                 "log_description": "Updated salary structure",
+                            //                 "log_date": new Date()
+                            //             }
+                            //             logs.addLog(logData).then((logRes)=>{
+                            //                 //return res.status(200).json(logRes);
+                            //                 return  res.status(200).json(`Action Successful`)
+                            //             })
+                            //         } else {
+                            //             salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
+                            //                 return res.status(400).json(`An error occurred while updating Employee's Gross`)
+                            //             })
+                            //
+                            //         }
+                            //     })
+                            //
+                            // }
+                            // else{
+                            //
+                            //     await salaryStructure.deleteSalaryStructuresEmployee(empId).then((data)=>{
+                            //         return res.status(400).json(`No Hazard Allowance Set for Employee Location`)
+                            //     })
+                            // }
 
                         }
+
+
                     }
+
+                    // if ((gross < minimum) || (gross > maximum)) {
+                    //     return res.status(400).json(`Gross Salary not within grade band`)
+                    // } else {
+                    //
+                    // }
 
                 }
 
