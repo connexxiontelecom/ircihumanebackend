@@ -75,8 +75,7 @@ router.post('/add-salary-structure', auth, async function (req, res, next) {
 
                     if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
                         return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
-                    }
-                    else {
+                    } else {
                         let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
                             return data
                         })
@@ -238,16 +237,12 @@ router.patch('/update-salary-structure/:emp_id', auth, async function (req, res,
             const empSalaryStructure = await salaryStructure.findSalaryStructure(empId).then((data) => {
                 return data
             })
-
             if (_.isEmpty(empSalaryStructure) || _.isNull(empSalaryStructure)) {
                 return res.status(400).json(`Salary Structure was never setup, consider setting up`)
             } else {
-
-
                 const empSalaryGrade = await salaryGrade.findSalaryGrade(salaryStructureRequest.ss_grade).then((data) => {
                     return data
                 })
-
                 if (_.isEmpty(empSalaryGrade) || _.isNull(empSalaryGrade)) {
                     return res.status(400).json(`Salary Grade Doesn't Exists`)
                 } else {
@@ -261,8 +256,7 @@ router.patch('/update-salary-structure/:emp_id', auth, async function (req, res,
 
                     if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
                         return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
-                    }
-                    else {
+                    } else {
                         let totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
                             return data
                         })
