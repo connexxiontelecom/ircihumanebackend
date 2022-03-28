@@ -710,6 +710,9 @@ router.post('/salary-routine', auth, async function (req, res, next) {
         const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
             return data
         })
+        if(_.isEmpty(employees)){
+            return res.status(400).json('No Employees in Selected Location')
+        }
 
 
         for (const emp of employees) {
@@ -720,6 +723,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
         const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYearEmployees(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
             return data
         })
+
+
 
         if (_.isEmpty(pendingVariationalPayment) || _.isNull(pendingVariationalPayment)) {
 
@@ -815,7 +820,9 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                             })
 
-                        } else {
+                        }
+
+                        else {
 
                             const totalPercentageGross = await paymentDefinition.findSumPercentage().then((data) => {
                                 return data
@@ -825,7 +832,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                     return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
                                 })
-                            } else {
+                            }
+                            else {
                                 let amount = 0;
                                 let percent = 0;
 
@@ -1123,7 +1131,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(taxRatesData) || _.isNull(taxRatesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                         return res.status(400).json(`No tax Rate Setup `)
 
                                     })
@@ -1134,7 +1142,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                         return res.status(400).json(`Minimum Tax Rate Not Setup `)
 
                                     })
@@ -1272,7 +1280,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
 
                                     })
@@ -1292,18 +1300,18 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     })
 
                                     if (_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)) {
-                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                             return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
 
                                         })
                                     }
                                 }
 
-                                let grossObject = {
-                                    empGross, empAdjustedGross
-                                }
+                                // let grossObject = {
+                                //     empGross, empAdjustedGross
+                                // }
 
-                                GrossArray.push(grossObject)
+                                // GrossArray.push(grossObject)
                             }
 
 
@@ -1311,17 +1319,20 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                     }
 
+
+
+                    //start
                 }
 
-                const pmylObject = {
-                    pmyl_month: payrollMonth,
-                    pmyl_year: payrollYear,
-                    pmyl_location_id: pmylLocationId
-                }
+                // const pmylObject = {
+                //     pmyl_month: payrollMonth,
+                //     pmyl_year: payrollYear,
+                //     pmyl_location_id: pmylLocationId
+                // }
 
-                await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
-                    return data
-                })
+                // await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
+                //     return data
+                // })
 
                 //return  res.status(200).json(GrossArray)
                 const logData = {
@@ -1340,7 +1351,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
             }
 
 
-        } else {
+        }
+        else {
 
             return res.status(400).json(`There are pending Variational Payments`)
         }
@@ -2413,55 +2425,55 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
         }
 
 
-            const employees = await employee.getActiveEmployees().then((data) => {
+        const employees = await employee.getActiveEmployees().then((data) => {
+            return data
+        })
+
+        for (const emp of employees) {
+
+
+            let totalDeduction = 0
+
+            let deductions = []
+
+
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                 return data
             })
 
-            for (const emp of employees) {
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
-
-                let totalDeduction = 0
-
-                let deductions = []
-
-
-                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
-                    return data
-                })
-
-                if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-
-                    for (const empSalary of employeeSalaries) {
-                        if (parseInt(empSalary.payment.pd_id) === parseInt(payrollRequest.pd_id)) {
-                            const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
-                            }
-                            deductions.push(deductionDetails)
-                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                for (const empSalary of employeeSalaries) {
+                    if (parseInt(empSalary.payment.pd_id) === parseInt(payrollRequest.pd_id)) {
+                        const deductionDetails = {
+                            paymentName: empSalary.payment.pd_payment_name,
+                            amount: empSalary.salary_amount
                         }
+                        deductions.push(deductionDetails)
+                        totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                     }
-
-
-                    let salaryObject = {
-                        employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
-                        totalDeduction: totalDeduction,
-                        deductions: deductions,
-                        month: payrollMonth,
-                        year: payrollYear
-                    }
-
-                    employeeSalary.push(salaryObject)
-
                 }
 
+
+                let salaryObject = {
+                    employeeId: emp.emp_id,
+                    employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                    employeeUniqueId: emp.emp_unique_id,
+                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    jobRole: `${emp.JobRole.job_role}`,
+                    sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                    totalDeduction: totalDeduction,
+                    deductions: deductions,
+                    month: payrollMonth,
+                    year: payrollYear
+                }
+
+                employeeSalary.push(salaryObject)
+
             }
-            return res.status(200).json(employeeSalary)
+
+        }
+        return res.status(200).json(employeeSalary)
 
 
 
