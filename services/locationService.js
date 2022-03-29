@@ -92,7 +92,7 @@ const updateLocation = async (req, res, next) => {
             return res.status(400).json(validationResult.error.details[0].message);
         }
         const location_id = req.params.id;
-       /* const loca = await location.update({
+        const loca = await location.update({
             location_name: req.body.location_name,
             l_t6_code: req.body.location_t6_code,
             l_state_id: req.body.location_state
@@ -100,7 +100,7 @@ const updateLocation = async (req, res, next) => {
             where: {
                 location_id: location_id
             }
-        });*/
+        });
       const focal_points = req.body.focal_points;
         const hrpoints = await hrFocalPointModel.getHrFocalPointsByLocationId(location_id);
         const existing = [];
