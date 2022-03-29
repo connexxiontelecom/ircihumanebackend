@@ -189,6 +189,12 @@ async function getEmployee(employeeId) {
     })
 }
 
+async function getEmployees() {
+    return await employee.findAll({
+        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+    })
+}
+
 async function setSupervisorStatus(data) {
     return await employee.update({
         emp_supervisor_status: data.emp_supervisor_status,
@@ -464,6 +470,20 @@ async function changePassword(req, res) {
 
 }
 
+async function getInactiveEmployees() {
+    return await employee.findAll({
+            where:
+                {
+                    emp_status: {
+                        [Op.or]: [0, 2, null]
+                    }
+                },
+            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+
+        }
+    )
+}
+
 
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
@@ -535,7 +555,9 @@ module.exports = {
     suspendEmployee,
     unSuspendEmployee,
     getActiveEmployeesByLocation,
-    changePassword
+    changePassword,
+    getEmployees,
+    getInactiveEmployees
     //updateDepartment,
     //setNewDepartment,
 }
