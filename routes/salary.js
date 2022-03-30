@@ -2834,6 +2834,105 @@ router.post('/pay-order', auth, async function (req, res, next) {
     }
 });
 
+
+router.post('/pension-report', auth, async function (req, res, next) {
+    try {
+
+
+        const schema = Joi.object({
+            pym_month: Joi.number().required(),
+            pym_year: Joi.number().required(),
+            pym_location: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+        const location = payrollRequest.pym_location
+        let employees
+        if (parseInt(location) > 0) {
+            employees = await employee.getActiveEmployeesByLocation(location).then((data) => {
+                return data
+            })
+        } else {
+            employees = await employee.getActiveEmployees(location).then((data) => {
+                return data
+            })
+        }
+        //check if payroll routine has been run
+        let employeeSalary = []
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+            return data
+        })
+
+        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+            return res.status(400).json(`Payroll Routine has not been run`)
+        }
+
+        for (const emp of employees) {
+
+           let pensionArray = [ ];
+
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                return data
+            })
+
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+                for (const empSalary of employeeSalaries) {
+                    if (parseInt(empSalary.payment.pd_pension) === 1) {
+                        const empPensionObject ={
+                            "Payment Name": empSalary.payment.pd_payment_name,
+                            "Amount": parseFloat(empSalary.salary_amount)
+                        }
+                        pensionArray.push(empPensionObject)
+
+                    }
+
+                }
+
+
+                let empJobRole = 'N/A'
+                // if(parseInt(emp.emp_job_role_id) > 0){
+                //     empJobRole = emp.jobRole.job_role
+                // }
+
+                let sectorName = 'N/A'
+                if (parseInt(emp.emp_department_id) > 0) {
+                    sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                }
+
+                let salaryObject = {
+                    employeeId: emp.emp_id,
+                    employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                    employeeUniqueId: emp.emp_unique_id,
+                    accountNumber: emp.emp_account_no,
+                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    jobRole: empJobRole,
+                    sector: sectorName,
+                    pensionArray: pensionArray,
+
+                }
+
+                employeeSalary.push(salaryObject)
+
+            }
+
+        }
+        return res.status(200).json(employeeSalary)
+
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
 module.exports = router;
 
 // DO While NOT rsA.EOF
