@@ -27,7 +27,7 @@ router.get('/employee-payment-definition', auth, async function (req, res, next)
 
         // return res.status(200).json(req.user.username);
 
-        await paymentDefinition.findAllCodes().then((data) => {
+        await paymentDefinition.findAllEmployeeCodes().then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {
@@ -41,7 +41,7 @@ router.get('/employer-payment-definition', auth, async function (req, res, next)
 
         // return res.status(200).json(req.user.username);
 
-        await paymentDefinition.findAllCodes().then((data) => {
+        await paymentDefinition.findAllEmployerCodes().then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {

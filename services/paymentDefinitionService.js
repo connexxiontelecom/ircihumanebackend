@@ -133,6 +133,8 @@ module.exports = {
     findPaymentByCode,
     findPaymentById,
     findAllCodes,
+    findAllEmployerCodes,
+    findAllEmployeeCodes,
     updatePaymentDefinition,
     findSumPercentage,
     findCodeWithGross,
