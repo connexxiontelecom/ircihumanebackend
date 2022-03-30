@@ -2874,6 +2874,13 @@ router.post('/pension-report', auth, async function (req, res, next) {
             return res.status(400).json(`Payroll Routine has not been run`)
         }
 
+        let pensionPayments = await paymentDefinition.getPensionPayments().then((data)=>{
+            return data
+        })
+        if ((_.isNull(pensionPayments) || _.isEmpty(pensionPayments))) {
+            return res.status(400).json(`No payments marked as pension`)
+        }
+
         for (const emp of employees) {
 
            let pensionArray = [ ];
@@ -2883,18 +2890,25 @@ router.post('/pension-report', auth, async function (req, res, next) {
             })
 
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-                for (const empSalary of employeeSalaries) {
-                    if (parseInt(empSalary.payment.pd_pension) === 1) {
-                        const empPensionObject ={
-                            "Payment Name": empSalary.payment.pd_payment_name,
-                            "Amount": parseFloat(empSalary.salary_amount)
+
+
+                    for (const pensionPayment of pensionPayments) {
+                        let empPensionObject ={
+                            "Payment Name": pensionPayment.pd_payment_name,
+                            "Amount": 0
+                        }
+                       let  checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id).then((data)=>{
+                            return data
+                        })
+
+                        if(!(_.isNull(checkSalary) || _.isEmpty(checkSalary))){
+                           empPensionObject ={
+                                "Payment Name": pensionPayment.pd_payment_name,
+                                "Amount": parseFloat(checkSalary.salary_amount)
+                            }
                         }
                         pensionArray.push(empPensionObject)
-
                     }
-
-                }
-
 
                 let empJobRole = 'N/A'
                 // if(parseInt(emp.emp_job_role_id) > 0){

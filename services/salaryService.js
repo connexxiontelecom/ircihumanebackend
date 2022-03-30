@@ -47,6 +47,17 @@ async function getEmployeeSalary(month, year, empId) {
     })
 }
 
+async function getEmployeeSalaryMonthYearPd(month, year, empId, pd) {
+    return await Salary.findOne({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_empid: empId,
+            salary_pd: pd
+        }, include: ['employee', 'payment']
+    })
+}
+
 async function approveSalary(month, year, user, date) {
     return await Salary.update({
             salary_approved: 1,
@@ -83,5 +94,6 @@ module.exports = {
     undoSalaryMonthYear,
     getEmployeeSalary,
     approveSalary,
-    confirmSalary
+    confirmSalary,
+    getEmployeeSalaryMonthYearPd
 }
