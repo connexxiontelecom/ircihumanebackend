@@ -21,6 +21,34 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 
+/* Get employee Payment Definitions */
+router.get('/employee-payment-definition', auth, async function (req, res, next) {
+    try {
+
+        // return res.status(200).json(req.user.username);
+
+        await paymentDefinition.findAllCodes().then((data) => {
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
+    }
+});
+
+/* Get employee Payment Definitions */
+router.get('/employer-payment-definition', auth, async function (req, res, next) {
+    try {
+
+        // return res.status(200).json(req.user.username);
+
+        await paymentDefinition.findAllCodes().then((data) => {
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
+    }
+});
+
 
 router.get('/variational-payments', auth, async function (req, res, next) {
     try {
