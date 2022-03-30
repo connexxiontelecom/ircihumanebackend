@@ -13,7 +13,7 @@ module.exports = {
           'payment_definitions',
           'pd_pension',
           {
-            type: Sequelize.STRING,
+            type: Sequelize.INTEGER,
             allowNull:true,
             comment:'1 is true 0 is false',
             defaultValue: 0
