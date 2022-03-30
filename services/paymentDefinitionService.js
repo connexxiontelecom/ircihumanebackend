@@ -76,6 +76,14 @@ async function findAllCodes() {
     return await Pd.findAll()
 }
 
+async function findAllEmployeeCodes() {
+    return await Pd.findAll({where:{pd_employee: 1}})
+}
+
+async function findAllEmployerCodes() {
+    return await Pd.findAll({where:{pd_employer: 2}})
+}
+
 async function getVariationalPayments() {
     return await Pd.findAll({where: {pd_payment_variant: 2}})
 }
@@ -125,6 +133,8 @@ module.exports = {
     findPaymentByCode,
     findPaymentById,
     findAllCodes,
+    findAllEmployerCodes,
+    findAllEmployeeCodes,
     updatePaymentDefinition,
     findSumPercentage,
     findCodeWithGross,
