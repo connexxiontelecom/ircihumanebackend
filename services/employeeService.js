@@ -185,7 +185,7 @@ const createNewEmployee = async (req, res, next) => {
 async function getEmployee(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'jobrole', 'sector', 'bank', 'lga', 'state']
     })
 }
 
@@ -276,10 +276,12 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_department_id: employeeData.emp_department_id,
         emp_sex: employeeData.emp_sex,
         emp_religion: employeeData.emp_religion,
-        emp_bvn: employeeData.emp_bvn,
+        //emp_bvn: employeeData.emp_bvn,
         emp_nhf: employeeData.emp_nhf,
         emp_paye_no: employeeData.emp_paye_no,
-        emp_pension_no: employeeData.emp_pension_no
+        emp_pension_no: employeeData.emp_pension_no,
+        emp_pensionable: employeeData.emp_pension,
+        emp_bvn: employeeData.emp_bvn,
     }, {
         where: {
             emp_id: employeeId
