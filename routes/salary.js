@@ -2185,7 +2185,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
+                            }
+                            else {
                                 const deductionDetails = {
                                     paymentName: empSalary.payment.pd_payment_name,
                                     amount: empSalary.salary_amount
