@@ -276,8 +276,7 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
             }
 
             return res.status(200).json(`Action Successful`)
-        }
-        else {
+        } else {
             const uploadResponse = await uploadFile(docs).then((response) => {
                 return response
             }).catch(err => {
@@ -435,6 +434,50 @@ router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
 });
 
 router.post('/change-password', employees.changePassword);
+
+router.post('/get-employee-report', auth, async function (req, res, next) {
+    try {
+        const schema = Joi.object({
+            type: Joi.any().required(),
+        })
+
+        const employeeRequest = req.body
+        const validationResult = schema.validate(employeeRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        let employeesArray = []
+        if (typeof employeeRequest.type === 'string') {
+            if (employeeRequest.type === 'all') {
+                employeesArray = await employees.getEmployees().then((data) => {
+                    return data
+                })
+            } else {
+                return res.status(400).json('Invalid Parameters Sent')
+            }
+        } else if (typeof employeeRequest.type === 'number') {
+            if (parseInt(employeeRequest.type) === 1) {
+                employeesArray = await employees.getActiveEmployees().then((data) => {
+                    return data
+                })
+            } else if (parseInt(employeeRequest.type) === 0) {
+                employeesArray = await employees.getInactiveEmployees().then((data) => {
+                    return data
+                })
+            } else {
+                return res.status(400).json('Invalid Parameters Sent')
+            }
+        }
+        return res.status(200).json(employeesArray)
+
+    } catch (err) {
+        console.error(`An error occurred while fetching Employee `, err.message);
+        next(err);
+    }
+})
+
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     return new Promise(async (resolve, reject) => {
         let s3Res;

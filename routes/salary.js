@@ -710,6 +710,9 @@ router.post('/salary-routine', auth, async function (req, res, next) {
         const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
             return data
         })
+        if (_.isEmpty(employees)) {
+            return res.status(400).json('No Employees in Selected Location')
+        }
 
 
         for (const emp of employees) {
@@ -720,6 +723,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
         const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYearEmployees(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
             return data
         })
+
 
         if (_.isEmpty(pendingVariationalPayment) || _.isNull(pendingVariationalPayment)) {
 
@@ -1123,7 +1127,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(taxRatesData) || _.isNull(taxRatesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                         return res.status(400).json(`No tax Rate Setup `)
 
                                     })
@@ -1134,7 +1138,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                         return res.status(400).json(`Minimum Tax Rate Not Setup `)
 
                                     })
@@ -1272,7 +1276,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
 
                                     })
@@ -1292,18 +1296,18 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     })
 
                                     if (_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)) {
-                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
                                             return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
 
                                         })
                                     }
                                 }
 
-                                let grossObject = {
-                                    empGross, empAdjustedGross
-                                }
+                                // let grossObject = {
+                                //     empGross, empAdjustedGross
+                                // }
 
-                                GrossArray.push(grossObject)
+                                // GrossArray.push(grossObject)
                             }
 
 
@@ -1311,17 +1315,19 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                     }
 
+
+                    //start
                 }
 
-                const pmylObject = {
-                    pmyl_month: payrollMonth,
-                    pmyl_year: payrollYear,
-                    pmyl_location_id: pmylLocationId
-                }
+                // const pmylObject = {
+                //     pmyl_month: payrollMonth,
+                //     pmyl_year: payrollYear,
+                //     pmyl_location_id: pmylLocationId
+                // }
 
-                await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
-                    return data
-                })
+                // await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
+                //     return data
+                // })
 
                 //return  res.status(200).json(GrossArray)
                 const logData = {
@@ -1582,14 +1588,23 @@ router.get('/pull-salary-routine', auth, async function (req, res, next) {
                             }
                         }
                         netSalary = grossSalary - totalDeduction
+                        let empJobRole = 'N/A'
+                        // if(parseInt(emp.emp_job_role_id) > 0){
+                        //     empJobRole = emp.jobRole.job_role
+                        // }
+
+                        let sectorName = 'N/A'
+                        if (parseInt(emp.emp_department_id) > 0) {
+                            sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                        }
 
                         let salaryObject = {
                             employeeId: emp.emp_id,
                             employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                             employeeUniqueId: emp.emp_unique_id,
                             location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                            jobRole: `${emp.JobRole.job_role}`,
-                            sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                            jobRole: empJobRole,
+                            sector: sectorName,
                             grossSalary: grossSalary,
                             totalDeduction: totalDeduction,
                             netSalary: netSalary
@@ -1667,13 +1682,23 @@ router.post('/pull-salary-routine', auth, async function (req, res, next) {
                     }
                     netSalary = grossSalary - totalDeduction
 
+                    let empJobRole = 'N/A'
+                    // if(parseInt(emp.emp_job_role_id) > 0){
+                    //     empJobRole = emp.jobRole.job_role
+                    // }
+
+                    let sectorName = 'N/A'
+                    if (parseInt(emp.emp_department_id) > 0) {
+                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    }
+
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                         employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        jobRole: empJobRole,
+                        sector: sectorName,
                         grossSalary: grossSalary,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary
@@ -1869,8 +1894,7 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                                     empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
                                 }
 
-                            }
-                            else {
+                            } else {
                                 const deductionDetails = {
                                     paymentName: empSalary.payment.pd_payment_name,
                                     amount: empSalary.salary_amount
@@ -1907,13 +1931,23 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                     }
                     netSalary = grossSalary - totalDeduction
 
+                    let empJobRole = 'N/A'
+                    // if(parseInt(emp.emp_job_role_id) > 0){
+                    //     empJobRole = emp.jobRole.job_role
+                    // }
+
+                    let sectorName = 'N/A'
+                    if (parseInt(emp.emp_department_id) > 0) {
+                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    }
+
                     let employeeSalary = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                         employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        jobRole: empJobRole,
+                        sector: sectorName,
                         grossSalary: grossSalary,
                         nsitf: (1 / 100) * empAdjustedGrossII,
                         pension: (10 / 100) * empAdjustedGrossII,
@@ -1929,10 +1963,7 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
 
                     return res.status(200).json(employeeSalary)
 
-                }
-
-
-                else {
+                } else {
                     return res.status(200).json(`No Salary for Employee`)
                 }
 
@@ -2036,16 +2067,26 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                 }
                 netSalary = grossSalary - totalDeduction
 
+                let empJobRole = 'N/A'
+                // if(parseInt(emp.emp_job_role_id) > 0){
+                //     empJobRole = emp.jobRole.job_role
+                // }
+
+                let sectorName = 'N/A'
+                if (parseInt(emp.emp_department_id) > 0) {
+                    sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                }
+
                 let employeeSalary = {
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                     employeeUniqueId: emp.emp_unique_id,
                     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                    jobRole: `${emp.JobRole.job_role}`,
-                    sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                    jobRole: empJobRole,
+                    sector: sectorName,
                     grossSalary: grossSalary,
-                    nsitf: (1 / 100) * grossSalary,
-                    pension: (10 / 100) * grossSalary,
+                    nsitf: (1 / 100) * empAdjustedGrossII,
+                    pension: (10 / 100) * empAdjustedGrossII,
                     employersDeductions: employersDeductions,
                     employersIncomes: employersIncomes,
                     totalDeduction: totalDeduction,
@@ -2080,7 +2121,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
 
         const schema = Joi.object({
             pym_month: Joi.number().required(),
-            pym_year: Joi.number().required()
+            pym_year: Joi.number().required(),
+            pmyl_location_id: Joi.number().required(),
         })
 
         const payrollRequest = req.body
@@ -2103,10 +2145,21 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
 
 
         } else {
+            const pmylLocationId = payrollRequest.pmyl_location_id
+            let employees = []
+            if (pmylLocationId === 0) {
+                employees = await employee.getActiveEmployees().then((data) => {
+                    return data
+                })
+            } else {
+                employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+                    return data
+                })
+            }
 
-            const employees = await employee.getActiveEmployees().then((data) => {
-                return data
-            })
+            if (_.isEmpty(employees) || _.isNull(employees)) {
+                return res.status(400).json(`No Employees Selected Location`)
+            }
 
             for (const emp of employees) {
 
@@ -2132,7 +2185,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
+                            }
+                            else {
                                 const deductionDetails = {
                                     paymentName: empSalary.payment.pd_payment_name,
                                     amount: empSalary.salary_amount
@@ -2146,13 +2200,23 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     }
                     netSalary = grossSalary - totalDeduction
 
+                    let empJobRole = 'N/A'
+                    // if(parseInt(emp.emp_job_role_id) > 0){
+                    //     empJobRole = emp.jobRole.job_role
+                    // }
+
+                    let sectorName = 'N/A'
+                    if (parseInt(emp.emp_department_id) > 0) {
+                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    }
+
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                         employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        jobRole: empJobRole,
+                        sector: sectorName,
                         grossSalary: grossSalary,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
@@ -2242,14 +2306,23 @@ router.post('/deduction-report', auth, async function (req, res, next) {
 
                     }
 
+                    let empJobRole = 'N/A'
+                    // if(parseInt(emp.emp_job_role_id) > 0){
+                    //     empJobRole = emp.jobRole.job_role
+                    // }
+
+                    let sectorName = 'N/A'
+                    if (parseInt(emp.emp_department_id) > 0) {
+                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    }
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                         employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        jobRole: empJobRole,
+                        sector: sectorName,
                         totalDeduction: totalDeduction,
                         deductions: deductions,
                         month: payrollMonth,
@@ -2348,15 +2421,23 @@ router.post('/variation-report', auth, async function (req, res, next) {
 
 
                     }
+                    let empJobRole = 'N/A'
+                    // if(parseInt(emp.emp_job_role_id) > 0){
+                    //     empJobRole = emp.jobRole.job_role
+                    // }
 
+                    let sectorName = 'N/A'
+                    if (parseInt(emp.emp_department_id) > 0) {
+                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    }
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                         employeeUniqueId: emp.emp_unique_id,
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
+                        jobRole: empJobRole,
+                        sector: sectorName,
                         totalDeduction: totalDeduction,
                         deductions: deductions,
                         incomes: incomes,
@@ -2413,56 +2494,63 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
         }
 
 
-            const employees = await employee.getActiveEmployees().then((data) => {
+        const employees = await employee.getActiveEmployees().then((data) => {
+            return data
+        })
+
+        for (const emp of employees) {
+
+
+            let totalDeduction = 0
+
+            let deductions = []
+
+
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                 return data
             })
 
-            for (const emp of employees) {
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
-
-                let totalDeduction = 0
-
-                let deductions = []
-
-
-                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
-                    return data
-                })
-
-                if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-
-                    for (const empSalary of employeeSalaries) {
-                        if (parseInt(empSalary.payment.pd_id) === parseInt(payrollRequest.pd_id)) {
-                            const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
-                            }
-                            deductions.push(deductionDetails)
-                            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                for (const empSalary of employeeSalaries) {
+                    if (parseInt(empSalary.payment.pd_id) === parseInt(payrollRequest.pd_id)) {
+                        const deductionDetails = {
+                            paymentName: empSalary.payment.pd_payment_name,
+                            amount: empSalary.salary_amount
                         }
+                        deductions.push(deductionDetails)
+                        totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                     }
+                }
+                let empJobRole = 'N/A'
+                // if(parseInt(emp.emp_job_role_id) > 0){
+                //     empJobRole = emp.jobRole.job_role
+                // }
 
-
-                    let salaryObject = {
-                        employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                        jobRole: `${emp.JobRole.job_role}`,
-                        sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
-                        totalDeduction: totalDeduction,
-                        deductions: deductions,
-                        month: payrollMonth,
-                        year: payrollYear
-                    }
-
-                    employeeSalary.push(salaryObject)
-
+                let sectorName = 'N/A'
+                if (parseInt(emp.emp_department_id) > 0) {
+                    sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
                 }
 
-            }
-            return res.status(200).json(employeeSalary)
+                let salaryObject = {
+                    employeeId: emp.emp_id,
+                    employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                    employeeUniqueId: emp.emp_unique_id,
+                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    jobRole: empJobRole,
+                    sector: sectorName,
+                    totalDeduction: totalDeduction,
+                    deductions: deductions,
+                    month: payrollMonth,
+                    year: payrollYear
+                }
 
+                employeeSalary.push(salaryObject)
+
+            }
+
+        }
+        return res.status(200).json(employeeSalary)
 
 
     } catch (err) {
@@ -2697,16 +2785,35 @@ router.post('/pay-order', auth, async function (req, res, next) {
                 }
                 netSalary = grossSalary - totalDeduction
 
+                let empJobRole = 'N/A'
+                // if(parseInt(emp.emp_job_role_id) > 0){
+                //     empJobRole = emp.jobRole.job_role
+                // }
+
+                let sectorName = 'N/A'
+                if (parseInt(emp.emp_department_id) > 0) {
+                    sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                }
+
+                let bankName = 'N/A'
+                let bankSortCode = 'N/A'
+
+                if (parseInt(emp.emp_bank_id) > 0) {
+                    bankName = `${emp.bank.bank_name}`
+                    bankSortCode = `${emp.bank.bank_code}`
+                }
+
+
                 let salaryObject = {
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                     employeeUniqueId: emp.emp_unique_id,
                     accountNumber: emp.emp_account_no,
                     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                    jobRole: `${emp.JobRole.job_role}`,
-                    sector: `${emp.JobRole.Department.department_name} - ${emp.JobRole.Department.d_t3_code}`,
-                    bankName: `${emp.bank.bank_name}`,
-                    bankSortCode: `${emp.bank.bank_code}`,
+                    jobRole: empJobRole,
+                    sector: sectorName,
+                    bankName: bankName,
+                    bankSortCode: bankSortCode,
                     grossSalary: grossSalary,
                     totalDeduction: totalDeduction,
                     netSalary: netSalary
