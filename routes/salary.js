@@ -2940,7 +2940,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
 
                 let empJobRole = 'N/A'
                 // if(parseInt(emp.emp_job_role_id) > 0){
-                //     empJobRole = emp.jobRole.job_role
+                //     empJobRole = emp.jobrole.job_role
                 // }
 
                 let sectorName = 'N/A'
