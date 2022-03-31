@@ -2940,12 +2940,16 @@ router.post('/pension-report', auth, async function (req, res, next) {
 
                 let empJobRole = 'N/A'
                 // if(parseInt(emp.emp_job_role_id) > 0){
-                //     empJobRole = emp.jobRole.job_role
+                //     empJobRole = emp.jobrole.job_role
                 // }
 
                 let sectorName = 'N/A'
                 if (parseInt(emp.emp_department_id) > 0) {
                     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                }
+                let pfa = 'N/A'
+                if((!_.isNull(emp.emp_pension_id) || parseInt(emp.emp_pension_id) > 0)){
+                    pfa = emp.pension.provider_name
                 }
 
                 let salaryObject = {
@@ -2956,7 +2960,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
                     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                     jobRole: empJobRole,
                     sector: sectorName,
-                    pfa: emp.pension.provider_name,
+                    pfa: pfa,
                     pin: emp.emp_pension_no,
                     totalPension: totalPension,
                     pensionArray: pensionArray,
