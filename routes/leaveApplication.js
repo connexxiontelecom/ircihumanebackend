@@ -313,4 +313,33 @@ router.patch('/update-leaveapp-status/:leaveId', auth, async (req, res)=>{
     return res.status(400).json("Something went wrong.");
   }
 });
+router.patch('/update-leaveapp-period/:leaveId', auth, async (req, res)=>{
+  try{
+    const schema = Joi.object({
+      //leave: Joi.number().required(),
+      start_date: Joi.string().required(),
+      end_date: Joi.string().required(),
+    })
+
+    const statusRequest = req.body
+    const validationResult = schema.validate(statusRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const leaveId = req.params.leaveId;
+    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId));
+    if(_.isNull(leave) || _.isEmpty(leave)){
+      return res.status(400).json("Leave application does not exist.");
+    }
+    const status = await leaveAppModel.updateLeaveAppPeriod(parseInt(leaveId), req.body.start_date, req.body.end_date);
+    if(_.isNull(status) || _.isEmpty(status)){
+      return res.status(400).json("Could not update record. Try again.");
+    }
+    return res.status(200).json("Leave period updated");
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+});
 module.exports = router;

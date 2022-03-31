@@ -276,6 +276,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_department_id: employeeData.emp_department_id,
         emp_sex: employeeData.emp_sex,
         emp_religion: employeeData.emp_religion,
+        emp_location_id: employeeData.emp_location_id,
         //emp_bvn: employeeData.emp_bvn,
         //emp_nhf: employeeData.emp_nhf,
         emp_paye_no: employeeData.emp_paye_no,
