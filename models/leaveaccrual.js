@@ -1,6 +1,7 @@
 'use strict';
 const {
-    Model
+    Model,
+  Op,
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
 const employeeModel = require('./Employee')(sequelize, Sequelize)
@@ -21,20 +22,25 @@ module.exports = (sequelize, DataTypes) => {
 
         static async getAllLeaveAccruals() {
             return await leaveAccrual.findAll({
-                where: {lea_archives: 0},
+                attributes:['lea_id', 'lea_emp_id',
+                  'lea_month', 'lea_year', 'lea_leave_type', 'lea_rate', 'lea_archives',
+                  [sequelize.fn('sum', sequelize.col('lea_rate')), 'total']
+                ],
                 group:['lea_emp_id'],
-                include: [
-                    {
-                        model: employeeModel, as: 'employee',
-                        include: [
-                            {model: locationModel, as: 'location'},
-                            {model: jobRoleModel},
-                            {model: departmentModel, as: 'sector'}
-                        ]
-                    },
-                    {model: leaveTypeModel, as: 'leave_type'},
-                    // {model:locationModel, as:'emp_location'},
-                ]
+              include: [
+                {
+                  model: employeeModel, as: 'employee',
+                  include: [
+                    {model: locationModel, as: 'location'},
+                    {model: jobRoleModel},
+                    {model: departmentModel, as: 'sector'}
+                  ]
+                },
+                {model: leaveTypeModel, as: 'leave_type'},
+              ],
+                where: {lea_archives: 0},
+
+
             })
         }
     };
