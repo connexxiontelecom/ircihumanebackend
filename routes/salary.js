@@ -710,10 +710,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
         const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
             return data
         })
-        if (_.isEmpty(employees)) {
+
+        if(_.isEmpty(employees)){
             return res.status(400).json('No Employees in Selected Location')
         }
-
 
         for (const emp of employees) {
             employeeIdsLocation.push(emp.emp_id)
@@ -1346,7 +1346,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
             }
 
 
-        } else {
+        }
+        else {
 
             return res.status(400).json(`There are pending Variational Payments`)
         }
@@ -2545,7 +2546,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
                     let tieNumber = parseInt(paymentDefinitionData.pd_tie_number)
                     if(tieNumber === 1){
-                      paymentNumber = emp.emp_paye_no
+                        paymentNumber = emp.emp_paye_no
                     }
 
                     if(tieNumber === 2){
@@ -2909,7 +2910,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
 
         for (const emp of employees) {
 
-           let pensionArray = [ ];
+            let pensionArray = [ ];
 
             let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                 return data
@@ -2917,24 +2918,25 @@ router.post('/pension-report', auth, async function (req, res, next) {
 
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
+                let totalPension = 0
+                for (const pensionPayment of pensionPayments) {
+                    let amount = 0
 
-                    for (const pensionPayment of pensionPayments) {
-                        let empPensionObject ={
-                            "Payment Name": pensionPayment.pd_payment_name,
-                            "Amount": 0
-                        }
-                       let  checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id).then((data)=>{
-                            return data
-                        })
-
-                        if(!(_.isNull(checkSalary) || _.isEmpty(checkSalary))){
-                           empPensionObject ={
-                                "Payment Name": pensionPayment.pd_payment_name,
-                                "Amount": parseFloat(checkSalary.salary_amount)
-                            }
-                        }
-                        pensionArray.push(empPensionObject)
+                    let  checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id).then((data)=>{
+                        return data
+                    })
+                    if(!(_.isNull(checkSalary) || _.isEmpty(checkSalary))){
+                        amount = parseFloat(checkSalary.salary_amount)
                     }
+                    let empPensionObject ={
+                        "Payment Name": pensionPayment.pd_payment_name,
+                        "Amount": amount
+                    }
+
+                    totalPension = totalPension + amount
+
+                    pensionArray.push(empPensionObject)
+                }
 
                 let empJobRole = 'N/A'
                 // if(parseInt(emp.emp_job_role_id) > 0){
@@ -2954,6 +2956,9 @@ router.post('/pension-report', auth, async function (req, res, next) {
                     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                     jobRole: empJobRole,
                     sector: sectorName,
+                    pfa: emp.pension.provider_name,
+                    pin: emp.emp_pension_no,
+                    totalPension: totalPension,
                     pensionArray: pensionArray,
 
                 }

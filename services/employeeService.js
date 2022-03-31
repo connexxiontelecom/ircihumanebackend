@@ -307,14 +307,14 @@ async function updateGrossSalary(employeeId, employeeGross) {
 async function getEmployeeById(employeeId) {
     return await employee.findOne({
         where: {emp_unique_id: employeeId},
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
     })
 }
 
 async function getEmployeeByIdOnly(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
     })
 }
 
@@ -363,7 +363,7 @@ async function getActiveEmployees() {
         where: {
             emp_status: 1
         },
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
     })
 }
 
@@ -396,7 +396,7 @@ async function getActiveEmployeesByLocation(locationId) {
                 emp_location_id: locationId,
                 emp_status: 1
             },
-            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
         }
     )
 
@@ -482,7 +482,7 @@ async function getInactiveEmployees() {
                         [Op.or]: [0, 2, null]
                     }
                 },
-            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
 
         }
     )
