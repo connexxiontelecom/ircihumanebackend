@@ -2493,6 +2493,15 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
         }
 
+        let paymentDefinitionData = await  paymentDefinition.findPaymentById(payrollRequest.pd_id).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(paymentDefinitionData) || _.isNull(paymentDefinitionData)){
+            return res.status(400).json(`Payment Definition Does Not exist`)
+
+        }
+
 
         const employees = await employee.getActiveEmployees().then((data) => {
             return data
@@ -2531,7 +2540,23 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                 if (parseInt(emp.emp_department_id) > 0) {
                     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
                 }
+                let paymentNumber = 'N/A'
+                if(parseInt(paymentDefinitionData.pd_tie_number) > 0){
 
+                    let tieNumber = parseInt(paymentDefinitionData.pd_tie_number)
+                    if(tieNumber === 1){
+                      paymentNumber = emp.emp_paye_no
+                    }
+
+                    if(tieNumber === 2){
+                        paymentNumber = emp.emp_pension_no
+                    }
+
+                    if(tieNumber === 3){
+                        paymentNumber = emp.emp_nhf
+                    }
+
+                }
                 let salaryObject = {
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -2542,7 +2567,8 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                     totalDeduction: totalDeduction,
                     deductions: deductions,
                     month: payrollMonth,
-                    year: payrollYear
+                    year: payrollYear,
+                    paymentNumber: paymentNumber
                 }
 
                 employeeSalary.push(salaryObject)
