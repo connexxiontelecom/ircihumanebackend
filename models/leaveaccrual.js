@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         static async getAllLeaveAccruals() {
             return await leaveAccrual.findAll({
                 where: {lea_archives: 0},
+                group:['lea_emp_id'],
                 include: [
                     {
                         model: employeeModel, as: 'employee',

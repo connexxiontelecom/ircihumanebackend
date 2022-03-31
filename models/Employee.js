@@ -10,6 +10,7 @@ const Bank = require("../models/Bank")(sequelize, Sequelize.DataTypes)
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes);
 const StateModel = require("../models/State")(sequelize, Sequelize.DataTypes);
 const LgaModel = require("../models/localgovernment")(sequelize, Sequelize.DataTypes);
+const pensionModel = require("../models/PensionProvider")(sequelize, Sequelize.DataTypes);
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 //const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
 //const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
@@ -130,6 +131,7 @@ module.exports = (sequelize, DataTypes) => {
     Employee.hasMany(Department, {foreignKey: 'department_id'})
     Employee.belongsTo(StateModel, {as:'state', foreignKey:'emp_state_id'});
     Employee.belongsTo(LgaModel, {as:'lga', foreignKey:'emp_lga_id'});
+    Employee.belongsTo(pensionModel, {as:'pension', foreignKey:'emp_pension_id'});
 
 
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
