@@ -11,6 +11,7 @@ const Department = require("../models/Department")(sequelize, Sequelize.DataType
 const StateModel = require("../models/State")(sequelize, Sequelize.DataTypes);
 const LgaModel = require("../models/localgovernment")(sequelize, Sequelize.DataTypes);
 const pensionModel = require("../models/PensionProvider")(sequelize, Sequelize.DataTypes);
+
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 //const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
 //const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
@@ -27,11 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         static async getEmployeeById(id){
-          return await Employee.findOne({where:{emp_id:id}})
+            return await Employee.findOne({where:{emp_id:id}})
         }
 
         static async getEmployeeByLocationId(locationId){
-          return await Employee.findOne({where:{emp_location_id:locationId}})
+            return await Employee.findOne({where:{emp_location_id:locationId}})
         }
     };
     Employee.init({
@@ -129,15 +130,20 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(Department, { as: 'sector', foreignKey: 'emp_department_id'})
     Employee.hasMany(Department, {foreignKey: 'department_id'})
-    Employee.belongsTo(StateModel, {as:'state', foreignKey:'emp_state_id'});
-    Employee.belongsTo(LgaModel, {as:'lga', foreignKey:'emp_lga_id'});
-    Employee.belongsTo(pensionModel, {as:'pension', foreignKey:'emp_pension_id'});
 
+    Employee.belongsTo(StateModel, {as:'state', foreignKey:'emp_state_id'});
+    Employee.hasMany(StateModel, {foreignKey: 's_id'})
+
+    Employee.belongsTo(LgaModel, {as:'lga', foreignKey:'emp_lga_id'});
+    Employee.hasMany(LgaModel, {foreignKey: 'lg_id'})
+
+    Employee.belongsTo(pensionModel, {as:'pension', foreignKey:'emp_pension_id'});
+    Employee.hasMany(pensionModel, {foreignKey: 'pension_provider_id'})
 
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
     //Employee.belongsTo(travelApplicationModel, { foreignKey:'emp_id', as: 'applicant' });
 
-     //Employee.belongsTo(Department, { as: 'sector', foreignKey: 'jb_department_id' })
+    //Employee.belongsTo(Department, { as: 'sector', foreignKey: 'jb_department_id' })
     // JobRole.hasMany(Department, { foreignKey: 'department_id' })
 
 
