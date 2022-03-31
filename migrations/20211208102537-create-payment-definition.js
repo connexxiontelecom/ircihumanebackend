@@ -30,7 +30,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       pd_tie_number: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,
