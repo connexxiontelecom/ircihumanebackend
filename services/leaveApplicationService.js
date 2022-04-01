@@ -48,7 +48,7 @@ async function findAllLeaveApplication() {
 async function findAllApprovedLeaveApplications() {
 
   return await LeaveApplication.findAll({
-    where:{leapp_status:1}, //approved
+    where:{leapp_status:[3,4]}, //active||finished
     order: [
       ['leapp_id', 'DESC'],
     ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
