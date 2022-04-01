@@ -1684,9 +1684,9 @@ router.post('/pull-salary-routine', auth, async function (req, res, next) {
                     netSalary = grossSalary - totalDeduction
 
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    if(parseInt(emp.emp_job_role_id) > 0){
+                        empJobRole = emp.jobrole.job_role
+                    }
 
                     let sectorName = 'N/A'
                     if (parseInt(emp.emp_department_id) > 0) {
@@ -1933,9 +1933,9 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                     netSalary = grossSalary - totalDeduction
 
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    if(parseInt(emp.emp_job_role_id) > 0){
+                        empJobRole = emp.jobrole.job_role
+                    }
 
                     let sectorName = 'N/A'
                     if (parseInt(emp.emp_department_id) > 0) {
@@ -2069,9 +2069,9 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                 netSalary = grossSalary - totalDeduction
 
                 let empJobRole = 'N/A'
-                // if(parseInt(emp.emp_job_role_id) > 0){
-                //     empJobRole = emp.jobRole.job_role
-                // }
+                if(parseInt(emp.emp_job_role_id) > 0){
+                    empJobRole = emp.jobrole.job_role
+                }
 
                 let sectorName = 'N/A'
                 if (parseInt(emp.emp_department_id) > 0) {
@@ -2202,9 +2202,9 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     netSalary = grossSalary - totalDeduction
 
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    if(parseInt(emp.emp_job_role_id) > 0){
+                        empJobRole = emp.jobrole.job_role
+                    }
 
                     let sectorName = 'N/A'
                     if (parseInt(emp.emp_department_id) > 0) {
@@ -2939,9 +2939,9 @@ router.post('/pension-report', auth, async function (req, res, next) {
                 }
 
                 let empJobRole = 'N/A'
-                // if(parseInt(emp.emp_job_role_id) > 0){
-                //     empJobRole = emp.jobrole.job_role
-                // }
+                if(parseInt(emp.emp_job_role_id) > 0){
+                    empJobRole = emp.jobrole.job_role
+                }
 
                 let sectorName = 'N/A'
                 if (parseInt(emp.emp_department_id) > 0) {
