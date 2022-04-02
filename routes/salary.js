@@ -1723,7 +1723,9 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                         locationTotalGross: locationTotalGross,
                         locationTotalDeduction: locationTotalDeduction,
                         locationTotalNet: locationTotalGross - locationTotalDeduction,
-                        locationEmployeesCount: locationTotalEmployee
+                        locationEmployeesCount: locationTotalEmployee,
+                        month: payrollMonth,
+                        year: payrollYear
 
                     }
 
@@ -3154,6 +3156,51 @@ router.post('/pension-report', auth, async function (req, res, next) {
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
                 let totalPension = 0
+
+                let empAdjustedGrossII = 0;
+                let fullGross = 0;
+                let empAdjustedGross = 0
+
+
+                let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                    return data
+                })
+
+
+                for (const salary of fullSalaryData) {
+                    if (parseInt(salary.payment.pd_payment_type) === 1) {
+                        fullGross = parseFloat(salary.salary_amount) + fullGross
+                    }
+
+
+                    if (parseInt(salary.payment.pd_total_gross) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                        }
+
+                    }
+
+                    if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+
+                        }
+
+                    }
+                }
+
+
                 for (const pensionPayment of pensionPayments) {
                     let amount = 0
 
@@ -3200,7 +3247,8 @@ router.post('/pension-report', auth, async function (req, res, next) {
                     totalPension: totalPension,
                     pensionArray: pensionArray,
                     month: payrollMonth,
-                    year: payrollYear
+                    year: payrollYear,
+                    adjustedGrossII: empAdjustedGrossII
 
                 }
 
