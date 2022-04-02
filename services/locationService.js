@@ -134,10 +134,15 @@ const updateLocation = async (req, res, next) => {
 
 }
 
+async function findLocationById(locationId) {
+    return await location.findOne({where: {location_id: locationId}})
+}
+
 module.exports = {
     getLocationById,
     getLocations,
     updateLocation,
     setNewLocation,
+    findLocationById
 
 }
