@@ -1749,7 +1749,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
 router.get('/pull-emolument/:locationId', auth, async function (req, res, next) {
     try {
-        const pmylLocationId = req.params.empId
+        const pmylLocationId = parseInt(req.params.empId)
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
