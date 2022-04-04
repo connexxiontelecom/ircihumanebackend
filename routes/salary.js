@@ -1321,15 +1321,15 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                     //start
                 }
 
-                // const pmylObject = {
-                //     pmyl_month: payrollMonth,
-                //     pmyl_year: payrollYear,
-                //     pmyl_location_id: pmylLocationId
-                // }
+                const pmylObject = {
+                    pmyl_month: payrollMonth,
+                    pmyl_year: payrollYear,
+                    pmyl_location_id: pmylLocationId
+                }
 
-                // await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
-                //     return data
-                // })
+                await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
+                    return data
+                })
 
                 //return  res.status(200).json(GrossArray)
                 const logData = {
@@ -1718,6 +1718,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                     locationTotalDeduction = totalDeduction + locationTotalDeduction
 
                     let locationSalaryObject={
+                        locationId: locationData.location_id,
                         locationName: locationData.location_name,
                         locationCode: locationData.location_t6_code,
                         locationTotalGross: locationTotalGross,
@@ -1749,7 +1750,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
 router.get('/pull-emolument/:locationId', auth, async function (req, res, next) {
     try {
-        const pmylLocationId = parseInt(req.params.empId)
+        const pmylLocationId = parseInt(req.params.locationId)
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
