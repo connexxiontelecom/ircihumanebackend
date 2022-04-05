@@ -1790,6 +1790,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                 let netSalary = 0
                 let totalDeduction = 0
 
+
                 let deductions = []
                 let incomes = []
 
@@ -1799,6 +1800,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
 
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
                     let empAdjustedGrossII = 0
+                    let mainDeductions = 0
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -1808,13 +1810,16 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
+                            }
+                            else {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                deductions.push(deductionDetails)
+                                mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions
                                 if (parseInt(empSalary.payment.pd_total_gross_ii) !== 1 || parseInt(empSalary.payment.pd_total_gross) !== 1) {
-                                    const deductionDetails = {
-                                        paymentName: empSalary.payment.pd_payment_name,
-                                        amount: empSalary.salary_amount
-                                    }
-                                    deductions.push(deductionDetails)
+
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
                             }
@@ -1838,7 +1843,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
 
 
                     }
-                    netSalary = grossSalary - totalDeduction
+                    netSalary = grossSalary - mainDeductions
 
                     let empJobRole = 'N/A'
                     if (parseInt(emp.emp_job_role_id) > 0) {
@@ -2422,7 +2427,6 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                 let grossSalary = 0
                 let netSalary = 0
                 let totalDeduction = 0
-
                 let deductions = []
                 let incomes = []
 
@@ -2434,6 +2438,7 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
 
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
                     let empAdjustedGrossII = 0
+                    let mainDeductions = 0
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -2443,13 +2448,16 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
+                            }
+                            else {
+                                const deductionDetails = {
+                                    paymentName: empSalary.payment.pd_payment_name,
+                                    amount: empSalary.salary_amount
+                                }
+                                deductions.push(deductionDetails)
+                                mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions
                                 if (parseInt(empSalary.payment.pd_total_gross_ii) !== 1 || parseInt(empSalary.payment.pd_total_gross) !== 1) {
-                                    const deductionDetails = {
-                                        paymentName: empSalary.payment.pd_payment_name,
-                                        amount: empSalary.salary_amount
-                                    }
-                                    deductions.push(deductionDetails)
+
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
                             }
@@ -2472,9 +2480,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                         }
 
 
-
                     }
-                    netSalary = grossSalary - totalDeduction
+                    netSalary = grossSalary - mainDeductions
 
                     let empJobRole = 'N/A'
                     if (parseInt(emp.emp_job_role_id) > 0) {
