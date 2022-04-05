@@ -1800,7 +1800,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                 })
 
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-
+                    let empAdjustedGrossII = 0
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -1810,15 +1810,34 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
-                                const deductionDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                            }
+
+                            else {
+                                if (parseInt(salary.payment.pd_total_gross_ii) !== 1 || parseInt(salary.payment.pd_total_gross) !== 1) {
+                                    const deductionDetails = {
+                                        paymentName: empSalary.payment.pd_payment_name,
+                                        amount: empSalary.salary_amount
+                                    }
+                                    deductions.push(deductionDetails)
+                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
-                                deductions.push(deductionDetails)
-                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                            }
+
+                            if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                                if (parseInt(salary.payment.pd_payment_type) === 1) {
+                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                                }
+
+                                if (parseInt(salary.payment.pd_payment_type) === 2) {
+                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+
+                                }
+
                             }
                         }
+
+
 
 
                     }
@@ -1841,7 +1860,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                         jobRole: empJobRole,
                         sector: sectorName,
-                        grossSalary: grossSalary,
+                        grossSalary: empAdjustedGrossII,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
@@ -2415,7 +2434,7 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                 })
 
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-
+                    let empAdjustedGrossII = 0
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -2425,15 +2444,34 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            } else {
-                                const deductionDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                            }
+
+                            else {
+                                if (parseInt(salary.payment.pd_total_gross_ii) !== 1 || parseInt(salary.payment.pd_total_gross) !== 1) {
+                                    const deductionDetails = {
+                                        paymentName: empSalary.payment.pd_payment_name,
+                                        amount: empSalary.salary_amount
+                                    }
+                                    deductions.push(deductionDetails)
+                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
-                                deductions.push(deductionDetails)
-                                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                            }
+
+                            if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                                if (parseInt(salary.payment.pd_payment_type) === 1) {
+                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                                }
+
+                                if (parseInt(salary.payment.pd_payment_type) === 2) {
+                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+
+                                }
+
                             }
                         }
+
+
 
 
                     }
@@ -2456,7 +2494,7 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                         location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
                         jobRole: empJobRole,
                         sector: sectorName,
-                        grossSalary: grossSalary,
+                        grossSalary: empAdjustedGrossII,
                         totalDeduction: totalDeduction,
                         netSalary: netSalary,
                         incomes: incomes,
