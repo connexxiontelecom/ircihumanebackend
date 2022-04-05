@@ -35,6 +35,8 @@ const createNewEmployee = async (req, res, next) => {
             last_name: Joi.string().required().messages({'any.required': 'Enter last name in the field provided'}),
             //other_name: Joi.string(),
             unique_id: Joi.string().required().messages({'any.required': 'Enter unique ID in the field provided'}),
+            personal_email: Joi.string().allow(null, ''),
+            office_email: Joi.string().allow(null, ''),
             // birth_date: Joi.date().required().messages({'any.required':'Enter employee birth date'}),
             //personal_email: Joi.string().required().messages({'any.required': 'Enter a valid personal email address'}),
             //office_email: Joi.string().required().messages({'any.required': 'Enter a valid office email address'}),
@@ -93,14 +95,14 @@ const createNewEmployee = async (req, res, next) => {
                 return res.status(400).json("Employee Id Already Exists")
             } else {
 
-                getEmployeeByPersonalEmail(req.body.personal_email).then((employeeData) => {
-                    if (!_.isNull(employeeData)) {
-                        return res.status(400).json("Employee Personal Email Already Exists")
-                    } else {
-                        getEmployeeByOfficialEmail(req.body.office_email).then((employeeData) => {
-                            if (!_.isNull(employeeData)) {
-                                return res.status(400).json("Employee Official Email Already Exists")
-                            } else {
+                //getEmployeeByPersonalEmail(req.body.personal_email).then((employeeData) => {
+                    //if (!_.isNull(employeeData)) {
+                       // return res.status(400).json("Employee Personal Email Already Exists")
+                   // } else {
+                        //getEmployeeByOfficialEmail(req.body.office_email).then((employeeData) => {
+                            //if (!_.isNull(employeeData)) {
+                                //return res.status(400).json("Employee Official Email Already Exists")
+                           // } else {
                                 getEmployeeByPhoneNumber(req.body.phone_no).then((employeeData) => {
                                     if (!_.isNull(employeeData)) {
                                         return res.status(400).json("Employee Phone Number Already Exists")
@@ -115,7 +117,7 @@ const createNewEmployee = async (req, res, next) => {
                                             emp_phone_no: req.body.phone_no,
                                             emp_location_id: req.body.location,
                                             emp_job_role_id: req.body.job_role,
-                                            emp_department_id: req.body.department,
+                                            //emp_department_id: req.body.department,
                                             emp_account_no: req.body.account_no,
                                             emp_bank_id: req.body.bank,
                                             emp_salary_structure_setup: 0,
@@ -131,16 +133,16 @@ const createNewEmployee = async (req, res, next) => {
                                             user_token: 1,
                                             user_status: 1,
                                         }
-                                        users.findUserByEmail(req.body.office_email).then((data) => {
-                                            if (data) {
+                                        //users.findUserByEmail(req.body.office_email).then((data) => {
+                                            /*if (data) {
                                                 employee.destroy({
                                                     where: {
                                                         emp_unique_id: req.body.unique_id,
                                                     }
                                                 })
                                                 return res.status(400).json('Email Already taken')
-
-                                            } else {
+*/
+                                            //} else {
                                                 users.findUserByUsername(req.body.unique_id).then((data) => {
                                                     if (data) {
                                                         employee.destroy({
@@ -163,15 +165,15 @@ const createNewEmployee = async (req, res, next) => {
                                                         })
                                                     }
                                                 })
-                                            }
-                                        })
+                                            //}
+                                        //})
                                     }
                                 })
-                            }
+                           // }
 
-                        })
-                    }
-                })
+                       // })
+                    //}
+                //})
 
             }
         })
