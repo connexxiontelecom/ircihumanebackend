@@ -285,6 +285,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_bvn: employeeData.emp_bvn,
         emp_pension_id: employeeData.emp_pension_id,
         emp_nhf: employeeData.emp_nhf,
+        emp_nin: employeeData.emp_nin,
     }, {
         where: {
             emp_id: employeeId
