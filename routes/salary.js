@@ -1654,16 +1654,15 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
             let locationSalaryArray = []
             for (const location of payrollLocations) {
 
-                const locationData = await locationService.findLocationById(location.pmyl_location_id).then((data)=>{
+                const locationData = await locationService.findLocationById(location.pmyl_location_id).then((data) => {
                     return data
                 })
 
-                if(!(_.isEmpty(locationData))){
+                if (!(_.isEmpty(locationData))) {
 
                     const employees = await employee.getActiveEmployeesByLocation(location.pmyl_location_id).then((data) => {
                         return data
                     })
-
 
 
                     if (_.isEmpty(employees) || _.isNull(employees)) {
@@ -1717,7 +1716,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                     locationTotalGross = grossSalary + locationTotalGross
                     locationTotalDeduction = totalDeduction + locationTotalDeduction
 
-                    let locationSalaryObject={
+                    let locationSalaryObject = {
                         locationId: locationData.location_id,
                         locationName: locationData.location_name,
                         locationCode: locationData.location_t6_code,
@@ -1732,7 +1731,6 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
                     locationSalaryArray.push(locationSalaryObject)
                 }
-
 
 
             }
@@ -1810,10 +1808,8 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            }
-
-                            else {
-                                if (parseInt(salary.payment.pd_total_gross_ii) !== 1 || parseInt(salary.payment.pd_total_gross) !== 1) {
+                            } else {
+                                if (parseInt(empSalary.payment.pd_total_gross_ii) !== 1 || parseInt(empSalary.payment.pd_total_gross) !== 1) {
                                     const deductionDetails = {
                                         paymentName: empSalary.payment.pd_payment_name,
                                         amount: empSalary.salary_amount
@@ -1823,21 +1819,22 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                                 }
                             }
 
-                            if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
-                                if (parseInt(salary.payment.pd_payment_type) === 1) {
-                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                            if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
 
                                 }
 
-                                if (parseInt(salary.payment.pd_payment_type) === 2) {
-                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+                                if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount)
 
                                 }
 
                             }
+
+
                         }
-
-
 
 
                     }
@@ -2433,6 +2430,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     return data
                 })
 
+
+
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
                     let empAdjustedGrossII = 0
                     for (const empSalary of employeeSalaries) {
@@ -2444,10 +2443,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                            }
-
-                            else {
-                                if (parseInt(salary.payment.pd_total_gross_ii) !== 1 || parseInt(salary.payment.pd_total_gross) !== 1) {
+                            } else {
+                                if (parseInt(empSalary.payment.pd_total_gross_ii) !== 1 || parseInt(empSalary.payment.pd_total_gross) !== 1) {
                                     const deductionDetails = {
                                         paymentName: empSalary.payment.pd_payment_name,
                                         amount: empSalary.salary_amount
@@ -2457,20 +2454,22 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                                 }
                             }
 
-                            if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
-                                if (parseInt(salary.payment.pd_payment_type) === 1) {
-                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                            if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                    empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
 
                                 }
 
-                                if (parseInt(salary.payment.pd_payment_type) === 2) {
-                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+                                if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+                                    empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount)
 
                                 }
 
                             }
-                        }
 
+
+                        }
 
 
 
