@@ -1868,7 +1868,9 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         incomes: incomes,
                         deductions: deductions,
                         month: payrollMonth,
-                        year: payrollYear
+                        year: payrollYear,
+                        employeeStartDate: emp.emp_employment_date,
+                        empEndDate: emp.emp_contract_end_date
                     }
 
                     employeeSalary.push(salaryObject)
