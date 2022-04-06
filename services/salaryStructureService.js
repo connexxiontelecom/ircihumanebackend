@@ -25,6 +25,11 @@ async function findSalaryStructure(empId,){
 
 }
 
+async function findEmployeeSalaryStructure(empId){
+    return await SalaryStructure.findOne({ where: { ss_empid: empId }, include: ['payment', 'salary_grade'], order: [
+            ['ss_amount', 'DESC']
+        ] })
+}
 
 
 async function findSalaryStructures(){
@@ -47,5 +52,6 @@ module.exports = {
    addSalaryStructure,
     findSalaryStructure,
     deleteSalaryStructuresEmployee,
-    findSalaryStructures
+    findSalaryStructures,
+    findEmployeeSalaryStructure
 }
