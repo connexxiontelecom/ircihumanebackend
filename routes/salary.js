@@ -2574,8 +2574,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                         deductions: deductions,
                         month: payrollMonth,
                         year: payrollYear,
-                        employeeStartDate: emp.emp_employment_date,
-                        empEndDate: emp.emp_contract_end_date,
+                        employeeStartDate: new Date(emp.emp_employment_date).toISOString().split('T')[0],
+                        empEndDate: new Date(emp.emp_contract_end_date).toISOString().split('T')[0],
                         salaryGrade: empSalaryStructureName
                     }
 
