@@ -1804,15 +1804,16 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                    let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findSalaryStructure(emp.emp_id).then((data)=>{
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data)=>{
                         return data
                     })
 
                     if(!_.isEmpty(empSalaryStructure)){
-                        empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                        if(!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)){
+                            empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                        }
+
                     }
-
-
 
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
@@ -2456,14 +2457,15 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                     let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findSalaryStructure(emp.emp_id).then((data)=>{
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data)=>{
                         return data
                     })
 
                     if(!_.isEmpty(empSalaryStructure)){
-                        empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                        if(!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)){
+                            empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                        }
                     }
-
 
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
