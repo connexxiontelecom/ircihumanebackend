@@ -394,11 +394,24 @@ async function suspendEmployee(employeeId, suspensionReason) {
 
 }
 
+
+
 async function getActiveEmployeesByLocation(locationId) {
     return await employee.findAll({
             where: {
                 emp_location_id: locationId,
-                emp_status: 1
+                emp_status: [1, 2]
+            },
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
+        }
+    )
+
+}
+
+async function getAllEmployeesByLocation(locationId) {
+    return await employee.findAll({
+            where: {
+                emp_location_id: locationId,
             },
             include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
         }
@@ -565,7 +578,9 @@ module.exports = {
     getActiveEmployeesByLocation,
     changePassword,
     getEmployees,
-    getInactiveEmployees
+    getInactiveEmployees,
+    unSuspendEmployee,
+    getAllEmployeesByLocation
     //updateDepartment,
     //setNewDepartment,
 }

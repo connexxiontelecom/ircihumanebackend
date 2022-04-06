@@ -1486,22 +1486,60 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
                 return data
             })
 
-            const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+            const employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
                 return data
             })
 
             for (const emp of employees) {
+
+                let contractEndDate = new Date(emp.emp_contract_end_date)
+
+                const contractEndYear = contractEndDate.getFullYear()
+                const contractEndMonth = contractEndDate.getMonth() + 1
+
+
+                if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.emp_id).then((data) => {
+                        return data
+                    })
+
+                    let unSuspendUser = await user.unSuspendUser(emp.emp_unique_id).then((data) => {
+                        return data
+                    })
+
+                }
+
+
                 employeeIdsLocation.push(emp.emp_id)
             }
         } else {
             await payrollMonthYearLocation.removePayrollMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
-            const employees = await employee.getActiveEmployees().then((data) => {
+            const employees = await employee.getEmployees().then((data) => {
                 return data
             })
 
             for (const emp of employees) {
+
+                let contractEndDate = new Date(emp.emp_contract_end_date)
+
+                const contractEndYear = contractEndDate.getFullYear()
+                const contractEndMonth = contractEndDate.getMonth() + 1
+
+
+                if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.emp_id).then((data) => {
+                        return data
+                    })
+
+                    let unSuspendUser = await user.unSuspendUser(emp.emp_unique_id).then((data) => {
+                        return data
+                    })
+
+                }
+
+
                 employeeIdsLocation.push(emp.emp_id)
             }
         }
