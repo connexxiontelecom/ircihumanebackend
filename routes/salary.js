@@ -1907,6 +1907,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
                     }
 
+
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1921,8 +1922,8 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         deductions: deductions,
                         month: payrollMonth,
                         year: payrollYear,
-                        employeeStartDate: emp.emp_employment_date,
-                        empEndDate: emp.emp_contract_end_date,
+                        employeeStartDate: new Date(emp.emp_employment_date).toISOString().split('T')[0],
+                        empEndDate: new Date(emp.emp_contract_end_date).toISOString().split('T')[0],
                         salaryGrade: empSalaryStructureName
                     }
 
