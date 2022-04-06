@@ -18,6 +18,7 @@ const payrollMonthYear = require('../services/payrollMonthYearService')
 const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
+
 const {
     addLeaveAccrual,
     computeLeaveAccruals,
@@ -1799,8 +1800,20 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                 })
 
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
+                   let empSalaryStructureName = 'N/A'
+                    let empSalaryStructure = await salaryStructure.findSalaryStructure(emp.emp_id).then((data)=>{
+                        return data
+                    })
+
+                    if(!_.isEmpty(empSalaryStructure)){
+                        empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                    }
+
+
+
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -1870,7 +1883,8 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         month: payrollMonth,
                         year: payrollYear,
                         employeeStartDate: emp.emp_employment_date,
-                        empEndDate: emp.emp_contract_end_date
+                        empEndDate: emp.emp_contract_end_date,
+                        salaryGrade: empSalaryStructureName
                     }
 
                     employeeSalary.push(salaryObject)
@@ -2441,6 +2455,16 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
+                    let empSalaryStructureName = 'N/A'
+                    let empSalaryStructure = await salaryStructure.findSalaryStructure(emp.emp_id).then((data)=>{
+                        return data
+                    })
+
+                    if(!_.isEmpty(empSalaryStructure)){
+                        empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                    }
+
+
                     for (const empSalary of employeeSalaries) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -2510,7 +2534,8 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                         month: payrollMonth,
                         year: payrollYear,
                         employeeStartDate: emp.emp_employment_date,
-                        empEndDate: emp.emp_contract_end_date
+                        empEndDate: emp.emp_contract_end_date,
+                        salaryGrade: empSalaryStructureName
                     }
 
                     employeeSalary.push(salaryObject)
