@@ -137,6 +137,14 @@ async function getPensionPayments() {
     })
 }
 
+async function getNhfPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_nhf: 1
+        }
+    })
+}
+
 
 module.exports = {
     addPaymentDefinition,
@@ -153,6 +161,7 @@ module.exports = {
     findTax,
     getComputedPayments,
     getWelfare,
-    getPensionPayments
+    getPensionPayments,
+    getNhfPayments
 
 }
