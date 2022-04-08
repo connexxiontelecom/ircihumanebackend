@@ -1844,7 +1844,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                             deductions.push(deductionDetails)
                             mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions
                             if (parseInt(empSalary.payment.pd_employee) === 1) {
-                                if (parseInt(empSalary.payment.pd_total_gross_ii) !== 1 || parseInt(empSalary.payment.pd_total_gross) !== 1) {
+                                if (parseInt(empSalary.payment.pd_total_gross_ii) === 0 && parseInt(empSalary.payment.pd_total_gross) === 0) {
 
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
@@ -2488,8 +2488,7 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                             deductions.push(deductionDetails)
                             mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions
                             if (parseInt(empSalary.payment.pd_employee) === 1) {
-                                if (parseInt(empSalary.payment.pd_total_gross_ii) !== 1 || parseInt(empSalary.payment.pd_total_gross) !== 1) {
-
+                                if (parseInt(empSalary.payment.pd_total_gross_ii) === 0 && parseInt(empSalary.payment.pd_total_gross) === 0) {
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
                             }
