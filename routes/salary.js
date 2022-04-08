@@ -20,10 +20,7 @@ const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
 
 const {
-    addLeaveAccrual,
-    computeLeaveAccruals,
-    removeLeaveAccrual,
-    removeLeaveAccrualEmployees
+    addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees
 } = require("../routes/leaveAccrual");
 const leaveTypeService = require('../services/leaveTypeService');
 const logs = require('../services/logService')
@@ -505,18 +502,14 @@ router.get('/salary-routine', auth, async function (req, res, next) {
                                                     if (tempTaxAmount >= tax.tr_band / 12) {
                                                         cTax = (tax.tr_rate / 100) * (tax.tr_band / 12);
                                                         let taxObject = {
-                                                            band: tax.tr_band / 12,
-                                                            rate: tax.tr_rate,
-                                                            amount: cTax
+                                                            band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                         }
                                                         taxObjects.push(taxObject)
                                                     } else {
                                                         cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                                                         totalTaxAmount = cTax + totalTaxAmount
                                                         let taxObject = {
-                                                            band: tax.tr_band / 12,
-                                                            rate: tax.tr_rate,
-                                                            amount: cTax
+                                                            band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                         }
                                                         taxObjects.push(taxObject)
                                                         break;
@@ -526,9 +519,7 @@ router.get('/salary-routine', auth, async function (req, res, next) {
                                                     cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                                                     totalTaxAmount = cTax + totalTaxAmount
                                                     let taxObject = {
-                                                        band: tax.tr_band / 12,
-                                                        rate: tax.tr_rate,
-                                                        amount: cTax
+                                                        band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                     }
                                                     taxObjects.push(taxObject)
                                                     break;
@@ -538,9 +529,7 @@ router.get('/salary-routine', auth, async function (req, res, next) {
                                             } else {
                                                 cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                                                 let taxObject = {
-                                                    band: tax.tr_band / 12,
-                                                    rate: tax.tr_rate,
-                                                    amount: cTax
+                                                    band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                 }
                                                 taxObjects.push(taxObject)
 
@@ -1182,18 +1171,14 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                                 if (tempTaxAmount >= tax.tr_band / 12) {
                                                     cTax = (tax.tr_rate / 100) * (tax.tr_band / 12);
                                                     let taxObject = {
-                                                        band: tax.tr_band / 12,
-                                                        rate: tax.tr_rate,
-                                                        amount: cTax
+                                                        band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                     }
                                                     taxObjects.push(taxObject)
                                                 } else {
                                                     cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                                                     totalTaxAmount = cTax + totalTaxAmount
                                                     let taxObject = {
-                                                        band: tax.tr_band / 12,
-                                                        rate: tax.tr_rate,
-                                                        amount: cTax
+                                                        band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                     }
                                                     taxObjects.push(taxObject)
                                                     break;
@@ -1203,9 +1188,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                                 cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                                                 totalTaxAmount = cTax + totalTaxAmount
                                                 let taxObject = {
-                                                    band: tax.tr_band / 12,
-                                                    rate: tax.tr_rate,
-                                                    amount: cTax
+                                                    band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                                 }
                                                 taxObjects.push(taxObject)
                                                 break;
@@ -1215,9 +1198,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         } else {
                                             cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                                             let taxObject = {
-                                                band: tax.tr_band / 12,
-                                                rate: tax.tr_rate,
-                                                amount: cTax
+                                                band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                                             }
                                             taxObjects.push(taxObject)
 
@@ -1323,9 +1304,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                 }
 
                 const pmylObject = {
-                    pmyl_month: payrollMonth,
-                    pmyl_year: payrollYear,
-                    pmyl_location_id: pmylLocationId
+                    pmyl_month: payrollMonth, pmyl_year: payrollYear, pmyl_location_id: pmylLocationId
                 }
 
                 await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject).then((data) => {
@@ -1429,8 +1408,7 @@ router.get('/undo-salary-routine', auth, async function (req, res, next) {
         })
 
         const leaveAccrualData = {
-            lea_month: payrollMonth,
-            lea_year: payrollYear,
+            lea_month: payrollMonth, lea_year: payrollYear,
         }
         const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data) => {
             return data
@@ -1441,9 +1419,7 @@ router.get('/undo-salary-routine', auth, async function (req, res, next) {
         })
 
         const logData = {
-            "log_user_id": req.user.username.user_id,
-            "log_description": "Undo Payroll Routine",
-            "log_date": new Date()
+            "log_user_id": req.user.username.user_id, "log_description": "Undo Payroll Routine", "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
 
@@ -1550,9 +1526,7 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
         })
 
         const leaveAccrualData = {
-            lea_month: payrollMonth,
-            lea_year: payrollYear,
-            lea_emp_id: employeeIdsLocation
+            lea_month: payrollMonth, lea_year: payrollYear, lea_emp_id: employeeIdsLocation
         }
         const leaveAccrualsUndo = await removeLeaveAccrualEmployees(leaveAccrualData).then((data) => {
             return data
@@ -1563,9 +1537,7 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
         })
 
         const logData = {
-            "log_user_id": req.user.username.user_id,
-            "log_description": "Undo Payroll Routine",
-            "log_date": new Date()
+            "log_user_id": req.user.username.user_id, "log_description": "Undo Payroll Routine", "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
 
@@ -1842,12 +1814,12 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                     let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data)=>{
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
                         return data
                     })
 
-                    if(!_.isEmpty(empSalaryStructure)){
-                        if(!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)){
+                    if (!_.isEmpty(empSalaryStructure)) {
+                        if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
                             empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
                         }
 
@@ -1857,18 +1829,15 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         // if (parseInt(empSalary.payment.pd_employee) === 1) {
                         if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                             const incomeDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             incomes.push(incomeDetails)
                             if (parseInt(empSalary.payment.pd_employee) === 1) {
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                             }
-                        }
-                        else {
+                        } else {
                             const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             deductions.push(deductionDetails)
                             mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions
@@ -1953,8 +1922,7 @@ router.post('/pull-salary-routine', auth, async function (req, res, next) {
 
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -2199,8 +2167,7 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                                 const incomeDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                                    paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                 }
                                 incomes.push(incomeDetails)
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
@@ -2217,8 +2184,7 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
 
                             } else {
                                 const deductionDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                                    paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                 }
                                 deductions.push(deductionDetails)
                                 totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
@@ -2234,15 +2200,13 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                         if (parseInt(empSalary.payment.pd_employee) === 2) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                                 const incomeDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                                    paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                 }
                                 employersIncomes.push(incomeDetails)
 
                             } else {
                                 const deductionDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                                    paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                 }
                                 employersDeductions.push(deductionDetails)
 
@@ -2304,8 +2268,7 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
     try {
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -2352,16 +2315,13 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                     if (parseInt(empSalary.payment.pd_employee) === 1) {
                         if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                             const incomeDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             incomes.push(incomeDetails)
                             grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
-                        }
-                        else {
+                        } else {
                             const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             deductions.push(deductionDetails)
                             totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
@@ -2369,19 +2329,16 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                     }
 
 
-
                     if (parseInt(empSalary.payment.pd_employee) === 2) {
                         if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                             const incomeDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             employersIncomes.push(incomeDetails)
 
                         } else {
                             const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             employersDeductions.push(deductionDetails)
 
@@ -2498,17 +2455,16 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                 })
 
 
-
                 if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                     let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data)=>{
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
                         return data
                     })
 
-                    if(!_.isEmpty(empSalaryStructure)){
-                        if(!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)){
+                    if (!_.isEmpty(empSalaryStructure)) {
+                        if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
                             empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
                         }
                     }
@@ -2517,18 +2473,15 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                         // if (parseInt(empSalary.payment.pd_employee) === 1) {
                         if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                             const incomeDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             incomes.push(incomeDetails)
                             if (parseInt(empSalary.payment.pd_employee) === 1) {
                                 grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                             }
-                        }
-                        else {
+                        } else {
                             const deductionDetails = {
-                                paymentName: empSalary.payment.pd_payment_name,
-                                amount: empSalary.salary_amount
+                                paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             deductions.push(deductionDetails)
                             mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions
@@ -2612,8 +2565,7 @@ router.post('/deduction-report', auth, async function (req, res, next) {
 
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -2660,8 +2612,7 @@ router.post('/deduction-report', auth, async function (req, res, next) {
                         if (parseInt(empSalary.payment.pd_employee) === 1) {
                             if (parseInt(empSalary.payment.pd_payment_type) === 2) {
                                 const deductionDetails = {
-                                    paymentName: empSalary.payment.pd_payment_name,
-                                    amount: empSalary.salary_amount
+                                    paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                 }
                                 deductions.push(deductionDetails)
                                 totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
@@ -2715,8 +2666,7 @@ router.post('/variation-report', auth, async function (req, res, next) {
 
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -2767,15 +2717,13 @@ router.post('/variation-report', auth, async function (req, res, next) {
                             if (parseInt(empSalary.payment.pd_payment_variant) === 2) {
                                 if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                                     const incomeDetails = {
-                                        paymentName: empSalary.payment.pd_payment_name,
-                                        amount: empSalary.salary_amount
+                                        paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                     }
                                     incomes.push(incomeDetails)
                                     grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                                 } else {
                                     const deductionDetails = {
-                                        paymentName: empSalary.payment.pd_payment_name,
-                                        amount: empSalary.salary_amount
+                                        paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                                     }
                                     deductions.push(deductionDetails)
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
@@ -2832,9 +2780,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
 
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required(),
-            pd_id: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required(), pd_id: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -2888,8 +2834,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                 for (const empSalary of employeeSalaries) {
                     if (parseInt(empSalary.payment.pd_id) === parseInt(payrollRequest.pd_id)) {
                         const deductionDetails = {
-                            paymentName: empSalary.payment.pd_payment_name,
-                            amount: empSalary.salary_amount
+                            paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                         }
                         deductions.push(deductionDetails)
                         totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
@@ -3033,18 +2978,14 @@ router.get('/salary-test-routine', async function (req, res, next) {
                         if (tempTaxAmount >= tax.tr_band / 12) {
                             cTax = (tax.tr_rate / 100) * (tax.tr_band / 12);
                             let taxObject = {
-                                band: tax.tr_band / 12,
-                                rate: tax.tr_rate,
-                                amount: cTax
+                                band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                             }
                             taxObjects.push(taxObject)
                         } else {
                             cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                             totalTaxAmount = cTax + totalTaxAmount
                             let taxObject = {
-                                band: tax.tr_band / 12,
-                                rate: tax.tr_rate,
-                                amount: cTax
+                                band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                             }
                             taxObjects.push(taxObject)
                             break;
@@ -3054,9 +2995,7 @@ router.get('/salary-test-routine', async function (req, res, next) {
                         cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                         totalTaxAmount = cTax + totalTaxAmount
                         let taxObject = {
-                            band: tax.tr_band / 12,
-                            rate: tax.tr_rate,
-                            amount: cTax
+                            band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                         }
                         taxObjects.push(taxObject)
                         break;
@@ -3066,9 +3005,7 @@ router.get('/salary-test-routine', async function (req, res, next) {
                 } else {
                     cTax = (tax.tr_rate / 100) * (tempTaxAmount)
                     let taxObject = {
-                        band: tax.tr_band / 12,
-                        rate: tax.tr_rate,
-                        amount: cTax
+                        band: tax.tr_band / 12, rate: tax.tr_rate, amount: cTax
                     }
                     taxObjects.push(taxObject)
 
@@ -3118,9 +3055,7 @@ router.post('/pay-order', auth, async function (req, res, next) {
 
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required(),
-            pym_location: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required(), pym_location: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -3230,9 +3165,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
 
 
         const schema = Joi.object({
-            pym_month: Joi.number().required(),
-            pym_year: Joi.number().required(),
-            pym_location: Joi.number().required()
+            pym_month: Joi.number().required(), pym_year: Joi.number().required(), pym_location: Joi.number().required()
         })
 
         const payrollRequest = req.body
@@ -3337,8 +3270,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
                         amount = parseFloat(checkSalary.salary_amount)
                     }
                     let empPensionObject = {
-                        "Payment Name": pensionPayment.pd_payment_name,
-                        "Amount": amount
+                        "Payment Name": pensionPayment.pd_payment_name, "Amount": amount
                     }
 
                     totalPension = totalPension + amount
@@ -3446,8 +3378,6 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
                 return data
             })
 
-
-
             if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
 
                 let GrossArray = []
@@ -3487,13 +3417,10 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
                     }
 
                     let cosObject = {
-                        name: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        gross: empGross
+                        name: `${emp.emp_first_name} ${emp.emp_last_name}`, gross: empGross
                     }
 
                     GrossArray.push(cosObject)
-
-
 
 
                     //start
