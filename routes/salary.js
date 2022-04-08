@@ -1782,11 +1782,11 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
 
             let employees = []
             if (pmylLocationId === 0) {
-                employees = await employee.getActiveEmployees().then((data) => {
+                employees = await employee.getEmployees().then((data) => {
                     return data
                 })
             } else {
-                employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+                employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
                     return data
                 })
             }
