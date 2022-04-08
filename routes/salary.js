@@ -1671,7 +1671,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
                 if (!(_.isEmpty(locationData))) {
 
-                    const employees = await employee.getActiveEmployeesByLocation(location.pmyl_location_id).then((data) => {
+                    const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
                         return data
                     })
 
@@ -1683,16 +1683,18 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                     let locationTotalGross = 0
                     let locationTotalDeduction = 0
                     let locationTotalNetPay = 0
-                    let locationTotalEmployee = employees.length
+                    let locationTotalEmployee = 0
                     let grossSalary = 0
                     let netSalary = 0
                     let totalDeduction = 0
 
                     for (const emp of employees) {
+
                         let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                             return data
                         })
                         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+                            locationTotalEmployee++
                             for (const empSalary of employeeSalaries) {
                                 if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                                     grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
