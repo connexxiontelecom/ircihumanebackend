@@ -3394,6 +3394,152 @@ router.post('/pension-report', auth, async function (req, res, next) {
 });
 
 
+/* run salary routine location */
+router.post('/salary-tes-routine', auth, async function (req, res, next) {
+    try {
+
+        const schema = Joi.object({
+            pmyl_location_id: Joi.number().required(),
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        }
+        const pmylLocationId = payrollRequest.pmyl_location_id
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+        const employeeIdsLocation = []
+        let salaryObject = {}
+
+        const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employees)) {
+            return res.status(400).json('No Employees in Selected Location')
+        }
+
+        for (const emp of employees) {
+            employeeIdsLocation.push(emp.emp_id)
+        }
+
+        // check for pending variational payments
+        const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYearEmployees(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+            return data
+        })
+
+
+        if (_.isEmpty(pendingVariationalPayment) || _.isNull(pendingVariationalPayment)) {
+
+            //check if payroll routine has been run
+            const salaryRoutineCheck = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
+                return data
+            })
+
+
+
+            if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+
+                let GrossArray = []
+
+                for (const emp of employees) {
+
+                    let empGross = parseFloat(emp.emp_gross)
+
+                    let hiredDate = new Date(emp.emp_hire_date)
+                    let contractEndDate = new Date(emp.emp_contract_end_date)
+
+                    const contractEndYear = contractEndDate.getFullYear()
+                    const contractEndMonth = contractEndDate.getMonth() + 1
+
+                    const hireYear = hiredDate.getFullYear()
+                    const hireMonth = hiredDate.getMonth() + 1
+
+                    const payrollDate = new Date(parseInt(payrollYear), parseInt(payrollMonth) - 1, 2)
+                    let daysBeforeStart
+                    if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
+                        daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
+                        empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
+                    }
+
+                    if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                        // let suspendEmployee = await employee.suspendEmployee(emp.emp_id, 'Contract Ended').then((data) => {
+                        //     return data
+                        // })
+
+                        // let suspendUser = await user.suspendUser(emp.emp_unique_id).then((data) => {
+                        //     return data
+                        // })
+
+                        daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
+                        daysBeforeStart = 22 - (daysBeforeStart + 1)
+                        empGross = empGross - (daysBeforeStart * (empGross / 22))
+                    }
+
+                    let cosObject = {
+                        name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                        gross: empGross
+                    }
+
+                    GrossArray.push(cosObject)
+
+
+
+
+                    //start
+                }
+                return res.status(200).json(GrossArray)
+
+
+            } else {
+
+                return res.status(400).json(`Payroll Routine has already been run for selected location`)
+            }
+
+
+        } else {
+
+            return res.status(400).json(`There are pending Variational Payments`)
+        }
+
+    } catch (err) {
+
+        const payrollRequest = req.body
+        const pmylLocationId = payrollRequest.pmyl_location_id
+        const employeeIdsLocation = []
+        const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+            return data
+        })
+
+        for (const emp of employees) {
+            employeeIdsLocation.push(emp.emp_id)
+        }
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+
+        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+            console.log(err.message)
+            next(err);
+        })
+
+    }
+});
+
+
 module.exports = router;
 
 // DO While NOT rsA.EOF
