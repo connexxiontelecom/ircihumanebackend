@@ -3461,7 +3461,8 @@ router.post('/nhf-report', auth, async function (req, res, next) {
                     nhfArray: nhfArray,
                     month: payrollMonth,
                     year: payrollYear,
-                    adjustedGrossII: empAdjustedGrossII
+                    adjustedGrossII: empAdjustedGrossII,
+                    adjustedGross: empAdjustedGross
                 }
 
                 employeeSalary.push(salaryObject)
