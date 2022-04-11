@@ -1556,52 +1556,52 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
                 return data
             })
 
-            const empSalaries = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data)=>{
+            const empSalaries = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                 return data
             })
-           // return res.status(200).json(empSalaries)
+            // return res.status(200).json(empSalaries)
             for (const emp of empSalaries) {
-                let tempEmp = await employee.getEmployee(emp.salary_empid).then((data)=>{
+                let tempEmp = await employee.getEmployee(emp.salary_empid).then((data) => {
                     return data
                 })
 
-               if(!_.isEmpty(tempEmp)){
-                   let contractEndDate = new Date(tempEmp.emp_contract_end_date)
+                if (!_.isEmpty(tempEmp)) {
+                    let contractEndDate = new Date(tempEmp.emp_contract_end_date)
 
-                   const contractEndYear = contractEndDate.getFullYear()
-                   const contractEndMonth = contractEndDate.getMonth() + 1
+                    const contractEndYear = contractEndDate.getFullYear()
+                    const contractEndMonth = contractEndDate.getMonth() + 1
 
 
-                   if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
-                       let unSuspendEmployee = await employee.unSuspendEmployee(emp.salary_empid).then((data) => {
-                           return data
-                       })
+                    if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                        let unSuspendEmployee = await employee.unSuspendEmployee(emp.salary_empid).then((data) => {
+                            return data
+                        })
 
-                       let unSuspendUser = await user.unSuspendUser(tempEmp.emp_unique_id).then((data) => {
-                           return data
-                       })
+                        let unSuspendUser = await user.unSuspendUser(tempEmp.emp_unique_id).then((data) => {
+                            return data
+                        })
 
-                   }
+                    }
 
-                   employeeIdsLocation.push(emp.salary_empid)
-               }
+                    employeeIdsLocation.push(emp.salary_empid)
+                }
 
             }
         } else {
             await payrollMonthYearLocation.removePayrollMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
-            const empSalaries = await salary.getDistinctEmployeesMonthYear(payrollMonth, payrollYear).then((data)=>{
+            const empSalaries = await salary.getDistinctEmployeesMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
             for (const emp of empSalaries) {
 
-                let tempEmp = await employee.getEmployee(emp.salary_empid).then((data)=>{
+                let tempEmp = await employee.getEmployee(emp.salary_empid).then((data) => {
                     return data
                 })
 
-                if(!_.isEmpty(tempEmp)){
+                if (!_.isEmpty(tempEmp)) {
                     let contractEndDate = new Date(tempEmp.emp_contract_end_date)
 
                     const contractEndYear = contractEndDate.getFullYear()
@@ -1776,14 +1776,12 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                 if (!(_.isEmpty(locationData))) {
 
 
-                    const employees = await salary.getDistinctEmployeesLocationMonthYear(location.pmyl_location_id).then((data)=>{
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(location.pmyl_location_id).then((data) => {
                         return data
                     })
                     // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
                     //     return data
                     // })
-
-
 
 
                     if (_.isEmpty(employees) || _.isNull(employees)) {
@@ -1990,10 +1988,10 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
                     if (empJobRoleId > 0) {
 
-                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data)=>{
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
                             return data
                         })
-                        if(!_.isEmpty(jobRoleData)){
+                        if (!_.isEmpty(jobRoleData)) {
                             empJobRole = jobRoleData.job_role
                         }
 
@@ -2002,10 +2000,10 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     let sectorName = 'N/A'
                     let sectorId = parseInt(employeeSalaries[0].salary_department_id)
                     if (sectorId > 0) {
-                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data)=>{
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
                             return data
                         })
-                        if(!_.isEmpty(sectorData)){
+                        if (!_.isEmpty(sectorData)) {
                             sectorName = sectorData.department_name
                         }
 
@@ -2013,15 +2011,14 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
 
                     let locationName = 'N/A'
                     let locationId = parseInt(employeeSalaries[0].salary_location_id)
-                    if(locationId > 0){
-                        let locationData = await locationService.findLocationById(locationId).then((data)=>{
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
                             return data
                         })
-                        if(!_.isEmpty(locationData)){
+                        if (!_.isEmpty(locationData)) {
                             locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
                         }
                     }
-
 
 
                     let salaryObject = {
@@ -2660,10 +2657,10 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
                     if (empJobRoleId > 0) {
 
-                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data)=>{
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
                             return data
                         })
-                        if(!_.isEmpty(jobRoleData)){
+                        if (!_.isEmpty(jobRoleData)) {
                             empJobRole = jobRoleData.job_role
                         }
 
@@ -2672,10 +2669,10 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     let sectorName = 'N/A'
                     let sectorId = parseInt(employeeSalaries[0].salary_department_id)
                     if (sectorId > 0) {
-                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data)=>{
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
                             return data
                         })
-                        if(!_.isEmpty(sectorData)){
+                        if (!_.isEmpty(sectorData)) {
                             sectorName = sectorData.department_name
                         }
 
@@ -2683,15 +2680,14 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
 
                     let locationName = 'N/A'
                     let locationId = parseInt(employeeSalaries[0].salary_location_id)
-                    if(locationId > 0){
-                        let locationData = await locationService.findLocationById(locationId).then((data)=>{
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
                             return data
                         })
-                        if(!_.isEmpty(locationData)){
+                        if (!_.isEmpty(locationData)) {
                             locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
                         }
                     }
-
 
 
                     let salaryObject = {
@@ -2715,7 +2711,6 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
 
                     employeeSalary.push(salaryObject)
 
-                    employeeSalary.push(salaryObject)
 
                 }
 
@@ -2793,21 +2788,49 @@ router.post('/deduction-report', auth, async function (req, res, next) {
 
                     }
 
+
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(jobRoleData)) {
+                            empJobRole = jobRoleData.job_role
+                        }
+
+                    }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(sectorData)) {
+                            sectorName = sectorData.department_name
+                        }
+
                     }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(locationData)) {
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
+                    }
+
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        employeeName: employeeSalaries[0].salary_emp_name,
+                        employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         totalDeduction: totalDeduction,
@@ -2905,21 +2928,50 @@ router.post('/variation-report', auth, async function (req, res, next) {
 
 
                     }
+
+
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(jobRoleData)) {
+                            empJobRole = jobRoleData.job_role
+                        }
+
+                    }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(sectorData)) {
+                            sectorName = sectorData.department_name
+                        }
+
                     }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(locationData)) {
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
+                    }
+
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        employeeName: employeeSalaries[0].salary_emp_name,
+                        employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         totalDeduction: totalDeduction,
@@ -2929,7 +2981,6 @@ router.post('/variation-report', auth, async function (req, res, next) {
                         month: payrollMonth,
                         year: payrollYear
                     }
-
                     employeeSalary.push(salaryObject)
 
                 }
@@ -3012,15 +3063,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                         totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                     }
                 }
-                let empJobRole = 'N/A'
-                // if(parseInt(emp.emp_job_role_id) > 0){
-                //     empJobRole = emp.jobRole.job_role
-                // }
 
-                let sectorName = 'N/A'
-                if (parseInt(emp.emp_department_id) > 0) {
-                    sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
-                }
                 let paymentNumber = 'N/A'
                 if (parseInt(paymentDefinitionData.pd_tie_number) > 0) {
 
@@ -3038,11 +3081,50 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                     }
 
                 }
+
+
+                let empJobRole = 'N/A'
+                let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                if (empJobRoleId > 0) {
+
+                    let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(jobRoleData)) {
+                        empJobRole = jobRoleData.job_role
+                    }
+
+                }
+
+                let sectorName = 'N/A'
+                let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                if (sectorId > 0) {
+                    let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(sectorData)) {
+                        sectorName = sectorData.department_name
+                    }
+
+                }
+
+                let locationName = 'N/A'
+                let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                if (locationId > 0) {
+                    let locationData = await locationService.findLocationById(locationId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(locationData)) {
+                        locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                    }
+                }
+
+
                 let salaryObject = {
                     employeeId: emp.emp_id,
-                    employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                    employeeUniqueId: emp.emp_unique_id,
-                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    employeeName: employeeSalaries[0].salary_emp_name,
+                    employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                    location: locationName,
                     jobRole: empJobRole,
                     sector: sectorName,
                     totalDeduction: totalDeduction,
@@ -3051,7 +3133,6 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                     year: payrollYear,
                     paymentNumber: paymentNumber
                 }
-
                 employeeSalary.push(salaryObject)
 
             }
