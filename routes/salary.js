@@ -3388,18 +3388,21 @@ router.post('/pay-order', auth, async function (req, res, next) {
                 }
 
                 let sectorName = 'N/A'
+                let sectorCode = 'N/A'
                 let sectorId = parseInt(employeeSalaries[0].salary_department_id)
                 if (sectorId > 0) {
                     let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
                         return data
                     })
                     if (!_.isEmpty(sectorData)) {
-                        sectorName = sectorData.department_name
+                        sectorName = `${sectorData.department_name} - ${sectorData.d_t3_code}`
+                        sectorCode = sectorData.d_t3_code
                     }
 
                 }
 
                 let locationName = 'N/A'
+               let locationCode = 'N/A'
                 let locationId = parseInt(employeeSalaries[0].salary_location_id)
                 if (locationId > 0) {
                     let locationData = await locationService.findLocationById(locationId).then((data) => {
@@ -3407,6 +3410,7 @@ router.post('/pay-order', auth, async function (req, res, next) {
                     })
                     if (!_.isEmpty(locationData)) {
                         locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        locationCode = locationData.l_t6_code
                     }
                 }
 
@@ -3424,8 +3428,10 @@ router.post('/pay-order', auth, async function (req, res, next) {
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     accountNumber: emp.emp_account_no,
                     location: locationName,
+                    locationCode: locationCode,
                     jobRole: empJobRole,
                     sector: sectorName,
+                    sectorCode: sectorCode,
                     bankName: bankName,
                     bankSortCode: bankSortCode,
                     grossSalary: grossSalary,
