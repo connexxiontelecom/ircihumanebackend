@@ -121,7 +121,7 @@ async function approveSalary(month, year, user, date) {
         })
 }
 
-async function confirmSalary(month, year, user, date) {
+async function confirmSalary(month, year, user, date, location) {
     return await Salary.update({
             salary_confirmed: 1,
             salary_confirmed_by: user,
@@ -131,6 +131,7 @@ async function confirmSalary(month, year, user, date) {
             where: {
                 salary_paymonth: month,
                 salary_payyear: year,
+                salary_location_id: location
 
             },
         })
