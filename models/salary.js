@@ -35,7 +35,16 @@ module.exports = (sequelize, DataTypes) => {
     salary_approved_by: DataTypes.INTEGER,
     salary_approved_date: DataTypes.DATE,
     salary_confirmed_by: DataTypes.INTEGER,
-    salary_confirmed_date: DataTypes.DATE
+    salary_confirmed_date: DataTypes.DATE,
+    salary_location_id: DataTypes.INTEGER,
+    salary_jobrole_id: DataTypes.INTEGER,
+    salary_department_id: DataTypes.INTEGER,
+    salary_grade: DataTypes.TEXT,
+    salary_gross: DataTypes.DOUBLE,
+    salary_emp_name: DataTypes.TEXT,
+    salary_emp_unique_id: DataTypes.TEXT,
+    salary_emp_start_date: DataTypes.DATE,
+    salary_emp_end_date: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'salary',

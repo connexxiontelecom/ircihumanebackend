@@ -18,6 +18,9 @@ const payrollMonthYear = require('../services/payrollMonthYearService')
 const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
+const departmentService = require('../services/departmentService')
+const jobRoleService = require('../services/jobRoleService')
+
 
 const {
     addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees
@@ -731,6 +734,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                 for (const emp of employees) {
 
+                    let empSalaryStructureName = 'N/A'
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
+                        return data
+                    })
+
+                    if (!_.isEmpty(empSalaryStructure)) {
+                        if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
+                            empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                        }
+                    }
+
                     let empGross = parseFloat(emp.emp_gross)
 
                     let hiredDate = new Date(emp.emp_hire_date)
@@ -782,7 +796,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     salary_pd: empVP.vp_payment_def_id,
                                     salary_amount: empVP.vp_amount,
                                     salary_share: 0,
-                                    salary_tax: 0
+                                    salary_tax: 0,
+                                    salary_location_id: emp.emp_location_id,
+                                    salary_jobrole_id: emp.emp_job_role_id,
+                                    salary_department_id: emp.emp_department_id,
+                                    salary_grade: empSalaryStructureName,
+                                    salary_gross: emp.emp_gross,
+                                    salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                    salary_emp_unique_id: emp.emp_unique_id,
+                                    salary_emp_start_date: emp.emp_hire_date,
+                                    salary_emp_end_date: emp.emp_contract_end_date
+
                                 }
 
                                 let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -790,7 +814,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing Routine variational payments `)
 
                                     })
@@ -806,7 +830,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                         })
                         if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
 
-                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                 return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
 
                             })
@@ -818,7 +842,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             })
 
                             if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
-                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                     return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
                                 })
                             } else {
@@ -843,7 +867,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         salary_pd: percentage.pd_id,
                                         salary_amount: amount,
                                         salary_share: percent,
-                                        salary_tax: 0
+                                        salary_tax: 0,
+                                        salary_location_id: emp.emp_location_id,
+                                        salary_jobrole_id: emp.emp_job_role_id,
+                                        salary_department_id: emp.emp_department_id,
+                                        salary_grade: empSalaryStructureName,
+                                        salary_gross: emp.emp_gross,
+                                        salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                        salary_emp_unique_id: emp.emp_unique_id,
+                                        salary_emp_start_date: emp.emp_hire_date,
+                                        salary_emp_end_date: emp.emp_contract_end_date
+
                                     }
 
 
@@ -852,7 +886,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     })
 
                                     if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear).then((data) => {
                                             return res.status(400).json(`An error Occurred while Processing Routine splitting gross `)
 
                                         })
@@ -877,7 +911,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_pd: allowance.la_payment_id,
                                             salary_amount: allowance.la_amount,
                                             salary_share: 0,
-                                            salary_tax: 0
+                                            salary_tax: 0,
+                                            salary_location_id: emp.emp_location_id,
+                                            salary_jobrole_id: emp.emp_job_role_id,
+                                            salary_department_id: emp.emp_department_id,
+                                            salary_grade: empSalaryStructureName,
+                                            salary_gross: emp.emp_gross,
+                                            salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                            salary_emp_unique_id: emp.emp_unique_id,
+                                            salary_emp_start_date: emp.emp_hire_date,
+                                            salary_emp_end_date: emp.emp_contract_end_date
+
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -885,7 +929,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine hazard allowance `)
 
                                             })
@@ -964,7 +1008,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_pd: computationalPayment.pd_id,
                                             salary_amount: amount,
                                             salary_share: 0,
-                                            salary_tax: 0
+                                            salary_tax: 0,
+                                            salary_location_id: emp.emp_location_id,
+                                            salary_jobrole_id: emp.emp_job_role_id,
+                                            salary_department_id: emp.emp_department_id,
+                                            salary_grade: empSalaryStructureName,
+                                            salary_gross: emp.emp_gross,
+                                            salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                            salary_emp_unique_id: emp.emp_unique_id,
+                                            salary_emp_start_date: emp.emp_hire_date,
+                                            salary_emp_end_date: emp.emp_contract_end_date
+
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -972,7 +1026,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
                                             })
 
@@ -991,7 +1045,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_pd: computationalPayment.pd_id,
                                             salary_amount: amount,
                                             salary_share: 0,
-                                            salary_tax: 0
+                                            salary_tax: 0,
+                                            salary_location_id: emp.emp_location_id,
+                                            salary_jobrole_id: emp.emp_job_role_id,
+                                            salary_department_id: emp.emp_department_id,
+                                            salary_grade: empSalaryStructureName,
+                                            salary_gross: emp.emp_gross,
+                                            salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                            salary_emp_unique_id: emp.emp_unique_id,
+                                            salary_emp_start_date: emp.emp_hire_date,
+                                            salary_emp_end_date: emp.emp_contract_end_date
+
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -999,7 +1063,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine basic computation `)
 
                                             })
@@ -1021,7 +1085,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_pd: computationalPayment.pd_id,
                                             salary_amount: amount,
                                             salary_share: 0,
-                                            salary_tax: 0
+                                            salary_tax: 0,
+                                            salary_location_id: emp.emp_location_id,
+                                            salary_jobrole_id: emp.emp_job_role_id,
+                                            salary_department_id: emp.emp_department_id,
+                                            salary_grade: empSalaryStructureName,
+                                            salary_gross: emp.emp_gross,
+                                            salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                            salary_emp_unique_id: emp.emp_unique_id,
+                                            salary_emp_start_date: emp.emp_hire_date,
+                                            salary_emp_end_date: emp.emp_contract_end_date
+
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1029,7 +1103,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                             })
@@ -1050,7 +1124,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_pd: computationalPayment.pd_id,
                                             salary_amount: amount,
                                             salary_share: 0,
-                                            salary_tax: 0
+                                            salary_tax: 0,
+                                            salary_location_id: emp.emp_location_id,
+                                            salary_jobrole_id: emp.emp_job_role_id,
+                                            salary_department_id: emp.emp_department_id,
+                                            salary_grade: empSalaryStructureName,
+                                            salary_gross: emp.emp_gross,
+                                            salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                            salary_emp_unique_id: emp.emp_unique_id,
+                                            salary_emp_start_date: emp.emp_hire_date,
+                                            salary_emp_end_date: emp.emp_contract_end_date
+
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1058,7 +1142,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                             })
@@ -1078,7 +1162,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_pd: computationalPayment.pd_id,
                                             salary_amount: amount,
                                             salary_share: 0,
-                                            salary_tax: 0
+                                            salary_tax: 0,
+                                            salary_location_id: emp.emp_location_id,
+                                            salary_jobrole_id: emp.emp_job_role_id,
+                                            salary_department_id: emp.emp_department_id,
+                                            salary_grade: empSalaryStructureName,
+                                            salary_gross: emp.emp_gross,
+                                            salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                            salary_emp_unique_id: emp.emp_unique_id,
+                                            salary_emp_start_date: emp.emp_hire_date,
+                                            salary_emp_end_date: emp.emp_contract_end_date
+
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1086,7 +1180,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                             })
@@ -1119,7 +1213,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(taxRatesData) || _.isNull(taxRatesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`No tax Rate Setup `)
 
                                     })
@@ -1130,7 +1224,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`Minimum Tax Rate Not Setup `)
 
                                     })
@@ -1142,7 +1236,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
 
                                     })
@@ -1240,7 +1334,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     salary_pd: paymentDefinitionTaxData.pd_id,
                                     salary_amount: totalTaxAmount,
                                     salary_share: 0,
-                                    salary_tax: 1
+                                    salary_tax: 1,
+                                    salary_location_id: emp.emp_location_id,
+                                    salary_jobrole_id: emp.emp_job_role_id,
+                                    salary_department_id: emp.emp_department_id,
+                                    salary_grade: empSalaryStructureName,
+                                    salary_gross: emp.emp_gross,
+                                    salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                                    salary_emp_unique_id: emp.emp_unique_id,
+                                    salary_emp_start_date: emp.emp_hire_date,
+                                    salary_emp_end_date: emp.emp_contract_end_date
+
                                 }
 
                                 let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1248,7 +1352,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                     })
@@ -1260,7 +1364,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
 
                                     })
@@ -1280,7 +1384,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     })
 
                                     if (_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)) {
-                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                             return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
 
                                         })
@@ -1337,22 +1441,12 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
         const payrollRequest = req.body
         const pmylLocationId = payrollRequest.pmyl_location_id
-        const employeeIdsLocation = []
-        const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
-            return data
-        })
-
-        for (const emp of employees) {
-            employeeIdsLocation.push(emp.emp_id)
-        }
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
         })
-
         const payrollMonth = payrollMonthYearData.pym_month
         const payrollYear = payrollMonthYearData.pym_year
-
-        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
             console.log(err.message)
             next(err);
         })
@@ -1462,64 +1556,74 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
                 return data
             })
 
-            const employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
+            const empSalaries = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                 return data
             })
+            // return res.status(200).json(empSalaries)
+            for (const emp of empSalaries) {
+                let tempEmp = await employee.getEmployee(emp.salary_empid).then((data) => {
+                    return data
+                })
 
-            for (const emp of employees) {
+                if (!_.isEmpty(tempEmp)) {
+                    let contractEndDate = new Date(tempEmp.emp_contract_end_date)
 
-                let contractEndDate = new Date(emp.emp_contract_end_date)
-
-                const contractEndYear = contractEndDate.getFullYear()
-                const contractEndMonth = contractEndDate.getMonth() + 1
+                    const contractEndYear = contractEndDate.getFullYear()
+                    const contractEndMonth = contractEndDate.getMonth() + 1
 
 
-                if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
-                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.emp_id).then((data) => {
-                        return data
-                    })
+                    if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                        let unSuspendEmployee = await employee.unSuspendEmployee(emp.salary_empid).then((data) => {
+                            return data
+                        })
 
-                    let unSuspendUser = await user.unSuspendUser(emp.emp_unique_id).then((data) => {
-                        return data
-                    })
+                        let unSuspendUser = await user.unSuspendUser(tempEmp.emp_unique_id).then((data) => {
+                            return data
+                        })
 
+                    }
+
+                    employeeIdsLocation.push(emp.salary_empid)
                 }
 
-
-                employeeIdsLocation.push(emp.emp_id)
             }
         } else {
             await payrollMonthYearLocation.removePayrollMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
-            const employees = await employee.getEmployees().then((data) => {
+            const empSalaries = await salary.getDistinctEmployeesMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
-            for (const emp of employees) {
+            for (const emp of empSalaries) {
 
-                let contractEndDate = new Date(emp.emp_contract_end_date)
+                let tempEmp = await employee.getEmployee(emp.salary_empid).then((data) => {
+                    return data
+                })
 
-                const contractEndYear = contractEndDate.getFullYear()
-                const contractEndMonth = contractEndDate.getMonth() + 1
+                if (!_.isEmpty(tempEmp)) {
+                    let contractEndDate = new Date(tempEmp.emp_contract_end_date)
+
+                    const contractEndYear = contractEndDate.getFullYear()
+                    const contractEndMonth = contractEndDate.getMonth() + 1
 
 
-                if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
-                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.emp_id).then((data) => {
-                        return data
-                    })
+                    if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+                        let unSuspendEmployee = await employee.unSuspendEmployee(emp.salary_empid).then((data) => {
+                            return data
+                        })
 
-                    let unSuspendUser = await user.unSuspendUser(emp.emp_unique_id).then((data) => {
-                        return data
-                    })
+                        let unSuspendUser = await user.unSuspendUser(tempEmp.emp_unique_id).then((data) => {
+                            return data
+                        })
 
+                    }
+
+                    employeeIdsLocation.push(emp.salary_empid)
                 }
 
-
-                employeeIdsLocation.push(emp.emp_id)
             }
         }
-
 
         const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
             return data
@@ -1671,9 +1775,13 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
                 if (!(_.isEmpty(locationData))) {
 
-                    const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(location.pmyl_location_id).then((data) => {
                         return data
                     })
+                    // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+                    //     return data
+                    // })
 
 
                     if (_.isEmpty(employees) || _.isNull(employees)) {
@@ -1690,7 +1798,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
                     for (const emp of employees) {
 
-                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
                             return data
                         })
                         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
@@ -1703,26 +1811,30 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                                 }
                             }
                             netSalary = grossSalary - totalDeduction
-                            let empJobRole = 'N/A'
-                            // if(parseInt(emp.emp_job_role_id) > 0){
+                            // let empJobRole = 'N/A'
+                            // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                            // if(empJobRoleId > 0){
                             //     empJobRole = emp.jobRole.job_role
                             // }
-
-                            let sectorName = 'N/A'
-                            if (parseInt(emp.emp_department_id) > 0) {
-                                sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
-                            }
-                            let salaryObject = {
-                                employeeId: emp.emp_id,
-                                employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                                employeeUniqueId: emp.emp_unique_id,
-                                location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                                jobRole: empJobRole,
-                                sector: sectorName,
-                                grossSalary: grossSalary,
-                                totalDeduction: totalDeduction,
-                                netSalary: netSalary
-                            }
+                            //
+                            // let sectorName = 'N/A'
+                            // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                            // if (sectorId > 0) {
+                            //
+                            //
+                            //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                            // }
+                            // let salaryObject = {
+                            //     employeeId: emp.emp_id,
+                            //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                            //     employeeUniqueId: emp.emp_unique_id,
+                            //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                            //     jobRole: empJobRole,
+                            //     sector: sectorName,
+                            //     grossSalary: grossSalary,
+                            //     totalDeduction: totalDeduction,
+                            //     netSalary: netSalary
+                            // }
                         }
                     }
 
@@ -1788,7 +1900,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     return data
                 })
             } else {
-                employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
+                employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                     return data
                 })
             }
@@ -1807,7 +1919,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                 let deductions = []
                 let incomes = []
 
-                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
                     return data
                 })
 
@@ -1816,7 +1928,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                     let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.salary_empid).then((data) => {
                         return data
                     })
 
@@ -1873,21 +1985,47 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     netSalary = grossSalary - mainDeductions
 
                     let empJobRole = 'N/A'
-                    if (parseInt(emp.emp_job_role_id) > 0) {
-                        empJobRole = emp.jobrole.job_role
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(jobRoleData)) {
+                            empJobRole = jobRoleData.job_role
+                        }
+
                     }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(sectorData)) {
+                            sectorName = sectorData.department_name
+                        }
+
+                    }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(locationData)) {
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
                     }
 
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        employeeName: employeeSalaries[0].salary_emp_name,
+                        employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         grossSalary: empAdjustedGrossII,
@@ -1897,8 +2035,8 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                         deductions: deductions,
                         month: payrollMonth,
                         year: payrollYear,
-                        employeeStartDate: new Date(emp.emp_employment_date).toISOString().split('T')[0],
-                        empEndDate: new Date(emp.emp_contract_end_date).toISOString().split('T')[0],
+                        employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
+                        empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
                         salaryGrade: empSalaryStructureName
                     }
 
@@ -2516,20 +2654,47 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                     netSalary = grossSalary - mainDeductions
 
                     let empJobRole = 'N/A'
-                    if (parseInt(emp.emp_job_role_id) > 0) {
-                        empJobRole = emp.jobrole.job_role
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(jobRoleData)) {
+                            empJobRole = jobRoleData.job_role
+                        }
+
                     }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(sectorData)) {
+                            sectorName = sectorData.department_name
+                        }
+
                     }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(locationData)) {
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
+                    }
+
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        employeeName: employeeSalaries[0].salary_emp_name,
+                        employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         grossSalary: empAdjustedGrossII,
@@ -2539,12 +2704,13 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                         deductions: deductions,
                         month: payrollMonth,
                         year: payrollYear,
-                        employeeStartDate: new Date(emp.emp_employment_date).toISOString().split('T')[0],
-                        empEndDate: new Date(emp.emp_contract_end_date).toISOString().split('T')[0],
+                        employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
+                        empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
                         salaryGrade: empSalaryStructureName
                     }
 
                     employeeSalary.push(salaryObject)
+
 
                 }
 
@@ -2622,21 +2788,49 @@ router.post('/deduction-report', auth, async function (req, res, next) {
 
                     }
 
+
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(jobRoleData)) {
+                            empJobRole = jobRoleData.job_role
+                        }
+
+                    }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(sectorData)) {
+                            sectorName = sectorData.department_name
+                        }
+
                     }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(locationData)) {
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
+                    }
+
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        employeeName: employeeSalaries[0].salary_emp_name,
+                        employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         totalDeduction: totalDeduction,
@@ -2734,21 +2928,50 @@ router.post('/variation-report', auth, async function (req, res, next) {
 
 
                     }
+
+
                     let empJobRole = 'N/A'
-                    // if(parseInt(emp.emp_job_role_id) > 0){
-                    //     empJobRole = emp.jobRole.job_role
-                    // }
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(jobRoleData)) {
+                            empJobRole = jobRoleData.job_role
+                        }
+
+                    }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(sectorData)) {
+                            sectorName = sectorData.department_name
+                        }
+
                     }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if (locationId > 0) {
+                        let locationData = await locationService.findLocationById(locationId).then((data) => {
+                            return data
+                        })
+                        if (!_.isEmpty(locationData)) {
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
+                    }
+
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                        employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        employeeName: employeeSalaries[0].salary_emp_name,
+                        employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         totalDeduction: totalDeduction,
@@ -2758,7 +2981,6 @@ router.post('/variation-report', auth, async function (req, res, next) {
                         month: payrollMonth,
                         year: payrollYear
                     }
-
                     employeeSalary.push(salaryObject)
 
                 }
@@ -2841,15 +3063,7 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                         totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                     }
                 }
-                let empJobRole = 'N/A'
-                // if(parseInt(emp.emp_job_role_id) > 0){
-                //     empJobRole = emp.jobRole.job_role
-                // }
 
-                let sectorName = 'N/A'
-                if (parseInt(emp.emp_department_id) > 0) {
-                    sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
-                }
                 let paymentNumber = 'N/A'
                 if (parseInt(paymentDefinitionData.pd_tie_number) > 0) {
 
@@ -2867,11 +3081,50 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                     }
 
                 }
+
+
+                let empJobRole = 'N/A'
+                let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                if (empJobRoleId > 0) {
+
+                    let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(jobRoleData)) {
+                        empJobRole = jobRoleData.job_role
+                    }
+
+                }
+
+                let sectorName = 'N/A'
+                let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                if (sectorId > 0) {
+                    let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(sectorData)) {
+                        sectorName = sectorData.department_name
+                    }
+
+                }
+
+                let locationName = 'N/A'
+                let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                if (locationId > 0) {
+                    let locationData = await locationService.findLocationById(locationId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(locationData)) {
+                        locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                    }
+                }
+
+
                 let salaryObject = {
                     employeeId: emp.emp_id,
-                    employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                    employeeUniqueId: emp.emp_unique_id,
-                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    employeeName: employeeSalaries[0].salary_emp_name,
+                    employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                    location: locationName,
                     jobRole: empJobRole,
                     sector: sectorName,
                     totalDeduction: totalDeduction,
@@ -2880,7 +3133,6 @@ router.post('/deduction-report-type', auth, async function (req, res, next) {
                     year: payrollYear,
                     paymentNumber: paymentNumber
                 }
-
                 employeeSalary.push(salaryObject)
 
             }
@@ -3613,7 +3865,7 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
         const payrollMonth = payrollMonthYearData.pym_month
         const payrollYear = payrollMonthYearData.pym_year
 
-        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
             console.log(err.message)
             next(err);
         })
