@@ -53,14 +53,16 @@ async function undoSalaryMonthYearLocation(month, year, locationId) {
 async function getDistinctEmployeesLocationMonthYear(month, year, locationId){
     return await Salary.findAll({
         attributes: [
-            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid'],
-            salary_paymonth, salary_payyear, salary_location_id
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid']
+
         ],
         where: {
             salary_paymonth: month,
             salary_payyear: year,
             salary_location_id: locationId
-        }, include: ['employee', 'payment']
+        }
+
+       //include: ['employee']
     })
 }
 
@@ -68,12 +70,12 @@ async function getDistinctEmployeesMonthYear(month, year){
     return await Salary.findAll({
         attributes: [
             [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid'],
-            salary_paymonth, salary_payyear, salary_location_id
+
         ],
         where: {
             salary_paymonth: month,
             salary_payyear: year,
-        }, include: ['employee', 'payment']
+        }
     })
 }
 

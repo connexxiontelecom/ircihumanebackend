@@ -1489,9 +1489,9 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
             })
 
             const empSalaries = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data)=>{
-                return
+                return data
             })
-
+            return res.status(200).json(empSalaries)
             for (const emp of empSalaries) {
 
                 let contractEndDate = new Date(emp.employee.emp_contract_end_date)
