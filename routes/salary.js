@@ -734,6 +734,16 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                 for (const emp of employees) {
 
+                    let empDepartmentId = 0
+                    if(!(_.isEmpty(emp.emp_department_id) || _.isNull(emp.emp_department_id))){
+                        empDepartmentId = parseInt(emp.emp_department_id)
+                    }
+
+                    let empJobRoleId = 0
+                    if(!(_.isEmpty(emp.emp_job_role_id) || _.isNull(emp.emp_job_role_id))){
+                        empJobRoleId = parseInt(emp.emp_job_role_id)
+                    }
+
                     let empSalaryStructureName = 'N/A'
                     let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
                         return data
@@ -798,8 +808,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     salary_share: 0,
                                     salary_tax: 0,
                                     salary_location_id: emp.emp_location_id,
-                                    salary_jobrole_id: emp.emp_job_role_id,
-                                    salary_department_id: emp.emp_department_id,
+                                    salary_jobrole_id: empJobRoleId,
+                                    salary_department_id: empDepartmentId,
                                     salary_grade: empSalaryStructureName,
                                     salary_gross: emp.emp_gross,
                                     salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -869,8 +879,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         salary_share: percent,
                                         salary_tax: 0,
                                         salary_location_id: emp.emp_location_id,
-                                        salary_jobrole_id: emp.emp_job_role_id,
-                                        salary_department_id: emp.emp_department_id,
+                                        salary_jobrole_id: empJobRoleId,
+                                        salary_department_id: empDepartmentId,
                                         salary_grade: empSalaryStructureName,
                                         salary_gross: emp.emp_gross,
                                         salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -913,8 +923,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_share: 0,
                                             salary_tax: 0,
                                             salary_location_id: emp.emp_location_id,
-                                            salary_jobrole_id: emp.emp_job_role_id,
-                                            salary_department_id: emp.emp_department_id,
+                                            salary_jobrole_id: empJobRoleId,
+                                            salary_department_id: empDepartmentId,
                                             salary_grade: empSalaryStructureName,
                                             salary_gross: emp.emp_gross,
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1010,8 +1020,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_share: 0,
                                             salary_tax: 0,
                                             salary_location_id: emp.emp_location_id,
-                                            salary_jobrole_id: emp.emp_job_role_id,
-                                            salary_department_id: emp.emp_department_id,
+                                            salary_jobrole_id: empJobRoleId,
+                                            salary_department_id: empDepartmentId,
                                             salary_grade: empSalaryStructureName,
                                             salary_gross: emp.emp_gross,
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1047,8 +1057,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_share: 0,
                                             salary_tax: 0,
                                             salary_location_id: emp.emp_location_id,
-                                            salary_jobrole_id: emp.emp_job_role_id,
-                                            salary_department_id: emp.emp_department_id,
+                                            salary_jobrole_id: empJobRoleId,
+                                            salary_department_id: empDepartmentId,
                                             salary_grade: empSalaryStructureName,
                                             salary_gross: emp.emp_gross,
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1087,8 +1097,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_share: 0,
                                             salary_tax: 0,
                                             salary_location_id: emp.emp_location_id,
-                                            salary_jobrole_id: emp.emp_job_role_id,
-                                            salary_department_id: emp.emp_department_id,
+                                            salary_jobrole_id: empJobRoleId,
+                                            salary_department_id: empDepartmentId,
                                             salary_grade: empSalaryStructureName,
                                             salary_gross: emp.emp_gross,
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1126,8 +1136,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_share: 0,
                                             salary_tax: 0,
                                             salary_location_id: emp.emp_location_id,
-                                            salary_jobrole_id: emp.emp_job_role_id,
-                                            salary_department_id: emp.emp_department_id,
+                                            salary_jobrole_id: empJobRoleId,
+                                            salary_department_id: empDepartmentId,
                                             salary_grade: empSalaryStructureName,
                                             salary_gross: emp.emp_gross,
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1164,8 +1174,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_share: 0,
                                             salary_tax: 0,
                                             salary_location_id: emp.emp_location_id,
-                                            salary_jobrole_id: emp.emp_job_role_id,
-                                            salary_department_id: emp.emp_department_id,
+                                            salary_jobrole_id: empJobRoleId,
+                                            salary_department_id: empDepartmentId,
                                             salary_grade: empSalaryStructureName,
                                             salary_gross: emp.emp_gross,
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -1336,8 +1346,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     salary_share: 0,
                                     salary_tax: 1,
                                     salary_location_id: emp.emp_location_id,
-                                    salary_jobrole_id: emp.emp_job_role_id,
-                                    salary_department_id: emp.emp_department_id,
+                                    salary_jobrole_id: empJobRoleId,
+                                    salary_department_id: empDepartmentId,
                                     salary_grade: empSalaryStructureName,
                                     salary_gross: emp.emp_gross,
                                     salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
