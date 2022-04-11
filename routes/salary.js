@@ -1776,7 +1776,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                 if (!(_.isEmpty(locationData))) {
 
 
-                    const employees = await salary.getDistinctEmployeesLocationMonthYear(location.pmyl_location_id).then((data) => {
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id).then((data) => {
                         return data
                     })
                     // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
