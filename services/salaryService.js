@@ -37,6 +37,16 @@ async function undoSalaryMonthYear(month, year, employees) {
     })
 }
 
+async function undoSalaryMonthYearLocation(month, year, locationId) {
+    return await Salary.destroy({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_location_id: locationId
+        }
+    })
+}
+
 async function getEmployeeSalary(month, year, empId) {
     return await Salary.findAll({
         where: {
@@ -95,5 +105,6 @@ module.exports = {
     getEmployeeSalary,
     approveSalary,
     confirmSalary,
-    getEmployeeSalaryMonthYearPd
+    getEmployeeSalaryMonthYearPd,
+    undoSalaryMonthYearLocation
 }
