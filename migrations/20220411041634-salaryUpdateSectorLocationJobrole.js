@@ -24,9 +24,9 @@ module.exports = {
           'salary',
           'salary_jobrole_id',
           {
-            type: Sequelize.INTEGER,
+            type: Sequelize.TEXT,
             allowNull:true,
-            defaultValue: 0
+
           }
       ),
 
@@ -34,9 +34,9 @@ module.exports = {
           'salary',
           'salary_department_id',
           {
-            type: Sequelize.INTEGER,
+            type: Sequelize.TEXT,
             allowNull:true,
-            defaultValue: 0
+
           }
       ),
 
