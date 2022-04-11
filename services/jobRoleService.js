@@ -97,9 +97,14 @@ const updateJobRole = async (req, res, next) => {
 
 }
 
+async function findJobRoleById(jobRoleId) {
+    return await jobRole.findOne({where: {job_role_id: jobRoleId}});
+}
+
 module.exports = {
     getJobRoleById,
     getJobRoles,
     updateJobRole,
     setNewJobRole,
+    findJobRoleById
 }

@@ -14,7 +14,16 @@ async function addSalary(salary) {
         salary_pd: salary.salary_pd,
         salary_share: salary.salary_share,
         salary_tax: salary.salary_tax,
-        salary_amount: salary.salary_amount
+        salary_amount: salary.salary_amount,
+        salary_location_id: salary.salary_location_id,
+        salary_jobrole_id: salary.salary_jobrole_id,
+        salary_department_id: salary.salary_department_id,
+        salary_gross: salary.salary_gross,
+        salary_grade: salary.salary_grade,
+        salary_emp_name: salary.salary_emp_name,
+        salary_emp_unique_id: salary.salary_emp_unique_id,
+        salary_emp_start_date: salary.salary_emp_start_date,
+        salary_emp_end_date: salary.salary_emp_end_date
     });
 }
 
@@ -33,6 +42,45 @@ async function undoSalaryMonthYear(month, year, employees) {
             salary_paymonth: month,
             salary_payyear: year,
             salary_empid: employees
+        }
+    })
+}
+
+async function undoSalaryMonthYearLocation(month, year, locationId) {
+    return await Salary.destroy({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_location_id: locationId
+        }
+    })
+}
+
+async function getDistinctEmployeesLocationMonthYear(month, year, locationId){
+    return await Salary.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid']
+
+        ],
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_location_id: locationId
+        }
+
+       //include: ['employee']
+    })
+}
+
+async function getDistinctEmployeesMonthYear(month, year){
+    return await Salary.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid'],
+
+        ],
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
         }
     })
 }
@@ -95,5 +143,8 @@ module.exports = {
     getEmployeeSalary,
     approveSalary,
     confirmSalary,
-    getEmployeeSalaryMonthYearPd
+    getEmployeeSalaryMonthYearPd,
+    undoSalaryMonthYearLocation,
+    getDistinctEmployeesLocationMonthYear,
+    getDistinctEmployeesMonthYear
 }
