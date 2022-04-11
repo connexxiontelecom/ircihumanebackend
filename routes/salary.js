@@ -794,7 +794,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing Routine variational payments `)
 
                                     })
@@ -810,7 +810,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                         })
                         if (_.isEmpty(grossPercentage) || _.isNull(grossPercentage)) {
 
-                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                 return res.status(400).json(`Update Payment Definitions to include Gross Percentage`)
 
                             })
@@ -822,7 +822,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             })
 
                             if (parseFloat(totalPercentageGross) > 100 || parseFloat(totalPercentageGross) < 100) {
-                                await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                     return res.status(400).json(`Update Payment Definitions Gross Percentage to sum to 100%`)
                                 })
                             } else {
@@ -860,7 +860,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     })
 
                                     if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                                        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear).then((data) => {
                                             return res.status(400).json(`An error Occurred while Processing Routine splitting gross `)
 
                                         })
@@ -897,7 +897,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine hazard allowance `)
 
                                             })
@@ -988,7 +988,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
                                             })
 
@@ -1019,7 +1019,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine basic computation `)
 
                                             })
@@ -1053,7 +1053,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                             })
@@ -1086,7 +1086,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                             })
@@ -1118,7 +1118,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         })
 
                                         if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                            await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                            await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                                 return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                             })
@@ -1151,7 +1151,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(taxRatesData) || _.isNull(taxRatesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`No tax Rate Setup `)
 
                                     })
@@ -1162,7 +1162,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(minimumTaxRateData) || _.isNull(minimumTaxRateData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`Minimum Tax Rate Not Setup `)
 
                                     })
@@ -1174,7 +1174,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(paymentDefinitionTaxData) || _.isNull(paymentDefinitionTaxData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`No Payment Definition has been Indicated as Tax `)
 
                                     })
@@ -1284,7 +1284,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing Routine gross computation `)
 
                                     })
@@ -1296,7 +1296,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                 })
 
                                 if (_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)) {
-                                    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                         return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
 
                                     })
@@ -1316,7 +1316,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     })
 
                                     if (_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)) {
-                                        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+                                        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                                             return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
 
                                         })
@@ -1373,9 +1373,11 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
         const payrollRequest = req.body
         const pmylLocationId = payrollRequest.pmyl_location_id
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
         const payrollMonth = payrollMonthYearData.pym_month
         const payrollYear = payrollMonthYearData.pym_year
-
         await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
             console.log(err.message)
             next(err);
@@ -1545,7 +1547,7 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
         }
 
 
-        const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+        const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
             return data
         })
 
@@ -3637,7 +3639,7 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
         const payrollMonth = payrollMonthYearData.pym_month
         const payrollYear = payrollMonthYearData.pym_year
 
-        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+        await salary.undoSalaryMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
             console.log(err.message)
             next(err);
         })
