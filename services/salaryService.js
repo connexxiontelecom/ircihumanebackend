@@ -19,7 +19,11 @@ async function addSalary(salary) {
         salary_jobrole_id: salary.salary_jobrole_id,
         salary_department_id: salary.salary_department_id,
         salary_gross: salary.salary_gross,
-        salary_grade: salary.salary_grade
+        salary_grade: salary.salary_grade,
+        salary_emp_name: salary.salary_emp_name,
+        salary_emp_unique_id: salary.salary_emp_unique_id,
+        salary_emp_start_date: salary.salary_emp_start_date,
+        salary_emp_end_date: salary.salary_emp_end_date
     });
 }
 
