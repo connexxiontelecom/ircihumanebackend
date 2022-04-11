@@ -2265,6 +2265,87 @@ router.get('/confirm-salary-routine', auth, async function (req, res, next) {
     }
 });
 
+router.post('/confirm-salary-routine', auth, async function (req, res, next) {
+    try {
+
+        // const schema = Joi.object({
+        //     pmyl_location_id: Joi.number().required(),
+        // })
+        //
+        // const payrollRequest = req.body
+        // const validationResult = schema.validate(payrollRequest)
+        //
+        // if (validationResult.error) {
+        //     return res.status(400).json(validationResult.error.details[0].message)
+        // }
+
+        // let employeeId = req.body.employee
+        let locations = req.body.locations
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        } else {
+
+
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+
+            for (const location of locations) {
+                let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location).then((data)=>{
+                    return data
+                })
+
+                if(_.isEmpty(checkRoutine) || _.isNull(checkRoutine)){
+                    return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`)
+                }
+
+
+
+
+            }
+            //check if payroll routine has been run
+            let employeeSalary = []
+            const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+
+                return res.status(400).json(`Payroll Routine has not been run`)
+            } else {
+                let today = new Date();
+                let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+
+
+                const confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date).then((data) => {
+                    return data
+                })
+
+                if (!(_.isEmpty(confirmResponse) || _.isNull(confirmResponse))) {
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
+                        "log_date": new Date()
+                    }
+                    await logs.addLog(logData).then((logRes) => {
+                        return res.status(200).json(`Payroll Confirmed`)
+                    })
+                }
+
+            }
+
+        }
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
 router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) {
     try {
 
