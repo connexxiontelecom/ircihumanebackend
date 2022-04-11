@@ -21,7 +21,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     pmyl_month: DataTypes.INTEGER,
     pmyl_year: DataTypes.INTEGER,
-    pmyl_location_id: DataTypes.INTEGER
+    pmyl_location_id: DataTypes.INTEGER,
+    pmyl_confirmed: DataTypes.INTEGER,
+    pmyl_confirmed_by: DataTypes.TEXT,
+    pmyl_confirmed_date: DataTypes.DATE,
+    pmyl_approved: DataTypes.INTEGER,
+    pmyl_approved_by: DataTypes.TEXT,
+    pmyl_approved_date: DataTypes.DATE,
   }, {
     sequelize,
     modelName: 'payrollmonthyearlocation',
