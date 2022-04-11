@@ -3442,7 +3442,9 @@ router.post('/pay-order', auth, async function (req, res, next) {
                     bankSortCode: bankSortCode,
                     grossSalary: grossSalary,
                     totalDeduction: totalDeduction,
-                    netSalary: netSalary
+                    netSalary: netSalary,
+                    month: payrollMonth,
+                    year: payrollYear
                 }
 
 
