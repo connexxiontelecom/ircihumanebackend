@@ -18,6 +18,7 @@ const payrollMonthYear = require('../services/payrollMonthYearService')
 const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
+const departmentService = require('../services/departmentService')
 
 const {
     addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees
@@ -1707,9 +1708,15 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
                 if (!(_.isEmpty(locationData))) {
 
-                    const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(location.pmyl_location_id).then((data)=>{
                         return data
                     })
+                    // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+                    //     return data
+                    // })
+
+
 
 
                     if (_.isEmpty(employees) || _.isNull(employees)) {
@@ -1726,7 +1733,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 
                     for (const emp of employees) {
 
-                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
                             return data
                         })
                         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
@@ -1739,26 +1746,30 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
                                 }
                             }
                             netSalary = grossSalary - totalDeduction
-                            let empJobRole = 'N/A'
-                            // if(parseInt(emp.emp_job_role_id) > 0){
+                            // let empJobRole = 'N/A'
+                            // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                            // if(empJobRoleId > 0){
                             //     empJobRole = emp.jobRole.job_role
                             // }
-
-                            let sectorName = 'N/A'
-                            if (parseInt(emp.emp_department_id) > 0) {
-                                sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
-                            }
-                            let salaryObject = {
-                                employeeId: emp.emp_id,
-                                employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                                employeeUniqueId: emp.emp_unique_id,
-                                location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-                                jobRole: empJobRole,
-                                sector: sectorName,
-                                grossSalary: grossSalary,
-                                totalDeduction: totalDeduction,
-                                netSalary: netSalary
-                            }
+                            //
+                            // let sectorName = 'N/A'
+                            // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                            // if (sectorId > 0) {
+                            //
+                            //
+                            //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                            // }
+                            // let salaryObject = {
+                            //     employeeId: emp.emp_id,
+                            //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                            //     employeeUniqueId: emp.emp_unique_id,
+                            //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                            //     jobRole: empJobRole,
+                            //     sector: sectorName,
+                            //     grossSalary: grossSalary,
+                            //     totalDeduction: totalDeduction,
+                            //     netSalary: netSalary
+                            // }
                         }
                     }
 
