@@ -1488,66 +1488,64 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
                 return data
             })
 
-            const employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
-                return data
+            const empSalaries = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data)=>{
+                return
             })
 
-            for (const emp of employees) {
+            for (const emp of empSalaries) {
 
-                let contractEndDate = new Date(emp.emp_contract_end_date)
+                let contractEndDate = new Date(emp.employee.emp_contract_end_date)
 
                 const contractEndYear = contractEndDate.getFullYear()
                 const contractEndMonth = contractEndDate.getMonth() + 1
 
 
                 if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
-                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.emp_id).then((data) => {
+                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.employee.emp_id).then((data) => {
                         return data
                     })
 
-                    let unSuspendUser = await user.unSuspendUser(emp.emp_unique_id).then((data) => {
+                    let unSuspendUser = await user.unSuspendUser(emp.employee.emp_unique_id).then((data) => {
                         return data
                     })
 
                 }
 
-
-                employeeIdsLocation.push(emp.emp_id)
+                employeeIdsLocation.push(emp.employee.emp_id)
             }
         } else {
             await payrollMonthYearLocation.removePayrollMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
-            const employees = await employee.getEmployees().then((data) => {
-                return data
+            const empSalaries = await salary.getDistinctEmployeesMonthYear(payrollMonth, payrollYear).then((data)=>{
+                return
             })
 
-            for (const emp of employees) {
+            for (const emp of empSalaries) {
 
-                let contractEndDate = new Date(emp.emp_contract_end_date)
+                let contractEndDate = new Date(emp.employee.emp_contract_end_date)
 
                 const contractEndYear = contractEndDate.getFullYear()
                 const contractEndMonth = contractEndDate.getMonth() + 1
 
 
                 if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
-                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.emp_id).then((data) => {
+                    let unSuspendEmployee = await employee.unSuspendEmployee(emp.employee.emp_id).then((data) => {
                         return data
                     })
 
-                    let unSuspendUser = await user.unSuspendUser(emp.emp_unique_id).then((data) => {
+                    let unSuspendUser = await user.unSuspendUser(emp.employee.emp_unique_id).then((data) => {
                         return data
                     })
 
                 }
 
 
-                employeeIdsLocation.push(emp.emp_id)
+                employeeIdsLocation.push(emp.employee.emp_id)
             }
         }
 
-
-        const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
+        const salaryRoutineUndo = await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
             return data
         })
 
