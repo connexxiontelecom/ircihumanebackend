@@ -2392,25 +2392,29 @@ router.post('/approve-salary-routine', auth, async function (req, res, next) {
             return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`)
         }
 
-        if(parseInt(checkRoutine.pmyl_confirmed) === 1){
-            return res.status(400).json(`Payroll Routine for one or more location has already been confirmed, check selection`)
+        if(parseInt(checkRoutine.pmyl_confirmed) === 0){
+            return res.status(400).json(`Payroll Routine for location has not been confirmed`)
         }
 
-        let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date).then((data)=>{
+        if(parseInt(checkRoutine.pmyl_approved) === 1){
+            return res.status(400).json(`Payroll Routine for location has already been confirmed`)
+        }
+
+        let approveRoutine = await payrollMonthYearLocation.approvePayrollMonthYearLocation(location, req.user.username.user_id, date).then((data)=>{
             return data
         })
 
-        if(_.isEmpty(confirmRoutine) || _.isNull(confirmRoutine)){
-            return res.status(400).json(`An error occurred while confirming one or more location routine `)
+        if(_.isEmpty(approveRoutine) || _.isNull(approveRoutine)){
+            return res.status(400).json(`An error occurred while approve one or more location routine `)
         }
 
-        let confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location).then((data) => {
+        let approveResponse = await salary.approveSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location).then((data) => {
             return data
         })
 
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
+            "log_description": `Approved payroll routine for ${payrollMonth} - ${payrollYear}`,
             "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
