@@ -17,7 +17,9 @@ async function addSalary(salary) {
         salary_amount: salary.salary_amount,
         salary_location_id: salary.salary_location_id,
         salary_jobrole_id: salary.salary_jobrole_id,
-        salary_department_id: salary.salary_department_id
+        salary_department_id: salary.salary_department_id,
+        salary_gross: salary.salary_gross,
+        salary_grade: salary.salary_grade
     });
 }
 
