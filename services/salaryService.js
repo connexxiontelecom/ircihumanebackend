@@ -14,7 +14,10 @@ async function addSalary(salary) {
         salary_pd: salary.salary_pd,
         salary_share: salary.salary_share,
         salary_tax: salary.salary_tax,
-        salary_amount: salary.salary_amount
+        salary_amount: salary.salary_amount,
+        salary_location_id: salary.salary_location_id,
+        salary_jobrole_id: salary.salary_jobrole_id,
+        salary_department_id: salary.salary_department_id
     });
 }
 
