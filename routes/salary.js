@@ -19,6 +19,8 @@ const payrollMonthYearLocation = require('../services/payrollMonthYearLocationSe
 const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
 const departmentService = require('../services/departmentService')
+const jobRoleService = require('../services/jobRoleService')
+
 
 const {
     addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees
@@ -1835,7 +1837,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     return data
                 })
             } else {
-                employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
+                employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
                     return data
                 })
             }
@@ -1854,7 +1856,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                 let deductions = []
                 let incomes = []
 
-                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
                     return data
                 })
 
@@ -1863,7 +1865,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                     let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.salary_empid).then((data) => {
                         return data
                     })
 
@@ -1920,21 +1922,52 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                     netSalary = grossSalary - mainDeductions
 
                     let empJobRole = 'N/A'
-                    if (parseInt(emp.emp_job_role_id) > 0) {
-                        empJobRole = emp.jobrole.job_role
+                    let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                    if (empJobRoleId > 0) {
+
+                        let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data)=>{
+                            return data
+                        })
+                        if(!_.isEmpty(jobRoleData)){
+                            empJobRole = jobRoleData.job_role
+                        }
+
                     }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                    if (sectorId > 0) {
+                        let sectorData = await departmentService.findDepartmentById(sectorId).then((data)=>{
+                            return data
+                        })
+                        if(!_.isEmpty(sectorData)){
+                            sectorName = sectorData.department_name
+                        }
+
                     }
+
+                    let locationName = 'N/A'
+                    let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                    if(locationId > 0){
+                        let locationData = await locationService.findLocationById(locationId).then((data)=>{
+                            return data
+                        })
+                        if(!_.isEmpty(locationData)){
+                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        }
+                    }
+
+                    let employeeName = 'N/A'
+                    let employeeUniqueId = 'N/A'
+                    let employeeStartDate = 'N/A'
+                    //start from here
 
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                         employeeUniqueId: emp.emp_unique_id,
-                        location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                        location: locationName,
                         jobRole: empJobRole,
                         sector: sectorName,
                         grossSalary: empAdjustedGrossII,

@@ -116,7 +116,7 @@ const updateDepartment = async (req, res, next) => {
     }
 }
 
-async function findDepartmentId(departmentId) {
+async function findDepartmentById(departmentId) {
     return await department.findOne({where: {department_id: departmentId}});
 }
 
@@ -126,5 +126,5 @@ module.exports = {
     updateDepartment,
     setNewDepartment,
     getDepartmentSectorLeadBySectorId,
-    findDepartmentId
+    findDepartmentById
 }
