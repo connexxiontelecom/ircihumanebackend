@@ -5,6 +5,7 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService')
 const documents = require('../services/employeeDocumentsService')
+const IRCMailerService = require('../services/IRCMailer')
 const supervisorAssignment = require('../services/supervisorAssignmentService');
 const auth = require("../middleware/auth");
 const Joi = require("joi");

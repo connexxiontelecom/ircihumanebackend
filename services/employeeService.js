@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const logs = require('../services/logService')
 const users = require('../services/userService')
+const IRCMailerService = require('../services/IRCMailer')
 
 const helper = require('../helper');
 const errHandler = (err) => {
@@ -288,6 +289,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_pension_id: employeeData.emp_pension_id,
         emp_nhf: employeeData.emp_nhf,
         emp_nin: employeeData.emp_nin,
+        //emp_nin: employeeData.emp_sector,
     }, {
         where: {
             emp_id: employeeId
