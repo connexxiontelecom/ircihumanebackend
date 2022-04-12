@@ -50,13 +50,13 @@ router.post('/add-payroll-month-year', auth, async function (req, res, next) {
             return res.status(400).json('Please Approve Previous Payroll Run')
         }
 
-        let checkPreviousRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonthYearRequest.pym_month, payrollMonthYearRequest.year).then((data)=>{
-            return data
-        })
-
-        if(!_.isEmpty(checkConfirmedRoutine)){
-            return res.status(400).json('Payroll Routine Already Run for Period Entered')
-        }
+        // let checkPreviousRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonthYearRequest.pym_month, payrollMonthYearRequest.year).then((data)=>{
+        //     return data
+        // })
+        //
+        // if(!_.isEmpty(checkPreviousRun)){
+        //     return res.status(400).json('Payroll Routine Already Run for Period Entered')
+        // }
 
 
         await payrollMonthYear.findPayrollMonthYear().then((data) => {
