@@ -313,14 +313,14 @@ async function updateGrossSalary(employeeId, employeeGross) {
 async function getEmployeeById(employeeId) {
     return await employee.findOne({
         where: {emp_unique_id: employeeId},
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
     })
 }
 
 async function getEmployeeByIdOnly(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
     })
 }
 
@@ -369,7 +369,7 @@ async function getActiveEmployees() {
         where: {
             emp_status: 1
         },
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
     })
 }
 
@@ -396,13 +396,26 @@ async function suspendEmployee(employeeId, suspensionReason) {
 
 }
 
+
+
 async function getActiveEmployeesByLocation(locationId) {
     return await employee.findAll({
             where: {
                 emp_location_id: locationId,
-                emp_status: 1
+                emp_status: [1, 2]
             },
-            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
+        }
+    )
+
+}
+
+async function getAllEmployeesByLocation(locationId) {
+    return await employee.findAll({
+            where: {
+                emp_location_id: locationId,
+            },
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
         }
     )
 
@@ -488,7 +501,7 @@ async function getInactiveEmployees() {
                         [Op.or]: [0, 2, null]
                     }
                 },
-            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
 
         }
     )
@@ -567,7 +580,9 @@ module.exports = {
     getActiveEmployeesByLocation,
     changePassword,
     getEmployees,
-    getInactiveEmployees
+    getInactiveEmployees,
+    unSuspendEmployee,
+    getAllEmployeesByLocation
     //updateDepartment,
     //setNewDepartment,
 }

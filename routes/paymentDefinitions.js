@@ -27,7 +27,11 @@ router.get('/employee-payment-definition', auth, async function (req, res, next)
 
         // return res.status(200).json(req.user.username);
 
-        await paymentDefinition.findAllEmployeeCodes().then((data) => {
+        // await paymentDefinition.findAllEmployeeCodes().then((data) => {
+        //     return res.status(200).json(data);
+        // })
+
+        await paymentDefinition.findAllCodes().then((data) => {
             return res.status(200).json(data);
         })
     } catch (err) {

@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   salaryStructure.hasMany(Employee, { foreignKey: 'emp_id' })
 
   salaryStructure.belongsTo(SalaryGrade, {as: 'salary_grade', foreignKey: 'ss_grade'})
+  salaryStructure.hasMany(SalaryGrade, { foreignKey: 'sg_id' })
 
   return salaryStructure;
 };
