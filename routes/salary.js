@@ -1768,7 +1768,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
             const payrollMonth = payrollMonthYearData.pym_month
             const payrollYear = payrollMonthYearData.pym_year
             //check if payroll routine has been run
-            let payrollLocations = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+            let payrollLocations = await payrollMonthYearLocation.findPendingPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
@@ -2280,7 +2280,7 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
         // }
 
         // let employeeId = req.body.employee
-        let locations = req.body.locations
+        let locations = req.body.pmyl_location_id
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
