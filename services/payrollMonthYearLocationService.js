@@ -57,6 +57,15 @@ async function removePayrollMonthYearLocation(month, year, locationId) {
     return await Pmyl.destroy({where: {pmyl_month: month, pmyl_year: year, pmyl_location_id: locationId}})
 }
 
+async function findAllPending() {
+    return await Pmyl.findAll({where: {pmyl_confirmed: 0}})
+}
+
+async function findAllConfirmed() {
+    return await Pmyl.findAll({where: {pmyl_approved: 0}})
+}
+
+
 async function confirmPayrollMonthYearLocation(pmyl_id, confirmBy, confirmDate) {
 
     return await Pmyl.update({
@@ -94,6 +103,8 @@ module.exports = {
     confirmPayrollMonthYearLocation,
     approvePayrollMonthYearLocation,
     findPendingPayrollMonthYearLocationMonthYear,
-    findConfirmedPayrollMonthYearLocationMonthYear
+    findConfirmedPayrollMonthYearLocationMonthYear,
+    findAllConfirmed,
+    findAllPending
 
 }
