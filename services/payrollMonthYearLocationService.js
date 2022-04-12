@@ -42,7 +42,7 @@ async function findPendingPayrollMonthYearLocationMonthYear(month, year) {
 }
 
 async function findConfirmedPayrollMonthYearLocationMonthYear(month, year) {
-    return await Pmyl.findAll({where: {pmyl_month: month, pmyl_year: year, pmyl_confirmed: 1}})
+    return await Pmyl.findAll({where: {pmyl_month: month, pmyl_year: year, pmyl_confirmed: 1, pmyl_approved: 0}})
 }
 
 async function findPayrollByMonthYearLocation(month, year, locationId) {
