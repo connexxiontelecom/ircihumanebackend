@@ -1768,12 +1768,21 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
             const payrollMonth = payrollMonthYearData.pym_month
             const payrollYear = payrollMonthYearData.pym_year
             //check if payroll routine has been run
+
+            let payrollRun =  await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollRun) || _.isNull(payrollRun)) {
+                return res.status(400).json(`Payroll Routine has not been run for any location`)
+            }
+
             let payrollLocations = await payrollMonthYearLocation.findPendingPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
             if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
-                return res.status(400).json(`Payroll Routine has not been run for any location`)
+                return res.status(400).json(`No pending payroll run`)
             }
 
             let locationSalaryArray = []
@@ -2282,54 +2291,57 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
         // let employeeId = req.body.employee
         let locations = req.body.pmyl_location_id
 
+
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
         })
         if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
             return res.status(400).json(`No payroll month and year set`)
         }
-            const payrollMonth = payrollMonthYearData.pym_month
-            const payrollYear = payrollMonthYearData.pym_year
-            let today = new Date()
-            let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+        let today = new Date()
+        let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
 
-            let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data)=>{
+        let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)){
+            return res.status(400).json(`Payroll Routine has not been run for payroll month and year`)
+        }
+
+        if(_.isEmpty(locations) || _.isNull(locations)){
+            return res.status(400).json(`No Location Selected`)
+        }
+
+
+        for (const location of locations) {
+
+            // let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location).then((data)=>{
+            //     return data
+            // })
+
+            // if(_.isEmpty(checkRoutine) || _.isNull(checkRoutine)){
+            //     return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`)
+            // }
+
+            // if(parseInt(checkRoutine.pmyl_confirmed) === 1){
+            //     return res.status(400).json(`Payroll Routine for one or more location has already been confirmed, check selection`)
+            // }
+
+            let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date).then((data)=>{
                 return data
             })
 
-            if(_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)){
-                return res.status(400).json(`Payroll Routine has not been run for payroll month and year`)
+            if(_.isEmpty(confirmRoutine) || _.isNull(confirmRoutine)){
+                return res.status(400).json(`An error occurred while confirming one or more location routine `)
             }
 
-            if(_.isEmpty(locations || _.isNull(locations))){
-                return res.status(400).json(`No Location Selected`)
-            }
-
-            for (const location of locations) {
-                let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location).then((data)=>{
-                    return data
-                })
-
-                if(_.isEmpty(checkRoutine) || _.isNull(checkRoutine)){
-                    return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`)
-                }
-
-                if(parseInt(checkRoutine.pmyl_confirmed) === 1){
-                    return res.status(400).json(`Payroll Routine for one or more location has already been confirmed, check selection`)
-                }
-
-                let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date).then((data)=>{
-                    return data
-                })
-
-                if(_.isEmpty(confirmRoutine) || _.isNull(confirmRoutine)){
-                    return res.status(400).json(`An error occurred while confirming one or more location routine `)
-                }
-
-                let confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location).then((data) => {
-                    return data
-                })
-            }
+            let confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location).then((data) => {
+                return data
+            })
+        }
 
         const logData = {
             "log_user_id": req.user.username.user_id,
@@ -3571,7 +3583,7 @@ router.post('/pay-order', auth, async function (req, res, next) {
                 }
 
                 let locationName = 'N/A'
-               let locationCode = 'N/A'
+                let locationCode = 'N/A'
                 let locationId = parseInt(employeeSalaries[0].salary_location_id)
                 if (locationId > 0) {
                     let locationData = await locationService.findLocationById(locationId).then((data) => {
