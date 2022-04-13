@@ -66,7 +66,7 @@ async function findAllConfirmed() {
 }
 
 
-async function confirmPayrollMonthYearLocation(pmyl_id, confirmBy, confirmDate) {
+async function confirmPayrollMonthYearLocation(location, confirmBy, confirmDate, month, year) {
 
     return await Pmyl.update({
         pmyl_confirmed: 1,
@@ -74,12 +74,15 @@ async function confirmPayrollMonthYearLocation(pmyl_id, confirmBy, confirmDate) 
         pmyl_confirmed_date: confirmDate
     }, {
         where: {
-            pmyl_id: pmyl_id
+            pmyl_location_id: location,
+            myl_month: month,
+            pmyl_year: year
+
         }
     })
 }
 
-async function approvePayrollMonthYearLocation(pmyl_id, approveBy, approveDate) {
+async function approvePayrollMonthYearLocation(location, approveBy, approveDate, month, year) {
 
     return await Pmyl.update({
         pmyl_approved: 1,
@@ -87,7 +90,9 @@ async function approvePayrollMonthYearLocation(pmyl_id, approveBy, approveDate) 
         pmyl_approved_date: approveDate
     }, {
         where: {
-            pmyl_id: pmyl_id
+            pmyl_location_id: location,
+            pmyl_month: month,
+            pmyl_year: year
         }
     })
 }
