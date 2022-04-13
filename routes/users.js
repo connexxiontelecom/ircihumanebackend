@@ -207,9 +207,7 @@ router.post('/login', async function (req, res, next) {
                                   const responseData = {
                                     "token": token,
                                     "userData": userData,
-                                    "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(userData.user_id)).then(n => {
-                                      return n;
-                                    })
+                                    "notifications": [],
                                   }
                                   return res.status(200).json(responseData);
                                 })
