@@ -7,6 +7,8 @@ const auth = require("../middleware/auth");
 const users = require('../services/userService');
 const logs = require("../services/logService");
 const employees = require("../services/employeeService");
+const {sequelize, Sequelize} = require('../services/db');
+const notificationModel = require("../models/notification")(sequelize, Sequelize.DataTypes);
 
 
 /* Get All Users */
@@ -146,7 +148,8 @@ router.patch('/update-user/:user_id', auth, async function (req, res, next) {
 
 /* Login User */
 router.post('/login', async function (req, res, next) {
-    try {
+
+  try {
         const user = req.body
         await users.findUserByUsername(user.user_username).then((data) => {
             if (data) {
@@ -173,14 +176,18 @@ router.post('/login', async function (req, res, next) {
                                         "log_description": "logged in",
                                         "log_date": new Date()
                                     }
-                                    logs.addLog(logData).then((logRes) => {
-                                        data.user_password = null;
-                                        const responseData = {
-                                            "token": token,
-                                            "userData": userData,
-                                            "employee": employeeId
-                                        }
-                                        return res.status(200).json(responseData);
+
+                                    logs.addLog(logData).then(async (logRes) => {
+                                      data.user_password = null;
+                                      const responseData = {
+                                        "token": token,
+                                        "userData": userData,
+                                        "employee": employeeId,
+                                        "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(employeeId.emp_id)).then(n => {
+                                          return n;
+                                        })
+                                      }
+                                      return res.status(200).json(responseData);
                                     })
 
 
@@ -195,13 +202,16 @@ router.post('/login', async function (req, res, next) {
                                     "log_description": "logged in",
                                     "log_date": new Date()
                                 }
-                                logs.addLog(logData).then((logRes) => {
-                                    data.user_password = null;
-                                    const responseData = {
-                                        "token": token,
-                                        "userData": userData,
-                                    }
-                                    return res.status(200).json(responseData);
+                                logs.addLog(logData).then(async (logRes) => {
+                                  data.user_password = null;
+                                  const responseData = {
+                                    "token": token,
+                                    "userData": userData,
+                                    "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(userData.user_id)).then(n => {
+                                      return n;
+                                    })
+                                  }
+                                  return res.status(200).json(responseData);
                                 })
 
                             }
@@ -226,6 +236,7 @@ router.post('/login', async function (req, res, next) {
 function generateAccessToken(username) {
     return jwt.sign({username}, process.env.TOKEN_SECRET, {expiresIn: '18000s'});
 }
+
 
 router.post('/change-password', auth, users.changePassword);
 

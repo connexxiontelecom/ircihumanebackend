@@ -158,6 +158,9 @@
     const leaveAccrualRouter = require('./routes/leaveAccrual')
     app.use('/leave-accrual', leaveAccrualRouter.router)
 
+    const notificationRouter = require('./routes/notification')
+    app.use('/notifications', notificationRouter);
+
     app.get('/',  async function(req, res) {
 
         res.send('you got here. so get out')
