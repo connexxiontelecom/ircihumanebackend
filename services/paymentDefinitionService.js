@@ -145,6 +145,14 @@ async function getNhfPayments() {
     })
 }
 
+async function deletePayment(pdId) {
+    return await Pd.destroy({
+        where: {
+            pd_id: pdId
+        }
+    })
+}
+
 
 module.exports = {
     addPaymentDefinition,
@@ -162,6 +170,7 @@ module.exports = {
     getComputedPayments,
     getWelfare,
     getPensionPayments,
-    getNhfPayments
+    getNhfPayments,
+    deletePayment
 
 }
