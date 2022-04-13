@@ -176,7 +176,7 @@ async function getVariationalPaymentMonthYear(month, year, employee, payment_typ
 }
 
 
-async function getVariationalPaymentMonthPayType(payment_type) {
+async function getVariationalPaymentPayType(payment_type) {
 
     return await variationalPaymentModel.findOne(
         {
@@ -207,5 +207,5 @@ module.exports = {
     getUnconfirmedVariationalPaymentMonthYearEmployees,
     undoVariationalPaymentMonthYearEmployee,
     deletePaymentEntryEmployeeMonthYear,
-    getVariationalPaymentMonthPayType
+    getVariationalPaymentPayType
 }
