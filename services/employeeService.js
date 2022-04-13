@@ -10,7 +10,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const logs = require('../services/logService')
 const users = require('../services/userService')
-const IRCMailerService = require('../services/IRCMailer')
+const IRCMailerService = require('../services/IRCMailer');
+const uuid = require("uuid");
 
 const helper = require('../helper');
 const errHandler = (err) => {
@@ -28,6 +29,8 @@ const getAllEmployee = async (req, res) => {
 
 }
 const createNewEmployee = async (req, res, next) => {
+  const text = uuid.v4();
+  const password = text.substr(24,12);
     try {
         const schema = Joi.object({
             first_name: Joi.string()
@@ -129,7 +132,7 @@ const createNewEmployee = async (req, res, next) => {
                                             user_username: req.body.unique_id,
                                             user_name: `${req.body.first_name} ${req.body.first_name}`,
                                             user_email: req.body.office_email,
-                                            user_password: 'password1234',
+                                            user_password: password,//'password1234',
                                             user_type: 2,
                                             user_token: 1,
                                             user_status: 1,
@@ -164,6 +167,10 @@ const createNewEmployee = async (req, res, next) => {
                                                                 return res.status(201).json(`New employee(${req.body.first_name}) enrollment was done successfully.`);
                                                             })
                                                         })
+                                                      //send mail
+                                                      //signature: from, to, subject, text
+                                                      const message = `Here's your login credentials \n Email: ${req.body.office_email} \n Password: ${password} \n Do well to login to change this system generated password to something you can remember.`;
+                                                      IRCMailerService.sendMail("no-reply@irc.org",req.body.office_email, "Login credentials",  message)
                                                     }
                                                 })
                                             //}
