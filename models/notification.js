@@ -40,6 +40,14 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async getAllEmployeeUnreadNotifications(empId){
+      return await Notification.findAll({
+        where:{n_user_id:empId, n_is_read:0},
+        order:[['n_id', 'DESC']],
+        include:[{model: employeeModel, as:'employee'}]
+      })
+    }
+
   };
   Notification.init({
     n_id: {
