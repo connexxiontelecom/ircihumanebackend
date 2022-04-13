@@ -2448,6 +2448,9 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
         if(_.isEmpty(locations) || _.isNull(locations)){
             return res.status(400).json(`No Location Selected`)
         }
+        const countLocations = locations.length
+        let i = 0;
+
 
 
         for (const location of locations) {
@@ -2475,16 +2478,23 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
             let confirmResponse = await salary.confirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location).then((data) => {
                 return data
             })
+            i++
         }
 
-        const logData = {
-            "log_user_id": req.user.username.user_id,
-            "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
-            "log_date": new Date()
+        if(countLocations === i){
+            const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
+                "log_date": new Date()
+            }
+            await logs.addLog(logData).then((logRes) => {
+                return res.status(200).json(`Payroll Confirmed`)
+            })
+        } else {
+            return res.status(400).json(`An Error Occurred`)
         }
-        await logs.addLog(logData).then((logRes) => {
-            return res.status(200).json(`Payroll Confirmed`)
-        })
+
+
 
     } catch (err) {
         console.log(err.message)
