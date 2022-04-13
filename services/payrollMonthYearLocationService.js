@@ -75,7 +75,7 @@ async function confirmPayrollMonthYearLocation(location, confirmBy, confirmDate,
     }, {
         where: {
             pmyl_location_id: location,
-            myl_month: month,
+            pmyl_month: month,
             pmyl_year: year
 
         }
