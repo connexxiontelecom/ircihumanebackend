@@ -79,11 +79,11 @@ async function findAllCodes() {
 }
 
 async function findAllEmployeeCodes() {
-    return await Pd.findAll({where:{pd_employee: 1}})
+    return await Pd.findAll({where: {pd_employee: 1}})
 }
 
 async function findAllEmployerCodes() {
-    return await Pd.findAll({where:{pd_employer: 2}})
+    return await Pd.findAll({where: {pd_employer: 2}})
 }
 
 async function getVariationalPayments() {

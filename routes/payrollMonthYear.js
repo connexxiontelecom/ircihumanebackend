@@ -36,17 +36,17 @@ router.post('/add-payroll-month-year', auth, async function (req, res, next) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        let checkPendingRoutine = await payrollMonthYearLocation.findAllPending().then((data)=>{
+        let checkPendingRoutine = await payrollMonthYearLocation.findAllPending().then((data) => {
             return data
         })
-        if(!_.isEmpty(checkPendingRoutine)){
+        if (!_.isEmpty(checkPendingRoutine)) {
             return res.status(400).json('Please Confirm Previous Payroll Run')
         }
-        let checkConfirmedRoutine = await payrollMonthYearLocation.findAllConfirmed().then((data)=>{
+        let checkConfirmedRoutine = await payrollMonthYearLocation.findAllConfirmed().then((data) => {
             return data
         })
 
-        if(!_.isEmpty(checkConfirmedRoutine)){
+        if (!_.isEmpty(checkConfirmedRoutine)) {
             return res.status(400).json('Please Approve Previous Payroll Run')
         }
 

@@ -403,7 +403,6 @@ router.post('/delete-payment-definition', auth, async function (req, res, next) 
             const deletePayment = await paymentDefinition.deletePayment(pdId).then((data) => {
                 return data
             })
-
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": "Delete payment definition",
