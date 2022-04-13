@@ -2467,7 +2467,7 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
             //     return res.status(400).json(`Payroll Routine for one or more location has already been confirmed, check selection`)
             // }
 
-            let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date).then((data)=>{
+            let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date, payrollMonth, payrollYear).then((data)=>{
                 return data
             })
 
@@ -2556,7 +2556,7 @@ router.post('/approve-salary-routine', auth, async function (req, res, next) {
             return res.status(400).json(`Payroll Routine for location has already been confirmed`)
         }
 
-        let approveRoutine = await payrollMonthYearLocation.approvePayrollMonthYearLocation(location, req.user.username.user_id, date).then((data)=>{
+        let approveRoutine = await payrollMonthYearLocation.approvePayrollMonthYearLocation(location, req.user.username.user_id, date, payrollMonth, payrollYear).then((data)=>{
             return data
         })
 
