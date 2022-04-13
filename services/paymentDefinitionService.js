@@ -79,11 +79,11 @@ async function findAllCodes() {
 }
 
 async function findAllEmployeeCodes() {
-    return await Pd.findAll({where:{pd_employee: 1}})
+    return await Pd.findAll({where: {pd_employee: 1}})
 }
 
 async function findAllEmployerCodes() {
-    return await Pd.findAll({where:{pd_employer: 2}})
+    return await Pd.findAll({where: {pd_employer: 2}})
 }
 
 async function getVariationalPayments() {
@@ -145,6 +145,14 @@ async function getNhfPayments() {
     })
 }
 
+async function deletePayment(pdId) {
+    return await Pd.destroy({
+        where: {
+            pd_id: pdId
+        }
+    })
+}
+
 
 module.exports = {
     addPaymentDefinition,
@@ -162,6 +170,7 @@ module.exports = {
     getComputedPayments,
     getWelfare,
     getPensionPayments,
-    getNhfPayments
+    getNhfPayments,
+    deletePayment
 
 }
