@@ -48,8 +48,6 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
         // check if from date is not greater than to date
 
         const schema = Joi.object({
-            gs_from: Joi.string().required(),
-            gs_to: Joi.string().required(),
             gs_activity: Joi.string().required(),
 
         })
@@ -73,6 +71,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
         //const to = gsRequest.gs_to
         // const toYear = to.getFullYear()
         const year = goalSettingYearData.gsy_year
+        const from = goalSettingYearData.gsy_from
+        const to = goalSettingYearData.gsy_to
 
         const goalSettingActivityYear = await goalSetting.findGoalSetting(gsRequest.gs_activity, year).then((data) => {
             return data
@@ -110,8 +110,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
             }
 
             let goalSettingObject = {
-                gs_from: gsRequest.gs_from,
-                gs_to: gsRequest.gs_to,
+                gs_from: from,
+                gs_to: to,
                 gs_activity: gsRequest.gs_activity,
                 gs_year: year,
                 gs_status: 1,
@@ -127,8 +127,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
 
                 let goalSettingLogObject = {
                     gsl_activity: gsRequest.gs_activity,
-                    gsl_year: gsRequest.gs_year,
-                    gsl_status: gsRequest.gs_status
+                    gsl_year: year,
+                    gsl_status: 1
                 }
 
                 await goalSettingLog.addGoalSettingLog(goalSettingLogObject).then((data) => {
