@@ -7,7 +7,8 @@ async function addSelfAssessment(selfAssessmentData) {
     return await SelfAssessment.create({
         sa_gs_id: selfAssessmentData.sa_gs_id,
         sa_emp_id: selfAssessmentData.sa_emp_id,
-        sa_comment: selfAssessmentData.sa_comment
+        sa_comment: selfAssessmentData.sa_comment,
+        sa_master_id: selfAssessmentData.sa_master_id
     });
 }
 

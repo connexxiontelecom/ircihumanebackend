@@ -5,6 +5,7 @@ const auth = require("../middleware/auth");
 const _ = require('lodash')
 const goalSetting = require('../services/goalSettingService');
 const selfAssessment = require('../services/selfAssessmentService');
+const selfAssessmentMaster = require('../services/selfAssessmentMasterService');
 const employees = require('../services/employeeService');
 const endYearRating = require('../services/endYearRatingService');
 const logs = require('../services/logService')
@@ -30,6 +31,31 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
         } else {
 
             if (parseInt(gsData.gs_status) === 1) {
+
+                const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
+                    const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data)=>{
+                        return data
+                    })
+                }
+
+                const selfAssessmentMasterData = {
+                    sam_gs_id: gsId,
+                    sam_emp_id: empId,
+                    sam_status: 0,
+                }
+                const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
+                    return data
+                })
+
+                if(_.isEmpty(addMaster) || _.isNull(addMaster)){
+                    return res.status(400).json(`An error occurred while adding master details`)
+                }
+
+
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
                 })
@@ -43,6 +69,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                 let addResponse;
                 let destroyResponse;
                 let i = 0;
+                const masterId = addMaster.sam_id
 
                 await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                     return data
@@ -51,12 +78,17 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                 for (const sa of saRequests) {
                     sa.sa_emp_id = empId
                     sa.sa_gs_id = gsId
+                    sa.sa_master_id = masterId
                     addResponse = await selfAssessment.addSelfAssessment(sa).then((data) => {
                         return data
                     })
 
                     if (_.isEmpty(addResponse) || _.isNull(addResponse)) {
                         destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
+                            return data
+                        })
+
+                        destroyResponse = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data) => {
                             return data
                         })
 
