@@ -12,6 +12,21 @@ async function addSelfAssessment(selfAssessmentData) {
     });
 }
 
+async function addSelfAssessmentMidYear(selfAssessmentData) {
+    return await SelfAssessment.create({
+        sa_gs_id: selfAssessmentData.sa_gs_id,
+        sa_emp_id: selfAssessmentData.sa_emp_id,
+        sa_comment: selfAssessmentData.sa_comment,
+        sa_master_id: selfAssessmentData.sa_master_id,
+        sa_update: selfAssessmentData.sa_update,
+        sa_accomplishment: selfAssessmentData.sa_accomplishment,
+        sa_challenges: selfAssessmentData.sa_challenges,
+        sa_support_needed: selfAssessmentData.sa_support_needed,
+        sa_next_steps: selfAssessmentData.sa_next_steps
+
+    });
+}
+
 async function addSelfAssessmentEndYear(selfAssessmentData) {
     return await SelfAssessment.create({
         sa_gs_id: selfAssessmentData.sa_gs_id,
@@ -104,5 +119,6 @@ module.exports = {
     updateSelfAssessment,
     supervisorUpdateSelfAssessment,
     findSelfAssessmentsEmployeeYear,
-    selfAssessmentStatusUpdate
+    selfAssessmentStatusUpdate,
+    addSelfAssessmentMidYear
 }

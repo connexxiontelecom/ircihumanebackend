@@ -126,9 +126,176 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
     }
 });
 
+/* Get Self Assessment, use for prefilling */
+router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params.emp_id
+
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+        }
+
+        const goalSettingYearData = await goalSettingYear.getGoalSettingYear().then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(goalSettingYearData) || _.isNull(goalSettingYearData)) {
+            return res.status(400).json(`No goal Setting Year Set Up`)
+        }
+
+        const year = goalSettingYearData.gsy_year
+
+        const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(yearGoalSettings) || _.isNull(yearGoalSettings)) {
+            return res.status(400).json(`No goal Setting for the year`)
+        }
+        let goalSettingIds = []
+        for (const ygs of yearGoalSettings) {
+            goalSettingIds.push(ygs.gs_id)
+        }
+
+        let empQuestions = await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data) => {
+            return data
+
+        })
+        return res.status(200).json(empQuestions)
+    } catch (err) {
+        console.error(`Error while fetching Goals `, err.message);
+        next(err);
+    }
+});
+
+
+/* Add Self Assessment */
+router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
+            return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
+
+        } else {
+
+            if (parseInt(gsData.gs_status) === 1) {
+
+                const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
+                    return data
+                })
+
+                if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
+                    const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data)=>{
+                        return data
+                    })
+                }
+
+                const selfAssessmentMasterData = {
+                    sam_gs_id: gsId,
+                    sam_emp_id: empId,
+                    sam_status: 0,
+                }
+                const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
+                    return data
+                })
+
+                if(_.isEmpty(addMaster) || _.isNull(addMaster)){
+                    return res.status(400).json(`An error occurred while adding master details`)
+                }
+
+
+                const schema = Joi.object().keys({
+                    sa_comment: Joi.string().required(),
+                    sa_master_id: Joi.number().required(),
+                    sa_update: Joi.string().required(),
+                    sa_accomplishment: Joi.string().required(),
+                    sa_challenges: Joi.string().required(),
+                    sa_support_needed: Joi.string().required(),
+                    sa_next_steps: Joi.string().required(),
+                })
+                const schemas = Joi.array().items(schema)
+                const saRequests = req.body
+
+                let validationResult = schemas.validate(saRequests)
+                if (validationResult.error) {
+                    return res.status(400).json(validationResult.error.details[0].message)
+                }
+                let addResponse;
+                let destroyResponse;
+                let i = 0;
+                const masterId = addMaster.sam_id
+
+                await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
+                    return data
+                })
+
+                for (const sa of saRequests) {
+                    sa.sa_emp_id = empId
+                    sa.sa_gs_id = gsId
+                    sa.sa_master_id = masterId
+                    addResponse = await selfAssessment.addSelfAssessment(sa).then((data) => {
+                        return data
+                    })
+
+                    if (_.isEmpty(addResponse) || _.isNull(addResponse)) {
+                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
+                            return data
+                        })
+
+                        destroyResponse = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data) => {
+                            return data
+                        })
+
+                        i++;
+                        break
+                    }
+
+                }
+
+                if (i > 0) {
+                    return res.status(400).json(`An error Occurred while adding`)
+                } else {
+                    const logData = {
+                        "log_user_id": req.user.username.user_id,
+                        "log_description": "Responded to Goal Setting",
+                        "log_date": new Date()
+                    }
+                    await logs.addLog(logData).then((logRes) => {
+
+                        return res.status(200).json(`Action Successful`)
+                    })
+
+                }
+            } else {
+                return res.status(400).json(`Goal Setting Not Opened`)
+            }
+
+
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
+
+
+
 
 /* Approve Self Assessment */
-
 router.post('/approve-assessment/', auth, async function (req, res, next) {
     try {
         const schema = Joi.object().keys({
@@ -326,49 +493,6 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
     }
 });
 
-router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next) {
-    try {
-        let empId = req.params.emp_id
-
-        const employeeData = await employees.getEmployee(empId).then((data) => {
-            return data
-        })
-        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
-            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
-        }
-
-        const goalSettingYearData = await goalSettingYear.getGoalSettingYear().then((data) => {
-            return data
-        })
-
-        if (_.isEmpty(goalSettingYearData) || _.isNull(goalSettingYearData)) {
-            return res.status(400).json(`No goal Setting Year Set Up`)
-        }
-
-        const year = goalSettingYearData.gsy_year
-
-        const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data) => {
-            return data
-        })
-
-        if (_.isEmpty(yearGoalSettings) || _.isNull(yearGoalSettings)) {
-            return res.status(400).json(`No goal Setting for the year`)
-        }
-        let goalSettingIds = []
-        for (const ygs of yearGoalSettings) {
-            goalSettingIds.push(ygs.gs_id)
-        }
-
-        let empQuestions = await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data) => {
-            return data
-
-        })
-        return res.status(200).json(empQuestions)
-    } catch (err) {
-        console.error(`Error while fetching Goals `, err.message);
-        next(err);
-    }
-});
 
 
 /* Update Self Assessment */
