@@ -293,6 +293,57 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
 });
 
 
+router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
+            return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
+
+        } else {
+
+            const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
+                return data
+            })
+
+            if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
+                return res.status(400).json(`No assessment records found`)
+            }
+
+            const approveAssessmentMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(empId, gsId, 1).then((data)=>{
+                return data
+            })
+
+            const approveAssessment = await selfAssessment.approveSelfAssessment(empId, gsId).then((data)=>{
+                return data
+            })
+
+            const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": "Responded to Goal Setting",
+                "log_date": new Date()
+            }
+            await logs.addLog(logData).then((logRes) => {
+
+                return res.status(200).json(`Action Successful`)
+            })
+
+        }
+
+
+    } catch (err) {
+        console.error(`Error while Responding to Goals `, err.message);
+        next(err);
+    }
+});
 
 
 /* Approve Self Assessment */
