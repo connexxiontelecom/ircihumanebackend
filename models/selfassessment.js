@@ -24,7 +24,15 @@ module.exports = (sequelize, DataTypes) => {
     sa_comment: DataTypes.STRING,
     sa_response: DataTypes.STRING,
     sa_eya_id: DataTypes.INTEGER,
-    sa_status: DataTypes.INTEGER
+    sa_status: DataTypes.INTEGER,
+    sa_master_id: DataTypes.INTEGER,
+    sa_update: DataTypes.TEXT,
+    sa_accomplishment: DataTypes.TEXT,
+    sa_challenges: DataTypes.TEXT,
+    sa_support_needed: DataTypes.TEXT,
+    sa_next_steps: DataTypes.TEXT
+
+
   }, {
     sequelize,
     modelName: 'selfAssessment',
