@@ -7,7 +7,9 @@ const helper = require('../helper');
 
 async function addGoalSettingYear(goalSettingYearData) {
     return await GoalSettingYear.create({
-        gsy_year: goalSettingYearData.gsy_year
+        gsy_year: goalSettingYearData.gsy_year,
+        gsy_from: goalSettingYearData.gsy_from,
+        gsy_to: goalSettingYearData.gsy_to
 
     });
 }

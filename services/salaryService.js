@@ -138,6 +138,14 @@ async function confirmSalary(month, year, user, date, location) {
         })
 }
 
+async function getSalaryPd(pd) {
+    return await Salary.findOne({
+        where: {
+            salary_pd: pd
+        }
+    })
+}
+
 module.exports = {
     addSalary,
     getSalaryMonthYear,
@@ -148,5 +156,6 @@ module.exports = {
     getEmployeeSalaryMonthYearPd,
     undoSalaryMonthYearLocation,
     getDistinctEmployeesLocationMonthYear,
-    getDistinctEmployeesMonthYear
+    getDistinctEmployeesMonthYear,
+    getSalaryPd
 }
