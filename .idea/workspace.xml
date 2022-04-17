@@ -23,8 +23,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/goalSettingYear.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/goalSettingYear.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +86,7 @@
       <workItem from="1648462015855" duration="43176000" />
       <workItem from="1649747918417" duration="668000" />
       <workItem from="1649749062520" duration="121000" />
-      <workItem from="1649749322414" duration="13853000" />
+      <workItem from="1649749322414" duration="18392000" />
     </task>
     <task id="LOCAL-00001" summary="test push">
       <created>1646229916957</created>
