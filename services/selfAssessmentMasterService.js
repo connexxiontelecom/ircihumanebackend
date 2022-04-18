@@ -1,6 +1,6 @@
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
-const SelfAssessmentMaster = require("../models/selfassessment")(sequelize, Sequelize.DataTypes)
+const SelfAssessmentMaster = require("../models/selfassessmentmaster")(sequelize, Sequelize.DataTypes)
 
 
 async function addSelfAssessmentMaster(selfAssessmentData) {
@@ -16,7 +16,7 @@ async function removeSelfAssessmentMaster(gsId, empId) {
 }
 
 async function findAssessmentMaster(gsId, empId) {
-    return await SelfAssessmentMaster.findOne({where: {sam_gs_id: gsId, sam_emp_id: empId}})
+    return await SelfAssessmentMaster.findOne({where: {sam_gs_id: gsId, sam_emp_id: empId} })
 }
 
 async function approveSelfAssessmentMaster(empId, gsId, supervisorId) {

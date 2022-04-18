@@ -30,13 +30,23 @@ module.exports = (sequelize, DataTypes) => {
     sa_accomplishment: DataTypes.TEXT,
     sa_challenges: DataTypes.TEXT,
     sa_support_needed: DataTypes.TEXT,
-    sa_next_steps: DataTypes.TEXT
-
+    sa_next_steps: DataTypes.TEXT,
+    createdAt: {
+      //field: 'created_at',
+      type: DataTypes.DATE,
+      defaultValue:sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+    updatedAt: {
+      //field: 'updated_at',
+      type: DataTypes.DATE,
+      defaultValue:sequelize.literal('CURRENT_TIMESTAMP'),
+    },
 
   }, {
     sequelize,
     modelName: 'selfAssessment',
-    tableName: 'self_assessments'
+    tableName: 'self_assessments',
+    timestamps:false,
   });
   return selfAssessment;
 };

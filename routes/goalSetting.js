@@ -49,6 +49,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
 
         const schema = Joi.object({
             gs_activity: Joi.string().required(),
+            gs_from: Joi.string().allow(null),
+            gs_to: Joi.string().allow(null),
 
         })
 
