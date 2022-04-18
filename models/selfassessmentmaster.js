@@ -23,11 +23,22 @@ module.exports = (sequelize, DataTypes) => {
     sam_emp_id: DataTypes.INTEGER,
     sam_status: DataTypes.INTEGER,
     sam_supervisor_id: DataTypes.INTEGER,
+    createdAt: {
+      //field: 'created_at',
+      type: DataTypes.DATE,
+      defaultValue:sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+    updatedAt: {
+      //field: 'updated_at',
+      type: DataTypes.DATE,
+      defaultValue:sequelize.literal('CURRENT_TIMESTAMP'),
+    },
 
   }, {
     sequelize,
     modelName: 'self_assessment_master',
-    tableName: 'self_assessments'
+    tableName: 'self_assessment_master',
+    timestamps:false
   });
   return selfassessmentmaster;
 };

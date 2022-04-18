@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getEmployeeSupervisor(empId){
+      return await supervisorAssignment.findOne({where:{sa_emp_id:empId}})
+    }
   };
   supervisorAssignment.init({
     sa_id: {
