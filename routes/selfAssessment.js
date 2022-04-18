@@ -11,6 +11,9 @@ const endYearRating = require('../services/endYearRatingService');
 const logs = require('../services/logService')
 const goalSettingYear = require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
+const { sequelize, Sequelize } = require('../services/db');
+const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
@@ -30,10 +33,16 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
 
         } else {
 
+          const supervisor = await supervisorModel.getEmployeeSupervisor(empId);
+          if(_.isEmpty(supervisor) || _.isNull(supervisor)){
+            return res.status(400).json("There's currently no supervisor assigned to you to process this request.");
+          }
+
+
             if (parseInt(gsData.gs_status) === 1) {
 
                 const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
-                    return data
+                  return data
                 })
 
                 if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
@@ -42,15 +51,19 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                     })
                 }
 
+
                 const selfAssessmentMasterData = {
                     sam_gs_id: gsId,
                     sam_emp_id: empId,
                     sam_status: 0,
+                    createdAt: new Date(),
+                    updatedAt:new Date(),
                 }
+
                 const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
                     return data
                 })
-
+              //return res.status(200).json("I'm here");
                 if(_.isEmpty(addMaster) || _.isNull(addMaster)){
                     return res.status(400).json(`An error occurred while adding master details`)
                 }
@@ -75,11 +88,21 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                     return data
                 })
 
+
                 for (const sa of saRequests) {
-                    sa.sa_emp_id = empId
-                    sa.sa_gs_id = gsId
-                    sa.sa_master_id = masterId
-                    addResponse = await selfAssessment.addSelfAssessment(sa).then((data) => {
+                      saData = {
+                        sa_gs_id: gsId,
+                        sa_emp_id: empId,
+                        sa_comment: sa.sa_comment,
+                        sa_master_id: masterId,
+                        createdAt: new Date(),
+                        updatedAt:new Date(),
+                        /*sa.sa_emp_id = empId
+                        sa.sa_gs_id = gsId
+                        sa.sa_master_id = masterId*/
+                      }
+
+                    addResponse = await selfAssessment.addSelfAssessment(saData).then((data) => {
                         return data
                     })
 
@@ -97,6 +120,13 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                     }
 
                 }
+                //send notification //subject, body="You have a new notification", user_id, post_id, url
+              const subject = "Self-assessment (Beginning of year)";
+              const body = "A new self-assessment request was submitted";
+                //emp
+                const notify = await notificationModel.registerNotification(subject, body,empId, 11, 'url-here');
+
+                const notifySupervisor = await notificationModel.registerNotification(subject, body,supervisor.sa_supervisor_id, 11, 'supervisor-here');
 
                 if (i > 0) {
                     return res.status(400).json(`An error Occurred while adding`)
@@ -107,6 +137,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                         "log_date": new Date()
                     }
                     await logs.addLog(logData).then((logRes) => {
+
 
                         return res.status(200).json(`Action Successful`)
                     })
