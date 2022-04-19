@@ -1,6 +1,6 @@
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
-const SelfAssessmentMaster = require("../models/selfassessment")(sequelize, Sequelize.DataTypes)
+const SelfAssessmentMaster = require("../models/selfassessmentmaster")(sequelize, Sequelize.DataTypes)
 
 
 async function addSelfAssessmentMaster(selfAssessmentData) {
