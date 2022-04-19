@@ -1,7 +1,10 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
 const {
   Model
 } = require('sequelize');
+const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const goalSettingModel = require("../models/goalsetting")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class selfassessmentmaster extends Model {
     /**
@@ -11,6 +14,20 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+    }
+
+    static async getEmployeeSelfAssessment(empId){
+      return await selfassessmentmaster.findAll({
+        include:[{model:EmployeeModel, as:'supervisor'}, {model:goalSettingModel, as:'goal'}],
+        where:{sam_emp_id:empId}, order:[['sam_id', 'DESC']]
+      })
+    }
+
+    static async getSupervisorSelfAssessment(empIds){
+      return await selfassessmentmaster.findAll({
+        include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}],
+        where:{sam_emp_id:empIds}, order:[['sam_id', 'DESC']]
+      })
     }
   };
   selfassessmentmaster.init({
@@ -40,5 +57,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'self_assessment_master',
     timestamps:false
   });
+  selfassessmentmaster.belongsTo(EmployeeModel,{foreignKey:'sam_supervisor_id', as:'supervisor'});
+  selfassessmentmaster.belongsTo(EmployeeModel,{foreignKey:'sam_emp_id', as:'employee'});
+  selfassessmentmaster.belongsTo(goalSettingModel,{foreignKey:'sam_gs_id', as:'goal'});
   return selfassessmentmaster;
 };
