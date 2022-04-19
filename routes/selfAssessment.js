@@ -859,14 +859,14 @@ router.get('/get-self-assessment-master/:empId', auth, async (req, res)=>{
 
     const emp = await selfAssessmentMasterModel.getEmployeeSelfAssessment(empId);
 
-    const listOfEmps = await supervisorModel.getListOfEmployees(empId);
+    const listOfEmps = await employees.getSupervisorEmployee(empId);
     const empIds = [];
     let sup = [];
 
     if(listOfEmps.length > 0){
 
       listOfEmps.map((id)=>{
-        empIds.push(id.sa_emp_id)
+        empIds.push(id.emp_id)
       })
       sup = await selfAssessmentMasterModel.getSupervisorSelfAssessment(empIds);
     }
