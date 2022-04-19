@@ -14,6 +14,7 @@ const endYearAssessment = require('../services/endOfYearAssessmentService')
 const { sequelize, Sequelize } = require('../services/db');
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
@@ -844,4 +845,39 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth, async function (req, res, 
     }
 });
 
+
+router.get('/get-self-assessment-master/:empId', auth, async (req, res)=>{
+  try{
+    const empId = req.params.empId;
+    const employeeData = await employees.getEmployee(empId).then((data) => {
+      return data
+    })
+    if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
+      return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+    }
+
+    const emp = await selfAssessmentMasterModel.getEmployeeSelfAssessment(empId);
+
+    const listOfEmps = await supervisorModel.getListOfEmployees(empId);
+    const empIds = [];
+    let sup = [];
+
+    if(listOfEmps.length > 0){
+
+      listOfEmps.map((id)=>{
+        empIds.push(id.sa_emp_id)
+      })
+      sup = await selfAssessmentMasterModel.getSupervisorSelfAssessment(empIds);
+    }
+    const result = {
+      emp,
+      sup
+    }
+    //return res.status(200).json(sup);
+    return res.status(200).json(result);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
+  }
+
+});
 module.exports = router;
