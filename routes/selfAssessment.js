@@ -15,6 +15,7 @@ const { sequelize, Sequelize } = require('../services/db');
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
+const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
 
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
@@ -34,8 +35,8 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
 
         } else {
 
-          const supervisor = await supervisorModel.getEmployeeSupervisor(empId);
-          if(_.isEmpty(supervisor) || _.isNull(supervisor)){
+
+          if(employeeData.emp_supervisor_id === null || employeeData.emp_supervisor_id === ''){
             return res.status(400).json("There's currently no supervisor assigned to you to process this request.");
           }
 
@@ -56,6 +57,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                 const selfAssessmentMasterData = {
                     sam_gs_id: gsId,
                     sam_emp_id: empId,
+                    sam_supervisor_id:employeeData.emp_supervisor_id,
                     sam_status: 0,
                     createdAt: new Date(),
                     updatedAt:new Date(),
@@ -64,7 +66,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                 const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
                     return data
                 })
-              //return res.status(200).json("I'm here");
+
                 if(_.isEmpty(addMaster) || _.isNull(addMaster)){
                     return res.status(400).json(`An error occurred while adding master details`)
                 }
@@ -126,8 +128,8 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
               const body = "A new self-assessment request was submitted";
                 //emp
                 const notify = await notificationModel.registerNotification(subject, body,empId, 11, 'url-here');
-
-                const notifySupervisor = await notificationModel.registerNotification(subject, body,supervisor.sa_supervisor_id, 11, 'supervisor-here');
+                const url = req.headers.referer;
+                const notifySupervisor = await notificationModel.registerNotification(subject, body,employeeData.emp_supervisor_id, 0, url);
 
                 if (i > 0) {
                     return res.status(400).json(`An error Occurred while adding`)
@@ -198,7 +200,7 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
         })
         return res.status(200).json(empQuestions)
     } catch (err) {
-        console.error(`Error while fetching Goals `, err.message);
+        return res.status(400).json(`Error while fetching Goals `);
         next(err);
     }
 });
@@ -628,6 +630,8 @@ router.patch('/update-self-assessment/:emp_id/', auth, async function (req, res,
 /*Update Assessment */
 router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
+      const fullUrl = req.headers.referer; //req.protocol + '://' + req.get('host') + req.originalUrl;
+      //return res.status(200).json(fullUrl);
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -664,6 +668,9 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
 
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
+                    sa_challenge: Joi.string().allow(null),
+                    sa_accomplishment: Joi.string().allow(null),
+                    sa_support: Joi.string().allow(null),
                 })
                 const schemas = Joi.array().items(schema)
                 const saRequests = req.body
@@ -681,9 +688,23 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                 })
 
                 for (const sa of saRequests) {
-                    sa.sa_emp_id = empId
+                   /* sa.sa_emp_id = empId
+                    sa.sa_gs_id = gsId*/
+                  const saData = {
+                    sa_gs_id: gsId,
+                    sa_emp_id: empId,
+                    sa_comment: sa.sa_comment,
+                    //sa_master_id: masterId,
+                    sa_challenges:sa.sa_challenge,
+                    sa_accomplishment:sa.sa_accomplishment,
+                    sa_support_needed:sa.sa_support,
+                    createdAt: new Date(),
+                    updatedAt:new Date(),
+                    /*sa.sa_emp_id = empId
                     sa.sa_gs_id = gsId
-                    addResponse = await selfAssessment.addSelfAssessment(sa).then((data) => {
+                    sa.sa_master_id = masterId*/
+                  }
+                    addResponse = await selfAssessment.addSelfAssessment(saData).then((data) => {
                         return data
                     })
 
@@ -706,6 +727,10 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                         "log_description": "Responded to Goal Setting",
                         "log_date": new Date()
                     }
+                    const subject = "Self assessment update";
+                    const message = "Your supervisor updated your self-assessment";
+                    const url = req.headers.referer;
+                    const notify = await notificationModel.registerNotification(subject, message, empId, 0, url);
                     await logs.addLog(logData).then((logRes) => {
 
                         return res.status(200).json(`Action Successful`)
@@ -858,20 +883,20 @@ router.get('/get-self-assessment-master/:empId', auth, async (req, res)=>{
 
     const emp = await selfAssessmentMasterModel.getEmployeeSelfAssessment(empId);
 
-    const listOfEmps = await supervisorModel.getListOfEmployees(empId);
-    const empIds = [];
-    let sup = [];
+    //const listOfEmps = await supervisorModel.getListOfEmployees(empId);
+    //const empIds = [];
+    //let sup = [];
 
-    if(listOfEmps.length > 0){
+   /* if(listOfEmps.length > 0){
 
       listOfEmps.map((id)=>{
         empIds.push(id.sa_emp_id)
       })
       sup = await selfAssessmentMasterModel.getSupervisorSelfAssessment(empIds);
-    }
+    }*/
     const result = {
       emp,
-      sup
+      //sup
     }
     //return res.status(200).json(sup);
     return res.status(200).json(result);
@@ -879,5 +904,22 @@ router.get('/get-self-assessment-master/:empId', auth, async (req, res)=>{
     return res.status(400).json("Something went wrong. Try again.");
   }
 
+});
+
+router.post('/process-assessment', auth, async (req, res)=>{
+  try{
+    const goalId = req.body.goalId;
+    const empId = req.body.employee;
+
+    const assessments = await selfAssessmentMasterModel.checkEmployeeAssessment(parseInt(goalId), parseInt(empId));
+    if(_.isEmpty(assessments) || _.isNull(assessments)){
+      return res.status(400).json("No self-assessment to process");
+    }
+    const update = await selfAssessmentMasterModel.updateSelfAssessmentStatus(parseInt(goalId), parseInt(empId));
+    return res.status(200).json("Self-assessment processed!");
+
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again."+e.message);
+  }
 });
 module.exports = router;

@@ -12,6 +12,22 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getSelfAssessmentByGoalEmpId(goalId, empId){
+      return await selfAssessment.findAll({where:{sa_gs_id:goalId, sa_emp_id:empId}})
+    }
+
+    /*static async updateSelfAssessmentStatus(data, goalId, empId){
+      return await selfAssessment.update({
+        sa_supervisor_id:data.supervisor,
+        sa_date_approved:new Date(),
+        sa_supervisor_comment:data.comment,
+        sa_status:data.status,
+        sa_master_id:data.master,
+      },{
+        where:{sa_gs_id:goalId, sa_emp_id:empId}
+      })
+    }*/
   };
   selfAssessment.init({
     sa_id:{
