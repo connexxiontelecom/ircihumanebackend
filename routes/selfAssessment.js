@@ -15,7 +15,6 @@ const { sequelize, Sequelize } = require('../services/db');
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
-const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
 
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
@@ -43,12 +42,12 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
 
             if (parseInt(gsData.gs_status) === 1) {
 
-                const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
-                  return data
+                const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
+                    return data
                 })
 
-                if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
-                    const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data)=>{
+                if (!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))) {
+                    const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data) => {
                         return data
                     })
                 }
@@ -60,7 +59,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                     sam_supervisor_id:employeeData.emp_supervisor_id,
                     sam_status: 0,
                     createdAt: new Date(),
-                    updatedAt:new Date(),
+                    updatedAt: new Date(),
                 }
 
                 const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
@@ -99,7 +98,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                         sa_comment: sa.sa_comment,
                         sa_master_id: masterId,
                         createdAt: new Date(),
-                        updatedAt:new Date(),
+                        updatedAt: new Date(),
                         /*sa.sa_emp_id = empId
                         sa.sa_gs_id = gsId
                         sa.sa_master_id = masterId*/
@@ -124,8 +123,8 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
 
                 }
                 //send notification //subject, body="You have a new notification", user_id, post_id, url
-              const subject = "Self-assessment (Beginning of year)";
-              const body = "A new self-assessment request was submitted";
+                const subject = "Self-assessment (Beginning of year)";
+                const body = "A new self-assessment request was submitted";
                 //emp
                 const notify = await notificationModel.registerNotification(subject, body,empId, 11, 'url-here');
                 const url = req.headers.referer;
