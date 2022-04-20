@@ -16,13 +16,26 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
 
+    static async updateSelfAssessmentStatus(goalId, empId){
+      return await selfassessmentmaster.update({
+        sam_status:1,
+      },{
+        where:{sam_gs_id:goalId, sam_emp_id:empId}
+      })
+    }
+
     static async getEmployeeSelfAssessment(empId){
       return await selfassessmentmaster.findAll({
         include:[{model:EmployeeModel, as:'supervisor'}, {model:goalSettingModel, as:'goal'}],
         where:{sam_emp_id:empId}, order:[['sam_id', 'DESC']]
       })
     }
-
+    static async checkEmployeeAssessment(goalId, empId){
+      return await selfassessmentmaster.findOne({
+        include:[{model:EmployeeModel, as:'supervisor'}, {model:goalSettingModel, as:'goal'}],
+        where:{sam_emp_id:empId, sam_gs_id:goalId}
+      })
+    }
     static async getSupervisorSelfAssessment(empIds){
       return await selfassessmentmaster.findAll({
         include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}],

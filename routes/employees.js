@@ -14,6 +14,11 @@ const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const path = require('path')
 const user = require("../services/userService");
+const {sequelize, Sequelize} = require("../services/db");
+const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
+const employeeModel = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 const s3 = new AWS.S3({
     accessKeyId: `${process.env.ACCESS_KEY}`,
     secretAccessKey: `${process.env.SECRET_KEY}`
@@ -386,13 +391,22 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function (req, res, 
         if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(` Employee Does Not exist`)
         } else {
-            await employees.getSupervisorEmployee(empId).then((data) => {
+          const listOfEmps = await employeeModel.getListOfEmployeesSupervising(empId);
+
+          const empIds = [];
+             listOfEmps.map((emp)=>{
+               empIds.push(emp.emp_id)
+             })
+             const submission = await selfAssessmentMasterModel.getSupervisorSelfAssessment(empIds);
+           return res.status(200).json(submission)
+
+           /* await employees.getSupervisorEmployee(empId).then((data) => {
                 return res.status(200).json(data)
-            })
+            })*/
         }
 
     } catch (err) {
-        console.error(`An error occurred while fetching`, err.message);
+        console.error(`An error occurred while fetching`);
         next(err);
     }
 });
