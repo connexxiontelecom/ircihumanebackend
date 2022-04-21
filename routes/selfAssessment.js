@@ -15,6 +15,7 @@ const { sequelize, Sequelize } = require('../services/db');
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
+const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
 
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
@@ -328,8 +329,8 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
 
 router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
-        let empId = req.params.emp_id
-        let gsId = req.params.gs_id
+        let empId = parseInt(req.params.emp_id)
+        let gsId = parseInt(req.params.gs_id)
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
@@ -347,17 +348,22 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
                 return data
             })
 
-            if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
+            if(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster) ){
                 return res.status(400).json(`No assessment records found`)
             }
 
-            const approveAssessmentMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(empId, gsId, 1).then((data)=>{
+            const approveAssessmentMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(empId, gsId, employeeData.emp_supervisor_id).then((data)=>{
                 return data
             })
 
-            const approveAssessment = await selfAssessment.approveSelfAssessment(empId, gsId).then((data)=>{
-                return data
+            const selfAssessmentList = await selfAssessmentModel.getSelfAssessmentByGoalEmpId(gsId, empId);
+            selfAssessmentList.map(async (list)=>{
+              await selfAssessmentModel.updateSelfAssessmentStatus(gsId, empId);
             })
+
+            /*const approveAssessment = await selfAssessment.approveSelfAssessment(empId, gsId).then((data)=>{
+                return data
+            })*/
 
             const logData = {
                 "log_user_id": req.user.username.user_id,
@@ -881,18 +887,6 @@ router.get('/get-self-assessment-master/:empId', auth, async (req, res)=>{
     }
 
     const emp = await selfAssessmentMasterModel.getEmployeeSelfAssessment(empId);
-
-    //const listOfEmps = await supervisorModel.getListOfEmployees(empId);
-    //const empIds = [];
-    //let sup = [];
-
-   /* if(listOfEmps.length > 0){
-
-      listOfEmps.map((id)=>{
-        empIds.push(id.sa_emp_id)
-      })
-      sup = await selfAssessmentMasterModel.getSupervisorSelfAssessment(empIds);
-    }*/
     const result = {
       emp,
       //sup
@@ -921,4 +915,15 @@ router.post('/process-assessment', auth, async (req, res)=>{
     return res.status(400).json("Something went wrong. Try again."+e.message);
   }
 });
+
+router.get('/get-single-self-assessment-master/:empId/:goalId', auth, async (req, res)=>{
+  try{
+    const empId = req.params.empId;
+    const goalId = req.params.goalId;
+
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
+  }
+});
+
 module.exports = router;
