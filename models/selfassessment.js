@@ -17,6 +17,14 @@ module.exports = (sequelize, DataTypes) => {
       return await selfAssessment.findAll({where:{sa_gs_id:goalId, sa_emp_id:empId}})
     }
 
+    static async updateSelfAssessmentStatus(goalId, empId){
+      return await  selfAssessment.update({
+        sa_status: 1
+      }, {
+        where: {sa_gs_id: goalId, sa_emp_id: empId}
+      })
+    }
+
     /*static async updateSelfAssessmentStatus(data, goalId, empId){
       return await selfAssessment.update({
         sa_supervisor_id:data.supervisor,
