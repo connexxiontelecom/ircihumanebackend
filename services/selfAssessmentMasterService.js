@@ -8,6 +8,7 @@ async function addSelfAssessmentMaster(selfAssessmentData) {
         sam_gs_id: selfAssessmentData.sam_gs_id,
         sam_emp_id: selfAssessmentData.sam_emp_id,
         sam_status: selfAssessmentData.sam_status,
+        sam_supervisor_id: selfAssessmentData.sam_supervisor_id,
     });
 }
 
