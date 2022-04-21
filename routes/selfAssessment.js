@@ -676,6 +676,8 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                     sa_challenge: Joi.string().allow(null),
                     sa_accomplishment: Joi.string().allow(null),
                     sa_support: Joi.string().allow(null),
+                    sa_next_step: Joi.string().allow(null),
+                    sa_update: Joi.string().allow(null),
                 })
                 const schemas = Joi.array().items(schema)
                 const saRequests = req.body
@@ -703,6 +705,8 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                     sa_challenges:sa.sa_challenge,
                     sa_accomplishment:sa.sa_accomplishment,
                     sa_support_needed:sa.sa_support,
+                    sa_next_steps:sa.sa_next_step,
+                    sa_update:sa.sa_update,
                     createdAt: new Date(),
                     updatedAt:new Date(),
                     /*sa.sa_emp_id = empId
