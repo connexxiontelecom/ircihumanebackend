@@ -40,7 +40,15 @@ async function closeGoalSetting(gsId) {
         }
     });
 }
-
+async function updateGoalSettingStatus(gsId, status) {
+  return await GoalSetting.update({
+    gs_status: status,
+  }, {
+    where: {
+      gs_id: gsId
+    }
+  });
+}
 async function findGoalSetting(gsActivity, year) {
     return await GoalSetting.findOne({where: {gs_activity: gsActivity, gs_year: year}})
 
@@ -125,6 +133,7 @@ module.exports = {
     findEndYearGoals,
     getActiveGoalSetting,
     getGoalSettingYear,
-    getEndOfYearActivityYear
+    getEndOfYearActivityYear,
+  updateGoalSettingStatus
 
 }

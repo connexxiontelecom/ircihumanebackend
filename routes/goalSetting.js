@@ -175,7 +175,17 @@ router.patch('/close-goal-setting/:gs_id', auth, async function (req, res, next)
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        await goalSetting.closeGoalSetting(gsId).then((data) => {
+        const openGs = await goalSetting.findOpenGoals();
+        openGs.map(async (gs)=>{
+          await goalSetting.updateGoalSettingStatus(gs.gs_id, 0);
+        })
+        let status = null;
+        if(parseInt(req.body.gs_status) === 0){
+          status = 1;
+        }else if(parseInt(req.body.gs_status) === 1){
+          status = 0;
+        }
+        await goalSetting.updateGoalSettingStatus(gsId, status).then((data) => {
             if (_.isEmpty(data) || _.isNull(data)) {
                 return res.status(400).json("An Error Occurred")
             } else {
