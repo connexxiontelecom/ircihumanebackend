@@ -193,12 +193,20 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
         for (const ygs of yearGoalSettings) {
             goalSettingIds.push(ygs.gs_id)
         }
+        const openGs = await goalSetting.findOpenGoals().then((r)=>{
+          return r;
+        });
 
         let empQuestions = await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data) => {
             return data
 
         })
-        return res.status(200).json(empQuestions)
+      const goals = {
+          questions:empQuestions,
+          openGoal:openGs
+      }
+
+        return res.status(200).json(goals)
     } catch (err) {
         return res.status(400).json(`Error while fetching Goals `);
         next(err);
@@ -252,12 +260,13 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
 
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
-                    sa_master_id: Joi.number().required(),
+                    //sa_master_id: Joi.number().required(),
                     sa_update: Joi.string().required(),
                     sa_accomplishment: Joi.string().required(),
                     sa_challenges: Joi.string().required(),
                     sa_support_needed: Joi.string().required(),
                     sa_next_steps: Joi.string().required(),
+                    optional: Joi.string().allow(null),
                 })
                 const schemas = Joi.array().items(schema)
                 const saRequests = req.body
@@ -676,6 +685,8 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                     sa_challenge: Joi.string().allow(null),
                     sa_accomplishment: Joi.string().allow(null),
                     sa_support: Joi.string().allow(null),
+                    sa_next_step: Joi.string().allow(null),
+                    sa_update: Joi.string().allow(null),
                 })
                 const schemas = Joi.array().items(schema)
                 const saRequests = req.body
@@ -703,6 +714,8 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                     sa_challenges:sa.sa_challenge,
                     sa_accomplishment:sa.sa_accomplishment,
                     sa_support_needed:sa.sa_support,
+                    sa_next_steps:sa.sa_next_step,
+                    sa_update:sa.sa_update,
                     createdAt: new Date(),
                     updatedAt:new Date(),
                     /*sa.sa_emp_id = empId
