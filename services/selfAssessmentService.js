@@ -1,5 +1,6 @@
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
+const Joi = require("joi");
 const SelfAssessment = require("../models/selfassessment")(sequelize, Sequelize.DataTypes)
 
 
