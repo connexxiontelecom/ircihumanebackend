@@ -19,6 +19,7 @@ const selfAssessmentModel = require('../models/selfassessment')(sequelize, Seque
 
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
+    let saData;
     try {
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
@@ -36,9 +37,9 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
         } else {
 
 
-          if(employeeData.emp_supervisor_id === null || employeeData.emp_supervisor_id === ''){
-            return res.status(400).json("There's currently no supervisor assigned to you to process this request.");
-          }
+            if (employeeData.emp_supervisor_id === null || employeeData.emp_supervisor_id === '') {
+                return res.status(400).json("There's currently no supervisor assigned to you to process this request.");
+            }
 
 
             if (parseInt(gsData.gs_status) === 1) {
@@ -57,17 +58,17 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                 const selfAssessmentMasterData = {
                     sam_gs_id: gsId,
                     sam_emp_id: empId,
-                    sam_supervisor_id:employeeData.emp_supervisor_id,
+                    sam_supervisor_id: employeeData.emp_supervisor_id,
                     sam_status: 0,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 }
 
-                const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
+                const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
                     return data
                 })
 
-                if(_.isEmpty(addMaster) || _.isNull(addMaster)){
+                if (_.isEmpty(addMaster) || _.isNull(addMaster)) {
                     return res.status(400).json(`An error occurred while adding master details`)
                 }
 
@@ -93,7 +94,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
 
 
                 for (const sa of saRequests) {
-                      saData = {
+                    saData = {
                         sa_gs_id: gsId,
                         sa_emp_id: empId,
                         sa_comment: sa.sa_comment,
@@ -103,7 +104,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                         /*sa.sa_emp_id = empId
                         sa.sa_gs_id = gsId
                         sa.sa_master_id = masterId*/
-                      }
+                    }
 
                     addResponse = await selfAssessment.addSelfAssessment(saData).then((data) => {
                         return data
@@ -127,9 +128,9 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                 const subject = "Self-assessment (Beginning of year)";
                 const body = "A new self-assessment request was submitted";
                 //emp
-                const notify = await notificationModel.registerNotification(subject, body,empId, 11, 'url-here');
+                const notify = await notificationModel.registerNotification(subject, body, empId, 11, 'url-here');
                 const url = req.headers.referer;
-                const notifySupervisor = await notificationModel.registerNotification(subject, body,employeeData.emp_supervisor_id, 0, url);
+                const notifySupervisor = await notificationModel.registerNotification(subject, body, employeeData.emp_supervisor_id, 0, url);
 
                 if (i > 0) {
                     return res.status(400).json(`An error Occurred while adding`)
@@ -357,6 +358,7 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
             const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
                 return data
             })
+            const masterId = parseInt(checkAssessmentMaster.sam_id)
 
             if(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster) ){
                 return res.status(400).json(`No assessment records found`)
@@ -367,13 +369,13 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
             })
 
             const selfAssessmentList = await selfAssessmentModel.getSelfAssessmentByGoalEmpId(gsId, empId);
-            selfAssessmentList.map(async (list)=>{
-              await selfAssessmentModel.updateSelfAssessmentStatus(gsId, empId);
-            })
+           // selfAssessmentList.map(async (list)=>{
+           //    await selfAssessmentModel.updateSelfAssessmentStatus(gsId, empId);
+           //  })
 
-            /*const approveAssessment = await selfAssessment.approveSelfAssessment(empId, gsId).then((data)=>{
+            const approveAssessment = await selfAssessment.approveSelfAssessmentByMasterId(masterId).then((data)=>{
                 return data
-            })*/
+            })
 
             const logData = {
                 "log_user_id": req.user.username.user_id,
