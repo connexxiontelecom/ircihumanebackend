@@ -116,6 +116,14 @@ async function approveSelfAssessment(gsId, empId) {
     })
 }
 
+async function approveSelfAssessmentByMasterId(masterId) {
+    return await SelfAssessment.update({
+        sa_status: 1
+    }, {
+        where: {sa_master_id: masterId}
+    })
+}
+
 
 module.exports = {
     addSelfAssessment,
@@ -130,5 +138,6 @@ module.exports = {
     findSelfAssessmentsEmployeeYear,
     selfAssessmentStatusUpdate,
     addSelfAssessmentMidYear,
-    approveSelfAssessment
+    approveSelfAssessment,
+    approveSelfAssessmentByMasterId
 }
