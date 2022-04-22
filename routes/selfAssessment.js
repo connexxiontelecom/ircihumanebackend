@@ -262,12 +262,12 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
                     //sa_master_id: Joi.number().required(),
-                    sa_update: Joi.string().allow(null),
-                    sa_accomplishment: Joi.string().allow(null),
-                    sa_challenges: Joi.string().allow(null),
-                    sa_support_needed: Joi.string().allow(null),
-                    sa_next_steps: Joi.string().allow(null),
-                    optional: Joi.string().allow(null),
+                    sa_update: Joi.string().required(),
+                    sa_accomplishment: Joi.string().required(),
+                    sa_challenges: Joi.string().required(),
+                    sa_support_needed: Joi.string().required(),
+                    sa_next_steps: Joi.string().required(),
+                    optional: Joi.string().required(),
                 })
                 const schemas = Joi.array().items(schema)
                 const saRequests = req.body
