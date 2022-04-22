@@ -214,6 +214,7 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
 });
 
 
+
 /* Add Self Assessment */
 router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
@@ -261,11 +262,11 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                 const schema = Joi.object().keys({
                     sa_comment: Joi.string().required(),
                     //sa_master_id: Joi.number().required(),
-                    sa_update: Joi.string().required(),
-                    sa_accomplishment: Joi.string().required(),
-                    sa_challenges: Joi.string().required(),
-                    sa_support_needed: Joi.string().required(),
-                    sa_next_steps: Joi.string().required(),
+                    sa_update: Joi.string().allow(null),
+                    sa_accomplishment: Joi.string().allow(null),
+                    sa_challenges: Joi.string().allow(null),
+                    sa_support_needed: Joi.string().allow(null),
+                    sa_next_steps: Joi.string().allow(null),
                     optional: Joi.string().allow(null),
                 })
                 const schemas = Joi.array().items(schema)
@@ -576,12 +577,21 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
             return res.status(400).json(`Goal Setting or Employee Does Not exist`)
 
         } else {
+
+          const openGs = await goalSetting.findOpenGoals().then((r)=>{
+            return r;
+          });
+
             let empQuestions = await selfAssessment.findSelfAssessment(gsId, empId).then((data) => {
                 return data
 
-            })
+            });
 
-            return res.status(200).json(empQuestions)
+          const goals = {
+            questions:empQuestions,
+            openGoal:openGs
+          }
+          return res.status(200).json(goals)
 
         }
 
