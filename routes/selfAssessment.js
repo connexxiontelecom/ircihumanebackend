@@ -11,7 +11,7 @@ const endYearRating = require('../services/endYearRatingService');
 const logs = require('../services/logService')
 const goalSettingYear = require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
-const { sequelize, Sequelize } = require('../services/db');
+const {sequelize, Sequelize} = require('../services/db');
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
@@ -194,18 +194,18 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
         for (const ygs of yearGoalSettings) {
             goalSettingIds.push(ygs.gs_id)
         }
-        const openGs = await goalSetting.findOpenGoals().then((r)=>{
-          return r;
+        const openGs = await goalSetting.findOpenGoals().then((r) => {
+            return r;
         });
 
         let empQuestions = await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalSettingIds).then((data) => {
             return data
 
         })
-      const goals = {
-          questions:empQuestions,
-          openGoal:openGs
-      }
+        const goals = {
+            questions: empQuestions,
+            openGoal: openGs
+        }
 
         return res.status(200).json(goals)
     } catch (err) {
@@ -214,6 +214,48 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
     }
 });
 
+
+/* Get Self Assessment, use for prefilling during midyear checking */
+router.get('/prefill-goal-setting/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+        }
+
+        const goalSettingYearData = await goalSettingYear.getGoalSettingYear().then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(goalSettingYearData) || _.isNull(goalSettingYearData)) {
+            return res.status(400).json(`No goal Setting Year Set Up`)
+        }
+
+        const year = goalSettingYearData.gsy_year
+
+        const filledGoalSettings = await goalSetting.findGoalSetting(1, year).then((data) => {
+            return data
+        })
+        if (_.isEmpty(filledGoalSettings) || _.isNull(filledGoalSettings)) {
+            return res.status(400).json(`No Goal Setting Activity for the year`)
+        }
+        const goalId = filledGoalSettings.gs_id
+
+        const empQuestions = await selfAssessment.findSelfAssessmentsEmployeeYear(empId, goalId).then((data) => {
+            return data
+        })
+        if (_.isEmpty(empQuestions) || _.isNull(empQuestions)) {
+            return res.status(400).json(`Employee has no record of goal settings for active year`)
+        }
+        return res.status(200).json(empQuestions)
+    } catch (err) {
+        return res.status(400).json(`Error while fetching Goals `);
+
+    }
+});
 
 
 /* Add Self Assessment */
@@ -236,12 +278,12 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
 
             if (parseInt(gsData.gs_status) === 1) {
 
-                const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
+                const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
                     return data
                 })
 
-                if(!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))){
-                    const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data)=>{
+                if (!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))) {
+                    const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data) => {
                         return data
                     })
                 }
@@ -251,11 +293,11 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                     sam_emp_id: empId,
                     sam_status: 0,
                 }
-                const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data)=>{
+                const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
                     return data
                 })
 
-                if(_.isEmpty(addMaster) || _.isNull(addMaster)){
+                if (_.isEmpty(addMaster) || _.isNull(addMaster)) {
                     return res.status(400).json(`An error occurred while adding master details`)
                 }
 
@@ -355,25 +397,25 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
 
         } else {
 
-            const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data)=>{
+            const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
                 return data
             })
             const masterId = parseInt(checkAssessmentMaster.sam_id)
 
-            if(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster) ){
+            if (_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster)) {
                 return res.status(400).json(`No assessment records found`)
             }
 
-            const approveAssessmentMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(empId, gsId, employeeData.emp_supervisor_id).then((data)=>{
+            const approveAssessmentMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(empId, gsId, employeeData.emp_supervisor_id).then((data) => {
                 return data
             })
 
             const selfAssessmentList = await selfAssessmentModel.getSelfAssessmentByGoalEmpId(gsId, empId);
-           // selfAssessmentList.map(async (list)=>{
-           //    await selfAssessmentModel.updateSelfAssessmentStatus(gsId, empId);
-           //  })
+            // selfAssessmentList.map(async (list)=>{
+            //    await selfAssessmentModel.updateSelfAssessmentStatus(gsId, empId);
+            //  })
 
-            const approveAssessment = await selfAssessment.approveSelfAssessmentByMasterId(masterId).then((data)=>{
+            const approveAssessment = await selfAssessment.approveSelfAssessmentByMasterId(masterId).then((data) => {
                 return data
             })
 
@@ -464,22 +506,22 @@ router.get('/prefill-self-assessment/:emp_id', auth, async function (req, res, n
             return data
         })
 
-        if(_.isEmpty(gsData) || _.isNull(gsData)){
+        if (_.isEmpty(gsData) || _.isNull(gsData)) {
             return res.status(400).json(`No End of year activity set`)
         }
         const gsId = gsData.gs_id
 
-        const previousEntries = await selfAssessment.findSelfAssessment(gsId, empId).then((data)=>{
+        const previousEntries = await selfAssessment.findSelfAssessment(gsId, empId).then((data) => {
             return data
         })
 
-        if(_.isEmpty(previousEntries) || _.isNull(previousEntries)){
+        if (_.isEmpty(previousEntries) || _.isNull(previousEntries)) {
 
             const endYearQuestions = await endYearAssessment.getEndOfYearAssessmentQuestionByGoal(gsId).then((data) => {
                 return data
             })
 
-            if(_.isEmpty(endYearQuestions) || _.isNull(endYearQuestions)){
+            if (_.isEmpty(endYearQuestions) || _.isNull(endYearQuestions)) {
                 return res.status(400).json(`No End of year questions Set`)
             }
 
@@ -505,7 +547,7 @@ router.get('/prefill-self-assessment/:emp_id', auth, async function (req, res, n
             }
 
             return res.status(200).json(`End of Year Questions loaded successfully`)
-        }else{
+        } else {
             return res.status(400).json(`End of Year Questions already Filled`)
         }
 
@@ -580,20 +622,20 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
 
         } else {
 
-          const openGs = await goalSetting.findOpenGoals().then((r)=>{
-            return r;
-          });
+            const openGs = await goalSetting.findOpenGoals().then((r) => {
+                return r;
+            });
 
             let empQuestions = await selfAssessment.findSelfAssessment(gsId, empId).then((data) => {
                 return data
 
             });
 
-          const goals = {
-            questions:empQuestions,
-            openGoal:openGs
-          }
-          return res.status(200).json(goals)
+            const goals = {
+                questions: empQuestions,
+                openGoal: openGs
+            }
+            return res.status(200).json(goals)
 
         }
 
@@ -603,7 +645,6 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
         next(err);
     }
 });
-
 
 
 /* Update Self Assessment */
@@ -656,8 +697,8 @@ router.patch('/update-self-assessment/:emp_id/', auth, async function (req, res,
 /*Update Assessment */
 router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
-      const fullUrl = req.headers.referer; //req.protocol + '://' + req.get('host') + req.originalUrl;
-      //return res.status(200).json(fullUrl);
+        const fullUrl = req.headers.referer; //req.protocol + '://' + req.get('host') + req.originalUrl;
+        //return res.status(200).json(fullUrl);
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -673,101 +714,99 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
 
         } else {
 
-            const year  = gsData.gs_year
+            const year = gsData.gs_year
 
-            const goalsYear = await goalSetting.getGoalSettingYear(year).then((data)=>{
+            const goalsYear = await goalSetting.getGoalSettingYear(year).then((data) => {
                 return data
             })
 
-            if(_.isEmpty(goalsYear) || _.isNull(year)){
+            if (_.isEmpty(goalsYear) || _.isNull(year)) {
                 return res.status(400).json(`No Goals for the year`)
             }
 
 
-
             const gsIds = []
 
-            for(const goalYear of goalsYear){
+            for (const goalYear of goalsYear) {
                 gsIds.push(goalYear.gs_id)
             }
             //return res.status(200).json(gsIds)
 
-                const schema = Joi.object().keys({
-                    sa_comment: Joi.string().required(),
-                    sa_challenge: Joi.string().allow(null),
-                    sa_accomplishment: Joi.string().allow(null),
-                    sa_support: Joi.string().allow(null),
-                    sa_next_step: Joi.string().allow(null),
-                    sa_update: Joi.string().allow(null),
-                })
-                const schemas = Joi.array().items(schema)
-                const saRequests = req.body
+            const schema = Joi.object().keys({
+                sa_comment: Joi.string().required(),
+                sa_challenge: Joi.string().allow(null),
+                sa_accomplishment: Joi.string().allow(null),
+                sa_support: Joi.string().allow(null),
+                sa_next_step: Joi.string().allow(null),
+                sa_update: Joi.string().allow(null),
+            })
+            const schemas = Joi.array().items(schema)
+            const saRequests = req.body
 
-                let validationResult = schemas.validate(saRequests)
-                if (validationResult.error) {
-                    return res.status(400).json(validationResult.error.details[0].message)
-                }
-                let addResponse;
-                let destroyResponse;
-                let i = 0;
+            let validationResult = schemas.validate(saRequests)
+            if (validationResult.error) {
+                return res.status(400).json(validationResult.error.details[0].message)
+            }
+            let addResponse;
+            let destroyResponse;
+            let i = 0;
 
-                await selfAssessment.removeSelfAssessment(gsIds, empId).then((data) => {
-                    return data
-                })
+            await selfAssessment.removeSelfAssessment(gsIds, empId).then((data) => {
+                return data
+            })
 
-                for (const sa of saRequests) {
-                   /* sa.sa_emp_id = empId
-                    sa.sa_gs_id = gsId*/
-                  const saData = {
+            for (const sa of saRequests) {
+                /* sa.sa_emp_id = empId
+                 sa.sa_gs_id = gsId*/
+                const saData = {
                     sa_gs_id: gsId,
                     sa_emp_id: empId,
                     sa_comment: sa.sa_comment,
                     //sa_master_id: masterId,
-                    sa_challenges:sa.sa_challenge,
-                    sa_accomplishment:sa.sa_accomplishment,
-                    sa_support_needed:sa.sa_support,
-                    sa_next_steps:sa.sa_next_step,
-                    sa_update:sa.sa_update,
+                    sa_challenges: sa.sa_challenge,
+                    sa_accomplishment: sa.sa_accomplishment,
+                    sa_support_needed: sa.sa_support,
+                    sa_next_steps: sa.sa_next_step,
+                    sa_update: sa.sa_update,
                     createdAt: new Date(),
-                    updatedAt:new Date(),
+                    updatedAt: new Date(),
                     /*sa.sa_emp_id = empId
                     sa.sa_gs_id = gsId
                     sa.sa_master_id = masterId*/
-                  }
-                    addResponse = await selfAssessment.addSelfAssessment(saData).then((data) => {
+                }
+                addResponse = await selfAssessment.addSelfAssessment(saData).then((data) => {
+                    return data
+                })
+
+                if (_.isEmpty(addResponse) || _.isNull(addResponse)) {
+                    destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                         return data
                     })
 
-                    if (_.isEmpty(addResponse) || _.isNull(addResponse)) {
-                        destroyResponse = await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
-                            return data
-                        })
-
-                        i++;
-                        break
-                    }
-
+                    i++;
+                    break
                 }
 
-                if (i > 0) {
-                    return res.status(400).json(`An error Occurred while adding`)
-                } else {
-                    const logData = {
-                        "log_user_id": req.user.username.user_id,
-                        "log_description": "Responded to Goal Setting",
-                        "log_date": new Date()
-                    }
-                    const subject = "Self assessment update";
-                    const message = "Your supervisor updated your self-assessment";
-                    const url = req.headers.referer;
-                    const notify = await notificationModel.registerNotification(subject, message, empId, 0, url);
-                    await logs.addLog(logData).then((logRes) => {
+            }
 
-                        return res.status(200).json(`Action Successful`)
-                    })
-
+            if (i > 0) {
+                return res.status(400).json(`An error Occurred while adding`)
+            } else {
+                const logData = {
+                    "log_user_id": req.user.username.user_id,
+                    "log_description": "Responded to Goal Setting",
+                    "log_date": new Date()
                 }
+                const subject = "Self assessment update";
+                const message = "Your supervisor updated your self-assessment";
+                const url = req.headers.referer;
+                const notify = await notificationModel.registerNotification(subject, message, empId, 0, url);
+                await logs.addLog(logData).then((logRes) => {
 
+                    return res.status(200).json(`Action Successful`)
+                })
+
+            }
 
 
         }
@@ -901,54 +940,54 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth, async function (req, res, 
 });
 
 
-router.get('/get-self-assessment-master/:empId', auth, async (req, res)=>{
-  try{
-    const empId = req.params.empId;
-    const employeeData = await employees.getEmployee(empId).then((data) => {
-      return data
-    })
-    if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
-      return res.status(400).json(`Goal Setting or Employee Does Not exist`)
-    }
+router.get('/get-self-assessment-master/:empId', auth, async (req, res) => {
+    try {
+        const empId = req.params.empId;
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+        }
 
-    const emp = await selfAssessmentMasterModel.getEmployeeSelfAssessment(empId);
-    const result = {
-      emp,
-      //sup
+        const emp = await selfAssessmentMasterModel.getEmployeeSelfAssessment(empId);
+        const result = {
+            emp,
+            //sup
+        }
+        //return res.status(200).json(sup);
+        return res.status(200).json(result);
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
     }
-    //return res.status(200).json(sup);
-    return res.status(200).json(result);
-  }catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
-  }
 
 });
 
-router.post('/process-assessment', auth, async (req, res)=>{
-  try{
-    const goalId = req.body.goalId;
-    const empId = req.body.employee;
+router.post('/process-assessment', auth, async (req, res) => {
+    try {
+        const goalId = req.body.goalId;
+        const empId = req.body.employee;
 
-    const assessments = await selfAssessmentMasterModel.checkEmployeeAssessment(parseInt(goalId), parseInt(empId));
-    if(_.isEmpty(assessments) || _.isNull(assessments)){
-      return res.status(400).json("No self-assessment to process");
+        const assessments = await selfAssessmentMasterModel.checkEmployeeAssessment(parseInt(goalId), parseInt(empId));
+        if (_.isEmpty(assessments) || _.isNull(assessments)) {
+            return res.status(400).json("No self-assessment to process");
+        }
+        const update = await selfAssessmentMasterModel.updateSelfAssessmentStatus(parseInt(goalId), parseInt(empId));
+        return res.status(200).json("Self-assessment processed!");
+
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again." + e.message);
     }
-    const update = await selfAssessmentMasterModel.updateSelfAssessmentStatus(parseInt(goalId), parseInt(empId));
-    return res.status(200).json("Self-assessment processed!");
-
-  }catch (e) {
-    return res.status(400).json("Something went wrong. Try again."+e.message);
-  }
 });
 
-router.get('/get-single-self-assessment-master/:empId/:goalId', auth, async (req, res)=>{
-  try{
-    const empId = req.params.empId;
-    const goalId = req.params.goalId;
+router.get('/get-single-self-assessment-master/:empId/:goalId', auth, async (req, res) => {
+    try {
+        const empId = req.params.empId;
+        const goalId = req.params.goalId;
 
-  }catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
-  }
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
 });
 
 module.exports = router;
