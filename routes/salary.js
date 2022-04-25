@@ -3929,9 +3929,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
                     if (!_.isEmpty(sectorData)) {
                         sectorName = sectorData.department_name
                     }
-
                 }
-
                 let locationName = 'N/A'
                 let locationId = parseInt(employeeSalaries[0].salary_location_id)
                 if (locationId > 0) {
@@ -3939,7 +3937,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
                         return data
                     })
                     if (!_.isEmpty(locationData)) {
-                        locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        locationName = `${locationData.l_t6_code}`
                     }
                 }
 
