@@ -3014,7 +3014,7 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
                             return data
                         })
                         if (!_.isEmpty(locationData)) {
-                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                            locationName = `${locationData.l_t6_code}`
                         }
                     }
 
@@ -3150,7 +3150,7 @@ router.post('/deduction-report', auth, async function (req, res, next) {
                             return data
                         })
                         if (!_.isEmpty(locationData)) {
-                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                            locationName = `${locationData.l_t6_code}`
                         }
                     }
 
@@ -3291,7 +3291,7 @@ router.post('/variation-report', auth, async function (req, res, next) {
                             return data
                         })
                         if (!_.isEmpty(locationData)) {
-                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                            locationName = `${locationData.l_t6_code}`
                         }
                     }
 
@@ -4132,7 +4132,7 @@ router.post('/nhf-report', auth, async function (req, res, next) {
                         return data
                     })
                     if (!_.isEmpty(locationData)) {
-                        locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                        locationName = `${locationData.l_t6_code}`
                     }
                 }
 
