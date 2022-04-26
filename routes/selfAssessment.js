@@ -985,10 +985,29 @@ router.post('/process-assessment', auth, async (req, res) => {
     }
 });
 
-router.get('/get-single-self-assessment-master/:empId/:goalId', auth, async (req, res) => {
+router.get('/get-master-self-assessment/:emp_id/:gs_id', auth, async (req, res) => {
     try {
-        const empId = req.params.empId;
-        const goalId = req.params.goalId;
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+            return data
+        })
+
+
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
+            return res.status(400).json(`Goal Setting or Employee Does Not exist`)
+
+        }
+        const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
+            return data
+        })
+        return res.status(200).json(checkAssessmentMaster)
 
     } catch (e) {
         return res.status(400).json("Something went wrong. Try again.");
