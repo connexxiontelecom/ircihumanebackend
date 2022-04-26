@@ -36,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
         where:{sam_emp_id:empId, sam_gs_id:goalId}
       })
     }
+    static async getSelfAssessmentMasterByGoalSettingIdEmpId(goalId, empId){
+      return await selfassessmentmaster.findOne({
+        where:{sam_emp_id:empId, sam_gs_id:goalId}
+      })
+    }
     static async getSupervisorSelfAssessment(empIds){
       return await selfassessmentmaster.findAll({
         include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}],
