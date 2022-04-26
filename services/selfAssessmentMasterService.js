@@ -21,6 +21,8 @@ async function findAssessmentMaster(gsId, empId) {
     return await SelfAssessmentMaster.findOne({where: {sam_gs_id: gsId, sam_emp_id: empId} })
 }
 
+
+
 async function approveSelfAssessmentMaster(empId, gsId, supervisorId) {
     return await SelfAssessmentMaster.update({
         sam_status: 1,
