@@ -169,6 +169,7 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
+
         if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(`Goal Setting or Employee Does Not exist`)
         }
@@ -183,7 +184,8 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
 
         const year = goalSettingYearData.gsy_year
 
-        const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data) => {
+
+      const yearGoalSettings = await goalSetting.getGoalSettingYear(year).then((data) => {
             return data
         })
 
@@ -395,7 +397,7 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
         if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
 
-        } else {
+        }// else {
 
             const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
                 return data
@@ -429,7 +431,7 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
                 return res.status(200).json(`Action Successful`)
             })
 
-        }
+       // }
 
 
     } catch (err) {
@@ -626,6 +628,8 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
                 return r;
             });
 
+            const selfAssessmentMaster = await selfAssessmentMasterModel.getSelfAssessmentMasterByGoalSettingIdEmpId(gsId, empId)
+
             let empQuestions = await selfAssessment.findSelfAssessment(gsId, empId).then((data) => {
                 return data
 
@@ -633,7 +637,8 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
 
             const goals = {
                 questions: empQuestions,
-                openGoal: openGs
+                openGoal: openGs,
+                master:selfAssessmentMaster
             }
             return res.status(200).json(goals)
 
