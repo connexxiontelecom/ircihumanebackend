@@ -55,9 +55,9 @@ router.post('/add-year', auth, async function (req, res, next) {
       /*let endDate = new Date(req.body.period_to);
       let endYear = endDate.getFullYear();*/
 
-      if (isBefore(startDate, new Date())) {
-        return res.status(400).json('Start period cannot be before today or today')
-      }
+      // if (isBefore(startDate, new Date())) {
+      //   return res.status(400).json('Start period cannot be before today or today')
+      // }
 
         const addResponse = await goalSettingYear.addGoalSettingYear(gsyRequest).then((data) => {
             return data
