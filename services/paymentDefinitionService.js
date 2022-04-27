@@ -145,6 +145,22 @@ async function getNhfPayments() {
     })
 }
 
+async function getNsitfPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_nsitf: 1
+        }
+    })
+}
+
+async function getTaxPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_tax: 1
+        }
+    })
+}
+
 async function deletePayment(pdId) {
     return await Pd.destroy({
         where: {
@@ -171,6 +187,8 @@ module.exports = {
     getWelfare,
     getPensionPayments,
     getNhfPayments,
-    deletePayment
+    deletePayment,
+    getTaxPayments,
+    getNsitfPayments
 
 }
