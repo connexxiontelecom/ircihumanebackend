@@ -9,7 +9,8 @@ async function addSelfAssessmentMaster(selfAssessmentData) {
         sam_emp_id: selfAssessmentData.sam_emp_id,
         sam_status: selfAssessmentData.sam_status,
         sam_supervisor_id: selfAssessmentData.sam_supervisor_id,
-        sam_optional: selfAssessmentData.sam_optional
+        sam_optional: selfAssessmentData.sam_optional,
+        sam_discussion_held_on: selfAssessmentData.sam_discussion_held_on
     });
 }
 

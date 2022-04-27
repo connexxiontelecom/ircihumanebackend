@@ -59,6 +59,7 @@ module.exports = (sequelize, DataTypes) => {
     sam_status: DataTypes.INTEGER,
     sam_supervisor_id: DataTypes.INTEGER,
     sam_optional: DataTypes.TEXT,
+    sam_discussion_held_on: DataTypes.DATE,
     createdAt: {
       //field: 'created_at',
       type: DataTypes.DATE,
