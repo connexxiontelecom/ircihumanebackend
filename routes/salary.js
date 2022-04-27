@@ -4491,6 +4491,7 @@ router.post('/tax-report', auth, async function (req, res, next) {
                     employeeId: emp.emp_id,
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                    employeePaye: emp.emp_paye_no,
                     location: locationName,
                     jobRole: empJobRole,
                     sector: sectorName,
