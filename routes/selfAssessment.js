@@ -265,7 +265,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
     try {
         const schema = Joi.object().keys({
             sa_comment: Joi.string().required(),
-            //sa_master_id: Joi.number().required(),
+            sam_discussion_held_on: Joi.string().required(),
             sa_update: Joi.string().required(),
             sa_accomplishment: Joi.string().required(),
             sa_challenges: Joi.string().required(),
@@ -312,7 +312,8 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                 sam_gs_id: gsId,
                 sam_emp_id: empId,
                 sam_status: 0,
-                sam_optional: saRequests[0].optional
+                sam_optional: saRequests[0].optional,
+                sam_discussion_held_on: saRequests[0].sam_discussion_held_on,
 
             }
             const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
