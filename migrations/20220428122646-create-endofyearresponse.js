@@ -9,6 +9,11 @@ module.exports = {
         type: Sequelize.INTEGER
       },
 
+      eyr_master_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
+
       eyr_goal:{
         allowNull: true,
         type: Sequelize.STRING
@@ -38,6 +43,10 @@ module.exports = {
       eyr_response: {
         allowNull: true,
         type: Sequelize.STRING
+      },
+  eyr_status: {
+        allowNull: true,
+        type: Sequelize.INTEGER
       },
 
       createdAt: {
