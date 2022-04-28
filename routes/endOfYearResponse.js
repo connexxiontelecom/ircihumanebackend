@@ -10,6 +10,7 @@ const logs = require('../services/logService')
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 const endYearResponse = require('../services/endOfYearResponseService')
 const goalSettingYear = require("../services/goalSettingYearService");
+const selfAssessmentMaster = require("../services/selfAssessmentMasterService");
 
 /* Add end of year question Assessment */
 router.get('/', auth, async function (req, res, next) {
@@ -92,14 +93,124 @@ router.get('/prefill-end-year/:emp_id', auth, async function (req, res, next) {
 
 
 /* Add end of year question Assessment */
-router.post('/add-question', auth, async function (req, res, next) {
+router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
+
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+        let eyrRequests = req.body
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
+            return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
+
+        }
+
+        if (parseInt(gsData.gs_status) === 1) {
+
+            const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
+                return data
+            })
+
+            if (!(_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster))) {
+                const removeAssessmentMaster = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data) => {
+                    return data
+                })
+            }
+
+            const selfAssessmentMasterData = {
+                sam_gs_id: gsId,
+                sam_emp_id: empId,
+                sam_status: 0,
+                sam_optional: 'null',
+                sam_discussion_held_on: 'null',
+
+            }
+            const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(addMaster) || _.isNull(addMaster)) {
+                return res.status(400).json(`An error occurred while adding master details`)
+            }
+
+            let addResponse;
+            let destroyResponse;
+            let i = 0;
+
+            const masterId = addMaster.sam_id
+
+            await endYearResponse.removeResponse(empId, gsId).then((data) => {
+                return data
+            })
+
+            for (const er of eyrRequests) {
+
+                const eyrObjectAdd = {
+                    eyr_master_id: masterId,
+                    eyr_goal: er.eyr_goal,
+                    eyr_reflection: er.eyr_reflection,
+                    eyr_type: er.eyr_type,
+                    eyr_emp_id: empId,
+                    eyr_gs_id: gsId,
+                    eyr_strength : er.eyr_strength,
+                    eyr_growth_area: er.eyr_growth_area,
+                    eyr_response: er.eyr_response,
+                    eyr_status: er.eyr_status,
+                }
+
+                addResponse = await endYearResponse.addEndOfYearResponse(eyrObjectAdd).then((data) => {
+                    return data
+                })
+
+                if (_.isEmpty(addResponse) || _.isNull(addResponse)) {
+                    destroyResponse = await endYearResponse.removeResponse(empId, gsId).then((data) => {
+                        return data
+                    })
+
+                    destroyResponse = await selfAssessmentMaster.removeSelfAssessmentMaster(gsId, empId).then((data) => {
+                        return data
+                    })
+
+                    i++;
+                    break
+                }
+
+            }
+
+            if (i > 0) {
+                return res.status(400).json(`An error Occurred while adding`)
+            } else {
+                const logData = {
+                    "log_user_id": req.user.username.user_id,
+                    "log_description": "Responded to Goal Setting",
+                    "log_date": new Date()
+                }
+                await logs.addLog(logData).then((logRes) => {
+                    return res.status(200).json(`Action Successful`)
+                })
+
+            }
+        } else {
+            return res.status(400).json(`Goal Setting Not Opened`)
+        }
+
+
         const eyaRequests = req.body
-        let addResponse;
-        let destroyResponse;
-        let gsData;
-        let i = 0;
-        let gsId;
+        // let addResponse;
+        // let destroyResponse;
+        // let gsData;
+        // let i = 0;
+        // let gsId;
+
+
+
         for (const eya of eyaRequests) {
 
             gsData = await goalSetting.getActiveGoalSetting(eya.eya_gs_id).then((data) => {
@@ -145,6 +256,35 @@ router.post('/add-question', auth, async function (req, res, next) {
         next(err);
     }
 });
+
+
+router.get('/get-end-year/:emp_id/:gs_id', auth, async function (req, res, next) {
+    try {
+
+        let empId = req.params.emp_id
+        let gsId = req.params.gs_id
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+            return data
+        })
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
+            return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
+        }
+
+        const endYearResponses = await endYearResponse.getEndOfYearResponse(gsId, empId).then((data)=>{
+            return data
+        })
+        return res.status(200).json(endYearResponses)
+
+    } catch (err) {
+        console.error(`Error while Adding Questions `, err.message);
+        next(err);
+    }
+});
+
+
 
 
 router.patch('/update-question/:eya_id', auth, async function (req, res, next) {

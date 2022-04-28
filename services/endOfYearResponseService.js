@@ -20,14 +20,7 @@ async function addEndOfYearResponse(assessmentData) {
     });
 }
 
-async function getEndOfYearAssessmentQuestions() {
-    return await EndYearAssessment.findAll({
-        order: [
-            ['eya_year', 'DESC'],
-            ['eya_id', 'ASC'],
-        ]
-    })
-}
+
 
 async function getEndOfYearResponse(eyrGsId, eyrEmpId) {
     return await EndYearResponse.findAll({where: {eyr_emp_id: eyrEmpId, eyr_gs_id: eyrGsId}})
