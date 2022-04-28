@@ -80,8 +80,8 @@ router.get('/prefill-end-year/:emp_id', auth, async function (req, res, next) {
         }
 
         const resObject = {
-          "midYearCheckingQuestions": empQuestions,
-          "endOfYearQuestions": endYearQuestions
+            "midYearCheckingQuestions": empQuestions,
+            "endOfYearQuestions": endYearQuestions
         }
 
         return res.status(200).json(resObject)
@@ -159,10 +159,10 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
                     eyr_type: er.eyr_type,
                     eyr_emp_id: empId,
                     eyr_gs_id: gsId,
-                    eyr_strength : er.eyr_strength,
+                    eyr_strength: er.eyr_strength,
                     eyr_growth_area: er.eyr_growth_area,
                     eyr_response: er.eyr_response,
-                    eyr_status: er.eyr_status,
+                    eyr_status: 0,
                 }
 
                 addResponse = await endYearResponse.addEndOfYearResponse(eyrObjectAdd).then((data) => {
@@ -208,7 +208,6 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
         // let gsData;
         // let i = 0;
         // let gsId;
-
 
 
         for (const eya of eyaRequests) {
@@ -260,7 +259,6 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
 
 router.get('/get-end-year/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
-
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -273,7 +271,7 @@ router.get('/get-end-year/:emp_id/:gs_id', auth, async function (req, res, next)
             return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
         }
 
-        const endYearResponses = await endYearResponse.getEndOfYearResponse(gsId, empId).then((data)=>{
+        const endYearResponses = await endYearResponse.getEndOfYearResponse(gsId, empId).then((data) => {
             return data
         })
         return res.status(200).json(endYearResponses)
@@ -284,59 +282,56 @@ router.get('/get-end-year/:emp_id/:gs_id', auth, async function (req, res, next)
     }
 });
 
-
-
-
-router.patch('/update-question/:eya_id', auth, async function (req, res, next) {
+router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, next) {
     try {
+        let empId = parseInt(req.params.emp_id)
+        let gsId = parseInt(req.params.gs_id)
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
 
-        let eyaId = req.params.eya_id
+        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
+            return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
+
+        }
 
 
-        const eyaQuestion = await endYearAssessment.getEndOfYearAssessmentQuestion(eyaId).then((data) => {
+        const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
+            return data
+        })
+        const masterId = parseInt(checkAssessmentMaster.sam_id)
+
+        if (_.isEmpty(checkAssessmentMaster) || _.isNull(checkAssessmentMaster)) {
+            return res.status(400).json(`No assessment records found`)
+        }
+
+        const approveAssessmentMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(empId, gsId, employeeData.emp_supervisor_id).then((data) => {
             return data
         })
 
 
-        if (_.isNull(eyaQuestion) || _.isEmpty(eyaQuestion)) {
-            return res.status(404).json(`Question Not Found`)
-        } else {
-            const schema = Joi.object({
-                eya_question: Joi.string().required(),
-            })
+        const approveEndOfYear = await endYearResponse.approveEndYearResponseByMasterId(masterId).then((data) => {
+            return data
+        })
 
-            const eyaRequests = req.body
-            const validationResult = schema.validate(eyaRequests)
-            if (validationResult.error) {
-                return res.status(400).json(validationResult.error.details[0].message)
-            }
-
-            const updateEya = await endYearAssessment.updateQuestion(eyaId, eyaRequests.eya_question).then((data) => {
-                return data
-            })
-
-            // const updateSelfAssessmentQuestion = await selfAssessment.updateQuestion(eyaId, eyaRequests.eya_question).then((data)=>{
-            //     return data
-            // })
-
-            const logData = {
-                "log_user_id": req.user.username.user_id,
-                "log_description": "Updated End of Year Question",
-                "log_date": new Date()
-            }
-            await logs.addLog(logData).then((logRes) => {
-
-                return res.status(200).json(`Action Successful`)
-            })
-
-
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": "Responded to End of Year",
+            "log_date": new Date()
         }
+        await logs.addLog(logData).then((logRes) => {
+
+            return res.status(200).json(`Action Successful`)
+        })
 
     } catch (err) {
-        console.error(`Error while Adding Questions `, err.message);
+        console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
 });
-
 
 module.exports = router;

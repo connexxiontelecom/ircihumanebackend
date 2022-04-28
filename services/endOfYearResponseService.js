@@ -32,11 +32,20 @@ async function removeResponse(empId, gsId) {
     return await EndYearResponse.destroy({where: {eyr_gs_id: gsId}, eyr_emp_id: empId})
 }
 
+async function approveEndYearResponseByMasterId(masterId) {
+    return await EndYearResponse.update({
+        eyr_status: 1
+    }, {
+        where: {eyr_master_id: masterId}
+    })
+}
+
 
 
 module.exports = {
     addEndOfYearResponse,
     getEndOfYearResponse,
-    removeResponse
+    removeResponse,
+    approveEndYearResponseByMasterId
 
 }
