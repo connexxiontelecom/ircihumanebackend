@@ -94,6 +94,8 @@ router.get('/prefill-end-year/:emp_id', auth, async function (req, res, next) {
 
 /* Add end of year question Assessment */
 router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next) {
+    let destroyResponse;
+    let addResponse;
     try {
 
         let empId = req.params.emp_id
@@ -103,7 +105,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
             return data
         })
 
-        const gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
+        let gsData = await goalSetting.getGoalSetting(gsId).then((data) => {
             return data
         })
 
@@ -233,6 +235,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
 
         }
 
+        let i;
         if (i > 0) {
 
             return res.status(400).json(`An error Occurred, Check for Open End of Activity`)
