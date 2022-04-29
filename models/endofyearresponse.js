@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     eyr_growth_area: DataTypes.STRING,
     eyr_response: DataTypes.STRING,
     eyr_master_id: DataTypes.INTEGER,
-    eya_status: DataTypes.INTEGER
+    eyr_status: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'endofyearresponse',
