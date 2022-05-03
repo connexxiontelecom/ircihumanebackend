@@ -299,9 +299,7 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
 
         if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
-
         }
-
 
         const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
             return data
@@ -321,13 +319,13 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
             return data
         })
 
+
         const logData = {
             "log_user_id": req.user.username.user_id,
             "log_description": "Responded to End of Year",
             "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
-
             return res.status(200).json(`Action Successful`)
         })
 
