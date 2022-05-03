@@ -22,13 +22,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="update on end year response">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/Employee.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Employee.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/selfassessment.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/selfassessment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/selfassessmentmaster.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/selfassessmentmaster.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/employees.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employees.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/selfAssessment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/selfAssessment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/endOfYearResponse.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/endOfYearResponse.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/endOfYearResponseService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/endOfYearResponseService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

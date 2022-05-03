@@ -289,6 +289,20 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
     try {
         let empId = parseInt(req.params.emp_id)
         let gsId = parseInt(req.params.gs_id)
+
+
+        const schema = Joi.object({
+            eyr_rating: Joi.string().required(),
+        })
+
+        const gsRequest = req.body
+        const validationResult = schema.validate(gsRequest)
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const rating = gsRequest.eyr_rating
+
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
@@ -299,9 +313,7 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
 
         if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
             return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
-
         }
-
 
         const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
             return data
@@ -321,13 +333,17 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
             return data
         })
 
+        const rateEmployee = await endYearResponse.rateEmployeeByMasterId(masterId, rating).then((data)=>{
+            return data
+        })
+
+
         const logData = {
             "log_user_id": req.user.username.user_id,
             "log_description": "Responded to End of Year",
             "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
-
             return res.status(200).json(`Action Successful`)
         })
 
