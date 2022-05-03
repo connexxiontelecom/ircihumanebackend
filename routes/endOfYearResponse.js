@@ -289,7 +289,19 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
     try {
         let empId = parseInt(req.params.emp_id)
         let gsId = parseInt(req.params.gs_id)
-        const rating = req.body.eyr_rating
+
+
+        const schema = Joi.object({
+            eyr_rating: Joi.string().required(),
+        })
+
+        const gsRequest = req.body
+        const validationResult = schema.validate(gsRequest)
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const rating = gsRequest.eyr_rating
 
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
@@ -321,7 +333,7 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
             return data
         })
 
-        const rateEmployee = await endYearResponse.rateEmployeeByMasterId(masterId).then((data)=>{
+        const rateEmployee = await endYearResponse.rateEmployeeByMasterId(masterId, rating).then((data)=>{
             return data
         })
 
