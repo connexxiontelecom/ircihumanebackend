@@ -289,6 +289,8 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
     try {
         let empId = parseInt(req.params.emp_id)
         let gsId = parseInt(req.params.gs_id)
+        const rating = req.body.eyr_rating
+
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
@@ -316,6 +318,10 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
 
 
         const approveEndOfYear = await endYearResponse.approveEndYearResponseByMasterId(masterId).then((data) => {
+            return data
+        })
+
+        const rateEmployee = await endYearResponse.rateEmployeeByMasterId(masterId).then((data)=>{
             return data
         })
 
