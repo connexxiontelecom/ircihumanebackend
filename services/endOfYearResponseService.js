@@ -20,13 +20,9 @@ async function addEndOfYearResponse(assessmentData) {
     });
 }
 
-
-
 async function getEndOfYearResponse(eyrGsId, eyrEmpId) {
     return await EndYearResponse.findAll({where: {eyr_emp_id: eyrEmpId, eyr_gs_id: eyrGsId}})
 }
-
-
 
 async function removeResponse(empId, gsId) {
     return await EndYearResponse.destroy({where: {eyr_gs_id: gsId}, eyr_emp_id: empId})
@@ -40,12 +36,21 @@ async function approveEndYearResponseByMasterId(masterId) {
     })
 }
 
+async function rateEmployeeByMasterId(masterId, rating){
+    return await EndYearResponse.update({
+        eyr_rating: rating
+    }, {
+        where: {eyr_master_id: masterId}
+    })
+}
+
 
 
 module.exports = {
     addEndOfYearResponse,
     getEndOfYearResponse,
     removeResponse,
-    approveEndYearResponseByMasterId
+    approveEndYearResponseByMasterId,
+    rateEmployeeByMasterId
 
 }
