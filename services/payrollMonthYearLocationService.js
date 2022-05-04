@@ -45,6 +45,10 @@ async function findConfirmedPayrollMonthYearLocationMonthYear(month, year) {
     return await Pmyl.findAll({where: {pmyl_month: month, pmyl_year: year, pmyl_confirmed: 1, pmyl_approved: 0}})
 }
 
+async function findApprovedPayrollMonthYearLocationMonthYear(month, year) {
+    return await Pmyl.findAll({where: {pmyl_month: month, pmyl_year: year, pmyl_confirmed: 1, pmyl_approved: 1}})
+}
+
 async function findPayrollByMonthYearLocation(month, year, locationId) {
     return await Pmyl.findOne({where: {pmyl_month: month, pmyl_year: year, pmyl_location_id: locationId}})
 }
@@ -110,6 +114,7 @@ module.exports = {
     findPendingPayrollMonthYearLocationMonthYear,
     findConfirmedPayrollMonthYearLocationMonthYear,
     findAllConfirmed,
-    findAllPending
+    findAllPending,
+    findApprovedPayrollMonthYearLocationMonthYear
 
 }
