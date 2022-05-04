@@ -735,12 +735,12 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                 for (const emp of employees) {
 
                     let empDepartmentId = 0
-                    if(!(_.isEmpty(emp.emp_department_id) || _.isNull(emp.emp_department_id))){
+                    if (!(_.isEmpty(emp.emp_department_id) || _.isNull(emp.emp_department_id))) {
                         empDepartmentId = parseInt(emp.emp_department_id)
                     }
 
                     let empJobRoleId = 0
-                    if(!(_.isEmpty(emp.emp_job_role_id) || _.isNull(emp.emp_job_role_id))){
+                    if (!(_.isEmpty(emp.emp_job_role_id) || _.isNull(emp.emp_job_role_id))) {
                         empJobRoleId = parseInt(emp.emp_job_role_id)
                     }
 
@@ -1769,7 +1769,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
             const payrollYear = payrollMonthYearData.pym_year
             //check if payroll routine has been run
 
-            let payrollRun =  await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+            let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
@@ -1904,7 +1904,7 @@ router.get('/pull-confirmed-salary-routine-locations', auth, async function (req
             const payrollYear = payrollMonthYearData.pym_year
             //check if payroll routine has been run
 
-            let payrollRun =  await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+            let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
@@ -1918,6 +1918,421 @@ router.get('/pull-confirmed-salary-routine-locations', auth, async function (req
 
             if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
                 return res.status(400).json(`No Confirmed payroll Routines`)
+            }
+
+            let locationSalaryArray = []
+            for (const location of payrollLocations) {
+
+                const locationData = await locationService.findLocationById(location.pmyl_location_id).then((data) => {
+                    return data
+                })
+
+                if (!(_.isEmpty(locationData))) {
+
+
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id).then((data) => {
+                        return data
+                    })
+                    // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+                    //     return data
+                    // })
+
+
+                    if (_.isEmpty(employees) || _.isNull(employees)) {
+                        return res.status(400).json(`No employee in selected locations`)
+                    }
+
+                    let locationTotalGross = 0
+                    let locationTotalDeduction = 0
+                    let locationTotalNetPay = 0
+                    let locationTotalEmployee = 0
+                    let grossSalary = 0
+                    let netSalary = 0
+                    let totalDeduction = 0
+
+                    for (const emp of employees) {
+
+                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
+                            return data
+                        })
+                        if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+                            locationTotalEmployee++
+                            for (const empSalary of employeeSalaries) {
+                                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                    grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                                } else {
+                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                                }
+                            }
+                            netSalary = grossSalary - totalDeduction
+                            // let empJobRole = 'N/A'
+                            // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                            // if(empJobRoleId > 0){
+                            //     empJobRole = emp.jobRole.job_role
+                            // }
+                            //
+                            // let sectorName = 'N/A'
+                            // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                            // if (sectorId > 0) {
+                            //
+                            //
+                            //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                            // }
+                            // let salaryObject = {
+                            //     employeeId: emp.emp_id,
+                            //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                            //     employeeUniqueId: emp.emp_unique_id,
+                            //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                            //     jobRole: empJobRole,
+                            //     sector: sectorName,
+                            //     grossSalary: grossSalary,
+                            //     totalDeduction: totalDeduction,
+                            //     netSalary: netSalary
+                            // }
+                        }
+                    }
+
+                    locationTotalGross = grossSalary + locationTotalGross
+                    locationTotalDeduction = totalDeduction + locationTotalDeduction
+
+                    let locationSalaryObject = {
+                        locationId: locationData.location_id,
+                        locationName: locationData.location_name,
+                        locationCode: locationData.location_t6_code,
+                        locationTotalGross: locationTotalGross,
+                        locationTotalDeduction: locationTotalDeduction,
+                        locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        locationEmployeesCount: locationTotalEmployee,
+                        month: payrollMonth,
+                        year: payrollYear
+
+                    }
+
+                    locationSalaryArray.push(locationSalaryObject)
+                }
+
+
+            }
+            return res.status(200).json(locationSalaryArray)
+
+        }
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+router.get('/pull-approved-salary-routine-locations', auth, async function (req, res, next) {
+    try {
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        } else {
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+
+            let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollRun) || _.isNull(payrollRun)) {
+                return res.status(400).json(`Payroll Routine has not been run for any location`)
+            }
+
+            let payrollLocations = await payrollMonthYearLocation.findApprovedPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
+                return res.status(400).json(`No Approved Payroll Routines`)
+            }
+
+            let locationSalaryArray = []
+            for (const location of payrollLocations) {
+
+                const locationData = await locationService.findLocationById(location.pmyl_location_id).then((data) => {
+                    return data
+                })
+
+                if (!(_.isEmpty(locationData))) {
+
+
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id).then((data) => {
+                        return data
+                    })
+                    // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+                    //     return data
+                    // })
+
+
+                    if (_.isEmpty(employees) || _.isNull(employees)) {
+                        return res.status(400).json(`No employee in selected locations`)
+                    }
+
+                    let locationTotalGross = 0
+                    let locationTotalDeduction = 0
+                    let locationTotalNetPay = 0
+                    let locationTotalEmployee = 0
+                    let grossSalary = 0
+                    let netSalary = 0
+                    let totalDeduction = 0
+
+                    for (const emp of employees) {
+
+                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
+                            return data
+                        })
+                        if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+                            locationTotalEmployee++
+                            for (const empSalary of employeeSalaries) {
+                                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                    grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                                } else {
+                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                                }
+                            }
+                            netSalary = grossSalary - totalDeduction
+                            // let empJobRole = 'N/A'
+                            // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                            // if(empJobRoleId > 0){
+                            //     empJobRole = emp.jobRole.job_role
+                            // }
+                            //
+                            // let sectorName = 'N/A'
+                            // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                            // if (sectorId > 0) {
+                            //
+                            //
+                            //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                            // }
+                            // let salaryObject = {
+                            //     employeeId: emp.emp_id,
+                            //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                            //     employeeUniqueId: emp.emp_unique_id,
+                            //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                            //     jobRole: empJobRole,
+                            //     sector: sectorName,
+                            //     grossSalary: grossSalary,
+                            //     totalDeduction: totalDeduction,
+                            //     netSalary: netSalary
+                            // }
+                        }
+                    }
+
+                    locationTotalGross = grossSalary + locationTotalGross
+                    locationTotalDeduction = totalDeduction + locationTotalDeduction
+
+                    let locationSalaryObject = {
+                        locationId: locationData.location_id,
+                        locationName: locationData.location_name,
+                        locationCode: locationData.location_t6_code,
+                        locationTotalGross: locationTotalGross,
+                        locationTotalDeduction: locationTotalDeduction,
+                        locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        locationEmployeesCount: locationTotalEmployee,
+                        month: payrollMonth,
+                        year: payrollYear
+
+                    }
+
+                    locationSalaryArray.push(locationSalaryObject)
+                }
+
+
+            }
+            return res.status(200).json(locationSalaryArray)
+
+        }
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+
+router.post('/pull-approved-salary-routine-locations', auth, async function (req, res, next) {
+    try {
+
+        const schema = Joi.object({
+            pym_month: Joi.number().required(), pym_year: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        }
+
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+            //check if payroll routine has been run
+
+            let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollRun) || _.isNull(payrollRun)) {
+                return res.status(400).json(`Payroll Routine has not been run for any location`)
+            }
+
+            let payrollLocations = await payrollMonthYearLocation.findApprovedPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
+                return res.status(400).json(`No Approved Payroll Routines`)
+            }
+
+            let locationSalaryArray = []
+            for (const location of payrollLocations) {
+
+                const locationData = await locationService.findLocationById(location.pmyl_location_id).then((data) => {
+                    return data
+                })
+
+                if (!(_.isEmpty(locationData))) {
+
+
+                    const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id).then((data) => {
+                        return data
+                    })
+                    // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+                    //     return data
+                    // })
+
+
+                    if (_.isEmpty(employees) || _.isNull(employees)) {
+                        return res.status(400).json(`No employee in selected locations`)
+                    }
+
+                    let locationTotalGross = 0
+                    let locationTotalDeduction = 0
+                    let locationTotalNetPay = 0
+                    let locationTotalEmployee = 0
+                    let grossSalary = 0
+                    let netSalary = 0
+                    let totalDeduction = 0
+
+                    for (const emp of employees) {
+
+                        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
+                            return data
+                        })
+                        if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+                            locationTotalEmployee++
+                            for (const empSalary of employeeSalaries) {
+                                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                                    grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                                } else {
+                                    totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                                }
+                            }
+                            netSalary = grossSalary - totalDeduction
+                            // let empJobRole = 'N/A'
+                            // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                            // if(empJobRoleId > 0){
+                            //     empJobRole = emp.jobRole.job_role
+                            // }
+                            //
+                            // let sectorName = 'N/A'
+                            // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                            // if (sectorId > 0) {
+                            //
+                            //
+                            //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                            // }
+                            // let salaryObject = {
+                            //     employeeId: emp.emp_id,
+                            //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                            //     employeeUniqueId: emp.emp_unique_id,
+                            //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                            //     jobRole: empJobRole,
+                            //     sector: sectorName,
+                            //     grossSalary: grossSalary,
+                            //     totalDeduction: totalDeduction,
+                            //     netSalary: netSalary
+                            // }
+                        }
+                    }
+
+                    locationTotalGross = grossSalary + locationTotalGross
+                    locationTotalDeduction = totalDeduction + locationTotalDeduction
+
+                    let locationSalaryObject = {
+                        locationId: locationData.location_id,
+                        locationName: locationData.location_name,
+                        locationCode: locationData.location_t6_code,
+                        locationTotalGross: locationTotalGross,
+                        locationTotalDeduction: locationTotalDeduction,
+                        locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        locationEmployeesCount: locationTotalEmployee,
+                        month: payrollMonth,
+                        year: payrollYear
+
+                    }
+
+                    locationSalaryArray.push(locationSalaryObject)
+                }
+
+
+            }
+            return res.status(200).json(locationSalaryArray)
+
+
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+router.get('/pull-approved-salary-routine-locations', auth, async function (req, res, next) {
+    try {
+
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        } else {
+            const payrollMonth = payrollMonthYearData.pym_month
+            const payrollYear = payrollMonthYearData.pym_year
+            //check if payroll routine has been run
+
+            let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollRun) || _.isNull(payrollRun)) {
+                return res.status(400).json(`Payroll Routine has not been run for any location`)
+            }
+
+            let payrollLocations = await payrollMonthYearLocation.findApprovedPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
+                return data
+            })
+
+            if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
+                return res.status(400).json(`No Approved Payroll Routines`)
             }
 
             let locationSalaryArray = []
@@ -2209,7 +2624,6 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
     }
 });
 
-
 router.post('/pull-salary-routine', auth, async function (req, res, next) {
     try {
 
@@ -2437,20 +2851,19 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
         let today = new Date()
         let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
 
-        let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data)=>{
+        let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
             return data
         })
 
-        if(_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)){
+        if (_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)) {
             return res.status(400).json(`Payroll Routine has not been run for payroll month and year`)
         }
 
-        if(_.isEmpty(locations) || _.isNull(locations)){
+        if (_.isEmpty(locations) || _.isNull(locations)) {
             return res.status(400).json(`No Location Selected`)
         }
         const countLocations = locations.length
         let i = 0;
-
 
 
         for (const location of locations) {
@@ -2467,11 +2880,11 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
             //     return res.status(400).json(`Payroll Routine for one or more location has already been confirmed, check selection`)
             // }
 
-            let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date, payrollMonth, payrollYear).then((data)=>{
+            let confirmRoutine = await payrollMonthYearLocation.confirmPayrollMonthYearLocation(location, req.user.username.user_id, date, payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
-            if(_.isEmpty(confirmRoutine) || _.isNull(confirmRoutine)){
+            if (_.isEmpty(confirmRoutine) || _.isNull(confirmRoutine)) {
                 return res.status(400).json(`An error occurred while confirming one or more location routine `)
             }
 
@@ -2481,7 +2894,7 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
             i++
         }
 
-        if(countLocations === i){
+        if (countLocations === i) {
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": `Confirmed payroll routine for ${payrollMonth} - ${payrollYear}`,
@@ -2493,7 +2906,6 @@ router.post('/confirm-salary-routine', auth, async function (req, res, next) {
         } else {
             return res.status(400).json(`An Error Occurred`)
         }
-
 
 
     } catch (err) {
@@ -2532,35 +2944,35 @@ router.post('/approve-salary-routine', auth, async function (req, res, next) {
         let today = new Date()
         let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
 
-        let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data)=>{
+        let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear).then((data) => {
             return data
         })
 
-        if(_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)){
+        if (_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)) {
             return res.status(400).json(`Payroll Routine has not been run for payroll month and year`)
         }
 
-        let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location).then((data)=>{
+        let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location).then((data) => {
             return data
         })
 
-        if(_.isEmpty(checkRoutine) || _.isNull(checkRoutine)){
+        if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
             return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`)
         }
 
-        if(parseInt(checkRoutine.pmyl_confirmed) === 0){
+        if (parseInt(checkRoutine.pmyl_confirmed) === 0) {
             return res.status(400).json(`Payroll Routine for location has not been confirmed`)
         }
 
-        if(parseInt(checkRoutine.pmyl_approved) === 1){
+        if (parseInt(checkRoutine.pmyl_approved) === 1) {
             return res.status(400).json(`Payroll Routine for location has already been confirmed`)
         }
 
-        let approveRoutine = await payrollMonthYearLocation.approvePayrollMonthYearLocation(location, req.user.username.user_id, date, payrollMonth, payrollYear).then((data)=>{
+        let approveRoutine = await payrollMonthYearLocation.approvePayrollMonthYearLocation(location, req.user.username.user_id, date, payrollMonth, payrollYear).then((data) => {
             return data
         })
 
-        if(_.isEmpty(approveRoutine) || _.isNull(approveRoutine)){
+        if (_.isEmpty(approveRoutine) || _.isNull(approveRoutine)) {
             return res.status(400).json(`An error occurred while approve one or more location routine `)
         }
 
@@ -2864,7 +3276,6 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
     }
 });
 
-
 router.post('/pull-emolument', auth, async function (req, res, next) {
     try {
 
@@ -3055,7 +3466,6 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
     }
 });
 
-
 router.post('/deduction-report', auth, async function (req, res, next) {
     try {
 
@@ -3183,7 +3593,6 @@ router.post('/deduction-report', auth, async function (req, res, next) {
 
     }
 });
-
 
 router.post('/variation-report', auth, async function (req, res, next) {
     try {
@@ -3325,7 +3734,6 @@ router.post('/variation-report', auth, async function (req, res, next) {
 
     }
 });
-
 
 router.post('/deduction-report-type', auth, async function (req, res, next) {
     try {
@@ -4164,6 +4572,347 @@ router.post('/nhf-report', auth, async function (req, res, next) {
 
                 employeeSalary.push(salaryObject)
 
+            }
+
+        }
+        return res.status(200).json(employeeSalary)
+
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+router.post('/nsitf-report', auth, async function (req, res, next) {
+    try {
+
+        const schema = Joi.object({
+            pym_month: Joi.number().required(), pym_year: Joi.number().required(), pym_location: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+        const location = payrollRequest.pym_location
+        let employees
+        if (parseInt(location) > 0) {
+            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
+                return data
+            })
+        } else {
+            employees = await employee.getEmployees().then((data) => {
+                return data
+            })
+        }
+        //check if payroll routine has been run
+        let employeeSalary = []
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+            return data
+        })
+
+        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+            return res.status(400).json(`Payroll Routine has not been run`)
+        }
+
+        let nsitfPayments = await paymentDefinition.getNsitfPayments().then((data) => {
+            return data
+        })
+        if ((_.isNull(nsitfPayments) || _.isEmpty(nsitfPayments))) {
+            return res.status(400).json(`No payments marked as nsift`)
+        }
+
+        for (const emp of employees) {
+
+            let nsitfArray = [];
+
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                return data
+            })
+
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+
+                let totalNsitf = 0
+
+                let empAdjustedGrossII = 0;
+                let fullGross = 0;
+                let empAdjustedGross = 0
+
+                for (const salary of employeeSalaries) {
+                    if (parseInt(salary.payment.pd_payment_type) === 1) {
+                        fullGross = parseFloat(salary.salary_amount) + fullGross
+                    }
+
+
+                    if (parseInt(salary.payment.pd_total_gross) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                        }
+
+                    }
+
+                    if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+
+                        }
+
+                    }
+                }
+
+
+                for (const nsitfPayment of nsitfPayments) {
+                    let amount = 0
+
+                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nsitfPayment.pd_id).then((data) => {
+                        return data
+                    })
+                    if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                        amount = parseFloat(checkSalary.salary_amount)
+                    }
+                    let empNsitfObject = {
+                        "Payment Name": nsitfPayment.pd_payment_name, "Amount": amount
+                    }
+                    totalNsitf = totalNsitf + amount
+                    nsitfArray.push(empNsitfObject)
+                }
+                let empJobRole = 'N/A'
+                let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                if (empJobRoleId > 0) {
+
+                    let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(jobRoleData)) {
+                        empJobRole = jobRoleData.job_role
+                    }
+
+                }
+
+                let sectorName = 'N/A'
+                let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                if (sectorId > 0) {
+                    let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(sectorData)) {
+                        sectorName = sectorData.department_name
+                    }
+                }
+                let locationName = 'N/A'
+                let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                if (locationId > 0) {
+                    let locationData = await locationService.findLocationById(locationId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(locationData)) {
+                        locationName = `${locationData.l_t6_code}`
+                    }
+                }
+
+                let salaryObject = {
+                    employeeId: emp.emp_id,
+                    employeeName: employeeSalaries[0].salary_emp_name,
+                    employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                    location: locationName,
+                    jobRole: empJobRole,
+                    sector: sectorName,
+                    totalNsitf: totalNsitf,
+                    nsitfArray: nsitfArray,
+                    month: payrollMonth,
+                    year: payrollYear,
+                    adjustedGrossII: empAdjustedGrossII,
+                    adjustedGross: empAdjustedGross
+                }
+                employeeSalary.push(salaryObject)
+            }
+
+        }
+        return res.status(200).json(employeeSalary)
+
+
+    } catch (err) {
+        console.log(err.message)
+        next(err);
+
+    }
+});
+
+router.post('/tax-report', auth, async function (req, res, next) {
+    try {
+
+        const schema = Joi.object({
+            pym_month: Joi.number().required(), pym_year: Joi.number().required(), pym_location: Joi.number().required()
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollMonth = payrollRequest.pym_month
+        const payrollYear = payrollRequest.pym_year
+        const location = payrollRequest.pym_location
+        let employees
+        if (parseInt(location) > 0) {
+            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
+                return data
+            })
+        } else {
+            employees = await employee.getEmployees().then((data) => {
+                return data
+            })
+        }
+        //check if payroll routine has been run
+        let employeeSalary = []
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
+            return data
+        })
+
+        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+            return res.status(400).json(`Payroll Routine has not been run`)
+        }
+
+        let taxPayments = await paymentDefinition.getTaxPayments().then((data) => {
+            return data
+        })
+        if ((_.isNull(taxPayments) || _.isEmpty(taxPayments))) {
+            return res.status(400).json(`No payments marked as Tax`)
+        }
+
+        for (const emp of employees) {
+
+            let taxArray = [];
+
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
+                return data
+            })
+
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+
+                let totalTax = 0
+
+                let empAdjustedGrossII = 0;
+                let fullGross = 0;
+                let empAdjustedGross = 0
+
+                for (const salary of employeeSalaries) {
+                    if (parseInt(salary.payment.pd_payment_type) === 1) {
+                        fullGross = parseFloat(salary.salary_amount) + fullGross
+                    }
+
+
+                    if (parseInt(salary.payment.pd_total_gross) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+
+                        }
+
+                    }
+
+                    if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+
+                        }
+
+                    }
+                }
+
+
+                for (const taxPayment of taxPayments) {
+                    let amount = 0
+
+                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, taxPayment.pd_id).then((data) => {
+                        return data
+                    })
+                    if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                        amount = parseFloat(checkSalary.salary_amount)
+                    }
+                    let empTaxObject = {
+                        "Payment Name": taxPayment.pd_payment_name, "Amount": amount
+                    }
+                    totalTax = totalTax + amount
+                    taxArray.push(empTaxObject)
+                }
+                let empJobRole = 'N/A'
+                let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+                if (empJobRoleId > 0) {
+
+                    let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(jobRoleData)) {
+                        empJobRole = jobRoleData.job_role
+                    }
+
+                }
+
+                let sectorName = 'N/A'
+                let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+                if (sectorId > 0) {
+                    let sectorData = await departmentService.findDepartmentById(sectorId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(sectorData)) {
+                        sectorName = sectorData.department_name
+                    }
+                }
+                let locationName = 'N/A'
+                let locationId = parseInt(employeeSalaries[0].salary_location_id)
+                if (locationId > 0) {
+                    let locationData = await locationService.findLocationById(locationId).then((data) => {
+                        return data
+                    })
+                    if (!_.isEmpty(locationData)) {
+                        locationName = `${locationData.l_t6_code}`
+                    }
+                }
+
+                let salaryObject = {
+                    employeeId: emp.emp_id,
+                    employeeName: employeeSalaries[0].salary_emp_name,
+                    employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+                    employeePaye: emp.emp_paye_no,
+                    location: locationName,
+                    jobRole: empJobRole,
+                    sector: sectorName,
+                    totalTax: totalTax,
+                    taxArray: taxArray,
+                    month: payrollMonth,
+                    year: payrollYear,
+                    adjustedGrossII: empAdjustedGrossII,
+                    adjustedGross: empAdjustedGross
+                }
+                employeeSalary.push(salaryObject)
             }
 
         }

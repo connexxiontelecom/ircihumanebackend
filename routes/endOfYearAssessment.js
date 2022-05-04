@@ -9,21 +9,6 @@ const employees = require('../services/employeeService');
 const logs = require('../services/logService')
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 
-/* Add end of year question Assessment */
-router.get('/', auth, async function (req, res, next) {
-    try {
-
-        const questions = await endYearAssessment.getEndOfYearAssessmentQuestions().then((data) => {
-            return data
-        })
-
-        return res.status(200).json(questions)
-
-    } catch (err) {
-        console.error(`Error while fetching questions `, err.message);
-        next(err);
-    }
-});
 
 
 /* Add end of year question Assessment */
