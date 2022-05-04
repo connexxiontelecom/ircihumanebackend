@@ -114,6 +114,10 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
 
         }
 
+        if (employeeData.emp_supervisor_id === null || employeeData.emp_supervisor_id === '') {
+            return res.status(400).json("There's currently no supervisor assigned to you to process this request.");
+        }
+
         if (parseInt(gsData.gs_status) === 1) {
 
             const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
@@ -129,6 +133,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
             const selfAssessmentMasterData = {
                 sam_gs_id: gsId,
                 sam_emp_id: empId,
+                sam_supervisor_id: employeeData.emp_supervisor_id,
                 sam_status: 0,
                 sam_optional: 'null',
                 sam_discussion_held_on: 'null',

@@ -2996,24 +2996,40 @@ router.post('/approve-salary-routine', auth, async function (req, res, next) {
     }
 });
 
-router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) {
+router.get('/pull-salary-routine/:empId/', auth, async function (req, res, next) {
     try {
-
+        //
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
         })
         if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
             return res.status(400).json(`No payroll month and year set`)
-        } else {
-            const payrollMonth = payrollMonthYearData.pym_month
-            const payrollYear = payrollMonthYearData.pym_year
+        }
+            const payrollMonth = payrollMonthYearData.pmy_month
+            const payrollYear = payrollMonthYearData.pmy_year
             //check if payroll routine has been run
 
             const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
                 return data
             })
 
-            if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+        let nsitfPayments = await paymentDefinition.getNsitfPayments().then((data) => {
+            return data
+        })
+
+        if ((_.isNull(nsitfPayments) || _.isEmpty(nsitfPayments))) {
+            return res.status(400).json(`No payments marked as nsift`)
+        }
+
+        let pensionPayments = await paymentDefinition.getPensionPayments().then((data) => {
+            return data
+        })
+        if ((_.isNull(pensionPayments) || _.isEmpty(pensionPayments))) {
+            return res.status(400).json(`No payments marked as pension`)
+        }
+
+
+        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
 
                 return res.status(400).json(`Payroll Routine has not been run`)
             } else {
@@ -3034,6 +3050,8 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                 let employersDeductions = []
                 let empAdjustedGross = 0
                 let empAdjustedGrossII = 0
+                let totalPension = 0
+                let totalNsitf = 0
 
 
                 let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
@@ -3095,6 +3113,8 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                         }
 
                     }
+
+
                     netSalary = grossSalary - totalDeduction
 
                     let empJobRole = 'N/A'
@@ -3107,6 +3127,39 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                         sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
                     }
 
+                    for (const pensionPayment of pensionPayments) {
+                        let amount = 0
+
+                        let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id).then((data) => {
+                            return data
+                        })
+
+                        if(parseInt(pensionPayment.pd_employee) === 2){
+                            if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                                amount = parseFloat(checkSalary.salary_amount)
+                                totalPension = totalPension + amount
+                            }
+
+                        }
+
+
+
+                    }
+
+                    for (const nsitfPayment of nsitfPayments) {
+                        let amount = 0
+
+                        let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nsitfPayment.pd_id).then((data) => {
+                            return data
+                        })
+                        if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                            amount = parseFloat(checkSalary.salary_amount)
+                        }
+
+                        totalNsitf = totalNsitf + amount
+
+                    }
+
                     let employeeSalary = {
                         employeeId: emp.emp_id,
                         employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -3115,8 +3168,8 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
                         jobRole: empJobRole,
                         sector: sectorName,
                         grossSalary: grossSalary,
-                        nsitf: (1 / 100) * empAdjustedGrossII,
-                        pension: (10 / 100) * empAdjustedGrossII,
+                        nsitf: totalNsitf,
+                        pension: totalPension,
                         employersDeductions: employersDeductions,
                         employersIncomes: employersIncomes,
                         totalDeduction: totalDeduction,
@@ -3129,14 +3182,15 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
 
                     return res.status(200).json(employeeSalary)
 
-                } else {
+                }
+                else {
                     return res.status(200).json(`No Salary for Employee`)
                 }
 
 
             }
 
-        }
+
 
     } catch (err) {
         console.log(err.message)
@@ -3162,6 +3216,21 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
         const payrollYear = payrollRequest.pym_year
         //check if payroll routine has been run
 
+        let nsitfPayments = await paymentDefinition.getNsitfPayments().then((data) => {
+            return data
+        })
+
+        if ((_.isNull(nsitfPayments) || _.isEmpty(nsitfPayments))) {
+            return res.status(400).json(`No payments marked as nsift`)
+        }
+
+        let pensionPayments = await paymentDefinition.getPensionPayments().then((data) => {
+            return data
+        })
+        if ((_.isNull(pensionPayments) || _.isEmpty(pensionPayments))) {
+            return res.status(400).json(`No payments marked as pension`)
+        }
+
         const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
             return data
         })
@@ -3185,6 +3254,11 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
             let incomes = []
             let employersIncomes = []
             let employersDeductions = []
+            let empAdjustedGross = 0
+            let empAdjustedGrossII = 0
+            let totalPension = 0
+            let totalNsitf = 0
+
 
             let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                 return data
@@ -3193,6 +3267,8 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
                 for (const empSalary of employeeSalaries) {
+
+
                     if (parseInt(empSalary.payment.pd_employee) === 1) {
                         if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                             const incomeDetails = {
@@ -3200,15 +3276,31 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                             }
                             incomes.push(incomeDetails)
                             grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+
+                            if (parseInt(empSalary.payment.pd_total_gross) === 1) {
+                                empAdjustedGross = empAdjustedGross + parseFloat(empSalary.salary_amount)
+
+                            }
+
+
+                            if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                                empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount)
+                            }
+
                         } else {
                             const deductionDetails = {
                                 paymentName: empSalary.payment.pd_payment_name, amount: empSalary.salary_amount
                             }
                             deductions.push(deductionDetails)
                             totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
+                            if (parseInt(empSalary.payment.pd_total_gross) === 1) {
+                                empAdjustedGross = empAdjustedGross - parseFloat(empSalary.salary_amount)
+                            }
+                            if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                                empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount)
+                            }
                         }
                     }
-
 
                     if (parseInt(empSalary.payment.pd_employee) === 2) {
                         if (parseInt(empSalary.payment.pd_payment_type) === 1) {
@@ -3227,6 +3319,8 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                     }
 
                 }
+
+
                 netSalary = grossSalary - totalDeduction
 
                 let empJobRole = 'N/A'
@@ -3239,6 +3333,39 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
                 }
 
+                for (const pensionPayment of pensionPayments) {
+                    let amount = 0
+
+                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id).then((data) => {
+                        return data
+                    })
+
+                    if(parseInt(pensionPayment.pd_employee) === 2){
+                        if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                            amount = parseFloat(checkSalary.salary_amount)
+                            totalPension = totalPension + amount
+                        }
+
+                    }
+
+
+
+                }
+
+                for (const nsitfPayment of nsitfPayments) {
+                    let amount = 0
+
+                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nsitfPayment.pd_id).then((data) => {
+                        return data
+                    })
+                    if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                        amount = parseFloat(checkSalary.salary_amount)
+                    }
+
+                    totalNsitf = totalNsitf + amount
+
+                }
+
                 let employeeSalary = {
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
@@ -3247,8 +3374,8 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                     jobRole: empJobRole,
                     sector: sectorName,
                     grossSalary: grossSalary,
-                    nsitf: (1 / 100) * empAdjustedGrossII,
-                    pension: (10 / 100) * empAdjustedGrossII,
+                    nsitf: totalNsitf,
+                    pension: totalPension,
                     employersDeductions: employersDeductions,
                     employersIncomes: employersIncomes,
                     totalDeduction: totalDeduction,
@@ -3261,7 +3388,8 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
 
                 return res.status(200).json(employeeSalary)
 
-            } else {
+            }
+            else {
                 return res.status(200).json(`No Salary for Employee`)
             }
 
