@@ -2590,7 +2590,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
 
 
                     let salaryObject = {
-                        employeeId: emp.emp_id,
+                        employeeId: emp.salary_empid,
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                         location: locationName,
