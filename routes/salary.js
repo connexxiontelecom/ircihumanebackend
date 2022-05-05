@@ -769,11 +769,16 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                     const payrollDate = new Date(parseInt(payrollYear), parseInt(payrollMonth) - 1, 2)
                     let daysBeforeStart
                     if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
-                        daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
-                        empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
+                        let hireDay = String(hiredDate.getDate()).padStart(2, '0')
+                        if(parseInt(hireDay) > 1){
+                            daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
+                            empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
+                        }
                     }
 
                     if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+
+
                         let suspendEmployee = await employee.suspendEmployee(emp.emp_id, 'Contract Ended').then((data) => {
                             return data
                         })
@@ -782,9 +787,26 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             return data
                         })
 
-                        daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
-                        daysBeforeStart = 22 - (daysBeforeStart + 1)
-                        empGross = empGross - (daysBeforeStart * (empGross / 22))
+                        let lastDayOfMonth  = new Date(parseInt(payrollYear), parseInt(payrollMonth), 0)
+
+
+                        const contractEndDateDD = String(contractEndDate.getDate()).padStart(2, '0');
+                        const contractEndDateMM = String(contractEndDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+                        const contractEndDateYYYY = contractEndDate.getFullYear();
+
+                        const formatContractEndDate = contractEndDateDD + '-' + contractEndDateMM + '-' + contractEndDateYYYY;
+
+                        const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
+                        const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
+                        const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
+
+                        const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
+
+                        if(formatContractEndDate !== formatLastDayOfMonth){
+                            daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
+                            daysBeforeStart = 22 - (daysBeforeStart + 1)
+                            empGross = empGross - (daysBeforeStart * (empGross / 22))
+                        }
                     }
 
                     if (empGross > 0) {
