@@ -964,7 +964,7 @@ router.get('/get-self-assessment-master/:empId', auth, async (req, res) => {
         //return res.status(200).json(sup);
         return res.status(200).json(result);
     } catch (e) {
-        return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again."+e.message);
     }
 
 });
