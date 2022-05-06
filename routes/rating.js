@@ -29,7 +29,8 @@ router.post('/add-rating', auth, async function (req, res, next) {
     try {
         const schema = Joi.object({
             rating_name: Joi.string().required(),
-            rating_desc: Joi.string().required(),
+            rating_desc: Joi.string().allow(null),
+            rating_period: Joi.number().required(),
         })
 
         const ratingRequest = req.body
