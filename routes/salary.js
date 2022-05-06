@@ -779,7 +779,8 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                     const formatLastDayOfMonthReverse = lastDayOfMonthYYYY + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthDD;
                     const payrollDate = new Date(formatLastDayOfMonthReverse)
-
+                    let checkDate = lastDayOfMonthYYYY + '-' + lastDayOfMonthMM + '-' + '1';
+                    checkDate = new Date(checkDate)
 
                     let daysBeforeStart = 0
                     let checkFirstDateWeekend = true
@@ -787,12 +788,13 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                     if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
                         let hireDay = String(hiredDate.getDate()).padStart(2, '0')
                         if (parseInt(hireDay) > 1) {
-                            checkFirstDateWeekend = await isWeekend(payrollDate)
-                            checkSecondDateWeekend = await isWeekend(contractEndDate)
-                            daysBeforeStart = await differenceInBusinessDays(payrollDate, hiredDate)
-                            if(!checkFirstDateWeekend){
-                                daysBeforeStart++
-                            }
+
+                            checkSecondDateWeekend = await isWeekend(hiredDate)
+                            daysBeforeStart = await differenceInBusinessDays(hiredDate, checkDate)
+                            daysBeforeStart = daysBeforeStart - 1
+                            // if(!checkFirstDateWeekend){
+                            //     daysBeforeStart++
+                            // }
                             if(!checkSecondDateWeekend){
                                 daysBeforeStart++
                             }
@@ -821,13 +823,13 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             checkFirstDateWeekend = await isWeekend(payrollDate)
                             checkSecondDateWeekend = await isWeekend(contractEndDate)
                             daysBeforeStart = await differenceInBusinessDays(payrollDate, contractEndDate)
-                            // daysBeforeStart = daysBeforeStart + 1
+                            daysBeforeStart = daysBeforeStart - 1
                             if(!checkFirstDateWeekend){
                                 daysBeforeStart++
                             }
-                            if(!checkSecondDateWeekend){
-                                daysBeforeStart++
-                            }
+                            // if(!checkSecondDateWeekend){
+                            //     daysBeforeStart++
+                            // }
 
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
                         }
@@ -1614,11 +1616,22 @@ router.post('/salary-routine-test', auth, async function (req, res, next) {
 
 
                     let daysBeforeStart = 0
+                    let checkFirstDateWeekend = true
+                    let checkSecondDateWeekend = true
                     if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
                         let hireDay = String(hiredDate.getDate()).padStart(2, '0')
                         if (parseInt(hireDay) > 1) {
-                            daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
-                            empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
+
+                            checkSecondDateWeekend = await isWeekend(hiredDate)
+                            daysBeforeStart = await differenceInBusinessDays(hiredDate, checkDate)
+                            daysBeforeStart = daysBeforeStart - 1
+                            // if(!checkFirstDateWeekend){
+                            //     daysBeforeStart++
+                            // }
+                            if(!checkSecondDateWeekend){
+                                daysBeforeStart++
+                            }
+                            empGross = empGross - ((daysBeforeStart) * (empGross / 22))
                         }
                     }
 
@@ -1627,7 +1640,7 @@ router.post('/salary-routine-test', auth, async function (req, res, next) {
                         // let suspendEmployee = await employee.suspendEmployee(emp.emp_id, 'Contract Ended').then((data) => {
                         //     return data
                         // })
-                        //
+
                         // let suspendUser = await user.suspendUser(emp.emp_unique_id).then((data) => {
                         //     return data
                         // })
@@ -1640,18 +1653,29 @@ router.post('/salary-routine-test', auth, async function (req, res, next) {
 
 
                         if (formatContractEndDate !== formatLastDayOfMonth) {
-                            daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
-                            daysBeforeStart = daysBeforeStart + 1
+                            checkFirstDateWeekend = await isWeekend(payrollDate)
+                            checkSecondDateWeekend = await isWeekend(contractEndDate)
+                            daysBeforeStart = await differenceInBusinessDays(payrollDate, contractEndDate)
+                            daysBeforeStart = daysBeforeStart - 1
+                            if(!checkFirstDateWeekend){
+                                daysBeforeStart++
+                            }
+                            // if(!checkSecondDateWeekend){
+                            //     daysBeforeStart++
+                            // }
+
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
                         }
                     }
-
                     let salaryObject = {
                         "name": emp.emp_first_name,
                         "gross": empGross,
                         "contractEndDate": contractEndDate,
                         "payrollDate": payrollDate,
-                        "days": daysBeforeStart
+                        "days": daysBeforeStart,
+                        "payrollDateStatus": checkFirstDateWeekend,
+                        "contractDate": checkSecondDateWeekend
+
                     }
 
                     GrossArray.push(salaryObject)
