@@ -50,6 +50,9 @@ async function findAllRating() {
     return await Rating.findAll()
 }
 
+async function findAllEndYearRatings() {
+  return await Rating.findAll({where: {rating_time_period: 3}})
+}
 
 module.exports = {
     addRating,
@@ -57,5 +60,6 @@ module.exports = {
     findRating,
     findAllRating,
     findRatingByName,
-  updateRatingStatus
+  updateRatingStatus,
+  findAllEndYearRatings
 }
