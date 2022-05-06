@@ -145,5 +145,70 @@ router.patch('/update-rating/:rating_id', auth, async function (req, res, next) 
     }
 });
 
+router.patch('/update-end-year-rating-status/:rating_id', auth, async function (req, res, next) {
+  try {
+    const ratingId = req.params.rating_id
+    const schema = Joi.object({
+      rating_status: Joi.number().required(),
+    })
+
+    const ratingRequest = req.body
+    const validationResult = schema.validate(ratingRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    await rating.findRating(ratingId).then((data) => {
+      if (_.isEmpty(data) || _.isNull(data)) {
+        return res.status(400).json(`Rating Does Not Exists`)
+      } else {
+            rating.updateRatingStatus(ratingId, ratingRequest).then((data) => {
+              if (_.isEmpty(data) || _.isNull(data)) {
+                return res.status(400).json(`An Error Occurred while Updating Rating`)
+              } else {
+
+                const logData = {
+                  "log_user_id": req.user.username.user_id,
+                  "log_description": "Updated Rating",
+                  "log_date": new Date()
+                }
+                logs.addLog(logData).then((logRes) => {
+                  return res.status(200).json('Action Successful')
+                })
+
+
+              }
+            })
+
+      }
+
+    })
+
+
+  } catch (err) {
+    return res.status(400).json(`Error while adding time sheet `);
+    next(err);
+  }
+});
+
+router.get('/get-end-ratings/:rating_id/:period', auth, async function(req, res){
+  try{
+
+  }catch (e) {
+
+  }
+});
+
+router.get('/get-end-ratings/:rating_id/:period', auth, async function(req, res){
+  try{
+
+  }catch (e) {
+//endpoints :
+    /*
+     * 1. for updating the status of a rating by taking the ID.
+     */
+
+  }
+});
 
 module.exports = router;

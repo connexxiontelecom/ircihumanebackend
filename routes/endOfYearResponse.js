@@ -11,6 +11,8 @@ const endYearAssessment = require('../services/endOfYearAssessmentService')
 const endYearResponse = require('../services/endOfYearResponseService')
 const goalSettingYear = require("../services/goalSettingYearService");
 const selfAssessmentMaster = require("../services/selfAssessmentMasterService");
+const {sequelize, Sequelize} = require('../services/db');
+const endYearSupervisorResponse = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
 
 /* Add end of year question Assessment */
 router.get('/', auth, async function (req, res, next) {
@@ -358,4 +360,41 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
     }
 });
 
+
+router.post('/supervisor-end-year-response', auth, async function(req, res){
+  try{
+    const schema = Joi.object({
+      strength: Joi.string().required(),
+      rating: Joi.string().required(),
+      master: Joi.number().required(),
+      growth_area: Joi.string().required(),
+      additional_comment: Joi.string().allow(null)
+    })
+
+    const supRequest = req.body
+    const validationResult = schema.validate(supRequest)
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const {strength, rating, master, growth_area, additional_comment } = supRequest;
+    const data = {
+      eysr_strength: strength,
+      growth_area: growth_area,
+      eysr_rating:rating,
+      eysr_master_id:master,
+      eysr_additional_comment: additional_comment
+    }
+    const submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
+      return res;
+    });
+
+    return res.status(200).json(submission);
+
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
+  }
+});
+
+//supervisor submit response doesn't change status inside
 module.exports = router;
