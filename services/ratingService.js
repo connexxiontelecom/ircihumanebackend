@@ -9,7 +9,7 @@ async function addRating(ratingData) {
     return await Rating.create({
         rating_name: ratingData.rating_name,
         rating_desc: ratingData.rating_desc,
-
+        rating_time_period: ratingData.rating_period,
     });
 }
 
