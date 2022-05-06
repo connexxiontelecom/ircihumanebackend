@@ -796,9 +796,6 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             return data
                         })
 
-
-
-
                         const contractEndDateDD = String(contractEndDate.getDate()).padStart(2, '0');
                         const contractEndDateMM = String(contractEndDate.getMonth() + 1).padStart(2, '0'); //January is 0!
                         const contractEndDateYYYY = contractEndDate.getFullYear();
