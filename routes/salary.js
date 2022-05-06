@@ -4,6 +4,9 @@ const express = require('express')
 const router = express.Router()
 const auth = require("../middleware/auth");
 const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+// const isSaturday = require('date-fns/isSaturday')
+// const isSunday = require('date-fns/isSunday')
+const isWeekend = require('date-fns/isWeekend')
 const isBefore = require('date-fns/isBefore')
 const salaryGrade = require('../services/salaryGradeService')
 const salaryStructure = require('../services/salaryStructureService')
@@ -779,11 +782,21 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
 
                     let daysBeforeStart = 0
+                    let checkFirstDateWeekend = true
+                    let checkSecondDateWeekend = true
                     if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
                         let hireDay = String(hiredDate.getDate()).padStart(2, '0')
                         if (parseInt(hireDay) > 1) {
-                            daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
-                            empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
+                            checkFirstDateWeekend = await isWeekend(payrollDate)
+                            checkSecondDateWeekend = await isWeekend(contractEndDate)
+                            daysBeforeStart = await differenceInBusinessDays(payrollDate, hiredDate)
+                            if(!checkFirstDateWeekend){
+                                daysBeforeStart++
+                            }
+                            if(!checkSecondDateWeekend){
+                                daysBeforeStart++
+                            }
+                            empGross = empGross - ((daysBeforeStart) * (empGross / 22))
                         }
                     }
 
@@ -805,8 +818,17 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
 
                         if (formatContractEndDate !== formatLastDayOfMonth) {
-                            daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
-                            daysBeforeStart = daysBeforeStart + 1
+                            checkFirstDateWeekend = await isWeekend(payrollDate)
+                            checkSecondDateWeekend = await isWeekend(contractEndDate)
+                            daysBeforeStart = await differenceInBusinessDays(payrollDate, contractEndDate)
+                            // daysBeforeStart = daysBeforeStart + 1
+                            if(!checkFirstDateWeekend){
+                                daysBeforeStart++
+                            }
+                            if(!checkSecondDateWeekend){
+                                daysBeforeStart++
+                            }
+
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
                         }
                     }
