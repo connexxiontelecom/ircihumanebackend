@@ -787,7 +787,6 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                     if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
 
-
                         let suspendEmployee = await employee.suspendEmployee(emp.emp_id, 'Contract Ended').then((data) => {
                             return data
                         })
@@ -1458,6 +1457,180 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                     return res.status(200).json('Action Successful')
                 })
+
+            } else {
+
+                return res.status(400).json(`Payroll Routine has already been run for selected location`)
+            }
+
+
+        } else {
+
+            return res.status(400).json(`There are pending Variational Payments`)
+        }
+
+    } catch (err) {
+
+        const payrollRequest = req.body
+        const pmylLocationId = payrollRequest.pmyl_location_id
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
+            console.log(err.message)
+            next(err);
+        })
+
+    }
+});
+
+
+router.post('/salary-routine-test', auth, async function (req, res, next) {
+    try {
+
+        const schema = Joi.object({
+            pmyl_location_id: Joi.number().required(),
+        })
+
+        const payrollRequest = req.body
+        const validationResult = schema.validate(payrollRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
+            return data
+        })
+        if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+            return res.status(400).json(`No payroll month and year set`)
+        }
+        const pmylLocationId = payrollRequest.pmyl_location_id
+        const payrollMonth = payrollMonthYearData.pym_month
+        const payrollYear = payrollMonthYearData.pym_year
+        const employeeIdsLocation = []
+        let salaryObject = {}
+
+        const employees = await employee.getActiveEmployeesByLocation(pmylLocationId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employees)) {
+            return res.status(400).json('No Employees in Selected Location')
+        }
+
+        for (const emp of employees) {
+            employeeIdsLocation.push(emp.emp_id)
+        }
+
+        // check for pending variational payments
+        const pendingVariationalPayment = await variationalPayment.getUnconfirmedVariationalPaymentMonthYearEmployees(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
+            return data
+        })
+
+
+        if (_.isEmpty(pendingVariationalPayment) || _.isNull(pendingVariationalPayment)) {
+
+            //check if payroll routine has been run
+            const salaryRoutineCheck = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
+                return data
+            })
+
+
+            if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+
+                let GrossArray = []
+
+                for (const emp of employees) {
+
+                    let empDepartmentId = 0
+                    if (!(_.isEmpty(emp.emp_department_id) || _.isNull(emp.emp_department_id))) {
+                        empDepartmentId = parseInt(emp.emp_department_id)
+                    }
+
+                    let empJobRoleId = 0
+                    if (!(_.isEmpty(emp.emp_job_role_id) || _.isNull(emp.emp_job_role_id))) {
+                        empJobRoleId = parseInt(emp.emp_job_role_id)
+                    }
+
+                    let empSalaryStructureName = 'N/A'
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
+                        return data
+                    })
+
+                    if (!_.isEmpty(empSalaryStructure)) {
+                        if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
+                            empSalaryStructureName = empSalaryStructure.salary_grade.sg_name
+                        }
+                    }
+
+                    let empGross = parseFloat(emp.emp_gross)
+
+                    let hiredDate = new Date(emp.emp_hire_date)
+                    let contractEndDate = new Date(emp.emp_contract_end_date)
+
+                    const contractEndYear = contractEndDate.getFullYear()
+                    const contractEndMonth = contractEndDate.getMonth() + 1
+
+                    const hireYear = hiredDate.getFullYear()
+                    const hireMonth = hiredDate.getMonth() + 1
+
+                    let lastDayOfMonth  = new Date(parseInt(payrollYear), parseInt(payrollMonth), 0)
+                    const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
+                    const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
+                    const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
+
+                    const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
+
+                    const payrollDate = new Date(`${lastDayOfMonthYYYY} - ${lastDayOfMonthMM} - ${lastDayOfMonthDD}`)
+
+
+                    let daysBeforeStart
+                    if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
+                        let hireDay = String(hiredDate.getDate()).padStart(2, '0')
+                        if(parseInt(hireDay) > 1){
+                            daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
+                            empGross = empGross - ((daysBeforeStart) * (empGross / 22))
+                        }
+                    }
+
+                    if ((contractEndYear === parseInt(payrollYear)) && (contractEndMonth === parseInt(payrollMonth))) {
+
+                        // let suspendEmployee = await employee.suspendEmployee(emp.emp_id, 'Contract Ended').then((data) => {
+                        //     return data
+                        // })
+                        //
+                        // let suspendUser = await user.suspendUser(emp.emp_unique_id).then((data) => {
+                        //     return data
+                        // })
+
+                        const contractEndDateDD = String(contractEndDate.getDate()).padStart(2, '0');
+                        const contractEndDateMM = String(contractEndDate.getMonth() + 1).padStart(2, '0'); //January is 0!
+                        const contractEndDateYYYY = contractEndDate.getFullYear();
+
+                        const formatContractEndDate = contractEndDateDD + '-' + contractEndDateMM + '-' + contractEndDateYYYY;
+
+
+                        if(formatContractEndDate !== formatLastDayOfMonth){
+                            daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
+                            daysBeforeStart = parseInt(daysBeforeStart)
+                            empGross = empGross - (daysBeforeStart * (empGross / 22))
+                        }
+                    }
+
+                   let salaryObject = {
+                        "name": emp.emp_first_name,
+                       "gross": empGross
+                   }
+
+                    GrossArray.push(salaryObject)
+
+
+                }
+
+                return res.status(200).json(GrossArray)
 
             } else {
 
