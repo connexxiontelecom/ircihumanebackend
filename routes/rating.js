@@ -199,15 +199,14 @@ router.get('/get-end-ratings/:rating_id/:period', auth, async function(req, res)
   }
 });
 
-router.get('/get-end-ratings/:rating_id/:period', auth, async function(req, res){
+router.get('/get-end-year-ratings', auth, async function(req, res){
   try{
-
+    const ratings = await rating.findAllEndYearRatings().then(res=>{
+      return res;
+    })
+    return res.status(200).json(ratings);
   }catch (e) {
-//endpoints :
-    /*
-     * 1. for updating the status of a rating by taking the ID.
-     */
-
+    return res.status(400).json('Something went wrong.')
   }
 });
 
