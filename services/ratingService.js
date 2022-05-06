@@ -25,6 +25,17 @@ async function updateRating(ratingId, ratingData) {
     });
 }
 
+async function updateRatingStatus(ratingId, ratingData) {
+  return await Rating.update({
+    rating_status: ratingData.rating_status,
+
+  }, {
+    where: {
+      rating_id: ratingId
+    }
+  });
+}
+
 async function findRating(ratingId) {
     return await Rating.findOne({where: {rating_id: ratingId}})
 
@@ -45,5 +56,6 @@ module.exports = {
     updateRating,
     findRating,
     findAllRating,
-    findRatingByName
+    findRatingByName,
+  updateRatingStatus
 }
