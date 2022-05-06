@@ -767,7 +767,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                     const hireYear = hiredDate.getFullYear()
                     const hireMonth = hiredDate.getMonth() + 1
 
-                    let lastDayOfMonth  = new Date(parseInt(payrollYear), parseInt(payrollMonth), 0)
+                    let lastDayOfMonth = new Date(parseInt(payrollYear), parseInt(payrollMonth), 0)
                     const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
                     const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
                     const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
@@ -781,7 +781,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                     let daysBeforeStart = 0
                     if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
                         let hireDay = String(hiredDate.getDate()).padStart(2, '0')
-                        if(parseInt(hireDay) > 1){
+                        if (parseInt(hireDay) > 1) {
                             daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
                             empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
                         }
@@ -804,7 +804,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                         const formatContractEndDate = contractEndDateDD + '-' + contractEndDateMM + '-' + contractEndDateYYYY;
 
 
-                        if(formatContractEndDate !== formatLastDayOfMonth){
+                        if (formatContractEndDate !== formatLastDayOfMonth) {
                             daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
                             daysBeforeStart = daysBeforeStart + 1
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
@@ -1580,7 +1580,7 @@ router.post('/salary-routine-test', auth, async function (req, res, next) {
                     const hireYear = hiredDate.getFullYear()
                     const hireMonth = hiredDate.getMonth() + 1
 
-                    let lastDayOfMonth  = new Date(parseInt(payrollYear), parseInt(payrollMonth), 0)
+                    let lastDayOfMonth = new Date(parseInt(payrollYear), parseInt(payrollMonth), 0)
                     const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
                     const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
                     const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
@@ -1594,7 +1594,7 @@ router.post('/salary-routine-test', auth, async function (req, res, next) {
                     let daysBeforeStart = 0
                     if ((hireYear === parseInt(payrollYear)) && (hireMonth === parseInt(payrollMonth))) {
                         let hireDay = String(hiredDate.getDate()).padStart(2, '0')
-                        if(parseInt(hireDay) > 1){
+                        if (parseInt(hireDay) > 1) {
                             daysBeforeStart = await differenceInBusinessDays(hiredDate, payrollDate)
                             empGross = empGross - ((daysBeforeStart + 1) * (empGross / 22))
                         }
@@ -1617,7 +1617,7 @@ router.post('/salary-routine-test', auth, async function (req, res, next) {
                         const formatContractEndDate = contractEndDateDD + '-' + contractEndDateMM + '-' + contractEndDateYYYY;
 
 
-                        if(formatContractEndDate !== formatLastDayOfMonth){
+                        if (formatContractEndDate !== formatLastDayOfMonth) {
                             daysBeforeStart = await differenceInBusinessDays(contractEndDate, payrollDate)
                             daysBeforeStart = daysBeforeStart + 1
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
@@ -2500,7 +2500,6 @@ router.post('/pull-approved-salary-routine-locations', auth, async function (req
         return res.status(200).json(locationSalaryArray)
 
 
-
     } catch (err) {
         console.log(err.message)
         next(err);
@@ -3337,14 +3336,13 @@ router.get('/pull-salary-routine/:empId/', auth, async function (req, res, next)
                         return data
                     })
 
-                    if(parseInt(pensionPayment.pd_employee) === 2){
+                    if (parseInt(pensionPayment.pd_employee) === 2) {
                         if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
                             amount = parseFloat(checkSalary.salary_amount)
                             totalPension = totalPension + amount
                         }
 
                     }
-
 
 
                 }
@@ -3385,14 +3383,12 @@ router.get('/pull-salary-routine/:empId/', auth, async function (req, res, next)
 
                 return res.status(200).json(employeeSalary)
 
-            }
-            else {
+            } else {
                 return res.status(200).json(`No Salary for Employee`)
             }
 
 
         }
-
 
 
     } catch (err) {
@@ -3543,14 +3539,13 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
                         return data
                     })
 
-                    if(parseInt(pensionPayment.pd_employee) === 2){
+                    if (parseInt(pensionPayment.pd_employee) === 2) {
                         if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
                             amount = parseFloat(checkSalary.salary_amount)
                             totalPension = totalPension + amount
                         }
 
                     }
-
 
 
                 }
@@ -3591,8 +3586,7 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
 
                 return res.status(200).json(employeeSalary)
 
-            }
-            else {
+            } else {
                 return res.status(200).json(`No Salary for Employee`)
             }
 
