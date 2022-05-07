@@ -180,6 +180,52 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
     }
 });
 
+router.patch('/unsuspend-employee/:emp_id', auth, async function (req, res, next) {
+    try {
+        let empId = req.params['emp_id']
+   /*     const schema = Joi.object({
+            emp_suspension_reason: Joi.string().required(),
+        })
+
+        const suspensionRequest = req.body
+        const validationResult = schema.validate(suspensionRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }*/
+
+
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData)) {
+            return res.status(400).json(`Employee Doesn't Exist`)
+        }
+
+        const suspendResponse = await employees.unSuspendEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(suspendResponse) || _.isNull(suspendResponse)) {
+            return res.status(400).json(`An Error Occurred`)
+        }
+          const logData = {
+              "log_user_id": req.user.username.user_id,
+              "log_description": "Suspended Employee",
+              "log_date": new Date()
+          }
+          await logs.addLog(logData).then((logRes) => {
+
+              return res.status(200).json('Action Successful')
+          });
+
+    } catch (err) {
+        console.error(`An error occurred while updating Employee `, err.message);
+        next(err);
+    }
+});
+
 
 router.patch('/upload-profile-pic/:empId', auth, async function (req, res, next) {
     try {
