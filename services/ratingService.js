@@ -51,7 +51,7 @@ async function findAllRating() {
 }
 
 async function findAllEndYearRatings() {
-  return await Rating.findAll({where: {rating_time_period: 3}})
+  return await Rating.findAll({where: {rating_time_period: 3, rating_status: 1}})
 }
 
 module.exports = {
