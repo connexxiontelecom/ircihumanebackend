@@ -5,6 +5,7 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService')
 const documents = require('../services/employeeDocumentsService')
+const isWeekend = require('date-fns/isWeekend')
 const IRCMailerService = require('../services/IRCMailer')
 const supervisorAssignment = require('../services/supervisorAssignmentService');
 const auth = require("../middleware/auth");
@@ -81,11 +82,24 @@ router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
 router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
-        await employees.getEmployee(empId).then((data) => {
+        await employees.getEmployee(empId).then(async (data) => {
             if (_.isEmpty(data)) {
                 return res.status(400).json(`Employee Doesn't Exist`)
             } else {
                 const employeeData = req.body
+
+                const employeeHireDate = new Date(employeeData.emp_hire_date)
+
+                const employeeContractEndDate = new Date(employeeData.emp_contract_end_date)
+
+                const checkEmployeeHireDateWeekend = await isWeekend(employeeHireDate)
+
+                const checkEmployeeContractEndDateWeekend = await isWeekend(employeeContractEndDate)
+
+                if(checkEmployeeContractEndDateWeekend || checkEmployeeHireDateWeekend){
+                    return res.status(400).json('Hire date or contract end date cannot be a weekend')
+                }
+
                 employees.updateEmployeeFromBackoffice(empId, employeeData).then((data) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
