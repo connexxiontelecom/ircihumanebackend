@@ -432,5 +432,5 @@ router.get('/supervisor-end-year-response/:masterId', auth, async function(req, 
     return res.status(400).json("Something went wrong.");
   }
 })
-//supervisor submit response doesn't change status inside
+
 module.exports = router;
