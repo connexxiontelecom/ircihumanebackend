@@ -386,7 +386,7 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
       approve, supervisor, employee, gsId, } = supRequest;
     const data = {
       eysr_strength: strength,
-      growth_area: growth_area,
+      eysr_growth: growth_area,
       eysr_rating:rating,
       eysr_master_id:master,
       eysr_additional_comment: additional_comment,
@@ -429,7 +429,7 @@ router.get('/supervisor-end-year-response/:masterId', auth, async function(req, 
       return res.status(200).json(result);
     }
   }catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json("Something went wrong."+e.message);
   }
 })
 

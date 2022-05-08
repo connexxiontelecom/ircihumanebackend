@@ -4,6 +4,7 @@ const {
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
 const employeeModel = require('./Employee')(sequelize, Sequelize)
+const ratingModel = require('./rating')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class EndYearSupervisorResponse extends Model {
     /**
@@ -20,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async getSupervisorEndYearResponseByMasterId(masterId){
-      return await EndYearSupervisorResponse.findAll({ where: { eyrs_master_id: masterId },
-        include:[{model:employeeModel, as:'supervisor'}]
+      return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
+        include:[{model:employeeModel, as:'supervisor'}, {model:ratingModel, as:'rating'}]
       })
     }
 
@@ -44,5 +45,6 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'end_year_supervisor_responses'
   });
   EndYearSupervisorResponse.belongsTo(employeeModel, {as:'supervisor', foreignKey:'eysr_supervisor_id'});
+  EndYearSupervisorResponse.belongsTo(ratingModel, {as:'rating', foreignKey:'eysr_rating'});
   return EndYearSupervisorResponse;
 };
