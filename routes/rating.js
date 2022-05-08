@@ -210,4 +210,15 @@ router.get('/get-end-year-ratings', auth, async function(req, res){
   }
 });
 
+router.get('/rating-details/:id', auth, async function(req, res){
+  try{
+    const ratingId = req.params.id;
+    const result = await rating.findRating(parseInt(ratingId)).then(res=>{
+      return res;
+    });
+    return res.status(200).json(result);
+  }catch (e) {
+    return res.status(400).json('Something went wrong. Try again.')
+  }
+});
 module.exports = router;
