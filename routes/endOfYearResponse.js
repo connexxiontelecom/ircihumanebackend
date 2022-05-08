@@ -368,7 +368,11 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
       rating: Joi.string().required(),
       master: Joi.number().required(),
       growth_area: Joi.string().required(),
-      additional_comment: Joi.string().allow(null)
+      additional_comment: Joi.string().allow(null),
+      approve: Joi.number().required(),
+      supervisor: Joi.number().required(),
+      employee: Joi.number().required(),
+      gsId: Joi.number().required(),
     })
 
     const supRequest = req.body
@@ -377,17 +381,36 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
       return res.status(400).json(validationResult.error.details[0].message)
     }
 
-    const {strength, rating, master, growth_area, additional_comment } = supRequest;
+    const {strength, rating, master,
+      growth_area, additional_comment,
+      approve, supervisor, employee, gsId, } = supRequest;
     const data = {
       eysr_strength: strength,
       growth_area: growth_area,
       eysr_rating:rating,
       eysr_master_id:master,
-      eysr_additional_comment: additional_comment
+      eysr_additional_comment: additional_comment,
+      eysr_supervisor_id:supervisor
     }
     const submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
       return res;
     });
+
+    if(parseInt(approve) === 1){
+      const updateMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(parseInt(employee), parseInt(gsId), parseInt(supervisor)).then(res=>{
+        return res;
+      });
+      if(!(_.isEmpty(updateMaster)) || !(_.isNull(updateMaster))){
+        const updateEndYear = await endYearResponse.approveEndYearResponseByMasterId(parseInt(master)).then(newRes=>{
+          return newRes;
+        })
+        if(_.isEmpty(updateEndYear) || _.isNull(updateEndYear)){
+          return res.status(400).json("Could not update end of year status. Try again later.");
+        }else{
+          return res.status(200).json(submission);
+        }
+      }
+    }
 
     return res.status(200).json(submission);
 
@@ -396,5 +419,18 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
   }
 });
 
-//supervisor submit response doesn't change status inside
+router.get('/supervisor-end-year-response/:masterId', auth, async function(req, res){
+  try{
+    const masterId = req.params.masterId;
+    const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
+    if(_.isEmpty(result) || _.isNull(result)){
+      return res.status(400).json("Could not retrieve supervisor responses");
+    }else{
+      return res.status(200).json(result);
+    }
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+})
+
 module.exports = router;

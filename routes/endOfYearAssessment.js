@@ -130,5 +130,14 @@ router.patch('/update-question/:eya_id', auth, async function (req, res, next) {
     }
 });
 
-
+router.get('/', auth, async function(req, res){
+  try{
+    const questions = await endYearAssessment.getEndOfYearAssessmentQuestions().then(res=>{
+      return res;
+    });
+    return res.status(200).json(questions);
+  }catch (e) {
+    return res.status(400).json('Something went wrong. ')
+  }
+});
 module.exports = router;
