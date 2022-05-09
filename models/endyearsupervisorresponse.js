@@ -26,6 +26,18 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async  updateEndYearSupervisorStatus(eyaId, eyaQuestion) {
+
+      return await EndYearSupervisorResponse.update({
+        eysr_status: 1 //approved
+      }, {
+        where: {
+          eysr_master_id: eyaId
+        }
+
+      })
+    }
+
   };
   EndYearSupervisorResponse.init({
     eysr_id: {
@@ -37,6 +49,7 @@ module.exports = (sequelize, DataTypes) => {
     eysr_strength: DataTypes.TEXT,
     eysr_growth: DataTypes.TEXT,
     eysr_rating: DataTypes.INTEGER,
+    eysr_status: DataTypes.INTEGER,
     eysr_supervisor_id: DataTypes.INTEGER,
     eysr_additional_comment: DataTypes.TEXT
   }, {
