@@ -1,3 +1,4 @@
+const path = require('path')
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-handlebars');
 const transport = nodemailer.createTransport({
@@ -9,26 +10,33 @@ const transport = nodemailer.createTransport({
   }
 });
 
-transport.use('compile', hbs({
-  viewEngine: 'express-handlebars',
-  viewPath: '../email_views/'
-}));
+const handlebarOptions = {
+    viewEngine: {
+        extName: ".handlebars",
+        partialsDir: path.resolve("email_views"),
+        defaultLayout: false,
+    },
+    viewPath: path.resolve("email_views"),
+    extName: ".handlebars",
+};
+
+transport.use(
+    "compile",
+    hbs(handlebarOptions)
+);
+
+// transport.use('compile', hbs({
+//     viewEngine: {
+//         extName: ".html",
+//         partialsDir: path.resolve('/../email_views'),
+//         defaultLayout: false,
+//     },
+//   viewPath: path.resolve('/../email_views'),
+// }));
 
 
 async function sendMail(from, to, subject, text){
   try{
-
-   let mailOptions = {
-      from: 'tabbnabbers@gmail.com', // TODO: email sender
-      to: 'deltamavericks@gmail.com', // TODO: email receiver
-      subject: 'Nodemailer - Test',
-      text: 'Wooohooo it works!!',
-      template: 'index',
-      context: {
-        name: 'Accime Esterling'
-      } // send extra values to template
-    };
-
     const message = {
       from: from,
       to: to,
@@ -38,7 +46,8 @@ async function sendMail(from, to, subject, text){
     await transport.sendMail(message, function(err, res){
       if (err) {
         console.log(err)
-      } else {
+      }
+      else {
         console.log(res);
       }
     })
@@ -57,22 +66,25 @@ async function paySlipSendMail(from, to, subject, templateParams){
             to: to, // TODO: email receiver
             subject: subject,
             text: 'Wooohooo it works!!',
-            template: 'index',
+            template: 'payslipnotification',
             context: {
                 monthYear: templateParams.monthYear,
                 name: templateParams.name,
                 department: templateParams.department,
                 jobRole: templateParams.jobRole,
-                employeeId: templateParams.emp,
+                employeeId: templateParams.employeeId,
                 monthNumber: templateParams.monthNumber,
                 yearNumber: templateParams.yearNumber
             }
         };
 
+
+
         await transport.sendMail(message, function(err, res){
             if (err) {
                 console.log(err)
-            } else {
+            }
+            else {
                 console.log(res);
             }
         })
@@ -86,4 +98,5 @@ async function paySlipSendMail(from, to, subject, templateParams){
 
 module.exports = {
   sendMail,
+    paySlipSendMail
 }
