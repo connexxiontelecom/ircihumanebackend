@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
-var transport = nodemailer.createTransport({
+const hbs = require('nodemailer-handlebars');
+const transport = nodemailer.createTransport({
   host: "smtp.mailtrap.io",
   port: 2525,
   auth: {
@@ -8,9 +9,26 @@ var transport = nodemailer.createTransport({
   }
 });
 
+transport.use('compile', hbs({
+  viewEngine: 'express-handlebars',
+  viewPath: '../email_views/'
+}));
+
 
 async function sendMail(from, to, subject, text){
   try{
+
+   let mailOptions = {
+      from: 'tabbnabbers@gmail.com', // TODO: email sender
+      to: 'deltamavericks@gmail.com', // TODO: email receiver
+      subject: 'Nodemailer - Test',
+      text: 'Wooohooo it works!!',
+      template: 'index',
+      context: {
+        name: 'Accime Esterling'
+      } // send extra values to template
+    };
+
     const message = {
       from: from,
       to: to,
@@ -27,6 +45,40 @@ async function sendMail(from, to, subject, text){
   }catch (e) {
 
   }
+
+}
+
+
+async function paySlipSendMail(from, to, subject, templateParams){
+    try{
+
+        const message = {
+            from: from, // TODO: email sender
+            to: to, // TODO: email receiver
+            subject: subject,
+            text: 'Wooohooo it works!!',
+            template: 'index',
+            context: {
+                monthYear: templateParams.monthYear,
+                name: templateParams.name,
+                department: templateParams.department,
+                jobRole: templateParams.jobRole,
+                employeeId: templateParams.emp,
+                monthNumber: templateParams.monthNumber,
+                yearNumber: templateParams.yearNumber
+            }
+        };
+
+        await transport.sendMail(message, function(err, res){
+            if (err) {
+                console.log(err)
+            } else {
+                console.log(res);
+            }
+        })
+    }catch (e) {
+
+    }
 
 }
 
