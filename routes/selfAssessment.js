@@ -1057,6 +1057,10 @@ router.get('/get-self-assessment-by-master/:masterId', auth, async function (req
           const questions = await selfAssessment.getSelfAssessmentQuestionsByMasterId(parseInt(masterId)).then(res=>{
             return res;
           });
+          const openGs = await goalSetting.findOpenGoals().then((r) => {
+            return r;
+          });
+          const selfAssessmentMaster = await selfAssessmentMasterModel.getSelfAssessmentMasterByGoalSettingIdEmpId(parseInt(master.sa_gs_id), parseInt(master.sa_emp_id));
 
           let employeeRating = await endYearRating.findEmployeeRating(parseInt(master.sa_emp_id), currentYear).then((data) => {
             return data
@@ -1072,7 +1076,9 @@ router.get('/get-self-assessment-by-master/:masterId', auth, async function (req
             question: questions,
             year: currentYear,
             ratingStatus: ratingStatus,
-            ratingDetails: ratingDetails
+            ratingDetails: ratingDetails,
+            openGoal: openGs,
+            master:selfAssessmentMaster
           }
           return res.status(200).json(resData);
         }
