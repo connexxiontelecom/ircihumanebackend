@@ -395,9 +395,17 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
       eysr_supervisor_id:supervisor,
       eysr_status: approve_status
     }
-    const submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
-      return res;
-    });
+    let submission;
+
+    const masterRecord = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(master));
+    if(_.isEmpty(masterRecord) || _.isNull(masterRecord)){
+       submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
+        return res;
+      });
+    }else{
+       submission = await endYearSupervisorResponse.updateSupervisorEndYearResponse(data, parseInt(master));
+    }
+
 
     if(parseInt(approve) === 1){
       const updateMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(parseInt(employee), parseInt(gsId), parseInt(supervisor)).then(res=>{
@@ -418,7 +426,7 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
     return res.status(200).json(submission);
 
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
+    return res.status(400).json("Something went wrong. Try again."+e.message);
   }
 });
 

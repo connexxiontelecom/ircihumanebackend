@@ -1015,4 +1015,86 @@ router.get('/get-master-self-assessment/:emp_id/:gs_id', auth, async (req, res) 
     }
 });
 
+router.get('/get-self-assessment-by-master/:masterId', auth, async function (req, res, next) {
+  try {
+
+    const masterId = req.params.masterId;
+
+    const master = await selfAssessment.getOneSelfAssessmentByMasterId(parseInt(masterId)).then(r=>{
+      return r;
+    });
+
+    const gsData = await goalSetting.getGoalSetting(parseInt(master.sa_gs_id)).then((data) => {
+      return data
+    })
+
+    if(_.isEmpty(master) || _.isNull(master)){
+      return res.status(400).json("Something went wrong. Try again.");
+    } else {
+      if (parseInt(gsData.gs_status) === 1 || parseInt(gsData.gs_status) === 0) {
+        let currentYear = gsData.gs_year;
+        let gss = await goalSetting.getGoalSettingYear(currentYear).then((data) => {
+          return data
+        })
+
+        if (_.isEmpty(gss) || _.isNull(gss)) {
+          return res.status(404).json(`No Goal Setting found`)
+        } else {
+          let ratingStatus = 0
+          let ratingDetails;
+          let gsIdArray = []
+
+         /* const questions = await selfAssessment.getSelfAssessmentQuestionsByMasterId(parseInt(masterId)).then(res=>{
+            return res;
+          });*/
+         /* for (const gs of gss) {
+            gsIdArray.push(gs.gs_id)
+          }*/
+
+          /*let questionData = await selfAssessment.findSelfAssessmentQuestions(empId, gsIdArray).then((data) => {
+            return data
+          })*/
+          const questions = await selfAssessment.getSelfAssessmentQuestionsByMasterId(parseInt(masterId)).then(res=>{
+            return res;
+          });
+
+          let employeeRating = await endYearRating.findEmployeeRating(parseInt(master.sa_emp_id), currentYear).then((data) => {
+            return data
+          })
+          //return res.status(200).json(questions);
+          if (!(_.isEmpty(employeeRating) || _.isNull(employeeRating))) {
+            ratingStatus = 1
+            ratingDetails = employeeRating
+
+          }
+
+          const resData = {
+            question: questions,
+            year: currentYear,
+            ratingStatus: ratingStatus,
+            ratingDetails: ratingDetails
+          }
+          return res.status(200).json(resData);
+        }
+
+
+      } else {
+        return res.status(400).json(`Goal Setting Not Opened`)
+      }
+
+    }
+
+
+
+
+
+
+
+  } catch (err) {
+    console.error(`Error while Responding to Goals `, err.message);
+    next(err);
+  }
+});
+
+
 module.exports = router;

@@ -62,6 +62,17 @@ async function respondSelfAssessment(saId, saResponse) {
     })
 }
 
+async function getSelfAssessmentQuestionsByMasterId(masterId){
+  return await SelfAssessment.findAll({
+    where: { sa_master_id: masterId } ,
+  });
+}
+async function getOneSelfAssessmentByMasterId(masterId){
+  return await SelfAssessment.findOne({
+    where: {sa_master_id: masterId}
+  });
+}
+
 async function updateSelfAssessment(saId, saComment) {
     return await SelfAssessment.update({
         sa_comment: saComment
@@ -139,5 +150,7 @@ module.exports = {
     selfAssessmentStatusUpdate,
     addSelfAssessmentMidYear,
     approveSelfAssessment,
-    approveSelfAssessmentByMasterId
+    approveSelfAssessmentByMasterId,
+  getSelfAssessmentQuestionsByMasterId,
+  getOneSelfAssessmentByMasterId
 }
