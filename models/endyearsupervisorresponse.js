@@ -20,6 +20,15 @@ module.exports = (sequelize, DataTypes) => {
       return await EndYearSupervisorResponse.create(resData);
     }
 
+    static async updateSupervisorEndYearResponse(resData, masterId){
+      return await EndYearSupervisorResponse.update(
+        resData,
+        {
+          where: {eysr_master_id: masterId}
+        }
+      );
+    }
+
     static async getSupervisorEndYearResponseByMasterId(masterId){
       return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
         include:[{model:employeeModel, as:'supervisor'}, {model:ratingModel, as:'rating'}]
