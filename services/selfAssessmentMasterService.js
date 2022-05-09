@@ -21,6 +21,9 @@ async function removeSelfAssessmentMaster(gsId, empId) {
 async function findAssessmentMaster(gsId, empId) {
     return await SelfAssessmentMaster.findOne({where: {sam_gs_id: gsId, sam_emp_id: empId} })
 }
+async function findAssessmentMasterById(masterId) {
+    return await SelfAssessmentMaster.findOne({where: {sam_id: masterId} })
+}
 
 
 
@@ -41,5 +44,6 @@ module.exports = {
     addSelfAssessmentMaster,
     removeSelfAssessmentMaster,
     findAssessmentMaster,
-    approveSelfAssessmentMaster
+    approveSelfAssessmentMaster,
+  findAssessmentMasterById
 }
