@@ -72,6 +72,21 @@ async function getDistinctEmployeesLocationMonthYear(month, year, locationId){
     })
 }
 
+async function getDistinctEmployeesApprovedMonthYear(month, year){
+    return await Salary.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid']
+
+        ],
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+        }
+
+       //include: ['employee']
+    })
+}
+
 async function getDistinctEmployeesMonthYear(month, year){
     return await Salary.findAll({
         attributes: [
@@ -157,5 +172,6 @@ module.exports = {
     undoSalaryMonthYearLocation,
     getDistinctEmployeesLocationMonthYear,
     getDistinctEmployeesMonthYear,
-    getSalaryPd
+    getSalaryPd,
+    getDistinctEmployeesApprovedMonthYear
 }

@@ -24,6 +24,7 @@ const taxRates = require('../services/taxRateService')
 const minimumTaxRate = require('../services/minimumTaxRateService')
 const departmentService = require('../services/departmentService')
 const jobRoleService = require('../services/jobRoleService')
+const mailer = require('../services/IRCMailer')
 
 
 const {
@@ -3214,6 +3215,40 @@ router.post('/approve-salary-routine', auth, async function (req, res, next) {
             return data
         })
 
+        const empSalaries = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location).then((data) => {
+            return data
+        })
+        // return res.status(200).json(empSalaries)
+        for (const emp of empSalaries) {
+            let tempEmp = await employee.getEmployee(emp.salary_empid).then((data) => {
+                return data
+            })
+
+            let empJobRole = 'N/A'
+            if (parseInt(tempEmp.emp_job_role_id) > 0) {
+                empJobRole = tempEmp.jobrole.job_role
+            }
+
+            let sectorName = 'N/A'
+            if (parseInt(tempEmp.emp_department_id) > 0) {
+                sectorName = `${tempEmp.sector.department_name} - ${tempEmp.sector.d_t3_code}`
+            }
+
+            const templateParams = {
+                monthYear: `${payrollMonth} ${payrollYear}`,
+                name: `${tempEmp.emp_first_name} ${tempEmp.emp_last_name}`,
+                department: sectorName,
+                jobRole: empJobRole,
+                employeeId: emp.salary_empid,
+                monthNumber: parseInt(payrollMonth),
+                yearNumber: parseInt(payrollYear)
+            }
+
+            const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Payslip Notification', templateParams).then((data)=>{
+                return data
+            })
+        }
+
         const logData = {
             "log_user_id": req.user.username.user_id,
             "log_description": `Approved payroll routine for ${payrollMonth} - ${payrollYear}`,
@@ -5420,6 +5455,38 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
             console.log(err.message)
             next(err);
         })
+
+    }
+});
+/* run salary routine location */
+
+router.get('/payslipemail', auth, async function (req, res, next) {
+    try {
+
+      const templateParams = {
+          monthYear: 'April 2022',
+          name: 'Jane Doe',
+          department: 'Engineering',
+          jobRole: 'Full Stack Developer',
+          employeeId: '8',
+          monthNumber: '4',
+          yearNumber: '2022'
+      }
+
+     const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
+          return data
+      })
+     // return res.status(200).json(mailerRes)
+
+      //   const mailerRes =  await mailer.sendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', 'text').then((data)=>{
+      //     return data
+      // })
+     return res.status(200).json(mailerRes)
+
+    }
+
+    catch (err) {
+        return res.status(400).json(err.message)
 
     }
 });
