@@ -381,16 +381,19 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
       return res.status(400).json(validationResult.error.details[0].message)
     }
 
+    //return res.status(200).json(supRequest);
     const {strength, rating, master,
       growth_area, additional_comment,
       approve, supervisor, employee, gsId, } = supRequest;
+      let approve_status = approve === 1 ? 1 : 0;
     const data = {
       eysr_strength: strength,
       eysr_growth: growth_area,
       eysr_rating:rating,
       eysr_master_id:master,
       eysr_additional_comment: additional_comment,
-      eysr_supervisor_id:supervisor
+      eysr_supervisor_id:supervisor,
+      eysr_status: approve_status
     }
     const submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
       return res;
