@@ -11,19 +11,28 @@ const hbs = require('nodemailer-handlebars');
 //   }
 // });
 
+// const transport = nodemailer.createTransport({
+//     pool: true,
+//     host: "**",
+//     port: 465,
+//     secure: true, // use SSL
+//     auth: {
+//         user: "**",
+//         pass: "**"
+//     },
+//     tls: {
+//         // do not fail on invalid certs
+//         rejectUnauthorized: false,
+//     },
+// });
+
 const transport = nodemailer.createTransport({
-    pool: true,
-    host: "connexxiongroup.com",
-    port: 465,
-    secure: true, // use SSL
+    host: "smtp.mailtrap.io",
+    port: 2525,
     auth: {
-        user: "oki-peter@connexxiongroup.com",
-        pass: "connect@okipeter"
-    },
-    tls: {
-        // do not fail on invalid certs
-        rejectUnauthorized: false,
-    },
+        user: "d00b66bb7e3062",
+        pass: "611de82767b826"
+    }
 });
 
 const handlebarOptions = {
