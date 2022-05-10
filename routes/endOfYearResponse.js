@@ -139,6 +139,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
                 sam_status: 0,
                 sam_optional: 'null',
                 sam_discussion_held_on: 'null',
+                sam_year: gsData.gs_year
 
             }
             const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
