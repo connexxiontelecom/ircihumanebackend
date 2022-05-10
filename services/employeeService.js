@@ -5,6 +5,7 @@ const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 const userModel = require("../models/user")(sequelize, Sequelize.DataTypes)
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -195,7 +196,15 @@ const createNewEmployee = async (req, res, next) => {
 async function getEmployee(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'jobrole', 'sector', 'bank', 'lga', 'state', 'pension']
+        include: [ 'location',
+          'jobrole', 'sector', 'bank',
+          'lga', 'state', 'pension',
+          {model:employee, as: 'supervisor',
+            include: [
+              {model:Department, as:'sector'},
+              {model: locationModel, as:'location'}
+            ]},
+        ]
     })
 }
 
