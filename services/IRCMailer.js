@@ -1,13 +1,23 @@
 const path = require('path')
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-handlebars');
+
+// const transport = nodemailer.createTransport({
+//   host: "smtp.mailtrap.io",
+//   port: 2525,
+//   auth: {
+//     user: "90d95c7dda4a44",
+//     pass: "9554a813c869e7"
+//   }
+// });
+
 const transport = nodemailer.createTransport({
-  host: "smtp.mailtrap.io",
-  port: 2525,
-  auth: {
-    user: "90d95c7dda4a44",
-    pass: "9554a813c869e7"
-  }
+    host: "smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+        user: "d00b66bb7e3062",
+        pass: "611de82767b826"
+    }
 });
 
 const handlebarOptions = {

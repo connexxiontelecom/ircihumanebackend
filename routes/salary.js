@@ -5468,7 +5468,7 @@ router.get('/payslipemail', auth, async function (req, res, next) {
           name: 'Jane Doe',
           department: 'Engineering',
           jobRole: 'Full Stack Developer',
-          employeeId: '8',
+          employeeId: '3',
           monthNumber: '4',
           yearNumber: '2022'
       }
@@ -5476,7 +5476,7 @@ router.get('/payslipemail', auth, async function (req, res, next) {
      const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
           return data
       })
-     // return res.status(200).json(mailerRes)
+     return res.status(200).json(mailerRes)
 
       //   const mailerRes =  await mailer.sendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', 'text').then((data)=>{
       //     return data
