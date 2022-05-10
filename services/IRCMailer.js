@@ -12,12 +12,18 @@ const hbs = require('nodemailer-handlebars');
 // });
 
 const transport = nodemailer.createTransport({
-    host: "smtp.mailtrap.io",
-    port: 2525,
+    pool: true,
+    host: "connexxiongroup.com",
+    port: 465,
+    secure: true, // use SSL
     auth: {
-        user: "d00b66bb7e3062",
-        pass: "611de82767b826"
-    }
+        user: "oki-peter@connexxiongroup.com",
+        pass: "connect@okipeter"
+    },
+    tls: {
+        // do not fail on invalid certs
+        rejectUnauthorized: false,
+    },
 });
 
 const handlebarOptions = {
