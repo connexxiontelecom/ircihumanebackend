@@ -62,6 +62,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
                     sam_status: 0,
                     createdAt: new Date(),
                     updatedAt: new Date(),
+                    sam_year: gsData.gs_year
                 }
 
                 const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
@@ -267,11 +268,11 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
             sa_comment: Joi.string().required(),
             sam_discussion_held_on: Joi.string().required(),
             sa_update: Joi.string().required(),
-            sa_accomplishment: Joi.string().required(),
-            sa_challenges: Joi.string().required(),
-            sa_support_needed: Joi.string().required(),
-            sa_next_steps: Joi.string().required(),
-            optional: Joi.string().required(),
+            sa_accomplishment: Joi.string().allow(null),
+            sa_challenges: Joi.string().allow(null),
+            sa_support_needed: Joi.string().allow(null),
+            sa_next_steps: Joi.string().allow(null),
+            optional: Joi.string().allow(null),
         })
         const schemas = Joi.array().items(schema)
         const saRequests = req.body
@@ -292,12 +293,10 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
         })
 
         if (_.isEmpty(employeeData) || _.isNull(employeeData) || _.isNull(gsData) || _.isEmpty(gsData)) {
-            return res.status(400).json(`Employee or Goal Setting  Does Not exist`)
-
+            return res.status(400).json(`Employee or Goal Setting  Does Not exist`);
         }
 
         if (parseInt(gsData.gs_status) === 1) {
-
             const checkAssessmentMaster = await selfAssessmentMaster.findAssessmentMaster(gsId, empId).then((data) => {
                 return data
             })
@@ -314,6 +313,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                 sam_status: 0,
                 sam_optional: saRequests[0].optional,
                 sam_discussion_held_on: saRequests[0].sam_discussion_held_on,
+                sam_year: gsData.gs_year
 
             }
             const addMaster = await selfAssessmentMaster.addSelfAssessmentMaster(selfAssessmentMasterData).then((data) => {
@@ -369,7 +369,6 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                 await logs.addLog(logData).then((logRes) => {
                     return res.status(200).json(`Action Successful`)
                 })
-
             }
         } else {
             return res.status(400).json(`Goal Setting Not Opened`)
@@ -1097,8 +1096,32 @@ router.get('/get-self-assessment-by-master/:masterId', auth, async function (req
 
 
   } catch (err) {
-    console.error(`Error while Responding to Goals `, err.message);
+    return res.status(400).json(`Error while Responding to Goals `);
     next(err);
+  }
+});
+
+router.get('/get-all-self-assessments', auth, async function(req, res){
+  try{
+    const assessments = await selfAssessmentMasterModel.getAllSelfAssessments().then(res=>{
+      return res;
+    })
+    return res.status(200).json(assessments);
+  }catch (e) {
+    return res.status(400).json("Could not retrieve self-assessments"+e.message);
+  }
+});
+
+router.get('/get-all-emp-self-assessments/:empId/:year', auth, async function(req, res){
+  try{
+    const year = req.params.year;
+    const empId = req.params.empId;
+    const assessments = await selfAssessmentMasterModel.getAllEmployeeSelfAssessments(parseInt(empId), year).then(res=>{
+      return res;
+    })
+    return res.status(200).json(assessments);
+  }catch (e) {
+    return res.status(400).json("Could not retrieve self-assessments"+e.message);
   }
 });
 

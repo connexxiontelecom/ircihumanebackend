@@ -47,6 +47,21 @@ module.exports = (sequelize, DataTypes) => {
         where:{sam_emp_id:empIds}, order:[['sam_id', 'DESC']]
       })
     }
+
+    static async getAllSelfAssessments(){
+      return await selfassessmentmaster.findAll({
+        include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}, {model: EmployeeModel, as:'supervisor'}],
+        where: {sam_status:1 }, //only approved
+        order:[ ['sam_id', 'DESC'] ],
+        group: ['sam_year', 'sam_emp_id']
+      })
+    }
+    static async getAllEmployeeSelfAssessments(empId, year){
+      return await selfassessmentmaster.findAll({
+        where: { sam_year: year, sam_emp_id: empId },
+        include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}, {model: EmployeeModel, as:'supervisor'}],
+      })
+    }
   };
   selfassessmentmaster.init({
     sam_id:{
@@ -60,6 +75,7 @@ module.exports = (sequelize, DataTypes) => {
     sam_supervisor_id: DataTypes.INTEGER,
     sam_optional: DataTypes.TEXT,
     sam_discussion_held_on: DataTypes.DATE,
+    sam_year: DataTypes.STRING,
     createdAt: {
       //field: 'created_at',
       type: DataTypes.DATE,
