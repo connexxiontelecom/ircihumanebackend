@@ -13,6 +13,7 @@ const goalSettingYear = require("../services/goalSettingYearService");
 const selfAssessmentMaster = require("../services/selfAssessmentMasterService");
 const {sequelize, Sequelize} = require('../services/db');
 const endYearSupervisorResponse = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
+const selfassessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 
 /* Add end of year question Assessment */
 router.get('/', auth, async function (req, res, next) {
@@ -99,16 +100,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
     let destroyResponse;
     let addResponse;
     try {
-      const schema = Joi.object().keys({
-        sam_discussion_held_on: Joi.string().required(),
-      })
-      const schemas = Joi.array().items(schema)
-      const saRequests = req.body
 
-      let validationResult = schemas.validate(saRequests)
-      if (validationResult.error) {
-        return res.status(400).json(validationResult.error.details[0].message)
-      }
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
         let eyrRequests = req.body
@@ -383,15 +375,15 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
       supervisor: Joi.number().required(),
       employee: Joi.number().required(),
       gsId: Joi.number().required(),
+      sam_discussion_held_on: Joi.string().required(),
     })
-
     const supRequest = req.body
-    const validationResult = schema.validate(supRequest)
+    const validationResult = schema.validate(supRequest, {abortEarly: false});
+
+
     if (validationResult.error) {
       return res.status(400).json(validationResult.error.details[0].message)
     }
-
-    //return res.status(200).json(supRequest);
     const {strength, rating, master,
       growth_area, additional_comment,
       approve, supervisor, employee, gsId, } = supRequest;
@@ -416,6 +408,7 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
        submission = await endYearSupervisorResponse.updateSupervisorEndYearResponse(data, parseInt(master));
     }
 
+    const dis = await selfAssessmentMaster.updateDiscussionHeldOnSelfAssessmentMaster(parseInt(employee), parseInt(gsId), req.body.sam_discussion_held_on);
 
     if(parseInt(approve) === 1){
       const updateMaster = await selfAssessmentMaster.approveSelfAssessmentMaster(parseInt(employee), parseInt(gsId), parseInt(supervisor)).then(res=>{
@@ -428,10 +421,11 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
         if(_.isEmpty(updateEndYear) || _.isNull(updateEndYear)){
           return res.status(400).json("Could not update end of year status. Try again later.");
         }else{
-          return res.status(200).json(submission);
+          return res.status(200).json('Action successful.');
         }
       }
     }
+
 
     return res.status(200).json(submission);
 
@@ -443,6 +437,7 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
 router.get('/supervisor-end-year-response/:masterId', auth, async function(req, res){
   try{
     const masterId = req.params.masterId;
+
     const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
     if(_.isEmpty(result) || _.isNull(result)){
       return res.status(400).json("Could not retrieve supervisor responses");
