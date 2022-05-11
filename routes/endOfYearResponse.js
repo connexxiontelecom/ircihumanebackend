@@ -99,7 +99,16 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
     let destroyResponse;
     let addResponse;
     try {
+      const schema = Joi.object().keys({
+        sam_discussion_held_on: Joi.string().required(),
+      })
+      const schemas = Joi.array().items(schema)
+      const saRequests = req.body
 
+      let validationResult = schemas.validate(saRequests)
+      if (validationResult.error) {
+        return res.status(400).json(validationResult.error.details[0].message)
+      }
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
         let eyrRequests = req.body
@@ -138,7 +147,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
                 sam_supervisor_id: employeeData.emp_supervisor_id,
                 sam_status: 0,
                 sam_optional: 'null',
-                sam_discussion_held_on: 'null',
+                sam_discussion_held_on: req.body.sam_discussion_held_on,
                 sam_year: gsData.gs_year
 
             }
