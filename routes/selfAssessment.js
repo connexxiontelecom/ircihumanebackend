@@ -700,12 +700,13 @@ router.patch('/update-self-assessment/:emp_id/', auth, async function (req, res,
 
 
 /*Update Assessment */
-router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.patch('/update-assessment/:emp_id/:gs_id/:masterId', auth, async function (req, res, next) {
     try {
         const fullUrl = req.headers.referer; //req.protocol + '://' + req.get('host') + req.originalUrl;
         //return res.status(200).json(fullUrl);
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
+        let masterId = req.params.masterId
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
         })
@@ -767,7 +768,7 @@ router.patch('/update-assessment/:emp_id/:gs_id', auth, async function (req, res
                     sa_gs_id: gsId,
                     sa_emp_id: empId,
                     sa_comment: sa.sa_comment,
-                    //sa_master_id: masterId,
+                    sa_master_id: masterId,
                     sa_challenges: sa.sa_challenge,
                     sa_accomplishment: sa.sa_accomplishment,
                     sa_support_needed: sa.sa_support,
