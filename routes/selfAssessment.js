@@ -367,7 +367,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
                     "log_date": new Date()
                 }
                 await logs.addLog(logData).then((logRes) => {
-                    return res.status(200).json(`Action Successful`)
+                    return res.status(200).json(addMaster)
                 })
             }
         } else {
