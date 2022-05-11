@@ -437,6 +437,7 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
 router.get('/supervisor-end-year-response/:masterId', auth, async function(req, res){
   try{
     const masterId = req.params.masterId;
+
     const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
     if(_.isEmpty(result) || _.isNull(result)){
       return res.status(400).json("Could not retrieve supervisor responses");
