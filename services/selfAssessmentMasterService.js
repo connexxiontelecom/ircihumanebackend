@@ -31,7 +31,15 @@ async function findAssessmentMasterById(masterId) {
 async function approveSelfAssessmentMaster(empId, gsId, supervisorId) {
     return await SelfAssessmentMaster.update({
         sam_status: 1,
-        sam_supervisor_id: supervisorId
+        sam_supervisor_id: supervisorId,
+    }, {
+        where: {sam_gs_id: gsId, sam_emp_id: empId}
+    })
+}
+
+async function updateDiscussionHeldOnSelfAssessmentMaster(empId, gsId, discussion) {
+    return await SelfAssessmentMaster.update({
+        sam_discussion_held_on:discussion
     }, {
         where: {sam_gs_id: gsId, sam_emp_id: empId}
     })
@@ -46,5 +54,6 @@ module.exports = {
     removeSelfAssessmentMaster,
     findAssessmentMaster,
     approveSelfAssessmentMaster,
-  findAssessmentMasterById
+  findAssessmentMasterById,
+  updateDiscussionHeldOnSelfAssessmentMaster
 }
