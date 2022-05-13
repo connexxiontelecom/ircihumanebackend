@@ -794,6 +794,9 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                         if (parseInt(hireDay) > 1) {
                             checkSecondDateWeekend = await isWeekend(hiredDate)
                             daysBeforeStart = await businessDaysDifference(emp.emp_hire_date, checkDate)
+                            if(!checkSecondDateWeekend){
+                                daysBeforeStart++
+                            }
                             empGross = empGross - ((daysBeforeStart) * (empGross / 22))
                         }
                     }
@@ -808,12 +811,12 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             return data
                         })
 
-                        const contractEndDateDD = String(contractEndDate.getDate()).padStart(2, '0');
-                        const contractEndDateMM = String(contractEndDate.getMonth() + 1).padStart(2, '0'); //January is 0!
-                        const contractEndDateYYYY = contractEndDate.getFullYear();
+                        const contractEndDateDD = String(contractEndDate.getDate()).padStart(2, '0')
+                        const contractEndDateMM = String(contractEndDate.getMonth() + 1).padStart(2, '0') //January is 0!
+                        const contractEndDateYYYY = contractEndDate.getFullYear()
 
-                        const formatContractEndDate = contractEndDateDD + '-' + contractEndDateMM + '-' + contractEndDateYYYY;
-                        const reverseFormatContractEndDate = contractEndDateYYYY + '-' + contractEndDateMM + '-' + contractEndDateDD;
+                        const formatContractEndDate = contractEndDateDD + '-' + contractEndDateMM + '-' + contractEndDateYYYY
+                        const reverseFormatContractEndDate = contractEndDateYYYY + '-' + contractEndDateMM + '-' + contractEndDateDD
 
 
                         if (formatContractEndDate !== formatLastDayOfMonth) {
@@ -2941,7 +2944,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
                             return data
                         })
                         if (!_.isEmpty(locationData)) {
-                            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`
+                            locationName = `${locationData.l_t6_code}`
                         }
                     }
 
