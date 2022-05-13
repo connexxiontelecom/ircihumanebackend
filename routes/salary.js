@@ -795,7 +795,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                             checkSecondDateWeekend = await isWeekend(hiredDate)
                             daysBeforeStart = await businessDaysDifference(emp.emp_hire_date, checkDate)
                             if(!checkSecondDateWeekend){
-                                daysBeforeStart++
+                                daysBeforeStart--
                             }
                             empGross = empGross - ((daysBeforeStart) * (empGross / 22))
                         }
