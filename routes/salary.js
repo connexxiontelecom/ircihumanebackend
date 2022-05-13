@@ -821,6 +821,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                         if (formatContractEndDate !== formatLastDayOfMonth) {
                             daysBeforeStart = await businessDaysDifference(formatLastDayOfMonthReverse, reverseFormatContractEndDate)
+                           if(!isWeekend(contractEndDate)){
+                               daysBeforeStart--
+                           }
+
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
                         }
                     }
