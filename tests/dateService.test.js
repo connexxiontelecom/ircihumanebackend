@@ -8,9 +8,9 @@ describe('IrcIhumane DateService', () => {
     })
 
     test('Compute Business Days Difference beginning weekday end weekday', async () => {
-        const endDate = '2022-05-13'
+        const endDate = '2022-05-30'
         const beginningDate = '2022-05-09'
-        expect(await businessDaysDifference(endDate, beginningDate)).toBe(5);
+        expect(await businessDaysDifference(endDate, beginningDate)).toBe(16);
     })
 
     test('Compute Business Days Difference beginning weekend end weekday', async () => {
