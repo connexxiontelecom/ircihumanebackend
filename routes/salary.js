@@ -4735,7 +4735,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
                 return data
             })
         } else {
-            employees = await employee.getActiveEmployees(location).then((data) => {
+            employees = await employee.getEmployees().then((data) => {
                 return data
             })
         }
@@ -5501,7 +5501,6 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
             })
 
             if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
-
                 let GrossArray = []
 
                 for (const emp of employees) {
