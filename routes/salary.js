@@ -4735,7 +4735,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
                 return data
             })
         } else {
-            employees = await employee.getActiveEmployees(location).then((data) => {
+            employees = await employee.getEmployees().then((data) => {
                 return data
             })
         }
