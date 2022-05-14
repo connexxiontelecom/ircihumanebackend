@@ -5501,7 +5501,6 @@ router.post('/salary-tes-routine', auth, async function (req, res, next) {
             })
 
             if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
-
                 let GrossArray = []
 
                 for (const emp of employees) {
