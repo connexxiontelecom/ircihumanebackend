@@ -5,6 +5,8 @@ const {
 } = require('sequelize');
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 const goalSettingModel = require("../models/goalsetting")(sequelize, Sequelize.DataTypes);
+const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes);
+const sectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class selfassessmentmaster extends Model {
     /**
@@ -50,7 +52,15 @@ module.exports = (sequelize, DataTypes) => {
 
     static async getAllSelfAssessments(){
       return await selfassessmentmaster.findAll({
-        include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}, {model: EmployeeModel, as:'supervisor'}],
+        include:[
+          {model:EmployeeModel, as:'employee',
+            include: [
+              {model: locationModel, as: 'location'},
+              {model: sectorModel, as: 'sector'},
+            ]},
+          {model:goalSettingModel, as:'goal'},
+          {model: EmployeeModel, as:'supervisor'}
+        ],
         where: {sam_status:1 }, //only approved
         order:[ ['sam_id', 'DESC'] ],
         group: ['sam_year', 'sam_emp_id']
