@@ -4586,11 +4586,11 @@ router.post('/pay-order', auth, async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getActiveEmployeesByLocation(location).then((data) => {
+            employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location).then((data) => {
                 return data
             })
         } else {
-            employees = await employee.getActiveEmployees(location).then((data) => {
+            employees = await employee.getEmployees().then((data) => {
                 return data
             })
         }
@@ -4731,7 +4731,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getActiveEmployeesByLocation(location).then((data) => {
+            employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location).then((data) => {
                 return data
             })
         } else {
@@ -4930,7 +4930,7 @@ router.post('/nhf-report', auth, async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
+            employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location).then((data) => {
                 return data
             })
         } else {
@@ -5124,7 +5124,7 @@ router.post('/nsitf-report', auth, async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
+            employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location).then((data) => {
                 return data
             })
         } else {
@@ -5294,7 +5294,7 @@ router.post('/tax-report', auth, async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
+            employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location).then((data) => {
                 return data
             })
         } else {
