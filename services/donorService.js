@@ -23,6 +23,10 @@ async function findDonorById(donorId) {
     return await Donor.findOne({where: {donor_id: donorId}})
 }
 
+async function findDonorByLocationId(locationId) {
+    return await Donor.findOne({where: {donor_location: locationId}})
+}
+
 async function updateDonor(donorData, donorId) {
 
     return await Donor.update({
@@ -47,6 +51,7 @@ module.exports = {
     findAllDonors,
     findDonorByCode,
     findDonorById,
-    updateDonor
+    updateDonor,
+    findDonorByLocationId
 
 }
