@@ -90,6 +90,16 @@ const updateBank = async (req, res, next) => {
     }
 }
 
+async function getBankById(bankId) {
+    return await bank.findOne({
+            where: {
+                bank_id: bankId
+            },
+        }
+    )
+
+}
+
 module.exports = {
     getBanks,
     setNewBank,

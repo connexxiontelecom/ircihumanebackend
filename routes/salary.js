@@ -738,7 +738,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
                 let GrossArray = []
 
+
                 for (const emp of employees) {
+
+
 
                     let empDepartmentId = 0
                     if (!(_.isEmpty(emp.emp_department_id) || _.isNull(emp.emp_department_id))) {
@@ -857,7 +860,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                     salary_emp_unique_id: emp.emp_unique_id,
                                     salary_emp_start_date: emp.emp_hire_date,
-                                    salary_emp_end_date: emp.emp_contract_end_date
+                                    salary_emp_end_date: emp.emp_contract_end_date,
+                                    salary_bank_id: emp.emp_bank_id,
+                                    salary_account_number: emp.emp_account_no,
+                                    salary_sort_code: emp.bank.bank_code
 
                                 }
 
@@ -928,7 +934,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                         salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                         salary_emp_unique_id: emp.emp_unique_id,
                                         salary_emp_start_date: emp.emp_hire_date,
-                                        salary_emp_end_date: emp.emp_contract_end_date
+                                        salary_emp_end_date: emp.emp_contract_end_date,
+                                        salary_bank_id: emp.emp_bank_id,
+                                        salary_account_number: emp.emp_account_no,
+                                        salary_sort_code: emp.bank.bank_code
 
                                     }
 
@@ -972,7 +981,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                             salary_emp_unique_id: emp.emp_unique_id,
                                             salary_emp_start_date: emp.emp_hire_date,
-                                            salary_emp_end_date: emp.emp_contract_end_date
+                                            salary_emp_end_date: emp.emp_contract_end_date,
+                                            salary_bank_id: emp.emp_bank_id,
+                                            salary_account_number: emp.emp_account_no,
+                                            salary_sort_code: emp.bank.bank_code
 
                                         }
 
@@ -1069,7 +1081,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                             salary_emp_unique_id: emp.emp_unique_id,
                                             salary_emp_start_date: emp.emp_hire_date,
-                                            salary_emp_end_date: emp.emp_contract_end_date
+                                            salary_emp_end_date: emp.emp_contract_end_date,
+                                            salary_bank_id: emp.emp_bank_id,
+                                            salary_account_number: emp.emp_account_no,
+                                            salary_sort_code: emp.bank.bank_code
 
                                         }
 
@@ -1106,7 +1121,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                             salary_emp_unique_id: emp.emp_unique_id,
                                             salary_emp_start_date: emp.emp_hire_date,
-                                            salary_emp_end_date: emp.emp_contract_end_date
+                                            salary_emp_end_date: emp.emp_contract_end_date,
+                                            salary_bank_id: emp.emp_bank_id,
+                                            salary_account_number: emp.emp_account_no,
+                                            salary_sort_code: emp.bank.bank_code
 
                                         }
 
@@ -1146,7 +1164,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                             salary_emp_unique_id: emp.emp_unique_id,
                                             salary_emp_start_date: emp.emp_hire_date,
-                                            salary_emp_end_date: emp.emp_contract_end_date
+                                            salary_emp_end_date: emp.emp_contract_end_date,
+                                            salary_bank_id: emp.emp_bank_id,
+                                            salary_account_number: emp.emp_account_no,
+                                            salary_sort_code: emp.bank.bank_code
 
                                         }
 
@@ -1185,7 +1206,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                             salary_emp_unique_id: emp.emp_unique_id,
                                             salary_emp_start_date: emp.emp_hire_date,
-                                            salary_emp_end_date: emp.emp_contract_end_date
+                                            salary_emp_end_date: emp.emp_contract_end_date,
+                                            salary_bank_id: emp.emp_bank_id,
+                                            salary_account_number: emp.emp_account_no,
+                                            salary_sort_code: emp.bank.bank_code
 
                                         }
 
@@ -1223,7 +1247,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                             salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                             salary_emp_unique_id: emp.emp_unique_id,
                                             salary_emp_start_date: emp.emp_hire_date,
-                                            salary_emp_end_date: emp.emp_contract_end_date
+                                            salary_emp_end_date: emp.emp_contract_end_date,
+                                            salary_bank_id: emp.emp_bank_id,
+                                            salary_account_number: emp.emp_account_no,
+                                            salary_sort_code: emp.bank.bank_code
 
                                         }
 
@@ -1395,7 +1422,10 @@ router.post('/salary-routine', auth, async function (req, res, next) {
                                     salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
                                     salary_emp_unique_id: emp.emp_unique_id,
                                     salary_emp_start_date: emp.emp_hire_date,
-                                    salary_emp_end_date: emp.emp_contract_end_date
+                                    salary_emp_end_date: emp.emp_contract_end_date,
+                                    salary_bank_id: emp.emp_bank_id,
+                                    salary_account_number: emp.emp_account_no,
+                                    salary_sort_code: emp.bank.bank_code
 
                                 }
 
