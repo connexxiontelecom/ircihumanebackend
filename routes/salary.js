@@ -4701,16 +4701,16 @@ router.post('/pay-order', auth, async function (req, res, next) {
                 let bankName = 'N/A'
                 let bankSortCode = 'N/A'
 
-                if (parseInt(emp.emp_bank_id) > 0) {
-                    bankName = `${emp.bank.bank_name}`
-                    bankSortCode = `${emp.bank.bank_code}`
+                if (parseInt(employeeSalaries[0].salary_bank_id) > 0) {
+                    bankName = `${employeeSalaries[0].bank.bank_name}`
+                    bankSortCode = `${employeeSalaries[0].salary_sort_code}`
                 }
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
-                    accountNumber: emp.emp_account_no,
+                    accountNumber: employeeSalaries[0].salary_account_number,
                     location: locationName,
                     locationCode: locationCode,
                     jobRole: empJobRole,
