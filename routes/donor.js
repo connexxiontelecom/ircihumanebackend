@@ -26,6 +26,7 @@ router.post('/add-donor', auth, async function (req, res, next) {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
+            location: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -68,6 +69,7 @@ router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
+            location: Joi.number().required(),
         })
 
         const donorRequest = req.body
