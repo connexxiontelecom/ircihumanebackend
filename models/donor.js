@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
-const locationModel = require('./Location')(sequelize, Sequelize)
+const sectorModel = require('./Department')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class donor extends Model {
     /**
@@ -23,12 +23,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     donor_code: DataTypes.STRING,
     donor_description: DataTypes.STRING,
-    donor_location: DataTypes.INTEGER
+    donor_sector: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'donor',
     tableName: 'donors'
   });
-  donor.belongsTo(locationModel, {as:'location', foreignKey:'donor_location'});
+  donor.belongsTo(sectorModel, {as:'sector', foreignKey:'donor_sector'});
   return donor;
 };

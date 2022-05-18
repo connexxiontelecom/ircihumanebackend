@@ -11,7 +11,7 @@ module.exports = {
     return Promise.all([
       queryInterface.addColumn(
         'donors',
-        'donor_location',
+        'donor_sector',
         {
           type: Sequelize.INTEGER,
           allowNull:true,
