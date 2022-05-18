@@ -1,5 +1,6 @@
 const {QueryTypes} = require('sequelize')
 const Joi = require('joi')
+const _ = require('lodash');
 const isBefore = require('date-fns/isBefore')
 const {sequelize, Sequelize} = require('./db');
 const PublicHoliday = require("../models/PublicHoliday")(sequelize, Sequelize.DataTypes);
@@ -13,7 +14,8 @@ const errHandler = (err) => {
 const getAllPublicHolidays = async (req, res) => {
     try {
         const holidays = await PublicHoliday.findAll({
-            attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year', 'ph_to_day', 'ph_to_month', 'ph_to_year']
+            attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_group', 'ph_month', 'ph_year', 'ph_to_day', 'ph_to_month', 'ph_to_year'],
+            group: ['ph_group']
         });
         return res.status(200).json(holidays)
     } catch (err) {
@@ -45,8 +47,12 @@ const setNewPublicHoliday = async (req, res) => {
         const to_month = to_date.getUTCMonth() + 1;
         const to_year = to_date.getUTCFullYear();
 
+        const numDays = (to_date.getTime() - date.getTime())/(1000*60*60*24);
+        //return res.status(400).json(`${day+1}`);
 
-        const existPeriod = await PublicHoliday.findOne({
+
+
+       /* const existPeriod = await PublicHoliday.findOne({
             attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year'],
             where: {
                 ph_day: day,
@@ -54,8 +60,10 @@ const setNewPublicHoliday = async (req, res) => {
                 ph_year: year
             }
         });
-        if (existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");
-        const pubData = {
+
+        if (existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");*/
+      const group = Math.floor(Math.random() * 1001);
+      const pubData = {
             ph_name: public_name,
             ph_day: day,
             ph_month: month,
@@ -66,10 +74,30 @@ const setNewPublicHoliday = async (req, res) => {
             ph_to_day: to_day,
             ph_to_month: to_month,
             ph_to_year: to_year,
+            ph_group: group,
         };
-
-        await PublicHoliday.create(pubData)
-            .catch(errHandler);
+        let i = 0;
+          if(numDays > 0){
+            for(i=0; i<= numDays; i++){
+              const loopPub = {
+                ph_day: i === 0 ? day : (day + i) ,
+                ph_date: i === 0 ? date : date.getTime() + (i*24*60*60*1000) ,
+                ph_to_date: public_date_to,
+                ph_to_day: to_day,
+                ph_name: public_name,
+                ph_month: month,
+                ph_to_month: to_month,
+                ph_to_year: to_year,
+                ph_year: year,
+                ph_group: group,
+              }
+              await PublicHoliday.create(loopPub)
+                .catch(errHandler);
+            }
+          }else{
+            await PublicHoliday.create(pubData)
+              .catch(errHandler);
+          }
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,
@@ -92,6 +120,7 @@ const updatePublicHoliday = async (req, res) => {
             public_name: Joi.string().required(),
             public_date: Joi.date().required(),
             public_date_to: Joi.date().required(),
+            group: Joi.string().required(),
         })
         const publicRequest = req.body
         const validationResult = schema.validate(publicRequest)
@@ -131,16 +160,61 @@ const updatePublicHoliday = async (req, res) => {
             ph_to_month: to_month,
             ph_to_year: to_year,
         };
-        //console.log(public_date_to);
-        //return res.status(200).json(public_date_to);
-        const updateRecord = await PublicHoliday.update(
+        const publicHols = await PublicHoliday.getPublicHolidayByGroup(req.body.group);
+        //return res.status(400).json(publicHols);
+        if(!(_.isNull(publicHols)) || !(_.isEmpty(publicHols))){
+            await PublicHoliday.destroyPublicHolidayByGroup(req.body.group);
+        }/*else{
+          const updateRecord = await PublicHoliday.update(
             pubData,
             {
-                where: {
-                    ph_id: publicHolidayId
-                }
+              where: {
+                ph_id: publicHolidayId
+              }
             });
-        if (!updateRecord) return res.status(400).json("There's an existing public holiday with these entry.");
+          if (!updateRecord) return res.status(400).json("There's an existing public holiday with these entry.");
+        }*/
+      const numDays = (to_date.getTime() - date.getTime())/(1000*60*60*24);
+      //return res.status(400).json(numDays);
+
+
+
+      /* const existPeriod = await PublicHoliday.findOne({
+           attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year'],
+           where: {
+               ph_day: day,
+               ph_month: month,
+               ph_year: year
+           }
+       });
+
+       if (existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");*/
+      const group = Math.floor(Math.random() * 1001);
+      let i = 0;
+      if(numDays > 0){
+        for(i=0; i<= numDays; i++){
+          const loopPub = {
+            ph_day: i === 0 ? day : (day + i) ,
+            ph_date: i === 0 ? date : date.getTime() + (i*24*60*60*1000) ,
+            ph_to_date: public_date_to,
+            ph_to_day: to_day,
+            ph_name: public_name,
+            ph_month: month,
+            ph_to_month: to_month,
+            ph_to_year: to_year,
+            ph_year: year,
+            ph_group: group,
+          }
+          await PublicHoliday.create(loopPub)
+            .catch(errHandler);
+        }
+      }else{
+        await PublicHoliday.create(pubData)
+          .catch(errHandler);
+      }
+        //console.log(public_date_to);
+        //return res.status(200).json(public_date_to);
+
 
         //Log
         const logData = {
