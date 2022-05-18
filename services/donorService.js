@@ -11,7 +11,7 @@ async function addDonor(donorData) {
     return await Donor.create({
         donor_code: donorData.donor_code,
         donor_description: donorData.donor_description,
-        donor_location: donorData.location,
+        donor_sector: donorData.sector,
     });
 }
 
@@ -23,8 +23,8 @@ async function findDonorById(donorId) {
     return await Donor.findOne({where: {donor_id: donorId}})
 }
 
-async function findDonorByLocationId(locationId) {
-    return await Donor.findOne({where: {donor_location: locationId}})
+async function findDonorByLocationId(sectorId) {
+    return await Donor.findOne({where: {donor_sector: sectorId}})
 }
 
 async function updateDonor(donorData, donorId) {
@@ -32,7 +32,7 @@ async function updateDonor(donorData, donorId) {
     return await Donor.update({
         donor_code: donorData.donor_code,
         donor_description: donorData.donor_description,
-        donor_location: donorData.location,
+        donor_sector: donorData.sector,
     }, {
         where: {
             donor_id: donorId
@@ -42,7 +42,7 @@ async function updateDonor(donorData, donorId) {
 
 async function findAllDonors() {
     return await Donor.findAll({
-      include:['location']
+      include:['sector']
     })
 }
 

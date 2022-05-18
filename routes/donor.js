@@ -26,7 +26,7 @@ router.post('/add-donor', auth, async function (req, res, next) {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
-            location: Joi.number().required(),
+            sector: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -57,7 +57,7 @@ router.post('/add-donor', auth, async function (req, res, next) {
             }
         })
     } catch (err) {
-        console.error(`Error while adding donor `, err.message);
+        return res.status(400).json(`Error while adding donor `);
         next(err);
     }
 });
@@ -69,7 +69,7 @@ router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
-            location: Joi.number().required(),
+            sector: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -135,9 +135,9 @@ router.get('/:id', auth, async (req, res) => {
     }
 });
 
-router.get('/location/:locationId', auth, async (req, res) => {
+router.get('/sector/:sectorId', auth, async (req, res) => {
     try {
-        await donor.findDonorByLocationId(req.params.locationId).then((data) => {
+        await donor.findDonorByLocationId(req.params.sectorId).then((data) => {
             return res.status(200).json(data);
         })
     } catch (e) {
