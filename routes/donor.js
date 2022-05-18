@@ -26,6 +26,7 @@ router.post('/add-donor', auth, async function (req, res, next) {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
+            location: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -68,6 +69,7 @@ router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
+            location: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -126,6 +128,16 @@ router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
 router.get('/:id', auth, async (req, res) => {
     try {
         await donor.findDonorById(req.params.id).then((data) => {
+            return res.status(200).json(data);
+        })
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
+router.get('/location/:locationId', auth, async (req, res) => {
+    try {
+        await donor.findDonorByLocationId(req.params.locationId).then((data) => {
             return res.status(200).json(data);
         })
     } catch (e) {

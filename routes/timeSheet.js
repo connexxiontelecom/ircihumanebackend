@@ -232,7 +232,7 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
                                     ts_day: dayNumber,
                                     ts_start: '08:00',
                                     ts_end: '17:00',
-                                    ts_duration: '8.25'
+                                    ts_duration: '8.15'
                                 }
                             } else {
                                 timeObject = {
