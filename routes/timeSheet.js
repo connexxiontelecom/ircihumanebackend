@@ -230,8 +230,8 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
                                     ts_month: pm,
                                     ts_year: payrollYear,
                                     ts_day: dayNumber,
-                                    ts_start: '08:00',
-                                    ts_end: '17:00',
+                                    ts_start: employeeData.emp_location_id === 7 ? '08:30' : '08:00',
+                                    ts_end: employeeData.emp_location_id === 7  ? '17:30' : '17:00',
                                     ts_duration: '8.15'
                                 }
                             } else {
