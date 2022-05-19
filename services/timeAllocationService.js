@@ -20,7 +20,9 @@ async function addTimeAllocation(timeAllocationData) {
         ta_year: timeAllocationData.ta_year,
         ta_tcode: timeAllocationData.ta_tcode,
         ta_charge: timeAllocationData.ta_charge,
-        ta_ref_no: timeAllocationData.ta_ref_no
+        ta_ref_no: timeAllocationData.ta_ref_no,
+        ta_t0_code: timeAllocationData.ta_t0_code,
+        ta_t0_percent: timeAllocationData.ta_t0_percent
 
     });
 }
