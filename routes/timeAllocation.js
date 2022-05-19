@@ -9,6 +9,7 @@ const timeSheet = require('../services/timeSheetService')
 const logs = require('../services/logService')
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const authorizationAction = require('../services/authorizationActionService');
+const employee = require("../services/employeeService");
 
 
 router.get('/', auth, async function (req, res, next) {
@@ -46,10 +47,19 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
-            if (sup) {
+      const employeeData = await employee.getEmployee(req.body.ta_emp_id).then((data) => {
+        return data
+      })
+      if(_.isNull(employeeData) || _.isEmpty(employeeData)){
+        return res.status(400).json("Employee does not exist.");
+      }
+      if(_.isNull(employeeData.emp_supervisor_id) || _.isEmpty(employeeData.emp_supervisor_id)){
+        return res.status(400).json("Employee currently has no supervisor");
+      }
+        /*supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
+            if (sup) {*/
                 timeAllocation.addTimeAllocation(timeAllocationRequest).then((data) => {
-                    authorizationAction.registerNewAction(2, data.ta_ref_no, sup.sa_supervisor_id, 0, "Time allocation/time sheet initialized.")
+                    authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
                         .then((val) => {
                             const logData = {
                                 "log_user_id": req.user.username.user_id,
@@ -61,10 +71,10 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
                             })
                         })
                 })
-            } else {
+           /* } else {
                 return res.status(400).json("You currently have no supervisor assigned to you.");
             }
-        });
+        });*/
 
     } catch (err) {
         console.error(`Error while adding time sheet `, err.message);
