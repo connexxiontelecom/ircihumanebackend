@@ -59,8 +59,8 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
       }
         /*supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
             if (sup) {*/
-                timeAllocation.addTimeAllocation(timeAllocationRequest).then((data) => {
-                    authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+                timeAllocation.addTimeAllocation(timeAllocationRequest).then(async(data) => {
+                    await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
                         .then((val) => {
                             const logData = {
                                 "log_user_id": req.user.username.user_id,
@@ -103,10 +103,19 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        const supervise = await supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
+      const employeeData = await employee.getEmployee(req.body.ta_emp_id).then((data) => {
+        return data
+      })
+      if(_.isNull(employeeData) || _.isEmpty(employeeData)){
+        return res.status(400).json("Employee does not exist.");
+      }
+        if(!employeeData.emp_supervisor_id){
+          return res.status(400).json("Employee currently has no supervisor");
+        }
+       /* const supervise = await supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
             return sup;
         });
-        if (supervise) {
+        if (supervise) {*/
             const destroyTimeAllo = await timeAllocation.deleteTimeAllocation(timeAllocationRequest).then((deldata) => {
                 return deldata;
             });
@@ -114,7 +123,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
             const timeall = await timeAllocation.addTimeAllocation(timeAllocationRequest).then((data) => {
                 return data;
             });
-            const auth = await authorizationAction.registerNewAction(2, timeall.ta_ref_no, supervise.sa_supervisor_id, 0, "Time allocation/time sheet initialized.")
+            const auth = await authorizationAction.registerNewAction(2, timeall.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
                 .then((val) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
@@ -126,9 +135,9 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
                     })
                 });
             return res.status(200).json('Action Successful')
-        } else {
+        /*} else {
             return res.status(400).json("You currently have no supervisor assigned to you.");
-        }
+        }*/
 
     } catch (err) {
         return res.status(400).error(`Error while adding time sheet `);
