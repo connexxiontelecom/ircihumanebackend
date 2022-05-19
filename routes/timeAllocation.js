@@ -53,7 +53,8 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
       if(_.isNull(employeeData) || _.isEmpty(employeeData)){
         return res.status(400).json("Employee does not exist.");
       }
-      if(_.isNull(employeeData.emp_supervisor_id) || _.isEmpty(employeeData.emp_supervisor_id)){
+
+      if(!employeeData.emp_supervisor_id){
         return res.status(400).json("Employee currently has no supervisor");
       }
         /*supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
