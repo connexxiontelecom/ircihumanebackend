@@ -59,18 +59,18 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
       }
         /*supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
             if (sup) {*/
-                timeAllocation.addTimeAllocation(timeAllocationRequest).then(async (data) => {
-                  await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
-                    .then((val) => {
-                      const logData = {
-                        "log_user_id": req.user.username.user_id,
-                        "log_description": "Added Time Allocation",
-                        "log_date": new Date()
-                      }
-                      logs.addLog(logData).then((logRes) => {
-                        return res.status(200).json('Action Successful')
-                      })
-                    })
+                timeAllocation.addTimeAllocation(timeAllocationRequest).then(async(data) => {
+                    await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+                        .then((val) => {
+                            const logData = {
+                                "log_user_id": req.user.username.user_id,
+                                "log_description": "Added Time Allocation",
+                                "log_date": new Date()
+                            }
+                            logs.addLog(logData).then((logRes) => {
+                                return res.status(200).json('Action Successful')
+                            })
+                        })
                 })
            /* } else {
                 return res.status(400).json("You currently have no supervisor assigned to you.");
