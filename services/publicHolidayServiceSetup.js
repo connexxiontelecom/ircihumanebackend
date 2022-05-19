@@ -22,6 +22,16 @@ const getAllPublicHolidays = async (req, res) => {
         return res.status(500).json({message: `Error while fetching public holidays ${err.message}`})
     }
 }
+const getAllIndividualPublicHolidays = async (req, res) => {
+    try {
+        const holidays = await PublicHoliday.findAll({
+            attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_group', 'ph_month', 'ph_year', 'ph_to_day', 'ph_to_month', 'ph_to_year'],
+        });
+        return res.status(200).json(holidays)
+    } catch (err) {
+        return res.status(500).json({message: `Error while fetching public holidays ${err.message}`})
+    }
+}
 
 const setNewPublicHoliday = async (req, res) => {
     try {
@@ -279,5 +289,6 @@ module.exports = {
     fetchAllPublicHolidays,
     fetchPublicHolidayByYear,
     fetchSpecificPublicHoliday,
-    updatePublicHoliday
+    updatePublicHoliday,
+  getAllIndividualPublicHolidays
 }
