@@ -42,6 +42,8 @@ router.post('/add-donor', auth, async function (req, res, next) {
                 return res.status(400).json('Donor Code Already Exist')
 
             } else {
+
+
                 donor.addDonor(donorRequest).then((data) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
