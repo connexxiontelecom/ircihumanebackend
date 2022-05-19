@@ -27,6 +27,8 @@ module.exports = (sequelize, DataTypes) => {
     ta_tcode: DataTypes.TEXT,
     ta_charge: DataTypes.DOUBLE,
     ta_ref_no: DataTypes.STRING,
+    ta_t0_percent: DataTypes.STRING,
+    ta_t0_code: DataTypes.STRING,
     ta_date_approved: DataTypes.DATE,
     ta_approved_by: DataTypes.INTEGER,
     ta_status: DataTypes.INTEGER,
