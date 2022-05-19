@@ -36,7 +36,7 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
             ta_year: Joi.string().required(),
             ta_tcode: Joi.string().required(),
             ta_charge: Joi.number().precision(2).required(),
-            ta_t0_code: Joi.number().required(),
+            ta_t0_code: Joi.string().required(),
             ta_t0_percent: Joi.number().required(),
             ta_ref_no: Joi.string().required()
         })
@@ -92,7 +92,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
             ta_tcode: Joi.string().required(),
             ta_charge: Joi.number().precision(2).required(),
             ta_ref_no: Joi.string().required(),
-            ta_t0_code: Joi.number().required(),
+            ta_t0_code: Joi.string().required(),
             ta_t0_percent: Joi.number().required(),
         })
 
