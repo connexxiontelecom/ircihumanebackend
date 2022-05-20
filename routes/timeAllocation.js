@@ -57,9 +57,15 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
       if(!employeeData.emp_supervisor_id){
         return res.status(400).json("Employee currently has no supervisor");
       }
+     /* const timeAllocate = await timeAllocation.findOneTimeAllocationDetail(req.body.ta_month, req.body.ta_year, req.body.ta_emp_id);
+      if(_.isNull(timeAllocate) || _.isEmpty(timeAllocate)){
+        return res.status(400).json('No record found.')
+      }*/
+
         /*supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
             if (sup) {*/
                 await timeAllocation.addTimeAllocation(timeAllocationRequest).then(async(data) => {
+                  //return res.status(200).json(data.ta_ref_no);
                     await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
                         .then((val) => {
                             const logData = {
