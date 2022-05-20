@@ -121,6 +121,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(Employee, {as: 'supervisor', foreignKey: 'emp_supervisor_id'})
     Employee.hasMany(Employee, { foreignKey: 'emp_id' })
+
     Employee.belongsTo(Location, {as: 'location', foreignKey: 'emp_location_id'})
     Employee.hasMany(Location, {foreignKey: 'location_id'})
 
