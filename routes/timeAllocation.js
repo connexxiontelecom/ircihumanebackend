@@ -95,6 +95,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
             ta_ref_no: Joi.string().required(),
             ta_t0_code: Joi.string().required(),
             ta_t0_percent: Joi.number().required(),
+            ta_id: Joi.number().required(),
         })
 
         const timeAllocationRequest = req.body
@@ -112,11 +113,33 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
         if(!employeeData.emp_supervisor_id){
           return res.status(400).json("Employee currently has no supervisor");
         }
+        const timeAllocate = await timeAllocation.findOneTimeAllocationDetail(req.body.ta_month, req.body.ta_year, req.body.ta_emp_id);
+        if(_.isNull(timeAllocate) || _.isEmpty(timeAllocate)){
+          return res.status(400).json('No record found.')
+        }
+        const updateTa = await timeAllocation.updateTimeAllocationByTaId(req.body.ta_id, timeAllocationRequest);
+        if(updateTa){
+          const auth = await authorizationAction.registerNewAction(2, timeAllocate.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+            .then((val) => {
+              const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": "Added Time Allocation",
+                "log_date": new Date()
+              }
+              logs.addLog(logData).then((logRes) => {
+                //return res.status(200).json('Action Successful')
+              })
+            });
+          return res.status(200).json('Action Successful')
+        }else{
+          return res.status(400).json("Something went wrong. Try again.")
+        }
+
        /* const supervise = await supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
             return sup;
         });
         if (supervise) {*/
-            const destroyTimeAllo = await timeAllocation.deleteTimeAllocation(timeAllocationRequest).then((deldata) => {
+            /*const destroyTimeAllo = await timeAllocation.deleteTimeAllocation(timeAllocationRequest).then((deldata) => {
                 return deldata;
             });
 
@@ -134,7 +157,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
                         //return res.status(200).json('Action Successful')
                     })
                 });
-            return res.status(200).json('Action Successful')
+            return res.status(200).json('Action Successful')*/
         /*} else {
             return res.status(400).json("You currently have no supervisor assigned to you.");
         }*/
