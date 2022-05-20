@@ -59,7 +59,7 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
       }
         /*supervisorAssignmentService.getEmployeeSupervisor(req.body.ta_emp_id).then((sup) => {
             if (sup) {*/
-                timeAllocation.addTimeAllocation(timeAllocationRequest).then(async(data) => {
+                await timeAllocation.addTimeAllocation(timeAllocationRequest).then(async(data) => {
                     await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
                         .then((val) => {
                             const logData = {
@@ -78,7 +78,7 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
         });*/
 
     } catch (err) {
-        console.error(`Error while adding time sheet `, err.message);
+        return res.status(400).json(`Error while adding time sheet `);
         next(err);
     }
 });
