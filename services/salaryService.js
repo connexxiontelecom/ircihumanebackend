@@ -156,6 +156,22 @@ async function confirmSalary(month, year, user, date, location) {
         })
 }
 
+async function unconfirmSalary(month, year, user, date, location) {
+    return await Salary.update({
+            salary_confirmed: 0,
+            salary_confirmed_by: user,
+            salary_confirmed_date: date
+        },
+        {
+            where: {
+                salary_paymonth: month,
+                salary_payyear: year,
+                salary_location_id: location
+
+            },
+        })
+}
+
 async function getSalaryPd(pd) {
     return await Salary.findOne({
         where: {
@@ -171,6 +187,7 @@ module.exports = {
     getEmployeeSalary,
     approveSalary,
     confirmSalary,
+    unconfirmSalary,
     getEmployeeSalaryMonthYearPd,
     undoSalaryMonthYearLocation,
     getDistinctEmployeesLocationMonthYear,
