@@ -101,31 +101,48 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
             ta_ref_no: Joi.string().required(),
             ta_t0_code: Joi.string().required(),
             ta_t0_percent: Joi.number().required(),
-            ta_id: Joi.number().required(),
+            //ta_id: Joi.number().required(),
         })
-
+        const schemas = Joi.array().items(schema)
         const timeAllocationRequest = req.body
-        const validationResult = schema.validate(timeAllocationRequest)
+        const validationResult = schemas.validate(timeAllocationRequest)
 
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
-      const employeeData = await employee.getEmployee(req.body.ta_emp_id).then((data) => {
+      const employeeData = await employee.getEmployee(req.body[0].ta_emp_id).then((data) => {
         return data
       })
+
       if(_.isNull(employeeData) || _.isEmpty(employeeData)){
         return res.status(400).json("Employee does not exist.");
       }
         if(!employeeData.emp_supervisor_id){
           return res.status(400).json("Employee currently has no supervisor");
         }
-        const timeAllocate = await timeAllocation.findOneTimeAllocationDetail(req.body.ta_month, req.body.ta_year, req.body.ta_emp_id);
-        if(_.isNull(timeAllocate) || _.isEmpty(timeAllocate)){
-          return res.status(400).json('No record found.')
+        const timeAllocate = await timeAllocation.findTimeAllocationDetail(req.body[0].ta_month, req.body[0].ta_year, req.body[0].ta_emp_id);
+        const timeAllocateCounter = timeAllocate.length;
+        //return res.status(400).json(timeAlloCounter)
+        const timeAllocationIds = [];
+        if(!(_.isNull(timeAllocate)) || !(_.isEmpty(timeAllocate))){
+          let n = 0;
+          for(n = 0; n<timeAllocateCounter; n++){
+            timeAllocationIds.push(timeAllocate[n].ta_id);
+
+          }
+          //delete
+          await timeAllocation.deleteTimeAllocationByIds(timeAllocationIds);
         }
-        const updateTa = await timeAllocation.updateTimeAllocationByTaId(req.body.ta_id, timeAllocationRequest);
-        if(updateTa){
-          const auth = await authorizationAction.registerNewAction(2, timeAllocate.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+        //const updateTa = await timeAllocation.updateTimeAllocationByTaId(req.body.ta_id, timeAllocationRequest);
+
+        const taCounter = req.body.length;
+        let i = 0;
+        for(i = 0; i<taCounter; i++){
+          await timeAllocation.addTimeAllocation(timeAllocationRequest[i]);
+        }
+      const timeAllocate2 = await timeAllocation.findOneTimeAllocationDetail(req.body[0].ta_month, req.body[0].ta_year, req.body[0].ta_emp_id);
+        if(timeAllocate2){
+          const auth = await authorizationAction.registerNewAction(2, timeAllocate2.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
             .then((val) => {
               const logData = {
                 "log_user_id": req.user.username.user_id,
@@ -169,7 +186,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
         }*/
 
     } catch (err) {
-        return res.status(400).error(`Error while adding time sheet `);
+        return res.status(400).json(`Error while adding time sheet `+err.message);
 
     }
 });

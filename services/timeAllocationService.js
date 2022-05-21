@@ -44,6 +44,11 @@ async function deleteTimeAllocation(timeAllocationData) {
         where: {ta_ref_no: timeAllocationData.ta_ref_no}
     });
 }
+async function deleteTimeAllocationByIds(Ids) {
+    return await TimeAllocation.destroy({
+        where: {ta_id: Ids}
+    });
+}
 
 
 async function updateTimeAllocationByTaId(ta_id, timeAllocationData){
@@ -150,5 +155,6 @@ module.exports = {
     findAllTimeAllocations,
     findTimeAllocationDetailMonthYear,
     findOneTimeAllocationByRefNo,
-    findOneTimeAllocationDetail
+    findOneTimeAllocationDetail,
+  deleteTimeAllocationByIds
 }
