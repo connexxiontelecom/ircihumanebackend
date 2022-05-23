@@ -10,6 +10,7 @@ const employees = require("../services/employeeService");
 const {sequelize, Sequelize} = require('../services/db');
 const notificationModel = require("../models/notification")(sequelize, Sequelize.DataTypes);
 const permissionService = require("../services/permissionService");
+const _ = require('lodash')
 
 
 /* Get All Users */
@@ -142,7 +143,7 @@ router.post('/add-user', auth, async function (req, res, next) {
                 return data
             })
 
-            const deletePermission = await permissionService.deletePermission(addUser.user_id).then((data)=>{
+            const deletePermission = await permissionService.deletePermission(addUser.user_id).then((data) => {
                 return data
             })
 
@@ -170,6 +171,28 @@ router.patch('/update-user/:user_id', auth, async function (req, res, next) {
             user_type: Joi.number().required(),
             user_token: Joi.string().min(2),
             user_status: Joi.number().required(),
+            perm_manage_user: Joi.number().required(),
+            perm_hr_config: Joi.number().required(),
+            perm_payroll_config: Joi.number().required(),
+            perm_payment_definition: Joi.number().required(),
+            perm_onboard_employee: Joi.number().required(),
+            perm_manage_employee: Joi.number().required(),
+            perm_assign_supervisors: Joi.number().required(),
+            perm_announcement: Joi.number().required(),
+            perm_query: Joi.number().required(),
+            perm_leave: Joi.number().required(),
+            perm_travel: Joi.number().required(),
+            perm_timesheet: Joi.number().required(),
+            perm_self_assessment: Joi.number().required(),
+            perm_leave_management: Joi.number().required(),
+            perm_setup_variations: Joi.number().required(),
+            perm_confirm_variations: Joi.number().required(),
+            perm_approve_variations: Joi.number().required(),
+            perm_decline_variations: Joi.number().required(),
+            perm_run_payroll: Joi.number().required(),
+            perm_undo_payroll: Joi.number().required(),
+            perm_confirm_payroll: Joi.number().required(),
+            perm_approve_payroll: Joi.number().required()
         })
 
         const schemaWithPassword = Joi.object({
@@ -181,42 +204,120 @@ router.patch('/update-user/:user_id', auth, async function (req, res, next) {
             user_type: Joi.number().required(),
             user_token: Joi.string().min(2),
             user_status: Joi.number().required(),
+            perm_manage_user: Joi.number().required(),
+            perm_hr_config: Joi.number().required(),
+            perm_payroll_config: Joi.number().required(),
+            perm_payment_definition: Joi.number().required(),
+            perm_onboard_employee: Joi.number().required(),
+            perm_manage_employee: Joi.number().required(),
+            perm_assign_supervisors: Joi.number().required(),
+            perm_announcement: Joi.number().required(),
+            perm_query: Joi.number().required(),
+            perm_leave: Joi.number().required(),
+            perm_travel: Joi.number().required(),
+            perm_timesheet: Joi.number().required(),
+            perm_self_assessment: Joi.number().required(),
+            perm_leave_management: Joi.number().required(),
+            perm_setup_variations: Joi.number().required(),
+            perm_confirm_variations: Joi.number().required(),
+            perm_approve_variations: Joi.number().required(),
+            perm_decline_variations: Joi.number().required(),
+            perm_run_payroll: Joi.number().required(),
+            perm_undo_payroll: Joi.number().required(),
+            perm_confirm_payroll: Joi.number().required(),
+            perm_approve_payroll: Joi.number().required()
         })
 
-        const user = req.body
-
         let validationResult;
-        if (user.user_password) {
-            validationResult = schemaWithPassword.validate(user)
+        let user;
+        if (req.body.user_password) {
+            validationResult = schemaWithPassword.validate(req.body)
+             user = {
+                user_username: req.body.user_username,
+                user_name: req.body.user_name,
+                user_email: req.body.user_email,
+                user_password: req.body.user_password,
+                user_password_repeat: req.body.user_password_repeat,
+                user_type: req.body.user_type,
+                user_token: req.body.user_token,
+                user_status: req.body.user_status,
+            }
         } else {
-            validationResult = schemaWithoutPassword.validate(user)
+            validationResult = schemaWithoutPassword.validate(req.body)
+            user = {
+                user_username: req.body.user_username,
+                user_name: req.body.user_name,
+                user_email: req.body.user_email,
+                user_type: req.body.user_type,
+                user_token: req.body.user_token,
+                user_status: req.body.user_status,
+            }
         }
+
 
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
+        const permissionObject = {
+            perm_user_id: req.params['user_id'],
+            perm_manage_user: req.body.perm_manage_user,
+            perm_hr_config: req.body.perm_hr_config,
+            perm_payroll_config: req.body.perm_payroll_config,
+            perm_payment_definition: req.body.perm_payment_definition,
+            perm_onboard_employee: req.body.perm_onboard_employee,
+            perm_manage_employee: req.body.perm_manage_employee,
+            perm_assign_supervisors: req.body.perm_assign_supervisors,
+            perm_announcement: req.body.perm_announcement,
+            perm_query: req.body.perm_query,
+            perm_leave: req.body.perm_leave,
+            perm_travel: req.body.perm_travel,
+            perm_timesheet: req.body.perm_timesheet,
+            perm_self_assessment: req.body.perm_self_assessment,
+            perm_leave_management: req.body.perm_leave_management,
+            perm_setup_variations: req.body.perm_setup_variations,
+            perm_confirm_variations: req.body.perm_confirm_variations,
+            perm_approve_variations: req.body.perm_approve_variations,
+            perm_decline_variations: req.body.perm_decline_variations,
+            perm_run_payroll: req.body.perm_run_payroll,
+            perm_undo_payroll: req.body.perm_undo_payroll,
+            perm_confirm_payroll: req.body.perm_confirm_payroll,
+            perm_approve_payroll: req.body.perm_approve_payroll
+        }
+        const userData = await users.findUserByUserId(req.params['user_id']).then((data) => {
+            return data;
 
-        await users.findUserByUserId(req.params['user_id']).then((data) => {
-            if (data) {
-                users.updateUser(user, req.params['user_id']).then((data) => {
-                    const logData = {
-                        "log_user_id": req.user.username.user_id,
-                        "log_description": "Added new user",
-                        "log_date": new Date()
-                    }
-                    logs.addLog(logData).then((logRes) => {
-                        //return res.status(200).json(logRes);
-                        return res.status(200).json(`User updated`)
-                    })
-
-                })
-
-
-            } else {
-                return res.status(404).json('User does not exist in database')
-            }
         })
+        if (_.isEmpty(userData) || _.isNull(userData)) {
+            return res.status(404).json('User does not exist in database')
+        }
+
+
+      const updateUser =  await users.updateUser(user, req.params['user_id']).then((data) => {
+           return data
+        })
+
+        if(_.isEmpty(updateUser) || _.isNull(updateUser)){
+            return res.status(404).json('An error occurred')
+        }
+
+        const updatePermission = await permissionService.updatePermission(permissionObject).then((data) => {
+            return data
+        })
+
+
+        const logData = {
+            "log_user_id": req.user.username.user_id,
+            "log_description": "Added new user",
+            "log_date": new Date()
+        }
+        logs.addLog(logData).then((logRes) => {
+            //return res.status(200).json(logRes);
+            return res.status(200).json(`User updated`)
+        })
+
+
+
     } catch (err) {
 
         console.error(`Error while updating user `, err.message);
