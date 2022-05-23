@@ -1,4 +1,4 @@
-const {QueryTypes} = require('sequelize')
+const {QueryTypes, where} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 const Joi = require('joi');
@@ -152,6 +152,12 @@ async function changePassword(req, res, next) {
     }
 }
 
+async function deleteUser(userId){
+    return await User.destroy({where: {
+        user_id: userId
+        }})
+}
+
 
 module.exports = {
     addUser,
@@ -162,5 +168,6 @@ module.exports = {
     findAllUsers,
     changePassword,
     suspendUser,
-    unSuspendUser
+    unSuspendUser,
+    deleteUser
 }
