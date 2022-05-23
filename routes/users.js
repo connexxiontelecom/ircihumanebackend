@@ -317,7 +317,6 @@ router.patch('/update-user/:user_id', auth, async function (req, res, next) {
         })
 
 
-
     } catch (err) {
 
         console.error(`Error while updating user `, err.message);
