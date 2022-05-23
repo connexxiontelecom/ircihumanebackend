@@ -1,6 +1,6 @@
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
-const User = require("../models/usern")(sequelize, Sequelize.DataTypes);
+const User = require("../models/user")(sequelize, Sequelize.DataTypes);
 const Permission = require("../models/permission")(sequelize, Sequelize.DataTypes)
 
 const Joi = require('joi');
@@ -75,9 +75,16 @@ async function deletePermission(userId){
         }})
 }
 
+async function getPermission(userId){
+    return await Permission.findOne({where: {
+            perm_user_id: userId
+        }})
+}
+
 
 module.exports = {
     addPermission,
     updatePermission,
-    deletePermission
+    deletePermission,
+    getPermission
 }

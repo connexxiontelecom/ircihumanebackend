@@ -351,7 +351,104 @@ router.post('/login', async function (req, res, next) {
                 delete checkUserExisting.user_password;
                 let employeeId = {}
                 let userData = {}
+                let userPermission = [ ]
                 userData = checkUserExisting
+
+                const permissionData = await permissionService.getPermission(checkUserExisting.user_id).then((data)=>{
+                    return data
+                })
+
+                if(!_.isEmpty(permissionData)){
+
+                    if(parseInt(permissionData.perm_manage_user) === 1){
+                        userPermission.push('MANAGE_USER')
+                    }
+
+                    if(parseInt(permissionData.perm_hr_config) === 1){
+                        userPermission.push('HR_CONFIG')
+                    }
+                    if(parseInt(permissionData.perm_payroll_config) === 1){
+                        userPermission.push('PAYROLL_CONFIG')
+                    }
+
+                    if(parseInt(permissionData.perm_payment_definition) === 1){
+                        userPermission.push('PAYMENT_DEFINITION')
+                    }
+
+                    if(parseInt(permissionData.perm_onboard_employee) === 1){
+                        userPermission.push('ONBOARD_EMPLOYEE')
+                    }
+
+                    if(parseInt(permissionData.perm_manage_employee) === 1){
+                        userPermission.push('MANAGE_EMPLOYEE')
+                    }
+
+                    if(parseInt(permissionData.perm_assign_supervisors) === 1){
+                        userPermission.push('ASSIGN_SUPERVISORS')
+                    }
+
+                    if(parseInt(permissionData.perm_announcement) === 1){
+                        userPermission.push('ANNOUNCEMENT')
+                    }
+
+                    if(parseInt(permissionData.perm_query) === 1){
+                        userPermission.push('QUERY')
+                    }
+
+                    if(parseInt(permissionData.perm_leave) === 1){
+                        userPermission.push('LEAVE')
+                    }
+
+                    if(parseInt(permissionData.perm_travel) === 1){
+                        userPermission.push('TRAVEL')
+                    }
+
+                    if(parseInt(permissionData.perm_timesheet) === 1){
+                        userPermission.push('TIMESHEET')
+                    }
+
+                    if(parseInt(permissionData.perm_self_assessment) === 1){
+                        userPermission.push('SELF_ASSESSMENT')
+                    }
+
+                    if(parseInt(permissionData.perm_leave_management) === 1){
+                        userPermission.push('LEAVE_MANAGEMENT')
+                    }
+
+                    if(parseInt(permissionData.perm_setup_variations) === 1){
+                        userPermission.push('SETUP_VARIATIONS')
+                    }
+
+                    if(parseInt(permissionData.perm_confirm_variations) === 1){
+                        userPermission.push('CONFIRM_VARIATIONS')
+                    }
+
+                    if(parseInt(permissionData.perm_approve_variations) === 1){
+                        userPermission.push('APPROVE_VARIATIONS')
+                    }
+
+                    if(parseInt(permissionData.perm_decline_variations) === 1){
+                        userPermission.push('DECLINE_VARIATIONS')
+                    }
+                    if(parseInt(permissionData.perm_run_payroll) === 1){
+                        userPermission.push('RUN_PAYROLL')
+                    }
+
+                    if(parseInt(permissionData.perm_undo_payroll) === 1){
+                        userPermission.push('UNDO_PAYROLL')
+                    }
+
+                    if(parseInt(permissionData.perm_confirm_payroll) === 1){
+                        userPermission.push('CONFIRM_PAYROLL')
+                    }
+
+                    if(parseInt(permissionData.perm_approve_payroll) === 1){
+                        userPermission.push('APPROVE_PAYROLL')
+                    }
+
+                }
+
+                checkUserExisting.permission = userPermission
 
                 if (parseInt(checkUserExisting.user_type) === 2 || parseInt(checkUserExisting.user_type) === 3) {
 
@@ -383,7 +480,10 @@ router.post('/login', async function (req, res, next) {
                     })
 
 
-                } else {
+                }
+
+                else {
+
 
                     let token = generateAccessToken(checkUserExisting)
 
