@@ -34,7 +34,11 @@ function auth(roles = []) {
         ]
 
     } catch (error) {
-        res.status(403).send("Invalid token");
+        return [
+            (req, res, next) => {
+                res.status(403).send("Invalid token");
+            }
+        ]
     }
 
 }
