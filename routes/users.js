@@ -14,7 +14,7 @@ const _ = require('lodash')
 
 
 /* Get All Users */
-router.get('/', auth(), async function (req, res, next) {
+router.get('/', auth, async function (req, res, next) {
     try {
 
         await users.findAllUsers().then((data) => {
@@ -134,7 +134,7 @@ router.post('/add-user', auth, async function (req, res, next) {
                     "log_description": "Added new user",
                     "log_date": new Date()
                 }
-                logs.addLog(logData).then((logRes) => {
+               await logs.addLog(logData).then((logRes) => {
                     return res.status(200).json(addUser)
                 })
             }
@@ -242,6 +242,7 @@ router.patch('/update-user/:user_id', auth, async function (req, res, next) {
                 user_token: req.body.user_token,
                 user_status: req.body.user_status,
             }
+            delete user.user_password_repeat;
         } else {
             validationResult = schemaWithoutPassword.validate(req.body)
             user = {
@@ -311,7 +312,7 @@ router.patch('/update-user/:user_id', auth, async function (req, res, next) {
             "log_description": "Added new user",
             "log_date": new Date()
         }
-        logs.addLog(logData).then((logRes) => {
+        await logs.addLog(logData).then((logRes) => {
             //return res.status(200).json(logRes);
             return res.status(200).json(`User updated`)
         })
@@ -329,81 +330,87 @@ router.post('/login', async function (req, res, next) {
 
     try {
         const user = req.body
-        await users.findUserByUsername(user.user_username).then((data) => {
-            if (data) {
-                if (parseInt(data.user_status) === 1) {
-                    bcrypt.compare(user.user_password, data.user_password, function (err, response) {
-                        if (err) {
-                            return res.status(400).json(`${err} occurred while logging in`)
-                        }
-                        if (response) {
-                            delete data.user_password;
-                            let employeeId = {}
-                            let userData = {}
-                            userData = data
 
-                            if (parseInt(data.user_type) === 2 || parseInt(data.user_type) === 3) {
+       const checkUserExisting =  await users.findUserByUsername(user.user_username).then((data) => {
+           return  data
 
-                                employees.getEmployeeById(data.user_username).then((empRes) => {
-                                    employeeId = empRes
+        })
+        if(_.isEmpty(checkUserExisting) || _.isNull(checkUserExisting)){
+            return res.status(404).json('Invalid Username')
+        }
 
-                                    let token = generateAccessToken(data)
+        if (parseInt(checkUserExisting.user_status) !== 1){
+            return res.status(400).json('User Account Suspended')
+        }
 
-                                    const logData = {
-                                        "log_user_id": data.user_id,
-                                        "log_description": "logged in",
-                                        "log_date": new Date()
-                                    }
+        bcrypt.compare(user.user_password, checkUserExisting.user_password, async function (err, response) {
+            if (err) {
+                return res.status(400).json(`${err} occurred while logging in`)
+            }
+            if (response) {
+                delete checkUserExisting.user_password;
+                let employeeId = {}
+                let userData = {}
+                userData = checkUserExisting
 
-                                    logs.addLog(logData).then(async (logRes) => {
-                                        data.user_password = null;
-                                        const responseData = {
-                                            "token": token,
-                                            "userData": userData,
-                                            "employee": employeeId,
-                                            "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(employeeId.emp_id)).then(n => {
-                                                return n;
-                                            })
-                                        }
-                                        return res.status(200).json(responseData);
-                                    })
+                if (parseInt(checkUserExisting.user_type) === 2 || parseInt(checkUserExisting.user_type) === 3) {
 
+                    const employeeData = await employees.getEmployeeById(checkUserExisting.user_username).then((empRes) => {
 
-                                })
-
-                            } else {
-
-                                let token = generateAccessToken(data)
-
-                                const logData = {
-                                    "log_user_id": data.user_id,
-                                    "log_description": "logged in",
-                                    "log_date": new Date()
-                                }
-                                logs.addLog(logData).then(async (logRes) => {
-                                    data.user_password = null;
-                                    const responseData = {
-                                        "token": token,
-                                        "userData": userData,
-                                        "notifications": [],
-                                    }
-                                    return res.status(200).json(responseData);
-                                })
-
-                            }
-
-                        } else {
-                            return res.status(400).json('Incorrect Password')
-                        }
+                    return empRes
                     })
+                    employeeId = employeeData
+
+                    let token = generateAccessToken(checkUserExisting)
+
+                    const logData = {
+                        "log_user_id": checkUserExisting.user_id,
+                        "log_description": "logged in",
+                        "log_date": new Date()
+                    }
+
+                    logs.addLog(logData).then(async (logRes) => {
+                        checkUserExisting.user_password = null;
+                        const responseData = {
+                            "token": token,
+                            "userData": userData,
+                            "employee": employeeId,
+                            "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(employeeId.emp_id)).then(n => {
+                                return n;
+                            })
+                        }
+                        return res.status(200).json(responseData);
+                    })
+
+
                 } else {
-                    return res.status(400).json('User Account Suspended')
+
+                    let token = generateAccessToken(checkUserExisting)
+
+                    const logData = {
+                        "log_user_id": checkUserExisting.user_id,
+                        "log_description": "logged in",
+                        "log_date": new Date()
+                    }
+                    logs.addLog(logData).then(async (logRes) => {
+                        checkUserExisting.user_password = null;
+                        const responseData = {
+                            "token": token,
+                            "userData": userData,
+                            "notifications": [],
+                        }
+                        return res.status(200).json(responseData);
+                    })
+
                 }
 
-            } else {
-                return res.status(404).json('Invalid Username')
+            }
+            else {
+                return res.status(400).json('Incorrect Password')
             }
         })
+
+
     } catch (err) {
         return res.status(400).json(`Error while logging user ${err.message}`)
     }
