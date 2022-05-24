@@ -7,9 +7,9 @@ const stateService = require('../services/stateService');
 
 /* state routes. */
 
-router.get('/', auth, stateService.getStates);
-router.post('/', auth, stateService.setNewState);
-router.get('/:id', auth, stateService.getStateById);
-router.patch('/:id', auth, stateService.updateState);
+router.get('/', auth(), stateService.getStates);
+router.post('/', auth(), stateService.setNewState);
+router.get('/:id', auth(), stateService.getStateById);
+router.patch('/:id', auth(), stateService.updateState);
 
 module.exports = router;

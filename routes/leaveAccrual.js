@@ -61,7 +61,7 @@ async function computeLeaveAccruals(data) {
 
 
 
-router.get('/get-leave-acrruals/:emp_id', auth, async function (req, res, next) {
+router.get('/get-leave-acrruals/:emp_id', auth(), async function (req, res, next) {
     try {
         const empId = req.params.emp_id
 

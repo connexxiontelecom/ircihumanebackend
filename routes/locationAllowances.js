@@ -8,7 +8,7 @@ const logs = require('../services/logService')
 
 
 /* Get location allowances */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await locationAllowance.findAllLocationAllowances().then((data) => {
             return res.status(200).json(data);
@@ -19,7 +19,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Location Allowance */
-router.post('/add-location-allowance', auth, async function (req, res, next) {
+router.post('/add-location-allowance', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             la_payment_id: Joi.number().required(),
@@ -62,7 +62,7 @@ router.post('/add-location-allowance', auth, async function (req, res, next) {
 });
 
 /* Update Location Allowance */
-router.patch('/update-location-allowance/:la_id', auth, async function (req, res, next) {
+router.patch('/update-location-allowance/:la_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({

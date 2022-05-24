@@ -6,10 +6,10 @@ const locationService = require('../services/locationService');
 
 /* location provider routes. */
 
-router.get('/',auth, locationService.getLocations);
-router.post('/',auth, locationService.setNewLocation);
-router.get('/:id',auth, locationService.getLocationById);
-router.patch('/:id',auth, locationService.updateLocation);
+router.get('/',auth(), locationService.getLocations);
+router.post('/',auth(), locationService.setNewLocation);
+router.get('/:id',auth(), locationService.getLocationById);
+router.patch('/:id',auth(), locationService.updateLocation);
 
 
 module.exports = router;

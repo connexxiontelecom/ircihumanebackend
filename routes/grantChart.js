@@ -8,7 +8,7 @@ const logs = require('../services/logService')
 
 
 /* Get All grant chart */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await grantChart.findAllCodes().then((data) => {
             return res.status(200).json(data);
@@ -19,7 +19,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add grant chart */
-router.post('/add-grant-chart', auth, async function (req, res, next) {
+router.post('/add-grant-chart', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             gc_location_id: Joi.number().required(),
@@ -71,7 +71,7 @@ router.post('/add-grant-chart', auth, async function (req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-grant-chart/:gc_id', auth, async function (req, res, next) {
+router.patch('/update-grant-chart/:gc_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -137,7 +137,7 @@ router.patch('/update-grant-chart/:gc_id', auth, async function (req, res, next)
     }
 });
 
-router.get('/grant/donor/:donor_id', auth, async (req, res) => {
+router.get('/grant/donor/:donor_id', auth(), async (req, res) => {
     try {
         const donor_id = req.params.donor_id;
         grantChart.findGrantChartByDonorId(donor_id).then((data) => {
@@ -149,7 +149,7 @@ router.get('/grant/donor/:donor_id', auth, async (req, res) => {
     }
 });
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth(), async (req, res) => {
     try {
         await grantChart.findGrantChartById(req.params.id).then((data) => {
             return res.status(200).json(data);

@@ -24,10 +24,11 @@ function auth(roles = []) {
         return [
             (req, res, next) => {
                 const token = req.header("x-auth-token");
-                if (!token) return res.status(403).send("Access denied.");
+                if (!token) return res.status(403).json("Access denied.");
                 req.user = jwt.verify(token, process.env.TOKEN_SECRET);
-                if (roles.length && !roles.includes(req.user.role)) {
-                    return res.status(401).json({message: 'Unauthorized'});
+                let userRoles = req.user.username.permission
+                if (roles.length && !containsAny(userRoles,roles)) {
+                    return res.status(401).json('Unauthorised');
                 }
                 next();
             }
@@ -42,3 +43,11 @@ function auth(roles = []) {
     }
 
 }
+
+function containsAny(source,target)
+{
+    let result = source.filter(function(item){ return target.indexOf(item) > -1});
+    return (result.length > 0);
+}
+
+

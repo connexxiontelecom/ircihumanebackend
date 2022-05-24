@@ -7,7 +7,7 @@ const logs = require('../services/logService')
 const authorizationRoleService = require('../services/authorizationRoleService')
 
 
-router.get('/:typeId', auth, async function (req, res, next) {
+router.get('/:typeId', auth(), async function (req, res, next) {
     try {
         const typeId = parseInt(req.params.typeId);
 
@@ -19,7 +19,7 @@ router.get('/:typeId', auth, async function (req, res, next) {
     }
 });
 
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         await authorizationRoleService.getAllAuthorizationRoles().then((data) => {
@@ -73,7 +73,7 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
-router.get('/:id', auth, async function (req, res) {
+router.get('/:id', auth(), async function (req, res) {
     try {
         const id = req.params.id;
         await authorizationRoleService.getAuthorizationRoleById(parseInt(id)).then((data) => {

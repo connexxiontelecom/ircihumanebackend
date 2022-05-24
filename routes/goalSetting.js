@@ -11,7 +11,7 @@ const logs = require('../services/logService')
 
 
 /* Get All goals setting */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await goalSetting.findGoals().then((data) => {
             return res.status(200).json(data);
@@ -21,7 +21,7 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-open-goal-setting', auth, async function (req, res, next) {
+router.get('/get-open-goal-setting', auth(), async function (req, res, next) {
     try {
         await goalSetting.findOpenGoals().then((data) => {
             return res.status(200).json(data);
@@ -31,7 +31,7 @@ router.get('/get-open-goal-setting', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-open-end-Year', auth, async function (req, res, next) {
+router.get('/get-open-end-Year', auth(), async function (req, res, next) {
     try {
         await goalSetting.findEndYearGoals().then((data) => {
             return res.status(200).json(data);
@@ -42,7 +42,7 @@ router.get('/get-open-end-Year', auth, async function (req, res, next) {
 });
 
 /* Add goal */
-router.post('/add-goal-setting', auth, async function (req, res, next) {
+router.post('/add-goal-setting', auth(), async function (req, res, next) {
     try {
         //check if year from date equals year entered,
         // check if from date is not greater than to date
@@ -154,7 +154,7 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
 
 /* Close Goal  */
 
-router.patch('/close-goal-setting/:gs_id', auth, async function (req, res, next) {
+router.patch('/close-goal-setting/:gs_id', auth(), async function (req, res, next) {
     try {
         const gsId = req.params.gs_id
         const schema = Joi.object({

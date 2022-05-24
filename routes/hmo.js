@@ -6,10 +6,10 @@ const hmoservice = require('../services/hmoService');
 
 /* Pension provider routes. */
 
-router.get('/', auth, hmoservice.getHmos);
-router.post('/', auth, hmoservice.setNewHmo);
-router.get('/:id', auth, hmoservice.getHmoById);
-router.patch('/:id', auth, hmoservice.updateHmo);
+router.get('/', auth(), hmoservice.getHmos);
+router.post('/', auth(), hmoservice.setNewHmo);
+router.get('/:id', auth(), hmoservice.getHmoById);
+router.patch('/:id', auth(), hmoservice.updateHmo);
 
 
 module.exports = router;

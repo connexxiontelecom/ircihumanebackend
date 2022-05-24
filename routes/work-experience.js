@@ -6,9 +6,9 @@ const workExperienceService = require('../services/workExperienceService');
 
 /* work experience provider routes. */
 
-router.post('/',auth, workExperienceService.addWorkExperience);
-router.get('/:id',auth, workExperienceService.getEmployeeWorkExperienceList);
-router.patch('/:id',auth, workExperienceService.updateWorkExperience);
+router.post('/',auth(), workExperienceService.addWorkExperience);
+router.get('/:id',auth(), workExperienceService.getEmployeeWorkExperienceList);
+router.patch('/:id',auth(), workExperienceService.updateWorkExperience);
 
 
 

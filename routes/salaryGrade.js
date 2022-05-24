@@ -7,7 +7,7 @@ const salaryGrade = require('../services/salaryGradeService')
 const logs = require('../services/logService')
 
 /* Get all Salary Grades */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         salaryGrade.findSalaryGrades().then((data) => {
@@ -23,7 +23,7 @@ router.get('/', auth, async function (req, res, next) {
 
 
 /* Add to Salary Grade */
-router.post('/add-salary-grade', auth, async function (req, res, next) {
+router.post('/add-salary-grade', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             sg_name: Joi.string().required(),
@@ -70,7 +70,7 @@ router.post('/add-salary-grade', auth, async function (req, res, next) {
 
 
 /* Update Salary Grade */
-router.patch('/update-salary-grade/:sg_id', auth, async function (req, res, next) {
+router.patch('/update-salary-grade/:sg_id', auth(), async function (req, res, next) {
     try {
         const sgId = req.params.sg_id
         const schema = Joi.object({
@@ -124,7 +124,7 @@ router.patch('/update-salary-grade/:sg_id', auth, async function (req, res, next
 
 /* Get Salary Grade */
 
-router.get('/:sg_id', auth, async function (req, res, next) {
+router.get('/:sg_id', auth(), async function (req, res, next) {
     try {
         const sgId = req.params.sg_id
         salaryGrade.findSalaryGrade(sgId).then((data) => {

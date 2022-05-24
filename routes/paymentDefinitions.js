@@ -10,7 +10,7 @@ const _ = require('lodash')
 
 
 /* Get All Payment Definitions */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -24,7 +24,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Get employee Payment Definitions */
-router.get('/employee-payment-definition', auth, async function (req, res, next) {
+router.get('/employee-payment-definition', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -42,7 +42,7 @@ router.get('/employee-payment-definition', auth, async function (req, res, next)
 });
 
 /* Get employee Payment Definitions */
-router.get('/employer-payment-definition', auth, async function (req, res, next) {
+router.get('/employer-payment-definition', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -56,7 +56,7 @@ router.get('/employer-payment-definition', auth, async function (req, res, next)
 });
 
 
-router.get('/variational-payments', auth, async function (req, res, next) {
+router.get('/variational-payments', auth(), async function (req, res, next) {
     try {
         await paymentDefinition.getVariationalPayments().then((data) => {
             return res.status(200).json(data);
@@ -67,7 +67,7 @@ router.get('/variational-payments', auth, async function (req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-payment-definition', auth, async function (req, res, next) {
+router.post('/add-payment-definition', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             pd_payment_code: Joi.string().required(),
@@ -210,7 +210,7 @@ router.post('/add-payment-definition', auth, async function (req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-payment-definition/:pd_id', auth, async function (req, res, next) {
+router.patch('/update-payment-definition/:pd_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -369,7 +369,7 @@ router.patch('/update-payment-definition/:pd_id', auth, async function (req, res
 
 
 /* Delete Payment Definition */
-router.post('/delete-payment-definition', auth, async function (req, res, next) {
+router.post('/delete-payment-definition', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             pd_id: Joi.number().required(),

@@ -10,11 +10,12 @@ const employees = require("../services/employeeService");
 const {sequelize, Sequelize} = require('../services/db');
 const notificationModel = require("../models/notification")(sequelize, Sequelize.DataTypes);
 const permissionService = require("../services/permissionService");
+const ROLES = require('../roles')
 const _ = require('lodash')
 
 
 /* Get All Users */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth([ROLES.MANAGER_USER]), async function (req, res, next) {
     try {
 
         await users.findAllUsers().then((data) => {
@@ -28,7 +29,7 @@ router.get('/', auth, async function (req, res, next) {
 
 
 /* Add User */
-router.post('/add-user', auth, async function (req, res, next) {
+router.post('/add-user', auth([ROLES.MANAGER_USER]), async function (req, res, next) {
     try {
         const schema = Joi.object({
             user_username: Joi.string().min(5).required(),
@@ -161,7 +162,7 @@ router.post('/add-user', auth, async function (req, res, next) {
 });
 
 /* UpdateUser */
-router.patch('/update-user/:user_id', auth, async function (req, res, next) {
+router.patch('/update-user/:user_id', auth(ROLES.MANAGER_USER), async function (req, res, next) {
     try {
 
         const schemaWithoutPassword = Joi.object({
@@ -331,10 +332,12 @@ router.post('/login', async function (req, res, next) {
     try {
         const user = req.body
 
-       const checkUserExisting =  await users.findUserByUsername(user.user_username).then((data) => {
+       let checkUserExisting =  await users.findUserByUsername(user.user_username).then((data) => {
            return  data
 
         })
+
+
         if(_.isEmpty(checkUserExisting) || _.isNull(checkUserExisting)){
             return res.status(404).json('Invalid Username')
         }
@@ -348,11 +351,13 @@ router.post('/login', async function (req, res, next) {
                 return res.status(400).json(`${err} occurred while logging in`)
             }
             if (response) {
+               checkUserExisting = JSON.parse( JSON.stringify( checkUserExisting ) );
+
                 delete checkUserExisting.user_password;
                 let employeeId = {}
                 let userData = {}
                 let userPermission = [ ]
-                userData = checkUserExisting
+
 
                 const permissionData = await permissionService.getPermission(checkUserExisting.user_id).then((data)=>{
                     return data
@@ -450,6 +455,10 @@ router.post('/login', async function (req, res, next) {
 
                 checkUserExisting.permission = userPermission
 
+
+
+
+
                 if (parseInt(checkUserExisting.user_type) === 2 || parseInt(checkUserExisting.user_type) === 3) {
 
                     const employeeData = await employees.getEmployeeById(checkUserExisting.user_username).then((empRes) => {
@@ -497,6 +506,7 @@ router.post('/login', async function (req, res, next) {
                         const responseData = {
                             "token": token,
                             "userData": userData,
+                            "permission": userPermission,
                             "notifications": [],
                         }
                         return res.status(200).json(responseData);
