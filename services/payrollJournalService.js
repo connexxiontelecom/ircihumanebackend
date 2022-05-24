@@ -5,7 +5,13 @@ const PayrollJournal = require("../models/payrolljournal")(sequelize, Sequelize.
 const Joi = require('joi');
 
 async function getAllPayrollJournal() {
-    return await PayrollJournal.findAll();
+    return await PayrollJournal.findAll({include: ['location']});
+}
+
+async function getPayrollJournal(pjId) {
+    return await PayrollJournal.findOne({where:{
+        pj_id: pjId
+        }});
 }
 
 async function addPayrollJournal(payrollJournal) {
@@ -46,5 +52,6 @@ module.exports = {
     addPayrollJournal,
     updatePayrollJournal,
     deletePayrollJournal,
-    getAllPayrollJournal
+    getAllPayrollJournal,
+    getPayrollJournal
 }

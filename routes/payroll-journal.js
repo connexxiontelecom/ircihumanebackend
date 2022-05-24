@@ -24,13 +24,12 @@ router.get('/', auth(), async function (req, res, next) {
 
 
 /* Add User */
-router.post('/add-payroll-journal', auth(), async function (req, res, next) {
+router.post('/', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             pj_code: Joi.string().required(),
             pj_journal_item: Joi.string().required(),
             pj_location: Joi.number().required(),
-            pj_setup_by: Joi.number().required(),
         })
         const validationResult = schema.validate(req.body)
 
@@ -41,7 +40,7 @@ router.post('/add-payroll-journal', auth(), async function (req, res, next) {
             pj_code: req.body.pj_code,
             pj_journal_item: req.body.pj_journal_item,
             pj_location: req.body.pj_location,
-            pj_setup_by: req.body.pj_setup_by,
+            pj_setup_by: req.user.username.user_id,
         }
         const payrollJournalAddResponse = await payrollJournalService.addPayrollJournal(payrollJournalObject).then((data) => {
             return data
@@ -57,5 +56,46 @@ router.post('/add-payroll-journal', auth(), async function (req, res, next) {
     }
 });
 
+router.patch('/', auth(), async function (req, res, next) {
+    try {
+        const schema = Joi.object({
+            pj_id: Joi.number().required(),
+            pj_code: Joi.string().required(),
+            pj_journal_item: Joi.string().required(),
+            pj_location: Joi.number().required(),
+        })
+        const validationResult = schema.validate(req.body)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+        const payrollJournalObject = {
+            pj_id: req.body.pj_id,
+            pj_code: req.body.pj_code,
+            pj_journal_item: req.body.pj_journal_item,
+            pj_location: req.body.pj_location,
+            pj_setup_by: req.user.username.user_id,
+        }
+
+        const checkPayrollJournal = await payrollJournalService.getAllPayrollJournal(payrollJournalObject.pj_id).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(checkPayrollJournal) || _.isNull(checkPayrollJournal)){
+            return res.status(400).json('Journal code does not exist')
+        }
+        const payrollJournalAddResponse = await payrollJournalService.updatePayrollJournal(payrollJournalObject).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(payrollJournalAddResponse) || _.isNull(payrollJournalAddResponse)) {
+            return res.status(400).json('An Error Occurred While adding Payroll')
+        }
+        return res.status(200).json('Payroll Journal Updated Successfully')
+    } catch (err) {
+        console.error(`Error while adding user `, err.message);
+        next(err);
+    }
+});
 
 module.exports = router;
