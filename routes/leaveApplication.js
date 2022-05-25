@@ -20,7 +20,7 @@ const employees = require("../services/employeeService");
 
 
 /* Get leave application */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         let appId = [];
         let leaveObj = {};
@@ -42,7 +42,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Location Allowance */
-router.post('/add-leave-application', auth, async function (req, res, next) {
+router.post('/add-leave-application', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             leapp_empid: Joi.number().required(),
@@ -210,7 +210,7 @@ router.get('/approved-applications', async (req, res) => {
 });
 
 /* Get Employee Leave application */
-router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) {
+router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next) {
     try {
 
         let empId = req.params['emp_id'];
@@ -241,7 +241,7 @@ router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) 
     }
 });
 
-router.get('/:id', auth, async (req, res) => { //get leave application details
+router.get('/:id', auth(), async (req, res) => { //get leave application details
     const id = parseInt(req.params.id);
     try {
         const application = await leaveApplication.getLeaveApplicationsById(id);
@@ -253,7 +253,7 @@ router.get('/:id', auth, async (req, res) => { //get leave application details
     }
 });
 
-router.get('/authorization/supervisor/:id', auth, async (req, res) => {
+router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
     try {
         const supervisorId = req.params.id;
         let leaveObj = {};
@@ -285,7 +285,7 @@ router.get('/authorization/supervisor/:id', auth, async (req, res) => {
     }
 });
 
-router.patch('/update-leaveapp-status/:leaveId', auth, async (req, res)=>{
+router.patch('/update-leaveapp-status/:leaveId', auth(), async (req, res)=>{
   try{
     const schema = Joi.object({
       leave: Joi.number().required(),
@@ -313,7 +313,7 @@ router.patch('/update-leaveapp-status/:leaveId', auth, async (req, res)=>{
     return res.status(400).json("Something went wrong.");
   }
 });
-router.patch('/update-leaveapp-period/:leaveId', auth, async (req, res)=>{
+router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
   try{
     const schema = Joi.object({
       //leave: Joi.number().required(),

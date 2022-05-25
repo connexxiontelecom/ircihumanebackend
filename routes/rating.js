@@ -8,7 +8,7 @@ const logs = require('../services/logService')
 
 
 /* Get all Ratings */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         rating.findAllRating().then((data) => {
@@ -25,7 +25,7 @@ router.get('/', auth, async function (req, res, next) {
 
 
 /* Add to Rating */
-router.post('/add-rating', auth, async function (req, res, next) {
+router.post('/add-rating', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             rating_name: Joi.string().required(),
@@ -70,7 +70,7 @@ router.post('/add-rating', auth, async function (req, res, next) {
 });
 
 /* Update Salary Rating */
-router.patch('/update-rating/:rating_id', auth, async function (req, res, next) {
+router.patch('/update-rating/:rating_id', auth(), async function (req, res, next) {
     try {
         const ratingId = req.params.rating_id
         const schema = Joi.object({
@@ -145,7 +145,7 @@ router.patch('/update-rating/:rating_id', auth, async function (req, res, next) 
     }
 });
 
-router.patch('/update-end-year-rating-status/:rating_id', auth, async function (req, res, next) {
+router.patch('/update-end-year-rating-status/:rating_id', auth(), async function (req, res, next) {
   try {
     const ratingId = req.params.rating_id
     const schema = Joi.object({
@@ -191,7 +191,7 @@ router.patch('/update-end-year-rating-status/:rating_id', auth, async function (
   }
 });
 
-router.get('/get-end-ratings/:rating_id/:period', auth, async function(req, res){
+router.get('/get-end-ratings/:rating_id/:period', auth(), async function(req, res){
   try{
 
   }catch (e) {
@@ -199,7 +199,7 @@ router.get('/get-end-ratings/:rating_id/:period', auth, async function(req, res)
   }
 });
 
-router.get('/get-end-year-ratings', auth, async function(req, res){
+router.get('/get-end-year-ratings', auth(), async function(req, res){
   try{
     const ratings = await rating.findAllEndYearRatings().then(res=>{
       return res;
@@ -210,7 +210,7 @@ router.get('/get-end-year-ratings', auth, async function(req, res){
   }
 });
 
-router.get('/rating-details/:id', auth, async function(req, res){
+router.get('/rating-details/:id', auth(), async function(req, res){
   try{
     const ratingId = req.params.id;
     const result = await rating.findRating(parseInt(ratingId)).then(res=>{

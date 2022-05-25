@@ -7,7 +7,7 @@ const logs = require('../services/logService')
 
 
 /* Get All donors */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -21,7 +21,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Donor */
-router.post('/add-donor', auth, async function (req, res, next) {
+router.post('/add-donor', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
@@ -65,7 +65,7 @@ router.post('/add-donor', auth, async function (req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
+router.patch('/update-donor/:donor_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -127,7 +127,7 @@ router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
 });
 
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth(), async (req, res) => {
     try {
         await donor.findDonorById(req.params.id).then((data) => {
             return res.status(200).json(data);
@@ -137,7 +137,7 @@ router.get('/:id', auth, async (req, res) => {
     }
 });
 
-router.get('/sector/:sectorId', auth, async (req, res) => {
+router.get('/sector/:sectorId', auth(), async (req, res) => {
     try {
         await donor.findDonorByLocationId(req.params.sectorId).then((data) => {
             return res.status(200).json(data);

@@ -6,10 +6,10 @@ const jobRoleService = require('../services/jobRoleService');
 
 /* Pension provider routes. */
 
-router.get('/',auth, jobRoleService.getJobRoles);
-router.post('/',auth, jobRoleService.setNewJobRole);
-router.get('/:id',auth, jobRoleService.getJobRoleById);
-router.patch('/:id',auth, jobRoleService.updateJobRole);
+router.get('/',auth(), jobRoleService.getJobRoles);
+router.post('/',auth(), jobRoleService.setNewJobRole);
+router.get('/:id',auth(), jobRoleService.getJobRoleById);
+router.patch('/:id',auth(), jobRoleService.updateJobRole);
 
 
 module.exports = router;

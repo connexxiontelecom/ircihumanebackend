@@ -8,7 +8,7 @@ const logs = require('../services/logService')
 
 
 /* Get minimum tax rate */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await minimumTaxRate.findAllMinimumTaxRate().then((data) => {
             return res.status(200).json(data);
@@ -19,7 +19,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-minimum-tax-rate', auth, async function (req, res, next) {
+router.post('/add-minimum-tax-rate', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             mtr_rate: Joi.number().precision(2).required(),
@@ -60,7 +60,7 @@ router.post('/add-minimum-tax-rate', auth, async function (req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-minimum-tax-rate/:mtr_id', auth, async function (req, res, next) {
+router.patch('/update-minimum-tax-rate/:mtr_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({

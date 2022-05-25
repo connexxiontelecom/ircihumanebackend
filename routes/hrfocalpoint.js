@@ -5,7 +5,7 @@ const {sequelize, Sequelize} = require('../services/db');
 const hrFocalPointModel = require('../models/hrfocalpoint')(sequelize, Sequelize.DataTypes);
 
 /* GET HR Focal point. */
-router.get('/:id', auth, async (req, res)=>{
+router.get('/:id', auth(), async (req, res)=>{
   try{
     const locationId = req.params.id;
     const focal_points = await hrFocalPointModel.getHrFocalPointsByLocationId(parseInt(locationId));

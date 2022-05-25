@@ -18,7 +18,7 @@ const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequ
 const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
 
 /* Add Self Assessment */
-router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     let saData;
     try {
         let empId = req.params.emp_id
@@ -163,7 +163,7 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth, async function (req, re
 });
 
 /* Get Self Assessment, use for prefilling */
-router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next) {
+router.get('/get-self-assessments/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
@@ -219,7 +219,7 @@ router.get('/get-self-assessments/:emp_id', auth, async function (req, res, next
 
 
 /* Get Self Assessment, use for prefilling during midyear checking */
-router.get('/prefill-goal-setting/:emp_id', auth, async function (req, res, next) {
+router.get('/prefill-goal-setting/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -262,7 +262,7 @@ router.get('/prefill-goal-setting/:emp_id', auth, async function (req, res, next
 
 
 /* Add Self Assessment */
-router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object().keys({
             sa_comment: Joi.string().required(),
@@ -382,7 +382,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth, async function
 });
 
 
-router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.post('/approve-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     try {
         let empId = parseInt(req.params.emp_id)
         let gsId = parseInt(req.params.gs_id)
@@ -442,7 +442,7 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth, async function (req, res
 
 
 /* Approve Self Assessment */
-router.post('/approve-assessment/', auth, async function (req, res, next) {
+router.post('/approve-assessment/', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object().keys({
             sa_id: Joi.number().required(),
@@ -481,7 +481,7 @@ router.post('/approve-assessment/', auth, async function (req, res, next) {
 
 
 /* Pre Fill Self Assessment  */
-router.get('/prefill-self-assessment/:emp_id', auth, async function (req, res, next) {
+router.get('/prefill-self-assessment/:emp_id', auth(), async function (req, res, next) {
     try {
 
         let empId = req.params.emp_id
@@ -559,7 +559,7 @@ router.get('/prefill-self-assessment/:emp_id', auth, async function (req, res, n
     }
 });
 
-router.patch('/respond-self-assessment/:emp_id/', auth, async function (req, res, next) {
+router.patch('/respond-self-assessment/:emp_id/', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
@@ -604,7 +604,7 @@ router.patch('/respond-self-assessment/:emp_id/', auth, async function (req, res
 });
 
 /* Get Self Assessment  */
-router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.get('/get-self-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
@@ -654,7 +654,7 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth, async function (req, res
 
 /* Update Self Assessment */
 
-router.patch('/update-self-assessment/:emp_id/', auth, async function (req, res, next) {
+router.patch('/update-self-assessment/:emp_id/', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
@@ -700,7 +700,7 @@ router.patch('/update-self-assessment/:emp_id/', auth, async function (req, res,
 
 
 /*Update Assessment */
-router.patch('/update-assessment/:emp_id/:gs_id/:masterId', auth, async function (req, res, next) {
+router.patch('/update-assessment/:emp_id/:gs_id/:masterId', auth(), async function (req, res, next) {
     try {
         const fullUrl = req.headers.referer; //req.protocol + '://' + req.get('host') + req.originalUrl;
         //return res.status(200).json(fullUrl);
@@ -824,7 +824,7 @@ router.patch('/update-assessment/:emp_id/:gs_id/:masterId', auth, async function
     }
 });
 
-router.patch('/supervisor-update-self-assessment/:emp_id/', auth, async function (req, res, next) {
+router.patch('/supervisor-update-self-assessment/:emp_id/', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
@@ -869,7 +869,7 @@ router.patch('/supervisor-update-self-assessment/:emp_id/', auth, async function
     }
 });
 
-router.get('/get-end-questions/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.get('/get-end-questions/:emp_id/:gs_id', auth(), async function (req, res, next) {
     try {
 
         let empId = req.params.emp_id
@@ -946,7 +946,7 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth, async function (req, res, 
 });
 
 
-router.get('/get-self-assessment-master/:empId', auth, async (req, res) => {
+router.get('/get-self-assessment-master/:empId', auth(), async (req, res) => {
     try {
         const empId = req.params.empId;
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -969,7 +969,7 @@ router.get('/get-self-assessment-master/:empId', auth, async (req, res) => {
 
 });
 
-router.post('/process-assessment', auth, async (req, res) => {
+router.post('/process-assessment', auth(), async (req, res) => {
     try {
         const goalId = req.body.goalId;
         const empId = req.body.employee;
@@ -986,7 +986,7 @@ router.post('/process-assessment', auth, async (req, res) => {
     }
 });
 
-router.get('/get-master-self-assessment/:emp_id/:gs_id', auth, async (req, res) => {
+router.get('/get-master-self-assessment/:emp_id/:gs_id', auth(), async (req, res) => {
     try {
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
@@ -1015,7 +1015,7 @@ router.get('/get-master-self-assessment/:emp_id/:gs_id', auth, async (req, res) 
     }
 });
 
-router.get('/get-self-assessment-by-master/:masterId', auth, async function (req, res, next) {
+router.get('/get-self-assessment-by-master/:masterId', auth(), async function (req, res, next) {
   try {
 
     const masterId = req.params.masterId;
@@ -1102,7 +1102,7 @@ router.get('/get-self-assessment-by-master/:masterId', auth, async function (req
   }
 });
 
-router.get('/get-all-self-assessments', auth, async function(req, res){
+router.get('/get-all-self-assessments', auth(), async function(req, res){
   try{
     const assessments = await selfAssessmentMasterModel.getAllSelfAssessments().then(res=>{
       return res;
@@ -1113,7 +1113,7 @@ router.get('/get-all-self-assessments', auth, async function(req, res){
   }
 });
 
-router.get('/get-all-emp-self-assessments/:empId/:year', auth, async function(req, res){
+router.get('/get-all-emp-self-assessments/:empId/:year', auth(), async function(req, res){
   try{
     const year = req.params.year;
     const empId = req.params.empId;

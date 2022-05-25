@@ -6,10 +6,10 @@ const gradeService = require('../services/gradeService');
 
 /* Pension provider routes. */
 
-router.get('/',auth, gradeService.getGrades);
-router.post('/',auth, gradeService.setNewGrade);
-router.get('/:id',auth, gradeService.getGradeById);
-router.patch('/:id',auth, gradeService.updateGrade);
+router.get('/',auth(), gradeService.getGrades);
+router.post('/',auth(), gradeService.setNewGrade);
+router.get('/:id',auth(), gradeService.getGradeById);
+router.patch('/:id',auth(), gradeService.updateGrade);
 
 
 module.exports = router;
