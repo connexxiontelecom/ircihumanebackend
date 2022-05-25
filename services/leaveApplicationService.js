@@ -6,6 +6,7 @@ const LeaveApplication = require("../models/leaveapplication")(sequelize, Sequel
 const Leave = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const LeaveType = require("../models/LeaveType")(sequelize, Sequelize.DataTypes);
+const Op = Sequelize.Op;
 
 const helper = require('../helper');
 
@@ -49,6 +50,18 @@ async function findAllApprovedLeaveApplications() {
 
   return await LeaveApplication.findAll({
     where:{leapp_status:[3,4]}, //active||finished
+    order: [
+      ['leapp_id', 'DESC'],
+    ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+  })
+}
+async function findAllActiveLeaveApplications() {
+  let currentDate = new Date();
+  return await LeaveApplication.findAll({
+    where:{
+      leapp_status:1,
+     // leapp_start_date: { [Op.gte]: currentDate.getTime() }
+      }, //approved & active
     order: [
       ['leapp_id', 'DESC'],
     ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
@@ -114,5 +127,6 @@ module.exports = {
     findEmployeeLeaveApplication,
     getLeaveApplicationsForAuthorization,
     getLeaveApplicationsById,
-  findAllApprovedLeaveApplications
+  findAllApprovedLeaveApplications,
+  findAllActiveLeaveApplications
 }
