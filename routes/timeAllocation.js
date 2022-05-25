@@ -57,6 +57,10 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
       if(!employeeData.emp_supervisor_id){
         return res.status(400).json("Employee currently has no supervisor");
       }
+      const empTimesheet = await timeSheet.findTimeSheetMonthEmployee(parseInt(req.body.ta_emp_id), parseInt(req.body.ta_month), parseInt(req.body.ta_year));
+      if(_.isNull(empTimesheet) || _.isEmpty(empTimesheet)){
+        return res.status(400).json("No timesheet submitted.")
+      }
      /* const timeAllocate = await timeAllocation.findOneTimeAllocationDetail(req.body.ta_month, req.body.ta_year, req.body.ta_emp_id);
       if(_.isNull(timeAllocate) || _.isEmpty(timeAllocate)){
         return res.status(400).json('No record found.')
@@ -66,17 +70,21 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
             if (sup) {*/
                 await timeAllocation.addTimeAllocation(timeAllocationRequest).then(async(data) => {
                   //return res.status(200).json(data.ta_ref_no);
-                    await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+                  const recordExist = await authorizationAction.getOneAuthorizationByRefNo(data.ta_ref_no);
+                    if(_.isNull(recordExist) || _.isEmpty(recordExist)){
+                      await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
                         .then((val) => {
-                            const logData = {
-                                "log_user_id": req.user.username.user_id,
-                                "log_description": "Added Time Allocation",
-                                "log_date": new Date()
-                            }
-                            logs.addLog(logData).then((logRes) => {
-                                return res.status(200).json('Action Successful')
-                            })
+                          const logData = {
+                            "log_user_id": req.user.username.user_id,
+                            "log_description": "Added Time Allocation",
+                            "log_date": new Date()
+                          }
+                          logs.addLog(logData).then((logRes) => {
+                            return res.status(200).json('Action Successful')
+                          })
                         })
+                    }
+
                 })
            /* } else {
                 return res.status(400).json("You currently have no supervisor assigned to you.");
@@ -142,7 +150,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
         }
       const timeAllocate2 = await timeAllocation.findOneTimeAllocationDetail(req.body[0].ta_month, req.body[0].ta_year, req.body[0].ta_emp_id);
         if(timeAllocate2){
-          const auth = await authorizationAction.registerNewAction(2, timeAllocate2.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+          /*const auth = await authorizationAction.registerNewAction(2, timeAllocate2.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
             .then((val) => {
               const logData = {
                 "log_user_id": req.user.username.user_id,
@@ -152,7 +160,15 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
               logs.addLog(logData).then((logRes) => {
                 //return res.status(200).json('Action Successful')
               })
-            });
+            });*/
+            const logData = {
+              "log_user_id": req.user.username.user_id,
+              "log_description": "Added Time Allocation",
+              "log_date": new Date()
+            }
+            logs.addLog(logData).then((logRes) => {
+              //return res.status(200).json('Action Successful')
+            })
           return res.status(200).json('Action Successful')
         }else{
           return res.status(400).json("Something went wrong. Try again.")
@@ -263,6 +279,8 @@ router.get('/authorization/:super_id', auth, async function (req, res, next) {
         next(err);
     }
 });
+
+
 
 
 module.exports = router;
