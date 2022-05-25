@@ -6,10 +6,10 @@ const pensionprovider = require('../services/pensionProivderService');
 
 /* Pension provider routes. */
 
-router.get('/',auth, pensionprovider.getPensionProviders);
-router.post('/',auth, pensionprovider.setNewPensionProvider);
-router.get('/:id',auth, pensionprovider.getPensionProviderById);
-router.patch('/:id',auth, pensionprovider.updatePensionProvider);
+router.get('/',auth(), pensionprovider.getPensionProviders);
+router.post('/',auth(), pensionprovider.setNewPensionProvider);
+router.get('/:id',auth(), pensionprovider.getPensionProviderById);
+router.patch('/:id',auth(), pensionprovider.updatePensionProvider);
 
 
 module.exports = router;

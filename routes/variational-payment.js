@@ -25,7 +25,7 @@ const s3 = new AWS.S3({
 
 
 /* Get All variational payments */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await variationalPayment.getVariationalPayments().then((data) => {
             return res.status(200).json(data);
@@ -36,7 +36,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 
-router.post('/', auth, async (req, res, next) => {
+router.post('/', auth(), async (req, res, next) => {
     try {
         // const scheme = Joi.array().items(Joi.object().keys({
         //     name: Joi.string().required(),
@@ -226,7 +226,7 @@ router.post('/', auth, async (req, res, next) => {
     }
 });
 
-router.post('/single-payment', auth, async (req, res) => {
+router.post('/single-payment', auth(), async (req, res) => {
     try {
         const requestBody = req.body;
         const payroll = await payrollMonthYear.findPayrollMonthYear().then((res) => {
@@ -286,7 +286,7 @@ router.post('/single-payment', auth, async (req, res) => {
     }
 });
 
-router.get('/:id', auth, async (req, res, next) => {
+router.get('/:id', auth(), async (req, res, next) => {
     try {
         const id = req.params.id;
         variationalPayment.getVariationalPaymentById(id).then((data) => {
@@ -297,7 +297,7 @@ router.get('/:id', auth, async (req, res, next) => {
     }
 });
 
-router.post('/confirm-payment', auth, async (req, res, next) => {
+router.post('/confirm-payment', auth(), async (req, res, next) => {
     try {
         const schema = Joi.object({
             status: Joi.number().required(),
@@ -325,7 +325,7 @@ router.post('/confirm-payment', auth, async (req, res, next) => {
     }
 });
 
-router.get('/current-payment/:year/:month', auth, async (req, res, next) => {
+router.get('/current-payment/:year/:month', auth(), async (req, res, next) => {
     try {
         let month = req.params.month
         let year = req.params.year
@@ -337,7 +337,7 @@ router.get('/current-payment/:year/:month', auth, async (req, res, next) => {
     }
 });
 
-router.get('/current-pending-payment/:year/:month', auth, async (req, res, next) => {
+router.get('/current-pending-payment/:year/:month', auth(), async (req, res, next) => {
     try {
         let month = req.params.month
         let year = req.params.year
@@ -349,7 +349,7 @@ router.get('/current-pending-payment/:year/:month', auth, async (req, res, next)
     }
 });
 
-router.patch('/update-payment-amount/:id', auth, async (req, res, next) => {
+router.patch('/update-payment-amount/:id', auth(), async (req, res, next) => {
     try {
         const schema = Joi.object({
             vp_amount: Joi.number().required(),
@@ -388,7 +388,7 @@ router.patch('/update-payment-amount/:id', auth, async (req, res, next) => {
 });
 
 
-router.get('/unconfirmed-payment', auth, async (req, res, next) => {
+router.get('/unconfirmed-payment', auth(), async (req, res, next) => {
     try {
         await variationalPayment.getUnconfirmedVariationalPayment().then((data) => {
             return res.status(200).json(data);

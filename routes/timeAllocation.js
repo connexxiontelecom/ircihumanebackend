@@ -12,7 +12,7 @@ const authorizationAction = require('../services/authorizationActionService');
 const employee = require("../services/employeeService");
 
 
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
@@ -28,7 +28,7 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 /* Add to time sheet */
-router.post('/add-time-allocation', auth, async function (req, res, next) {
+router.post('/add-time-allocation', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             ta_emp_id: Joi.number().required(),
@@ -98,7 +98,7 @@ router.post('/add-time-allocation', auth, async function (req, res, next) {
 });
 
 
-router.post('/update-time-allocation', auth, async function (req, res, next) {
+router.post('/update-time-allocation', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             ta_emp_id: Joi.number().required(),
@@ -208,7 +208,7 @@ router.post('/update-time-allocation', auth, async function (req, res, next) {
 });
 
 
-router.get('/get-time-allocation/:emp_id/:date', auth, async function (req, res, next) {
+router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let date = new Date(req.params.date)
@@ -237,7 +237,7 @@ router.get('/get-time-allocation/:emp_id/:date', auth, async function (req, res,
 });
 
 
-router.get('/get-employee-time-allocation/:emp_id', auth, async function (req, res, next) {
+router.get('/get-employee-time-allocation/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
 
@@ -253,7 +253,7 @@ router.get('/get-employee-time-allocation/:emp_id', auth, async function (req, r
     }
 });
 
-router.get('/authorization/:super_id', auth, async function (req, res, next) {
+router.get('/authorization/:super_id', auth(), async function (req, res, next) {
     try {
 
         let super_id = req.params.super_id

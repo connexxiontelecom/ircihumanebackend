@@ -11,7 +11,7 @@ const logs = require('../services/logService');
 
 
 /* Add to time sheet penalty */
-router.get('/', auth, async function (req, res) {
+router.get('/', auth(), async function (req, res) {
     try {
         const defaultCharges = await timeSheetPenalty.getTimeSheetPenalty().then((data) => {
             return data;
@@ -37,7 +37,7 @@ router.get('/', auth, async function (req, res) {
     }
 });
 /*
-router.post('/add-time-sheet', auth,  async function(req, res, next) {
+router.post('/add-time-sheet', auth(),  async function(req, res, next) {
     try {
         const schema = Joi.object( {
             ts_emp_id: Joi.number().required(),

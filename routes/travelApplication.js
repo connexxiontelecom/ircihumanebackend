@@ -19,10 +19,10 @@ const employeeService = require('../services/employeeService');
 
 /* state routes. */
 
-router.get('/', auth, travelApplicationService.getTravelApplications);
-router.get('/my-travel-applications', auth, travelApplicationService.getTravelApplicationsByEmployeeId);
+router.get('/', auth(), travelApplicationService.getTravelApplications);
+router.get('/my-travel-applications', auth(), travelApplicationService.getTravelApplicationsByEmployeeId);
 
-router.post('/new-travel-application', auth, async (req, res) => {
+router.post('/new-travel-application', auth(), async (req, res) => {
     try {
         const schema = Joi.object({
             employee: Joi.number().required(),
@@ -140,7 +140,7 @@ router.post('/new-travel-application', auth, async (req, res) => {
     }
 });
 
-router.get('/get-travel-application/:id', auth, async (req, res) => {
+router.get('/get-travel-application/:id', auth(), async (req, res) => {
     const employee = req.params.id
     try {
         let travelObj = {};
@@ -161,7 +161,7 @@ router.get('/get-travel-application/:id', auth, async (req, res) => {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
-router.get('/:id', auth, async (req, res) => { //get travel application details
+router.get('/:id', auth(), async (req, res) => { //get travel application details
     const id = req.params.id
     try {
         const application = await travelApplicationService.getTravelApplicationsById(id);
@@ -175,7 +175,7 @@ router.get('/:id', auth, async (req, res) => { //get travel application details
     }
 });
 
-router.get('/authorization/supervisor/:id', auth, async (req, res) => {
+router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
     try {
         const supervisorId = req.params.id;
         let travelObj = {};
@@ -205,7 +205,7 @@ router.get('/authorization/supervisor/:id', auth, async (req, res) => {
 });
 
 
-/*router.get('/authorization/supervisor/:id',auth, async (req, res)=>{
+/*router.get('/authorization/supervisor/:id',auth(), async (req, res)=>{
     try{
         const employeeId = req.params.id;  //req.employee.emp_id || 1;
         await authorizationAction.getTravelAuthorizationByOfficerId(employeeId,3).then((data)=>{
@@ -223,7 +223,7 @@ router.get('/authorization/supervisor/:id', auth, async (req, res) => {
 });*/
 
 
-/*router.post('/authorization', auth, async (req, res)=>{
+/*router.post('/authorization', auth(), async (req, res)=>{
     try{
         const schema = Joi.object({
             comment:Joi.string().required(),

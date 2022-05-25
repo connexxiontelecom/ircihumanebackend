@@ -17,7 +17,7 @@ const authorizationAction = require('../services/authorizationActionService');
 
 
 /* Add to time sheet */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
             return data
@@ -41,7 +41,7 @@ router.get('/', auth, async function (req, res, next) {
 
     }
 });
-router.post('/add-time-sheet', auth, async function (req, res, next) {
+router.post('/add-time-sheet', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             ts_emp_id: Joi.number().required(),
@@ -95,7 +95,7 @@ router.post('/add-time-sheet', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-time-sheet/:emp_id/:date', auth, async function (req, res, next) {
+router.get('/get-time-sheet/:emp_id/:date', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let date = new Date(req.params.date)
@@ -123,7 +123,7 @@ router.get('/get-time-sheet/:emp_id/:date', auth, async function (req, res, next
     }
 });
 
-router.get('/get-time-sheet-month/:emp_id/:date', auth, async function (req, res, next) {
+router.get('/get-time-sheet-month/:emp_id/:date', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let date = new Date(req.params.date)
@@ -152,7 +152,7 @@ router.get('/get-time-sheet-month/:emp_id/:date', auth, async function (req, res
 });
 
 
-router.get('/get-time-sheets/:emp_id', auth, async function (req, res, next) {
+router.get('/get-time-sheets/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employee.getEmployee(empId).then((data) => {
@@ -187,7 +187,7 @@ router.get('/get-time-sheets/:emp_id', auth, async function (req, res, next) {
 });
 
 
-router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
+router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
     try {
         const empId = req.params.emp_id
 
@@ -305,7 +305,7 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
     }
 });
 
-router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
+router.get('/time-sheet/:month/:year/:emp_id', auth(), async function (req, res) {
     try {
         const empId = parseInt(req.params.emp_id);
         const month = parseInt(req.params.month);
@@ -336,7 +336,7 @@ router.get('/time-sheet/:month/:year/:emp_id', auth, async function (req, res) {
     }
 
 });
-router.get('/:month/:year', auth, async function (req, res) {
+router.get('/:month/:year', auth(), async function (req, res) {
     try {
         //const empId = parseInt(req.params.emp_id);
         const month = parseInt(req.params.month);
@@ -366,7 +366,7 @@ router.get('/:month/:year', auth, async function (req, res) {
 });
 /*
 
-router.get('/:month/:year', auth, async function (req, res) {
+router.get('/:month/:year', auth(), async function (req, res) {
     try{
         //const empId = parseInt(req.params.emp_id);
         const month = parseInt(req.params.month);
@@ -395,7 +395,7 @@ router.get('/:month/:year', auth, async function (req, res) {
 */
 
 
-router.post('/update-status', auth, async function (req, res) {
+router.post('/update-status', auth(), async function (req, res) {
     //status, comment, month, year, empId, officer(logged in person)
     try {
         const schema = Joi.object({
@@ -517,7 +517,7 @@ router.patch('/update-attendance-status/:emp_id/:day/:month/:year', async (req, 
     }
 });
 
-router.get('/authorization/supervisor/:id', auth, async (req, res) => {
+router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
     try {
         const supervisorId = req.params.id;
         await authorizationAction.getAuthorizationByOfficerId(supervisorId, 2).then((data) => {

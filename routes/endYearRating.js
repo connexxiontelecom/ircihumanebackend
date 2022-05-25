@@ -7,7 +7,7 @@ const logs = require('../services/logService')
 const endYearRating = require('../services/endYearRatingService');
 
 /* Add Self Assessment */
-router.post('/add-rating', auth, async function (req, res, next) {
+router.post('/add-rating', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -45,7 +45,7 @@ router.post('/add-rating', auth, async function (req, res, next) {
 });
 
 
-router.get('/get-rating/:emp_id/:year', auth, async function (req, res, next) {
+router.get('/get-rating/:emp_id/:year', auth(), async function (req, res, next) {
     try {
 
 

@@ -16,7 +16,7 @@ const endYearSupervisorResponse = require('../models/endyearsupervisorresponse')
 const selfassessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 
 /* Add end of year question Assessment */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         const questions = await endYearAssessment.getEndOfYearAssessmentQuestions().then((data) => {
@@ -32,7 +32,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Get Mid Year Checking Assessment, use for prefilling during end of year  */
-router.get('/prefill-end-year/:emp_id', auth, async function (req, res, next) {
+router.get('/prefill-end-year/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -96,7 +96,7 @@ router.get('/prefill-end-year/:emp_id', auth, async function (req, res, next) {
 
 
 /* Add end of year question Assessment */
-router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, next) {
     let destroyResponse;
     let addResponse;
     try {
@@ -269,7 +269,7 @@ router.post('/add-question/:emp_id/:gs_id', auth, async function (req, res, next
 });
 
 
-router.get('/get-end-year/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.get('/get-end-year/:emp_id/:gs_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let gsId = req.params.gs_id
@@ -294,7 +294,7 @@ router.get('/get-end-year/:emp_id/:gs_id', auth, async function (req, res, next)
     }
 });
 
-router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, next) {
+router.post('/approve-end-year/:emp_id/:gs_id', auth(), async function (req, res, next) {
     try {
         let empId = parseInt(req.params.emp_id)
         let gsId = parseInt(req.params.gs_id)
@@ -363,7 +363,7 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth, async function (req, res, 
 });
 
 
-router.post('/supervisor-end-year-response', auth, async function(req, res){
+router.post('/supervisor-end-year-response', auth(), async function(req, res){
   try{
     const schema = Joi.object({
       strength: Joi.string().required(),
@@ -434,7 +434,7 @@ router.post('/supervisor-end-year-response', auth, async function(req, res){
   }
 });
 
-router.get('/supervisor-end-year-response/:masterId', auth, async function(req, res){
+router.get('/supervisor-end-year-response/:masterId', auth(), async function(req, res){
   try{
     const masterId = req.params.masterId;
 
