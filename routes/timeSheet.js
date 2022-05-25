@@ -198,9 +198,11 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
         if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(404).json(`Employee Does Not Exist`)
         } else {
+
             const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
                 return data
             })
+
             if (_.isEmpty(payrollMonthYearData) || _.isNull(payrollMonthYearData)) {
                 return res.status(404).json(`No Payroll Month and Year Set`)
             } else {
@@ -217,10 +219,19 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
 
                 for (const day of daysInMonth) {
                     d = day
-                    dayNumber = d.getDate()
-
+                    dayNumber = d.getDate();
 
                     if (weekday[d.getDay()] === 'Saturday' || weekday[d.getDay()] === 'Sunday') {
+                        timeObject = {
+                          ts_emp_id: empId,
+                          ts_month: pm,
+                          ts_year: payrollYear,
+                          ts_day: dayNumber,
+                          ts_start: '0',
+                          ts_end: '0',
+                          ts_duration: 0,
+                          ts_is_present: 3,//weekend
+                        }
                     } else {
                         checkSpecificPubHols = await getSpecificHoliday(dayNumber, pm, payrollYear)
                         if (_.isEmpty(checkSpecificPubHols) || _.isNull(checkSpecificPubHols)) {
@@ -232,7 +243,8 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
                                     ts_day: dayNumber,
                                     ts_start: employeeData.emp_location_id === 7 ? '08:30' : '08:00',
                                     ts_end: employeeData.emp_location_id === 7  ? '17:30' : '17:00',
-                                    ts_duration: '8.15'
+                                    ts_duration: '8.15',
+                                    ts_is_present: 1,
                                 }
                             } else {
                                 timeObject = {
@@ -242,19 +254,38 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
                                     ts_day: dayNumber,
                                     ts_start: '08:00',
                                     ts_end: '15:00',
-                                    ts_duration: 7.0
+                                    ts_duration: 7.0,
+                                    ts_is_present: 1,
                                 }
                             }
 
-                            tsData = await findTimeSheet(empId, dayNumber, pm, payrollYear)
+                            /*tsData = await findTimeSheet(empId, dayNumber, pm, payrollYear)
 
                             if (_.isEmpty(tsData)) {
                                 await addTimeSheet(timeObject)
                             } else {
                                 await updateTimeSheet(tsData.ts_id, timeObject)
-                            }
+                            }*/
+                        }else{
+                          timeObject = {
+                            ts_emp_id: empId,
+                            ts_month: pm,
+                            ts_year: payrollYear,
+                            ts_day: dayNumber,
+                            ts_start: '0',
+                            ts_end: '0',
+                            ts_duration: 0,
+                            ts_is_present: 2,
+                          }
                         }
                     }
+                  tsData = await findTimeSheet(empId, dayNumber, pm, payrollYear)
+
+                  if (_.isEmpty(tsData)) {
+                    await addTimeSheet(timeObject)
+                  } else {
+                    await updateTimeSheet(tsData.ts_id, timeObject)
+                  }
                 }
 
                 const logData = {

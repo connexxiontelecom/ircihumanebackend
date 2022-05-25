@@ -33,6 +33,10 @@ const registerNewAction = async (auth_type, travel_app, officer, status, comment
 
 }
 
+const getOneAuthorizationByRefNo = async (ref_no) => {
+  return await authorizationModel.findOne({where:{auth_travelapp_id:ref_no}});
+}
+
 const updateAuthorizationStatus = async (req, res) => {
 
     try {
@@ -218,6 +222,7 @@ module.exports = {
     updateAuthorizationStatus,
     //getTravelAuthorizationByOfficerId,
     getAuthorizationByOfficerId,
-    getAuthorizationLog
+    getAuthorizationLog,
+    getOneAuthorizationByRefNo
 
 }
