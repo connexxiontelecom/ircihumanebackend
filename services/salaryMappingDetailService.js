@@ -14,6 +14,13 @@ async function addSalaryMappingDetail(salaryMappingDetail) {
     });
 }
 
+async function removeSalaryMappingDetails(masterId){
+    return await SalaryMappingDetails.destroy({where:{
+            smd_master_id: masterId
+        }})
+}
+
 module.exports = {
-    addSalaryMappingDetail
+    addSalaryMappingDetail,
+    removeSalaryMappingDetails
 }

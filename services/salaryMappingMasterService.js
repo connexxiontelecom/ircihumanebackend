@@ -10,6 +10,20 @@ async function addSalaryMappingMaster(salaryMappingMaster) {
     });
 }
 
+async function removeSalaryMappingMaster(smmId){
+    return await SalaryMappingMaster.destroy({where:{
+        smm_id: smmId
+        }})
+}
+
+async function getSalaryMappingMaster(smmId){
+    return await SalaryMappingMaster.findOne({where:{
+        smm_id: smmId
+        }})
+}
+
 module.exports = {
-    addSalaryMappingMaster
+    addSalaryMappingMaster,
+    removeSalaryMappingMaster,
+    getSalaryMappingMaster
 }

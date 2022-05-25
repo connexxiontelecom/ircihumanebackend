@@ -5,10 +5,17 @@ const auth = require("../middleware/auth");
 const users = require('../services/userService');
 const logs = require("../services/logService");
 const payrollJournalService = require("../services/payrollJournalService");
+const locationService = require("../services/locationService")
+const salaryService = require("../services/salaryService");
+const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
+const salaryMappingMasterService = require("../services/salaryMappingMasterService");
 const ROLES = require('../roles')
 const _ = require('lodash')
-const path = require("path");
+const path = require("path")
 const readXlsxFile = require('read-excel-file/node')
+const storage = require('node-persist')
+const employees = require("../services/employeeService");
+await storage.init()
 
 
 /* Get All Users */
@@ -100,8 +107,65 @@ router.patch('/', auth(), async function (req, res, next) {
     }
 });
 
-router.post('/salary-mapping', auth(), async function (req, res, next) {
+router.post('/salary-mapping-master', auth(), async function (req, res, next) {
     try {
+
+        const schema = Joi.object({
+            smm_month: Joi.number().required(),
+            smm_year: Joi.number().required(),
+            smm_location: Joi.string().required(),
+        })
+        const validationResult = schema.validate(req.body)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const locationId = req.body.smm_location
+
+        const locationResponse = await locationService.findLocationById(locationId).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(locationResponse) || _.isNull(locationResponse)){
+            return res.status(400).json('Location Does Not Exist')
+        }
+
+        const refCode = `${req.body.smm_month}/${req.body.smm_year}/${locationResponse.l_t6_code}`
+
+        const smmObject = {
+            smm_month: req.body.smm_month,
+            smm_year: req.body.smm_year,
+            smm_location: req.body.smm_location,
+            smm_ref_code: refCode
+        }
+
+        const addSalaryMappingMaster = await salaryMappingMasterService.addSalaryMappingMaster(smmObject).then((data)=>{
+            return data
+        })
+        if(_.isEmpty(addSalaryMappingMaster) || _.isNull(addSalaryMappingMaster)){
+            return res.status(400).json('An error occurred while adding salary master ')
+        }
+        // storage.setItem('smm_id', addSalaryMappingMaster.smm_id)
+        return res.status(200).json(addSalaryMappingMaster)
+    } catch (err) {
+        console.error(`Error while adding user `, err.message);
+        next(err);
+    }
+});
+
+router.post('/salary-mapping-detail/:masterId', auth(), async function (req, res, next) {
+    try {
+
+        const masterId = req.params['masterId']
+
+        const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
+            return data
+        })
+
+        if(_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)){
+            return res.status(400).json('Salary Mapping Master Does not Exist')
+        }
 
         let fileExt = path.extname(req.files.salary_map.name)
         fileExt = fileExt.toLowerCase()
@@ -112,37 +176,16 @@ router.post('/salary-mapping', auth(), async function (req, res, next) {
                 return res.status(400).json(err)
             })
 
+            readXlsxFile(uploadResponse).then((rows) => {
+                rows.forEach((row)=>{
+
+
+                    let salaryDetailObject
+                })
+            })
 
         }
-
-
-
-
-
-        const schema = Joi.object({
-            pj_code: Joi.string().required(),
-            pj_journal_item: Joi.string().required(),
-            pj_location: Joi.number().required(),
-        })
-        const validationResult = schema.validate(req.body)
-
-        if (validationResult.error) {
-            return res.status(400).json(validationResult.error.details[0].message)
-        }
-        const payrollJournalObject = {
-            pj_code: req.body.pj_code,
-            pj_journal_item: req.body.pj_journal_item,
-            pj_location: req.body.pj_location,
-            pj_setup_by: req.user.username.user_id,
-        }
-        const payrollJournalAddResponse = await payrollJournalService.addPayrollJournal(payrollJournalObject).then((data) => {
-            return data
-        })
-
-        if (_.isEmpty(payrollJournalAddResponse) || _.isNull(payrollJournalAddResponse)) {
-            return res.status(400).json('An Error Occurred While adding Payroll')
-        }
-        return res.status(200).json('Payroll Journal Added Successfully')
+        return res.status(400).json('Invalid file Type')
     } catch (err) {
         console.error(`Error while adding user `, err.message);
         next(err);
