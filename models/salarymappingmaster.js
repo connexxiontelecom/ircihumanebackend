@@ -22,7 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     smm_month: DataTypes.INTEGER,
     smm_year: DataTypes.INTEGER,
     smm_location: DataTypes.INTEGER,
-    smm_ref_code: DataTypes.STRING
+    smm_ref_code: DataTypes.STRING,
+    smm_posted: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'salarymappingmaster',

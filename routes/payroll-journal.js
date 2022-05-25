@@ -14,7 +14,14 @@ const _ = require('lodash')
 const path = require("path")
 const readXlsxFile = require('read-excel-file/node')
 const employeeService = require("../services/employeeService");
-
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3({
+    accessKeyId: `${process.env.ACCESS_KEY}`,
+    secretAccessKey: `${process.env.SECRET_KEY}`
+});
+const reader = require('xlsx')
+const fs = require('fs')
+const https = require("https");
 
 
 /* Get All Users */
@@ -112,7 +119,7 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
         const schema = Joi.object({
             smm_month: Joi.number().required(),
             smm_year: Joi.number().required(),
-            smm_location: Joi.string().required(),
+            smm_location: Joi.number().required(),
         })
         const validationResult = schema.validate(req.body)
 
@@ -160,6 +167,31 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
 });
 
 
+router.post('/upload-mapping-detail', auth(), async function (req, res, next) {
+    try {
+        //fs.unlinkSync('./file.xlsx')
+        const file = await fs.createWriteStream("file.xlsx")
+        let fileExt = path.extname(req.files.salary_map.name)
+        fileExt = fileExt.toLowerCase()
+        if(fileExt === '.csv' || fileExt === '.xlsx' || fileExt === '.xls'){
+            let uploadResponse = await uploadFile(req.files.salary_map).then((response) => {
+                return response
+            }).catch(err => {
+                return res.status(400).json(err)
+            })
+            uploadResponse = String(uploadResponse)
+           await https.get(uploadResponse, async function (response) {
+               await response.pipe(file);
+           });
+
+            return res.status(200).json('Uploaded Successfully')
+        }
+        return res.status(400).json('Invalid file Type')
+    } catch (err) {
+        console.error( err.message);
+        next(err);
+    }
+});
 router.post('/salary-mapping-detail/:masterId', auth(), async function (req, res, next) {
     try {
 
@@ -173,55 +205,65 @@ router.post('/salary-mapping-detail/:masterId', auth(), async function (req, res
             return res.status(400).json('Salary Mapping Master Does not Exist')
         }
 
-        let fileExt = path.extname(req.files.salary_map.name)
-        fileExt = fileExt.toLowerCase()
-        if(fileExt === '.csv' || fileExt === '.xlsx' || fileExt === '.xls'){
-
-            const uploadResponse = await uploadFile(req.files.salary_map).then((response) => {
-                return response
-            }).catch(err => {
-                return res.status(400).json(err)
-            })
-            readXlsxFile(uploadResponse).then((rows) => {
-                rows.forEach(async (row)=>{
-                    let status = 1
-                    let employeeData = await employeeService.getEmployeeByIdOnly(row[0]).then((data)=>{
-                        return data
-                    })
-                    if(_.isEmpty(employeeData) || _.isNull(employeeData)){
-                        status = 0
-                    }
-                    let salaryMappingDetailObject  = {
-                        smd_master_id: masterId,
-                        smd_ref_code: salaryMasterData.smm_ref_code,
-                        smd_employee_t7: row[0],
-                        smd_donor_t1: row[1],
-                        smd_salary_expense_t2s:row[2],
-                        smd_benefit_expense_t2b: row[4],
-                        smd_allocation: row[3],
-                        smd_status: status,
-                    }
-
-                    let addSalaryMappingDetailsResponse = await salaryMappingDetailsService.addSalaryMappingDetail(salaryMappingDetailObject).then((data)=>{
-                        return data
-                    })
-
-                    if(_.isEmpty(addSalaryMappingDetailsResponse) || _.isNull(addSalaryMappingDetailsResponse)){
-                        await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
-                        await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
-                        return res.status(400).json('An error Occurred while trying to add details')
-                    }
-
-                })
-            })
-            return res.status(200).json('Salary Map Uploaded Successfully')
+        if (!fs.existsSync('./file.xlsx')) {
+            return res.status(400).json('File has not been uploaded')
         }
-        return res.status(400).json('Invalid file Type')
+        const files = await reader.readFile('./file.xlsx')
+        let rows = []
+        const sheets = files.SheetNames
+
+        for(let i = 0; i < sheets.length; i++)
+        {
+            const temp = reader.utils.sheet_to_json(
+                files.Sheets[files.SheetNames[i]])
+            for (const res1 of temp) {
+               rows.push(res1)
+            }
+        }
+
+        if(_.isEmpty(rows) || _.isNull(rows)){
+            return res.status(400).json('File has not been uploaded')
+        }
+
+        for(const row of rows){
+           let status = 1
+
+            let employeeData = await employeeService.getEmployeeById(row.t7).then((data)=>{
+                return data
+            })
+
+            if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+               status = 0
+            }
+            let rowObject = {
+                smd_master_id: masterId,
+                smd_ref_code: salaryMasterData.smm_ref_code,
+                smd_employee_t7: row.t7,
+                smd_donor_t1: row.t1,
+                smd_salary_expense_t2s:row.t2s,
+                smd_benefit_expense_t2b: row.t2b,
+                smd_allocation: row.allocation,
+                smd_status: status,
+            }
+
+            let checkDetailResponse = await salaryMappingDetailsService.addSalaryMappingDetail(rowObject).then((data)=>{
+                return data
+            })
+            if(_.isEmpty(checkDetailResponse) || _.isNull(checkDetailResponse)){
+                await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+                await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
+                await fs.unlinkSync('./file.xlsx')
+                return res.status(400).json('An error occurred while adding details, Please try again')
+            }
+        }
+        await fs.unlinkSync('./file.xlsx')
+        return res.status(200).json('Salary mapping uploaded successfully')
     } catch (err) {
-        console.error(`Error while adding user `, err.message);
+        console.error( err.message);
         next(err);
     }
 });
+
 
 
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test

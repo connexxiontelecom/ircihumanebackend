@@ -34,10 +34,6 @@ module.exports = {
         type: Sequelize.DOUBLE
       },
 
-      smd_status:{
-        type: Sequelize.INTEGER
-      },
-
       smd_posted:{
         type: Sequelize.INTEGER
       },

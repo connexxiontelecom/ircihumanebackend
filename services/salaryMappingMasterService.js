@@ -6,7 +6,8 @@ async function addSalaryMappingMaster(salaryMappingMaster) {
         smm_month: salaryMappingMaster.smm_month,
         smm_year: salaryMappingMaster.smm_year,
         smm_location: salaryMappingMaster.smm_location,
-        smm_ref_code: salaryMappingMaster.smm_ref_code
+        smm_ref_code: salaryMappingMaster.smm_ref_code,
+        smm_posted: 0
     });
 }
 

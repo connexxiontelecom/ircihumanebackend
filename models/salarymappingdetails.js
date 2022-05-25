@@ -27,7 +27,6 @@ module.exports = (sequelize, DataTypes) => {
     smd_benefit_expense_t2b: DataTypes.STRING,
     smd_allocation: DataTypes.DOUBLE,
     smd_status: DataTypes.INTEGER,
-    smd_posted: DataTypes.INTEGER
 
   }, {
     sequelize,
