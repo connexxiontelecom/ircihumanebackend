@@ -1,9 +1,5 @@
-const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
-const User = require("../models/user")(sequelize, Sequelize.DataTypes);
 const Permission = require("../models/permission")(sequelize, Sequelize.DataTypes)
-
-const Joi = require('joi');
 
 async function addPermission(permission) {
     return await Permission.create({
