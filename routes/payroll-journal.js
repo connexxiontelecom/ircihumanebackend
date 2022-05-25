@@ -6,16 +6,15 @@ const users = require('../services/userService');
 const logs = require("../services/logService");
 const payrollJournalService = require("../services/payrollJournalService");
 const locationService = require("../services/locationService")
-const salaryService = require("../services/salaryService");
+const payrollMonthYearLocationService = require("../services/payrollMonthYearLocationService");
 const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
 const salaryMappingMasterService = require("../services/salaryMappingMasterService");
 const ROLES = require('../roles')
 const _ = require('lodash')
 const path = require("path")
 const readXlsxFile = require('read-excel-file/node')
-const storage = require('node-persist')
-const employees = require("../services/employeeService");
-await storage.init()
+const employeeService = require("../services/employeeService");
+
 
 
 /* Get All Users */
@@ -131,6 +130,12 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
             return res.status(400).json('Location Does Not Exist')
         }
 
+        const checkSalaryRoutineLocation = await payrollMonthYearLocationService.findApprovedPayrollByMonthYearLocation(req.body.smm_month, req.body.smm_year, locationId ).then((data)=>{
+            return data
+        })
+        if(_.isEmpty(checkSalaryRoutineLocation) || _.isNull(checkSalaryRoutineLocation)){
+            return res.status(400).json('Salary routine for location has not been process for selected month and year')
+        }
         const refCode = `${req.body.smm_month}/${req.body.smm_year}/${locationResponse.l_t6_code}`
 
         const smmObject = {
@@ -154,6 +159,7 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
     }
 });
 
+
 router.post('/salary-mapping-detail/:masterId', auth(), async function (req, res, next) {
     try {
 
@@ -170,20 +176,45 @@ router.post('/salary-mapping-detail/:masterId', auth(), async function (req, res
         let fileExt = path.extname(req.files.salary_map.name)
         fileExt = fileExt.toLowerCase()
         if(fileExt === '.csv' || fileExt === '.xlsx' || fileExt === '.xls'){
+
             const uploadResponse = await uploadFile(req.files.salary_map).then((response) => {
                 return response
             }).catch(err => {
                 return res.status(400).json(err)
             })
-
             readXlsxFile(uploadResponse).then((rows) => {
-                rows.forEach((row)=>{
+                rows.forEach(async (row)=>{
+                    let status = 1
+                    let employeeData = await employeeService.getEmployeeByIdOnly(row[0]).then((data)=>{
+                        return data
+                    })
+                    if(_.isEmpty(employeeData) || _.isNull(employeeData)){
+                        status = 0
+                    }
+                    let salaryMappingDetailObject  = {
+                        smd_master_id: masterId,
+                        smd_ref_code: salaryMasterData.smm_ref_code,
+                        smd_employee_t7: row[0],
+                        smd_donor_t1: row[1],
+                        smd_salary_expense_t2s:row[2],
+                        smd_benefit_expense_t2b: row[4],
+                        smd_allocation: row[3],
+                        smd_status: status,
+                    }
 
+                    let addSalaryMappingDetailsResponse = await salaryMappingDetailsService.addSalaryMappingDetail(salaryMappingDetailObject).then((data)=>{
+                        return data
+                    })
 
-                    let salaryDetailObject
+                    if(_.isEmpty(addSalaryMappingDetailsResponse) || _.isNull(addSalaryMappingDetailsResponse)){
+                        await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+                        await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
+                        return res.status(400).json('An error Occurred while trying to add details')
+                    }
+
                 })
             })
-
+            return res.status(200).json('Salary Map Uploaded Successfully')
         }
         return res.status(400).json('Invalid file Type')
     } catch (err) {

@@ -14,7 +14,7 @@ module.exports = {
       smd_ref_code: {
         type: Sequelize.STRING
       },
-      smd_location_t7: {
+      smd_employee_t7: {
         type: Sequelize.STRING
       },
 
@@ -35,6 +35,10 @@ module.exports = {
       },
 
       smd_status:{
+        type: Sequelize.INTEGER
+      },
+
+      smd_posted:{
         type: Sequelize.INTEGER
       },
 

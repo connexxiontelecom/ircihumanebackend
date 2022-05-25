@@ -21,12 +21,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     smd_master_id: DataTypes.INTEGER,
     smd_ref_code: DataTypes.STRING,
-    smd_location_t7: DataTypes.STRING,
+    smd_employee_t7: DataTypes.STRING,
     smd_donor_t1: DataTypes.STRING,
     smd_salary_expense_t2s: DataTypes.STRING,
     smd_benefit_expense_t2b: DataTypes.STRING,
     smd_allocation: DataTypes.DOUBLE,
     smd_status: DataTypes.INTEGER,
+    smd_posted: DataTypes.INTEGER
 
   }, {
     sequelize,
