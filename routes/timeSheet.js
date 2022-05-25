@@ -221,6 +221,7 @@ router.get('/preload-date/:emp_id', auth, async function (req, res, next) {
 
 
                     if (weekday[d.getDay()] === 'Saturday' || weekday[d.getDay()] === 'Sunday') {
+
                     } else {
                         checkSpecificPubHols = await getSpecificHoliday(dayNumber, pm, payrollYear)
                         if (_.isEmpty(checkSpecificPubHols) || _.isNull(checkSpecificPubHols)) {
