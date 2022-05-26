@@ -49,10 +49,11 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    static async updateLeaveAppPeriod(leaveId, start, end){
+    static async updateLeaveAppPeriod(leaveId, start, end, length){
       return await leaveApplication.update({
           leapp_start_date:start,
           leapp_end_date:end,
+          leapp_total_days:length,
         },
         {where:{leapp_id:leaveId}
         });
