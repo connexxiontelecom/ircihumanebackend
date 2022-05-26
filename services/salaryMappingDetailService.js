@@ -20,7 +20,14 @@ async function removeSalaryMappingDetails(masterId){
         }})
 }
 
+async function getSalaryMappingDetails(masterId){
+    return await SalaryMappingDetails.findAll({where:{
+            smd_master_id: masterId
+        }})
+}
+
 module.exports = {
     addSalaryMappingDetail,
-    removeSalaryMappingDetails
+    removeSalaryMappingDetails,
+    getSalaryMappingDetails
 }

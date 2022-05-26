@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.STRING
       },
 
-      smm_status: {
+      smm_posted: {
         type: Sequelize.INTEGER
       },
       createdAt: {

@@ -481,6 +481,7 @@ router.post('/login', async function (req, res, next) {
                             "token": token,
                             "userData": checkUserExisting,
                             "employee": employeeId,
+                            "permission": userPermission,
                             "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(employeeId.emp_id)).then(n => {
                                 return n;
                             })
