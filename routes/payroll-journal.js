@@ -143,7 +143,7 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
         if(_.isEmpty(checkSalaryRoutineLocation) || _.isNull(checkSalaryRoutineLocation)){
             return res.status(400).json('Salary routine for location has not been process for selected month and year')
         }
-        const refCode = `${req.body.smm_month}/${req.body.smm_year}/${locationResponse.l_t6_code}`
+        const refCode = `${req.body.smm_month}-${req.body.smm_year}-${locationResponse.l_t6_code}`
 
         const smmObject = {
             smm_month: req.body.smm_month,
