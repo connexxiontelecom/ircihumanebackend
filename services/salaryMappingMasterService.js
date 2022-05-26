@@ -23,8 +23,17 @@ async function getSalaryMappingMaster(smmId){
         }})
 }
 
+async function getSalaryMappingsMaster(){
+    return await SalaryMappingMaster.findAll(  {order: [
+        ['smm_month', 'DESC'],
+            ['smm_year', 'DESC'],
+            ['smm_id', 'DESC'],
+    ]})
+}
+
 module.exports = {
     addSalaryMappingMaster,
     removeSalaryMappingMaster,
-    getSalaryMappingMaster
+    getSalaryMappingMaster,
+    getSalaryMappingsMaster
 }

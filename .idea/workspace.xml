@@ -22,10 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="userdata sent when login">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="update on end year response">
       <change afterPath="$PROJECT_DIR$/roles.js" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/services/payrollJournalService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/helper.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/middleware/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/middleware/auth.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/announcement.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/announcement.js" afterDir="false" />
