@@ -15,7 +15,7 @@ const _ = require('lodash')
 
 
 /* Get All Users */
-router.get('/', auth([ROLES.MANAGER_USER]), async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         await users.findAllUsers().then((data) => {
@@ -29,7 +29,7 @@ router.get('/', auth([ROLES.MANAGER_USER]), async function (req, res, next) {
 
 
 /* Add User */
-router.post('/add-user', auth([ROLES.MANAGER_USER]), async function (req, res, next) {
+router.post('/add-user', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             user_username: Joi.string().min(5).required(),
@@ -162,7 +162,7 @@ router.post('/add-user', auth([ROLES.MANAGER_USER]), async function (req, res, n
 });
 
 /* UpdateUser */
-router.patch('/update-user/:user_id', auth(ROLES.MANAGER_USER), async function (req, res, next) {
+router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
     try {
 
         const schemaWithoutPassword = Joi.object({
@@ -479,7 +479,7 @@ router.post('/login', async function (req, res, next) {
                         checkUserExisting.user_password = null;
                         const responseData = {
                             "token": token,
-                            "userData": userData,
+                            "userData": checkUserExisting,
                             "employee": employeeId,
                             "notifications": await notificationModel.getAllEmployeeUnreadNotifications(parseInt(employeeId.emp_id)).then(n => {
                                 return n;
@@ -505,7 +505,7 @@ router.post('/login', async function (req, res, next) {
                         checkUserExisting.user_password = null;
                         const responseData = {
                             "token": token,
-                            "userData": userData,
+                            "userData": checkUserExisting,
                             "permission": userPermission,
                             "notifications": [],
                         }
