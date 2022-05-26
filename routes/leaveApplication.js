@@ -344,6 +344,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
 
 
     let daysRequested = await differenceInBusinessDays(endDate, startDate)
+    //return res.status(200).json(daysRequested)
     const empId = req.user.username.user_id;
     if (parseInt(daysRequested) <= 0) {
       return res.status(400).json('Leave duration must be greater or equal to 1')
