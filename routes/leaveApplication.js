@@ -192,7 +192,7 @@ router.get('/approved-applications', async (req, res) => {
     try {
         let appId = [];
         let leaveObj = {};
-        await leaveApplication.findAllApprovedLeaveApplications().then((data) => {
+        await leaveApplication.findAllActiveLeaveApplications().then((data) => {
             data.map((app) => {
                 appId.push(app.leapp_id);
             });
