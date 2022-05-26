@@ -6,8 +6,8 @@ const queryReplyService = require('../services/queryReplyService');
 
 /* work query reply provider routes. */
 
-router.post('/',auth, queryReplyService.replyQuery);
-router.get('/:id',auth, queryReplyService.getAllRepliesByQueryId);
+router.post('/',auth(), queryReplyService.replyQuery);
+router.get('/:id',auth(), queryReplyService.getAllRepliesByQueryId);
 
 
 

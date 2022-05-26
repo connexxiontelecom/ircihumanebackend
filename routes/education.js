@@ -6,9 +6,9 @@ const educationService = require('../services/educationService');
 
 /* education provider routes. */
 
-router.post('/',auth, educationService.addEducation);
-router.get('/:id',auth, educationService.getEmployeeEducationList);
-router.patch('/:id',auth, educationService.updateEducation);
+router.post('/',auth(), educationService.addEducation);
+router.get('/:id',auth(), educationService.getEmployeeEducationList);
+router.patch('/:id',auth(), educationService.updateEducation);
 
 
 

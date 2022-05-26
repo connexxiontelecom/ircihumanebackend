@@ -5,7 +5,7 @@ const authorizationService = require('../services/authorizationActionService');
 
 /* GET authorization. */
 
-router.post('/', auth, authorizationService.updateAuthorizationStatus);
+router.post('/', auth(), authorizationService.updateAuthorizationStatus);
 
 
 module.exports = router;

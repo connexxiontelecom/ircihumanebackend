@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="userdata sent when login">
+      <change afterPath="$PROJECT_DIR$/roles.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/payrollJournalService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/helper.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/middleware/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/middleware/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/announcement.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/announcement.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/authorization-role.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/authorization-role.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/authorization.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/authorization.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/bank.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/bank.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/department.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/department.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/donor.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/donor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/education.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/education.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/employee-category.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employee-category.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/employees.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/employees.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/endOfYearAssessment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/endOfYearAssessment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/endOfYearResponse.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/endOfYearResponse.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/endYearRating.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/endYearRating.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/goalSetting.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/goalSetting.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/goalSettingYear.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/goalSettingYear.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/grade.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/grade.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/grantChart.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/grantChart.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/hmo.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/hmo.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/hrfocalpoint.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/hrfocalpoint.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/job-role.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/job-role.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/leave-type.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leave-type.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/leaveAccrual.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leaveAccrual.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/leaveApplication.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leaveApplication.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/leaveDoc.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/leaveDoc.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/lga.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/lga.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/location.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/location.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/locationAllowances.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/locationAllowances.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/logs.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/logs.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/minimumTaxRates.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/minimumTaxRates.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/notification.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/notification.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/paymentDefinitions.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/paymentDefinitions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/payrollMonthYear.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/payrollMonthYear.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/pension-provider.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/pension-provider.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/publicHolidays.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/publicHolidays.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/qualification.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/qualification.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/query.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/query.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/queryReply.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/queryReply.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/rating.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/rating.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/salary-old.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary-old.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/salary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/salaryGrade.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salaryGrade.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/salaryStructure.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/salaryStructure.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/sectorLead.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/sectorLead.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/selfAssessment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/selfAssessment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/state.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/state.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/subsidiary.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/subsidiary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/supervisorAssignment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/supervisorAssignment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/taxRates.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/taxRates.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/time-sheet-penalty.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/time-sheet-penalty.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/timeAllocation.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/timeAllocation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/timeSheet.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/timeSheet.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/travelApplication.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/travelApplication.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/users.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/users.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/variational-payment.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/variational-payment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/work-experience.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/work-experience.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="25pXAwok1XYYgHjBADUKm9jURww" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/services" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/services" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="69b42510-31ed-4482-ad3a-f1ebe2837a4e" name="Changes" comment="tax module edit to use employeeadjuested gross ii" />
+      <created>1646224861873</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1646224861873</updated>
+      <workItem from="1646224865223" duration="7704000" />
+      <workItem from="1646730158397" duration="1375000" />
+      <workItem from="1646835987263" duration="719000" />
+      <workItem from="1646837640406" duration="132858000" />
+      <workItem from="1648458856467" duration="2991000" />
+      <workItem from="1648462015855" duration="43176000" />
+      <workItem from="1649747918417" duration="668000" />
+      <workItem from="1649749062520" duration="121000" />
+      <workItem from="1649749322414" duration="52185000" />
+      <workItem from="1651824795899" duration="23232000" />
+      <workItem from="1652039908026" duration="29153000" />
+      <workItem from="1653394824723" duration="2739000" />
+    </task>
+    <task id="LOCAL-00001" summary="test push">
+      <created>1646229916957</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1646229916957</updated>
+    </task>
+    <task id="LOCAL-00002" summary="log on undo payroll routine">
+      <created>1646283237614</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1646283237614</updated>
+    </task>
+    <task id="LOCAL-00003" summary="auth middleware to handle permission">
+      <created>1653300997195</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1653300997195</updated>
+    </task>
+    <task id="LOCAL-00004" summary="auth middleware to handle permission update">
+      <created>1653301077046</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1653301077046</updated>
+    </task>
+    <task id="LOCAL-00005" summary="permissions migrations">
+      <created>1653303321394</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1653303321394</updated>
+    </task>
+    <task id="LOCAL-00006" summary="add permission to add user function on routes">
+      <created>1653321717602</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1653321717602</updated>
+    </task>
+    <task id="LOCAL-00007" summary="update permission on update user function">
+      <created>1653324196731</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1653324196731</updated>
+    </task>
+    <task id="LOCAL-00008" summary="update permission on update user function">
+      <created>1653324331108</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1653324331108</updated>
+    </task>
+    <task id="LOCAL-00009" summary="refactored login process for asynchronous processing">
+      <created>1653325602440</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1653325602440</updated>
+    </task>
+    <task id="LOCAL-00010" summary="add permission to login token">
+      <created>1653327281745</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1653327281745</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="test push" />
+    <MESSAGE value="log on undo payroll routine" />
+    <MESSAGE value="auth middleware to handle permission" />
+    <MESSAGE value="auth middleware to handle permission update" />
+    <MESSAGE value="permissions migrations" />
+    <MESSAGE value="add permission to add user function on routes" />
+    <MESSAGE value="update permission on update user function" />
+    <MESSAGE value="refactored login process for asynchronous processing" />
+    <MESSAGE value="add permission to login token" />
+    <option name="LAST_COMMIT_MESSAGE" value="add permission to login token" />
+  </component>
+</project>

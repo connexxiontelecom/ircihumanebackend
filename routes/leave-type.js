@@ -6,10 +6,10 @@ const leaveService = require('../services/leaveTypeService');
 
 /* leave routes. */
 
-router.get('/',auth, leaveService.getLeaveTypes);
-router.post('/',auth, leaveService.setNewLeaveType);
-router.get('/:id',auth, leaveService.getLeaveTypeById);
-router.patch('/:id',auth, leaveService.updateLeaveType);
+router.get('/',auth(), leaveService.getLeaveTypes);
+router.post('/',auth(), leaveService.setNewLeaveType);
+router.get('/:id',auth(), leaveService.getLeaveTypeById);
+router.patch('/:id',auth(), leaveService.updateLeaveType);
 
 
 module.exports = router;

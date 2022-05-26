@@ -8,7 +8,7 @@ const logs = require('../services/logService')
 const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 
 /* Get All Payment Definitions */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -22,7 +22,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-payroll-month-year', auth, async function (req, res, next) {
+router.post('/add-payroll-month-year', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             pym_month: Joi.string().required(),

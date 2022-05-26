@@ -7,9 +7,9 @@ const employeeCategoryService = require('../services/employeeCategoryService');
 
 /* employee category routes. */
 
-router.get('/', auth, employeeCategoryService.getEmployeeCategories);
-router.post('/', auth, employeeCategoryService.setNewEmployeeCategory);
-router.get('/:id', auth, employeeCategoryService.getEmployeeCategoryById);
-router.patch('/:id', auth, employeeCategoryService.updateEmployeeCategory);
+router.get('/', auth(), employeeCategoryService.getEmployeeCategories);
+router.post('/', auth(), employeeCategoryService.setNewEmployeeCategory);
+router.get('/:id', auth(), employeeCategoryService.getEmployeeCategoryById);
+router.patch('/:id', auth(), employeeCategoryService.updateEmployeeCategory);
 
 module.exports = router;

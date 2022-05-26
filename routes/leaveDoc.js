@@ -14,7 +14,7 @@ const s3 = new AWS.S3({
 });
 /* GET leave doc . */
 
-router.post('/leave-doc/:leaveId', auth, async (req, res)=>{
+router.post('/leave-doc/:leaveId', auth(), async (req, res)=>{
   try{
     const leaveId = req.params.leaveId;
     const leave = await leaveService.getLeaveApplicationsById(leaveId);
@@ -96,7 +96,7 @@ router.post('/leave-doc/:leaveId', auth, async (req, res)=>{
 
 });
 
-router.get('/:leaveId',auth, async (req, res)=>{
+router.get('/:leaveId',auth(), async (req, res)=>{
   try{
     const leaveId = req.params.leaveId;
     const leave = await leaveAppModel.getLeaveApplicationById(leaveId);

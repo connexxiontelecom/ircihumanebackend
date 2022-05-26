@@ -12,7 +12,7 @@ const logs = require('../services/logService')
 
 
 /* Get all Salary Structure */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         salaryStructure.findSalaryStructures().then((data) => {
@@ -29,7 +29,7 @@ router.get('/', auth, async function (req, res, next) {
 
 
 /* Add to Salary structure */
-router.post('/add-salary-structure', auth, async function (req, res, next) {
+router.post('/add-salary-structure', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             ss_empid: Joi.number().required(),
@@ -213,7 +213,7 @@ router.post('/add-salary-structure', auth, async function (req, res, next) {
 
 
 /* Update Salary Structure */
-router.patch('/update-salary-structure/:emp_id', auth, async function (req, res, next) {
+router.patch('/update-salary-structure/:emp_id', auth(), async function (req, res, next) {
     try {
         const empId = req.params.emp_id
         const schema = Joi.object({
@@ -390,7 +390,7 @@ router.patch('/update-salary-structure/:emp_id', auth, async function (req, res,
 });
 
 
-router.get('/get-salary-structure/:emp_id', auth, async function (req, res, next) {
+router.get('/get-salary-structure/:emp_id', auth(), async function (req, res, next) {
     try {
         const empId = req.params.emp_id
 

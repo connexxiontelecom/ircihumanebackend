@@ -7,7 +7,7 @@ const logs = require('../services/logService')
 
 
 /* Get All Payment Definitions */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -21,7 +21,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-tax-rate', auth, async function (req, res, next) {
+router.post('/add-tax-rate', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             tr_band: Joi.number().precision(2).required(),
@@ -54,7 +54,7 @@ router.post('/add-tax-rate', auth, async function (req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-tax-rate/:tr_id', auth, async function (req, res, next) {
+router.patch('/update-tax-rate/:tr_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({

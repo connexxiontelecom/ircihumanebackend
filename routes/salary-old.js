@@ -28,7 +28,7 @@ const {getTimeSheetDayEntry} = require("../services/timeSheetService");
 
 
 /* run salary routine */
-router.get('/salary-routine', auth, async function (req, res, next) {
+router.get('/salary-routine', auth(), async function (req, res, next) {
     try {
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
@@ -673,7 +673,7 @@ router.get('/salary-routine', auth, async function (req, res, next) {
 });
 
 /* run salary routine location */
-router.post('/salary-routine', auth, async function (req, res, next) {
+router.post('/salary-routine', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -1362,7 +1362,7 @@ router.post('/salary-routine', auth, async function (req, res, next) {
 
 
 /* check payroll routine */
-router.get('/check-salary-routine', auth, async function (req, res, next) {
+router.get('/check-salary-routine', auth(), async function (req, res, next) {
     try {
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
@@ -1393,7 +1393,7 @@ router.get('/check-salary-routine', auth, async function (req, res, next) {
 });
 
 /* undo salary */
-router.get('/undo-salary-routine', auth, async function (req, res, next) {
+router.get('/undo-salary-routine', auth(), async function (req, res, next) {
     try {
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
@@ -1435,7 +1435,7 @@ router.get('/undo-salary-routine', auth, async function (req, res, next) {
 });
 
 
-router.post('/undo-salary-routine', auth, async function (req, res, next) {
+router.post('/undo-salary-routine', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -1553,7 +1553,7 @@ router.post('/undo-salary-routine', auth, async function (req, res, next) {
 });
 
 /* fetch salary */
-router.get('/pull-salary-routine', auth, async function (req, res, next) {
+router.get('/pull-salary-routine', auth(), async function (req, res, next) {
     try {
 
 
@@ -1641,7 +1641,7 @@ router.get('/pull-salary-routine', auth, async function (req, res, next) {
 });
 
 /* fetch salary */
-router.get('/pull-salary-routine-locations', auth, async function (req, res, next) {
+router.get('/pull-salary-routine-locations', auth(), async function (req, res, next) {
     try {
 
 
@@ -1759,7 +1759,7 @@ router.get('/pull-salary-routine-locations', auth, async function (req, res, nex
 });
 
 
-router.get('/pull-emolument/:locationId', auth, async function (req, res, next) {
+router.get('/pull-emolument/:locationId', auth(), async function (req, res, next) {
     try {
         const pmylLocationId = parseInt(req.params.locationId)
 
@@ -1919,7 +1919,7 @@ router.get('/pull-emolument/:locationId', auth, async function (req, res, next) 
 });
 
 
-router.post('/pull-salary-routine', auth, async function (req, res, next) {
+router.post('/pull-salary-routine', auth(), async function (req, res, next) {
     try {
 
 
@@ -2011,7 +2011,7 @@ router.post('/pull-salary-routine', auth, async function (req, res, next) {
     }
 });
 
-router.get('/approve-salary-routine', auth, async function (req, res, next) {
+router.get('/approve-salary-routine', auth(), async function (req, res, next) {
     try {
 
 
@@ -2065,7 +2065,7 @@ router.get('/approve-salary-routine', auth, async function (req, res, next) {
     }
 });
 
-router.get('/confirm-salary-routine', auth, async function (req, res, next) {
+router.get('/confirm-salary-routine', auth(), async function (req, res, next) {
     try {
 
 
@@ -2117,7 +2117,7 @@ router.get('/confirm-salary-routine', auth, async function (req, res, next) {
     }
 });
 
-router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) {
+router.get('/pull-salary-routine/:empId', auth(), async function (req, res, next) {
     try {
 
         const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
@@ -2266,7 +2266,7 @@ router.get('/pull-salary-routine/:empId', auth, async function (req, res, next) 
     }
 });
 
-router.post('/pull-salary-routine/:empId', auth, async function (req, res, next) {
+router.post('/pull-salary-routine/:empId', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -2398,7 +2398,7 @@ router.post('/pull-salary-routine/:empId', auth, async function (req, res, next)
 });
 
 
-router.post('/pull-emolument', auth, async function (req, res, next) {
+router.post('/pull-emolument', auth(), async function (req, res, next) {
     try {
 
 
@@ -2561,7 +2561,7 @@ router.post('/pull-emolument', auth, async function (req, res, next) {
 });
 
 
-router.post('/deduction-report', auth, async function (req, res, next) {
+router.post('/deduction-report', auth(), async function (req, res, next) {
     try {
 
 
@@ -2662,7 +2662,7 @@ router.post('/deduction-report', auth, async function (req, res, next) {
 });
 
 
-router.post('/variation-report', auth, async function (req, res, next) {
+router.post('/variation-report', auth(), async function (req, res, next) {
     try {
 
 
@@ -2776,7 +2776,7 @@ router.post('/variation-report', auth, async function (req, res, next) {
 });
 
 
-router.post('/deduction-report-type', auth, async function (req, res, next) {
+router.post('/deduction-report-type', auth(), async function (req, res, next) {
     try {
 
 
@@ -3051,7 +3051,7 @@ router.get('/salary-test-routine', async function (req, res, next) {
 });
 
 /* Pay Order */
-router.post('/pay-order', auth, async function (req, res, next) {
+router.post('/pay-order', auth(), async function (req, res, next) {
     try {
 
 
@@ -3161,7 +3161,7 @@ router.post('/pay-order', auth, async function (req, res, next) {
 });
 
 
-router.post('/pension-report', auth, async function (req, res, next) {
+router.post('/pension-report', auth(), async function (req, res, next) {
     try {
 
 
@@ -3326,7 +3326,7 @@ router.post('/pension-report', auth, async function (req, res, next) {
     }
 });
 
-router.post('/nhf-report', auth, async function (req, res, next) {
+router.post('/nhf-report', auth(), async function (req, res, next) {
     try {
 
 
@@ -3482,7 +3482,7 @@ router.post('/nhf-report', auth, async function (req, res, next) {
 
 
 /* run salary routine location */
-router.post('/salary-tes-routine', auth, async function (req, res, next) {
+router.post('/salary-tes-routine', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({

@@ -118,6 +118,10 @@ async function approvePayrollMonthYearLocation(location, approveBy, approveDate,
     })
 }
 
+async function findApprovedPayrollByMonthYearLocation(month, year, locationId) {
+    return await Pmyl.findOne({where: {pmyl_month: month, pmyl_year: year, pmyl_location_id: locationId, pmyl_approved: 1,}})
+}
+
 module.exports = {
     addPayrollMonthYearLocation,
     updatePayrollMonthYearLocation,
@@ -133,6 +137,7 @@ module.exports = {
     findConfirmedPayrollMonthYearLocationMonthYear,
     findAllConfirmed,
     findAllPending,
-    findApprovedPayrollMonthYearLocationMonthYear
+    findApprovedPayrollMonthYearLocationMonthYear,
+    findApprovedPayrollByMonthYearLocation
 
 }

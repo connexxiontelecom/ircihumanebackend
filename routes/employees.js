@@ -27,12 +27,12 @@ const s3 = new AWS.S3({
 
 
 /* GET employees. */
-router.get('/', auth, employees.getAllEmployee);
+router.get('/', auth(), employees.getAllEmployee);
 /*router.get('/getemployee', async function(req, res, next){
 
 })*/
 
-router.get('/get-employee/:emp_id', auth, async function (req, res, next) {
+router.get('/get-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         await employees.getEmployee(empId).then((data) => {
@@ -49,9 +49,9 @@ router.get('/get-employee/:emp_id', auth, async function (req, res, next) {
     }
 })
 
-router.post('/employee-enrollment', auth, employees.createNewEmployee);
+router.post('/employee-enrollment', auth(), employees.createNewEmployee);
 
-router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
+router.patch('/update-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         await employees.getEmployee(empId).then((data) => {
@@ -79,7 +79,7 @@ router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
         next(err);
     }
 });
-router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, res, next) {
+router.patch('/update-employee-backoffice/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         await employees.getEmployee(empId).then(async (data) => {
@@ -122,7 +122,7 @@ router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, r
 });
 
 
-router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) {
+router.patch('/suspend-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         const schema = Joi.object({
@@ -194,7 +194,7 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
     }
 });
 
-router.patch('/unsuspend-employee/:emp_id', auth, async function (req, res, next) {
+router.patch('/unsuspend-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
    /*     const schema = Joi.object({
@@ -241,7 +241,7 @@ router.patch('/unsuspend-employee/:emp_id', auth, async function (req, res, next
 });
 
 
-router.patch('/upload-profile-pic/:empId', auth, async function (req, res, next) {
+router.patch('/upload-profile-pic/:empId', auth(), async function (req, res, next) {
     try {
         let empId = req.params['empId']
         const employeeDatum = await employees.getEmployee(empId).then((data) => {
@@ -287,7 +287,7 @@ router.patch('/upload-profile-pic/:empId', auth, async function (req, res, next)
 });
 
 
-router.post('/upload-documents/:empId', auth, async function (req, res, next) {
+router.post('/upload-documents/:empId', auth(), async function (req, res, next) {
     try {
 
         let empId = req.params['empId']
@@ -371,7 +371,7 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
 });
 
 
-router.post('/set-supervisor', auth, async function (req, res, next) {
+router.post('/set-supervisor', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             emp_supervisor_status: Joi.number().required(),
@@ -419,7 +419,7 @@ router.post('/set-supervisor', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-supervisor', auth, async function (req, res, next) {
+router.get('/get-supervisor', auth(), async function (req, res, next) {
     try {
         await employees.getSupervisors().then((data) => {
             return res.status(200).json(data)
@@ -430,7 +430,7 @@ router.get('/get-supervisor', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-none-supervisor', auth, async function (req, res, next) {
+router.get('/get-none-supervisor', auth(), async function (req, res, next) {
     try {
         await employees.getNoneSupervisors().then((data) => {
             return res.status(200).json(data)
@@ -441,7 +441,7 @@ router.get('/get-none-supervisor', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-supervisor-employees/:emp_id', auth, async function (req, res, next) {
+router.get('/get-supervisor-employees/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -471,7 +471,7 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function (req, res, 
     }
 });
 
-router.post('/upload-files', auth, async function (req, res, next) {
+router.post('/upload-files', auth(), async function (req, res, next) {
     try {
 
         return res.status(200).json(req.files.test)
@@ -487,7 +487,7 @@ router.post('/upload-files', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
+router.get('/get-documents/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -510,7 +510,7 @@ router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
 
 router.post('/change-password', employees.changePassword);
 
-router.post('/get-employee-report', auth, async function (req, res, next) {
+router.post('/get-employee-report', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             type: Joi.any().required(),

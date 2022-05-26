@@ -164,8 +164,10 @@
     const endYearResponseRouter = require('./routes/endOfYearResponse')
     app.use('/end-year-response', endYearResponseRouter);
 
-    app.get('/',  async function(req, res) {
+    const payrollJournalRouter = require('./routes/payroll-journal')
+    app.use('/payroll-journal', payrollJournalRouter);
 
+    app.get('/',  async function(req, res) {
         res.send('you got here. so get out')
     });
 
