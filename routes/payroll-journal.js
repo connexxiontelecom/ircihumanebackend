@@ -167,9 +167,17 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
 });
 
 
-router.post('/upload-mapping-detail', auth(), async function (req, res, next) {
+router.post('/upload-mapping-detail/:masterId', auth(), async function (req, res, next) {
     try {
-        //fs.unlinkSync('./file.xlsx')
+        const masterId = req.params['masterId']
+
+        const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
+            return data
+        })
+
+        if(_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)){
+            return res.status(400).json('Salary Mapping Master Does not Exist')
+        }
         const file = await fs.createWriteStream("file.xlsx")
         let fileExt = path.extname(req.files.salary_map.name)
         fileExt = fileExt.toLowerCase()
@@ -183,15 +191,26 @@ router.post('/upload-mapping-detail', auth(), async function (req, res, next) {
            await https.get(uploadResponse, async function (response) {
                await response.pipe(file);
            });
-
             return res.status(200).json('Uploaded Successfully')
+        }
+        await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+        await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
+        if (fs.existsSync('./file.xlsx')) {
+            await fs.unlinkSync('./file.xlsx')
         }
         return res.status(400).json('Invalid file Type')
     } catch (err) {
-        console.error( err.message);
-        next(err);
+        const masterId = req.params['masterId']
+        await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+        await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
+        if (fs.existsSync('./file.xlsx')) {
+            await fs.unlinkSync('./file.xlsx')
+        }
+        return res.status(400).json(err.message)
+
     }
 });
+
 router.post('/salary-mapping-detail/:masterId', auth(), async function (req, res, next) {
     try {
 
