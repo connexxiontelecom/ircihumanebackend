@@ -328,12 +328,34 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
       return res.status(400).json(validationResult.error.details[0].message)
     }
 
+    let startDate = new Date(statusRequest.start_date);
+    let startYear = startDate.getFullYear();
+
+    let endDate = new Date(statusRequest.end_date);
+    let endYear = endDate.getFullYear();
+
+    if (isBefore(startDate, new Date())) {
+      return res.status(400).json('Leave start date cannot be before today or today')
+    }
+
+    if (String(startYear) !== String(endYear)) {
+      return res.status(400).json('Leave period must be within the same year')
+    }
+
+
+    let daysRequested = await differenceInBusinessDays(endDate, startDate)
+    const empId = req.user.username.user_id;
+    if (parseInt(daysRequested) <= 0) {
+      return res.status(400).json('Leave duration must be greater or equal to 1')
+    }
+
+
     const leaveId = req.params.leaveId;
     const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId));
     if(_.isNull(leave) || _.isEmpty(leave)){
       return res.status(400).json("Leave application does not exist.");
     }
-    const status = await leaveAppModel.updateLeaveAppPeriod(parseInt(leaveId), req.body.start_date, req.body.end_date);
+    const status = await leaveAppModel.updateLeaveAppPeriod(parseInt(leaveId), req.body.start_date, req.body.end_date, daysRequested);
     if(_.isNull(status) || _.isEmpty(status)){
       return res.status(400).json("Could not update record. Try again.");
     }
