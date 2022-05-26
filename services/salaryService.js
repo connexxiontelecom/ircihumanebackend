@@ -113,6 +113,16 @@ async function getEmployeeSalary(month, year, empId) {
     })
 }
 
+async function getEmployeeSalaryByUniqueId(month, year, empId) {
+    return await Salary.findAll({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_emp_unique_id: empId
+        }, include: ['employee', 'payment', 'bank']
+    })
+}
+
 async function getEmployeeSalaryMonthYearPd(month, year, empId, pd) {
     return await Salary.findOne({
         where: {
@@ -193,5 +203,6 @@ module.exports = {
     getDistinctEmployeesLocationMonthYear,
     getDistinctEmployeesMonthYear,
     getSalaryPd,
-    getDistinctEmployeesApprovedMonthYear
+    getDistinctEmployeesApprovedMonthYear,
+    getEmployeeSalaryByUniqueId
 }

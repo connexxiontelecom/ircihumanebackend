@@ -34,7 +34,7 @@ module.exports = {
         type: Sequelize.DOUBLE
       },
 
-      smd_posted:{
+      smd_status:{
         type: Sequelize.INTEGER
       },
 
