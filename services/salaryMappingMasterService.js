@@ -23,6 +23,12 @@ async function getSalaryMappingMaster(smmId){
         }})
 }
 
+async function getSalaryMappingMasterByRefCode(refCode){
+    return await SalaryMappingMaster.findOne({where:{
+        smm_ref_code: refCode
+        }})
+}
+
 async function getSalaryMappingsMaster(){
     return await SalaryMappingMaster.findAll(  {order: [
         ['smm_month', 'DESC'],
@@ -35,5 +41,6 @@ module.exports = {
     addSalaryMappingMaster,
     removeSalaryMappingMaster,
     getSalaryMappingMaster,
-    getSalaryMappingsMaster
+    getSalaryMappingsMaster,
+    getSalaryMappingMasterByRefCode
 }
