@@ -426,8 +426,27 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
             return data
         })
+
+        if (_.isEmpty(details) || _.isNull(details)) {
+            return res.status(400).json('Details Does not Exist')
+        }
         salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
         salaryMasterData.smm_total = details.length
+
+        let mappingLocationData = await locationService.findLocationById(salaryMasterData.smm_location).then((data) => {
+            return data
+        })
+
+        let empArray = []
+        let journalDetail = {}
+        let addJournal
+
+        let lastDayOfMonth = new Date(parseInt(salaryMasterData.smm_year), parseInt(salaryMasterData.smm_month), 0)
+        let lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
+        let lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
+        let lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
+
+        const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
 
 
         for (const salaryMappingDetail of details) {
@@ -447,6 +466,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             let employerPensionCode = 'N/A';
             let employeeNsitf = 0
             let employeeNsitfCode ='N/A'
+            let employeeTax = 0
 
 
             if (!_.isEmpty(salaryDetails)) {
@@ -510,8 +530,11 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                         employeeNsitf = parseFloat(salary.salary_amount)
                         employeeNsitfCode = salary.payment.pd_payment_code
                     }
+
+                    if(parseInt(salary.payment.pd_tax) === 1  ){
+                        employeeTax = parseFloat(salary.salary_amount)
+                    }
                 }
-            }
 
             let lastDayOfMonth = new Date(parseInt(salaryMasterData.smm_year), parseInt(salaryMasterData.smm_month), 0)
             let lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
@@ -523,76 +546,139 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             let journalDetail = {}
             let addJournal
 
-            const grossPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('GROSS').then((data) => {
-              return data
-            })
+                const grossPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('GROSS').then((data) => {
+                    return data
+                })
 
-            if(_.isEmpty(grossPayrollCode) || _.isNull(grossPayrollCode)){
-                return res.status(400).json('Gross Payroll Code Does not Exist')
+                if(_.isEmpty(grossPayrollCode) || _.isNull(grossPayrollCode)){
+                    return res.status(400).json('Gross Payroll Code Does not Exist')
+                }
+
+
+                journalDetail.j_acc_code = grossPayrollCode.pj_code
+                journalDetail.j_date = formatLastDayOfMonth
+                journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
+                journalDetail.j_desc = `${salaryMasterData.smm_month}-sal-${empJobRole}`
+                journalDetail.j_d_c = "D"
+                journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * empAdjustedGrossII
+                journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
+                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2s
+                journalDetail.j_t3 = empSectorCode
+                journalDetail.j_t4 = '2NG'
+                journalDetail.j_t5 = '2NGA'
+                journalDetail.j_t6 = empLocationCode
+                journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
+                journalDetail.j_name = empName
+
+                addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                    return data
+                })
+
+                journalDetail = {}
+                journalDetail.j_acc_code = employerPensionCode
+                journalDetail.j_date = formatLastDayOfMonth
+                journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
+                journalDetail.j_desc = `${salaryMasterData.smm_month}-pen-${empJobRole}`
+                journalDetail.j_d_c = "D"
+                journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employerPension
+                journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
+                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t3 = empSectorCode
+                journalDetail.j_t4 = '2NG'
+                journalDetail.j_t5 = '2NGA'
+                journalDetail.j_t6 = empLocationCode
+                journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
+                journalDetail.j_name = empName
+
+                addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                    return data
+                })
+
+                journalDetail = {}
+                journalDetail.j_acc_code = employeeNsitfCode
+                journalDetail.j_date = formatLastDayOfMonth
+                journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
+                journalDetail.j_desc = `${salaryMasterData.smm_month}-nsitf-${empJobRole}`
+                journalDetail.j_d_c = "D"
+                journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employeeNsitf
+                journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
+                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t3 = empSectorCode
+                journalDetail.j_t4 = '2NG'
+                journalDetail.j_t5 = '2NGA'
+                journalDetail.j_t6 = empLocationCode
+                journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
+                journalDetail.j_name = empName
+
+                addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                    return data
+                })
+                let taxObject = {
+                    employeeT7: salaryMappingDetail.smd_employee_t7,
+                    employeeTax: employeeTax
+                }
+                empArray.push(taxObject)
             }
-
-
-            journalDetail.j_acc_code = grossPayrollCode.pj_code
-            journalDetail.j_date = formatLastDayOfMonth
-            journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
-            journalDetail.j_desc = `${salaryMasterData.smm_month}-sal-${empJobRole}`
-            journalDetail.j_d_c = "D"
-            journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * empAdjustedGrossII
-            journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-            journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2s
-            journalDetail.j_t3 = empSectorCode
-            journalDetail.j_t4 = '2NG'
-            journalDetail.j_t5 = '2NGA'
-            journalDetail.j_t6 = empLocationCode
-            journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
-            journalDetail.j_name = empName
-
-            addJournal = await journalService.addJournal(journalDetail).then((data)=>{
-                return data
-            })
-            
-            journalDetail = {}
-            journalDetail.j_acc_code = employerPensionCode
-            journalDetail.j_date = formatLastDayOfMonth
-            journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
-            journalDetail.j_desc = `${salaryMasterData.smm_month}-pen-${empJobRole}`
-            journalDetail.j_d_c = "D"
-            journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employerPension 
-            journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-            journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
-            journalDetail.j_t3 = empSectorCode
-            journalDetail.j_t4 = '2NG'
-            journalDetail.j_t5 = '2NGA'
-            journalDetail.j_t6 = empLocationCode
-            journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
-            journalDetail.j_name = empName
-
-           addJournal = await journalService.addJournal(journalDetail).then((data)=>{
-                return data
-            })
-
-            journalDetail = {}
-            journalDetail.j_acc_code = employeeNsitfCode
-            journalDetail.j_date = formatLastDayOfMonth
-            journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
-            journalDetail.j_desc = `${salaryMasterData.smm_month}-nsitf-${empJobRole}`
-            journalDetail.j_d_c = "D"
-            journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employeeNsitf
-            journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-            journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
-            journalDetail.j_t3 = empSectorCode
-            journalDetail.j_t4 = '2NG'
-            journalDetail.j_t5 = '2NGA'
-            journalDetail.j_t6 = empLocationCode
-            journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
-            journalDetail.j_name = empName
-
-           addJournal = await journalService.addJournal(journalDetail).then((data)=>{
-                return data
-            })
         }
 
+        empArray = _.uniqWith(empArray, _.isEqual)
+        let totalTax = 0
+        for(const emp of empArray){
+            totalTax = totalTax + emp.employeeTax
+        }
+
+        let taxPayments = await paymentDefinition.getTaxPayments().then((data) => {
+            return data
+        })
+
+        journalDetail = {}
+        journalDetail.j_acc_code = taxPayments[0].pd_payment_code
+        journalDetail.j_date = formatLastDayOfMonth
+        journalDetail.j_ref_code = salaryMasterData.smm_ref_code
+        journalDetail.j_desc = `${salaryMasterData.smm_month}-PAYE`
+        journalDetail.j_d_c = "C"
+        journalDetail.j_amount = 0 - totalTax
+        journalDetail.j_t1 = "u100"
+        journalDetail.j_t2 = "Null"
+        journalDetail.j_t3 = "Null"
+        journalDetail.j_t4 = '2NG'
+        journalDetail.j_t5 = '2NGA'
+        journalDetail.j_t6 = mappingLocationData.l_t6_code
+        journalDetail.j_t7 = "null"
+        journalDetail.j_name = "null"
+
+        addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+            return data
+        })
+
+
         return res.status(200).json('Processed Successfully')
+    } catch (err) {
+        return res.status(400).json(err.message)
+        // console.error( err.message);
+        // next(err);
+    }
+});
+
+
+
+router.get('/test-unique-array', auth(), async function (req, res, next) {
+    try {
+
+        let array = [
+            {
+            "id": 1,
+            "name": "John"
+            },
+
+            {
+                "id": 2,
+                "name": "John"
+            }
+        ]
+
+        array = _.uniqWith(array, _.isEqual);
+        return res.status(200).json(array)
     } catch (err) {
         return res.status(400).json(err.message)
         // console.error( err.message);
