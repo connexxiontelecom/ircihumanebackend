@@ -55,6 +55,8 @@ router.post('/', auth(), async function (req, res, next) {
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
+
+
         const payrollJournalObject = {
             pj_code: req.body.pj_code,
             pj_journal_item: req.body.pj_journal_item,
@@ -153,7 +155,7 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
             return data
         })
 
-        if(!_.isEmpty(checkSalaryRoutineLocation)){
+        if(!_.isEmpty(checkExistingRefCode) && !_.isNull(checkExistingRefCode)){
             return res.status(400).json('RefCode already exists')
         }
 
