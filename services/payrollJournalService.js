@@ -13,6 +13,11 @@ async function getPayrollJournal(pjId) {
         pj_id: pjId
         }});
 }
+async function getPayrollJournalByJournalItem(pjItem) {
+    return await PayrollJournal.findOne({where:{
+        pj_journal_item: pjItem
+        }});
+}
 
 async function addPayrollJournal(payrollJournal) {
     return await PayrollJournal.create({
@@ -53,5 +58,6 @@ module.exports = {
     updatePayrollJournal,
     deletePayrollJournal,
     getAllPayrollJournal,
-    getPayrollJournal
+    getPayrollJournal,
+    getPayrollJournalByJournalItem
 }

@@ -520,7 +520,17 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
             let journalDetail = {}
             let addJournal
-            journalDetail.j_acc_code = 'ADG1000'
+
+            const grossPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('GROSS').then((data) => {
+              return data
+            })
+
+            if(_.isEmpty(grossPayrollCode) || _.isNull(grossPayrollCode)){
+                return res.status(400).json('Gross Payroll Code Does not Exist')
+            }
+
+
+            journalDetail.j_acc_code = grossPayrollCode.pj_code
             journalDetail.j_date = formatLastDayOfMonth
             journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
             journalDetail.j_desc = `${salaryMasterData.smm_month}-sal-${empJobRole}`
@@ -612,5 +622,7 @@ const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     })
 
 }
+
+
 
 module.exports = router;
