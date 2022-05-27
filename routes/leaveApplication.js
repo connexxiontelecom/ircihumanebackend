@@ -347,13 +347,13 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     }
     let daysRequested
     if(startDate.getDay() === 6 || startDate.getDay() === 0){
-      daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
+      daysRequested = await differenceInBusinessDays(endDate, startDate) + 2;
     }else{
-      daysRequested = await differenceInBusinessDays(endDate, startDate);
+      daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
     }
 
 
-    //return res.status(200).json(daysRequested)
+    return res.status(200).json(daysRequested)
     const empId = req.user.username.user_id;
     if (parseInt(daysRequested) <= 0) {
       return res.status(400).json('Leave duration must be greater or equal to 1')
