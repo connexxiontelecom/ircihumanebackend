@@ -6,6 +6,7 @@ const router = express.Router()
 const auth = require("../middleware/auth");
 const {format} = require('date-fns');
 const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+const differenceInDays = require('date-fns/differenceInDays')
 const isBefore = require('date-fns/isBefore')
 const leaveApplication = require('../services/leaveApplicationService')
 const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual");
@@ -330,6 +331,9 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
 
     let startDate = new Date(statusRequest.start_date);
     let startYear = startDate.getFullYear();
+    //let date = new Date(statusRequest.start_date)
+    //let day = startDate.getDay();
+    //return res.status(200).json(day);
 
     let endDate = new Date(statusRequest.end_date);
     let endYear = endDate.getFullYear();
@@ -341,9 +345,14 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     if (String(startYear) !== String(endYear)) {
       return res.status(400).json('Leave period must be within the same year')
     }
+    let daysRequested
+    if(startDate.getDay() === 6 || startDate.getDay() === 0){
+      daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
+    }else{
+      daysRequested = await differenceInBusinessDays(endDate, startDate);
+    }
 
 
-    let daysRequested = await differenceInBusinessDays(endDate, startDate)
     //return res.status(200).json(daysRequested)
     const empId = req.user.username.user_id;
     if (parseInt(daysRequested) <= 0) {
@@ -362,7 +371,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     }
     return res.status(200).json("Leave period updated");
   }catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json("Something went wrong."+e.message);
   }
 });
 module.exports = router;
