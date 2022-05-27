@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       return await leaveApplication.update({
           leapp_start_date:start,
           leapp_end_date:end,
-          leapp_total_days:length,
+          leapp_total_days:(length + 1),
         },
         {where:{leapp_id:leaveId}
         });
