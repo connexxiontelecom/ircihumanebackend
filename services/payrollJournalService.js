@@ -20,9 +20,11 @@ async function getPayrollJournalByJournalItem(pjItem) {
 }
 
 async function addPayrollJournal(payrollJournal) {
+    let pjJournalItem = String(payrollJournal.pj_journal_item)
+    pjJournalItem = pjJournalItem.toUpperCase()
     return await PayrollJournal.create({
         pj_code: payrollJournal.pj_code,
-        pj_journal_item: payrollJournal.pj_journal_item,
+        pj_journal_item: pjJournalItem,
         pj_location: payrollJournal.pj_location,
         pj_setup_by: payrollJournal.pj_setup_by,
     });
