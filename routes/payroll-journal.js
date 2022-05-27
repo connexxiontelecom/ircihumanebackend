@@ -9,6 +9,7 @@ const locationService = require("../services/locationService")
 const payrollMonthYearLocationService = require("../services/payrollMonthYearLocationService");
 const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
 const salaryMappingMasterService = require("../services/salaryMappingMasterService");
+const journalService = require("../services/journalService");
 const salaryService = require("../services/salaryService");
 const jobRoleService = require("../services/jobRoleService")
 const sectorService = require("../services/departmentService")
@@ -27,7 +28,7 @@ const fs = require('fs')
 const https = require("https");
 
 
-/* Get All Users */
+
 router.get('/', auth(), async function (req, res, next) {
     try {
 
@@ -41,7 +42,7 @@ router.get('/', auth(), async function (req, res, next) {
 });
 
 
-/* Add User */
+
 router.post('/', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
@@ -148,6 +149,14 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
         }
         const refCode = `${req.body.smm_month}-${req.body.smm_year}-${locationResponse.l_t6_code}`
 
+        const checkExistingRefCode = await salaryMappingMasterService.getSalaryMappingMasterByRefCode(refCode).then((data)=>{
+            return data
+        })
+
+        if(!_.isEmpty(checkSalaryRoutineLocation)){
+            return res.status(400).json('RefCode already exists')
+        }
+
         const smmObject = {
             smm_month: req.body.smm_month,
             smm_year: req.body.smm_year,
@@ -161,7 +170,6 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
         if (_.isEmpty(addSalaryMappingMaster) || _.isNull(addSalaryMappingMaster)) {
             return res.status(400).json('An error occurred while adding salary master ')
         }
-        // storage.setItem('smm_id', addSalaryMappingMaster.smm_id)
         return res.status(200).json(addSalaryMappingMaster)
     } catch (err) {
         console.error(`Error while adding user `, err.message);
@@ -228,6 +236,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         }
 
         if (!fs.existsSync('./file.xlsx')) {
+            await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+            await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
             return res.status(400).json('File has not been uploaded')
         }
         const files = await reader.readFile('./file.xlsx')
@@ -243,6 +253,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         }
 
         if (_.isEmpty(rows) || _.isNull(rows)) {
+            await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+            await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
             return res.status(400).json('File has not been uploaded')
         }
 
@@ -372,7 +384,7 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
 
             let newDetail = {}
             newDetail.t7 = salaryMappingDetail.smd_employee_t7
-            newDetail.name = salaryMappingDetail.smd_employee_t7
+            newDetail.name = empName
             newDetail.t3 = empSectorCode
             newDetail.sector = empSector
             newDetail.t1 = salaryMappingDetail.smd_donor_t1
@@ -394,6 +406,198 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
         // next(err);
     }
 });
+
+
+router.get('/process-salary-mapping/:masterId', auth(), async function (req, res, next) {
+    try {
+
+        const masterId = req.params['masterId']
+
+        let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
+            return res.status(400).json('Salary Mapping Master Does not Exist')
+        }
+
+        let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
+            return data
+        })
+        salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
+        salaryMasterData.smm_total = details.length
+
+
+        for (const salaryMappingDetail of details) {
+            let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+                return data
+            })
+            let empName = 'N/A'
+            let empJobRole = 'N/A'
+            let empLocation = 'N/A'
+            let empLocationCode = 'N/A'
+            let empSector = 'N/A'
+            let empSectorCode = 'N/A'
+            let fullGross = 0;
+            let empAdjustedGross = 0
+            let empAdjustedGrossII = 0;
+            let employerPension = 0;
+            let employerPensionCode = 'N/A';
+            let employeeNsitf = 0
+            let employeeNsitfCode ='N/A'
+
+
+            if (!_.isEmpty(salaryDetails)) {
+                empName = salaryDetails[0].salary_emp_name
+                let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails[0].salary_jobrole_id).then((data) => {
+                    return data
+                })
+
+                if (!_.isEmpty(empJobRoleData)) {
+                    empJobRole = empJobRoleData.job_role
+                }
+
+                let empLocationData = await locationService.findLocationById(salaryDetails[0].salary_location_id).then((data) => {
+                    return data
+                })
+
+                if (!_.isEmpty(empLocationData)) {
+                    empLocation = empLocationData.location_name
+                    empLocationCode = empLocationData.l_t6_code
+                }
+
+                let empSectorData = await sectorService.findDepartmentById(salaryDetails[0].salary_department_id).then((data) => {
+                    return data
+                })
+
+                if (!_.isEmpty(empSectorData)) {
+                    empSector = empSectorData.department_name
+                    empSectorCode = empSectorData.t3_code
+                }
+
+                for (const salary of salaryDetails) {
+                    if (parseInt(salary.payment.pd_payment_type) === 1) {
+                        fullGross = parseFloat(salary.salary_amount) + fullGross
+                    }
+                    if (parseInt(salary.payment.pd_total_gross) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount)
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount)
+                        }
+                    }
+
+                    if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+                        if (parseInt(salary.payment.pd_payment_type) === 1) {
+                            empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount)
+                        }
+
+                        if (parseInt(salary.payment.pd_payment_type) === 2) {
+                            empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount)
+                        }
+                    }
+
+                    if(parseInt(salary.payment.pd_pension) === 1 && parseInt(salary.payment.pd_employee) === 2 ){
+                        employerPension = parseFloat(salary.salary_amount)
+                        employerPensionCode = salary.payment.pd_payment_code
+                    }
+
+                    if(parseInt(salary.payment.pd_nsitf) === 1  ){
+                        employeeNsitf = parseFloat(salary.salary_amount)
+                        employeeNsitfCode = salary.payment.pd_payment_code
+                    }
+                }
+            }
+
+            let lastDayOfMonth = new Date(parseInt(salaryMasterData.smm_year), parseInt(salaryMasterData.smm_month), 0)
+            let lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
+            let lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
+            let lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
+
+            const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
+
+            let journalDetail = {}
+            let addJournal
+
+            const grossPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('GROSS').then((data) => {
+              return data
+            })
+
+            if(_.isEmpty(grossPayrollCode) || _.isNull(grossPayrollCode)){
+                return res.status(400).json('Gross Payroll Code Does not Exist')
+            }
+
+
+            journalDetail.j_acc_code = grossPayrollCode.pj_code
+            journalDetail.j_date = formatLastDayOfMonth
+            journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
+            journalDetail.j_desc = `${salaryMasterData.smm_month}-sal-${empJobRole}`
+            journalDetail.j_d_c = "D"
+            journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * empAdjustedGrossII
+            journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
+            journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2s
+            journalDetail.j_t3 = empSectorCode
+            journalDetail.j_t4 = '2NG'
+            journalDetail.j_t5 = '2NGA'
+            journalDetail.j_t6 = empLocationCode
+            journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
+            journalDetail.j_name = empName
+
+            addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                return data
+            })
+            
+            journalDetail = {}
+            journalDetail.j_acc_code = employerPensionCode
+            journalDetail.j_date = formatLastDayOfMonth
+            journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
+            journalDetail.j_desc = `${salaryMasterData.smm_month}-pen-${empJobRole}`
+            journalDetail.j_d_c = "D"
+            journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employerPension 
+            journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
+            journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+            journalDetail.j_t3 = empSectorCode
+            journalDetail.j_t4 = '2NG'
+            journalDetail.j_t5 = '2NGA'
+            journalDetail.j_t6 = empLocationCode
+            journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
+            journalDetail.j_name = empName
+
+           addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                return data
+            })
+
+            journalDetail = {}
+            journalDetail.j_acc_code = employeeNsitfCode
+            journalDetail.j_date = formatLastDayOfMonth
+            journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code
+            journalDetail.j_desc = `${salaryMasterData.smm_month}-nsitf-${empJobRole}`
+            journalDetail.j_d_c = "D"
+            journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employeeNsitf
+            journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
+            journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+            journalDetail.j_t3 = empSectorCode
+            journalDetail.j_t4 = '2NG'
+            journalDetail.j_t5 = '2NGA'
+            journalDetail.j_t6 = empLocationCode
+            journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
+            journalDetail.j_name = empName
+
+           addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                return data
+            })
+        }
+
+        return res.status(200).json('Processed Successfully')
+    } catch (err) {
+        return res.status(400).json(err.message)
+        // console.error( err.message);
+        // next(err);
+    }
+});
+
 
 
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
@@ -418,5 +622,7 @@ const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     })
 
 }
+
+
 
 module.exports = router;

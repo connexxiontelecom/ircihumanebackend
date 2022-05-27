@@ -676,7 +676,7 @@ router.get('/salary-routine', auth(), async function (req, res, next) {
 });
 
 /* run salary routine location */
-router.post('/salary-routine', auth([ROLES.RUN_PAYROLL]), async function (req, res, next) {
+router.post('/salary-routine', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
