@@ -79,9 +79,14 @@ const updatePensionProvider = async (req, res) => {
 
 }
 
+async function getAllPensionProviders(){
+    return await pension.findAll({attributes: ['provider_name', 'pension_provider_id', 'provider_code']});
+}
+
 module.exports = {
     getPensionProviderById,
     getPensionProviders,
     updatePensionProvider,
     setNewPensionProvider,
+    getAllPensionProviders
 }

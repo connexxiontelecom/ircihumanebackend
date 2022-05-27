@@ -20,7 +20,16 @@ async function addJournal(journal) {
     });
 }
 
+async function removeJournalByRefCode(refCode) {
+    return await Journal.destroy({
+        where: {
+            j_ref_code: refCode
+        }
+    });
+}
+
 
 module.exports = {
     addJournal,
+    removeJournalByRefCode
 }
