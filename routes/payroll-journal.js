@@ -228,6 +228,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         }
 
         if (!fs.existsSync('./file.xlsx')) {
+            await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+            await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
             return res.status(400).json('File has not been uploaded')
         }
         const files = await reader.readFile('./file.xlsx')
@@ -243,6 +245,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         }
 
         if (_.isEmpty(rows) || _.isNull(rows)) {
+            await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
+            await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
             return res.status(400).json('File has not been uploaded')
         }
 
@@ -394,6 +398,94 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
         // next(err);
     }
 });
+
+
+router.get('/process-salary-mapping/:masterId', auth(), async function (req, res, next) {
+    try {
+
+        const masterId = req.params['masterId']
+
+        let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
+            return res.status(400).json('Salary Mapping Master Does not Exist')
+        }
+
+        let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
+            return data
+        })
+        salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
+        salaryMasterData.smm_total = details.length
+
+        let salaryDetailData = []
+
+        for (const salaryMappingDetail of details) {
+            let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+                return data
+            })
+            let empName = 'N/A'
+            let empJobRole = 'N/A'
+            let empLocation = 'N/A'
+            let empLocationCode = 'N/A'
+            let empSector = 'N/A'
+            let empSectorCode = 'N/A'
+
+            if (!_.isEmpty(salaryDetails)) {
+                empName = salaryDetails[0].salary_emp_name
+                let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails[0].salary_jobrole_id).then((data) => {
+                    return data
+                })
+
+                if (!_.isEmpty(empJobRoleData)) {
+                    empJobRole = empJobRoleData.job_role
+                }
+
+                let empLocationData = await locationService.findLocationById(salaryDetails[0].salary_location_id).then((data) => {
+                    return data
+                })
+
+                if (!_.isEmpty(empLocationData)) {
+                    empLocation = empLocationData.location_name
+                    empLocationCode = empLocationData.l_t6_code
+                }
+
+                let empSectorData = await sectorService.findDepartmentById(salaryDetails[0].salary_department_id).then((data) => {
+                    return data
+                })
+
+                if (!_.isEmpty(empSectorData)) {
+                    empSector = empSectorData.department_name
+                    empSectorCode = empSectorData.t3_code
+                }
+            }
+
+            let newDetail = {}
+            newDetail.t7 = salaryMappingDetail.smd_employee_t7
+            newDetail.name = salaryMappingDetail.smd_employee_t7
+            newDetail.t3 = empSectorCode
+            newDetail.sector = empSector
+            newDetail.t1 = salaryMappingDetail.smd_donor_t1
+            newDetail.t2s = salaryMappingDetail.smd_salary_expense_t2s
+            newDetail.allocation = salaryMappingDetail.smd_allocation
+            newDetail.t2b = salaryMappingDetail.smd_benefit_expense_t2b
+            newDetail.jobTitle = empJobRole
+
+            salaryDetailData.push(newDetail)
+        }
+        const finalMapping = {
+            masterData: salaryMasterData,
+            detailData: salaryDetailData
+        }
+        return res.status(200).json(finalMapping)
+    } catch (err) {
+        return res.status(400).json(err.message)
+        // console.error( err.message);
+        // next(err);
+    }
+});
+
 
 
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
