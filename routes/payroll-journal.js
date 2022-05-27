@@ -590,7 +590,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             })
         }
 
-
+        return res.status(200).json('Processed Successfully')
     } catch (err) {
         return res.status(400).json(err.message)
         // console.error( err.message);
