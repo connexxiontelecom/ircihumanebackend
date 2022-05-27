@@ -8,7 +8,7 @@ const errHandler = (err) => {
     console.log("Error: ", err);
 }
 const getPensionProviders = async (req, res) => {
-    const providers = await pension.findAll({attributes: ['provider_name', 'pension_provider_id']});
+    const providers = await pension.findAll({attributes: ['provider_name', 'pension_provider_id', 'provider_code']});
     res.status(200).json(providers)
 }
 const setNewPensionProvider = async (req, res, next) => {
