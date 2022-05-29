@@ -13,11 +13,14 @@ const timeSheetPenaltyService = require('../services/timesheetPenaltyService');
 const timeSheetService = require('../services/timeSheetService');
 const timeAllocationService = require('../services/timeAllocationService');
 const employeeService = require('../services/employeeService');
+const Op = Sequelize.Op;
+
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
 
 const helper = require('../helper');
+const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
@@ -110,6 +113,32 @@ const updateAuthorizationStatus = async (req, res) => {
                                 leapp_id: appId
                             }
                         });
+
+                        //update timesheet
+                      const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);
+                      if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){
+                        let startDate = new Date(leaveApp.leapp_start_date);
+                        let endDate = new Date(leaveApp.leapp_end_date);
+                        let numDays
+                        if(startDate.getDay() === 6 || startDate.getDay() === 0){
+                          numDays = await differenceInBusinessDays(endDate, startDate) + 2;
+                        }else{
+                          numDays = await differenceInBusinessDays(endDate, startDate) + 1;
+                        }
+                        let i = 0;
+                        if(numDays > 0){
+                          for(i=0; i<= numDays; i++){
+                            const loopPeriod = {
+                              emp_id:leaveApp.leapp_empid,
+                              day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
+                              month: startDate.getUTCMonth() + 1,
+                              year: startDate.getUTCFullYear()
+                            }
+                            await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+                          }
+                        }
+
+                      }
                         break;
                     case 2: //time sheet
 
@@ -130,7 +159,7 @@ const updateAuthorizationStatus = async (req, res) => {
                         });
 
                         if (_.isEmpty(timealloc) || _.isNull(timealloc)) {
-                            return res.status(400).json("Whoops! Record does not exist. yeess");
+                            return res.status(400).json("Whoops! Record does not exist.");
 
                         } else {
 
