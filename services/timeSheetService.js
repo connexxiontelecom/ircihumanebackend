@@ -5,7 +5,7 @@ const TimeSheet = require("../models/timesheet")(sequelize, Sequelize.DataTypes)
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 const employeeService = require("../services/employeeService");
 const timesheetPenaltyService = require("../services/timesheetPenaltyService");
-
+const Op = Sequelize.Op;
 const helper = require('../helper');
 
 
@@ -74,6 +74,20 @@ async function updateTimeSheetDayEntryStatus(empId, day, month, year) {
     }
 
 }
+async function updateTimesheetByDateRange(data) {
+    const timesheet = await TimeSheet.update({
+        ts_is_present: 4 //leave
+    }, {
+      where:{
+        ts_emp_id: data.emp_id,
+        ts_day: data.day,
+        ts_month: data.month,
+        ts_year: data.year
+      }
+    });
+}
+
+
 
 async function getTimeSheetDayEntry(empId, day, month, year) {
     return await TimeSheet.findOne({
@@ -185,5 +199,6 @@ module.exports = {
     getAttendanceStatus,
     computeSalaryPayableByTimesheet,
     getTimeSheetDayEntry,
-    updateTimeSheetDayEntryStatus
+    updateTimeSheetDayEntryStatus,
+    updateTimesheetByDateRange
 }
