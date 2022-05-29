@@ -74,7 +74,7 @@ const updateAuthorizationStatus = async (req, res) => {
             if (application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
 
 
-            /*const auth = await authorizationModel.update({
+            const auth = await authorizationModel.update({
                 auth_status: status,
                 auth_comment: comment,
                 auth_role_id: role,
@@ -82,7 +82,7 @@ const updateAuthorizationStatus = async (req, res) => {
                 where: {
                     auth_travelapp_id: appId, auth_type: type, auth_officer_id: officer
                 }
-            });*/
+            });
 
             if (markAsFinal === 0) {
                 await authorizationModel.create({
@@ -103,7 +103,7 @@ const updateAuthorizationStatus = async (req, res) => {
             } else if (markAsFinal === 1) {
                 switch (type) {
                     case 1: //leave application
-                        /*await leaveApplicationModel.update({
+                        await leaveApplicationModel.update({
                             leapp_status: status,
                             leapp_approve_comment: comment,
                             leapp_approve_date: new Date(),
@@ -112,7 +112,7 @@ const updateAuthorizationStatus = async (req, res) => {
                             where: {
                                 leapp_id: appId
                             }
-                        });*/
+                        });
 
                         //update timesheet
                       const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);
@@ -125,21 +125,15 @@ const updateAuthorizationStatus = async (req, res) => {
                         }else{
                           numDays = await differenceInBusinessDays(endDate, startDate) + 1;
                         }
-                        //return res.status(200).json(leaveApp);
                         let i = 0;
                         if(numDays > 0){
                           for(i=0; i<= numDays; i++){
-                            //const day = date.getUTCDate();
-                            //         const month = date.getUTCMonth() + 1;
-                            //         const year = date.getUTCFullYear();
                             const loopPeriod = {
                               emp_id:leaveApp.leapp_empid,
                               day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
                               month: startDate.getUTCMonth() + 1,
                               year: startDate.getUTCFullYear()
                             }
-                            //const re = await timeSheetService.getTimeSheetDayEntry(leaveApp.leapp_empid, startDate.getUTCDate(), startDate.getUTCMonth() + 1,startDate.getUTCFullYear() );
-                            //return res.status(200).json(re)
                             await timeSheetService.updateTimesheetByDateRange(loopPeriod);
                           }
                         }
