@@ -327,6 +327,8 @@ router.get('/time-sheet/:month/:year/:emp_id', auth(), async function (req, res)
         if (_.isEmpty(timesheet) || _.isNull(timesheet)) {
             return res.status(400).json("No time sheet record found.");
         }
+
+
         await authorizationAction.getAuthorizationLog(oneTimeAllocation.ta_ref_no, 2).then((log) => {
             return res.status(200).json({timesheet, timeAllocation, log});
         })
