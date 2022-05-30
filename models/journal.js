@@ -32,6 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     j_t5: DataTypes.STRING,
     j_t6: DataTypes.STRING,
     j_t7: DataTypes.STRING,
+    j_month: DataTypes.INTEGER,
+    j_year: DataTypes.INTEGER,
     j_name: DataTypes.STRING
   }, {
     sequelize,
