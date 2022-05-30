@@ -1,43 +1,55 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('salary_mapping_details', {
-      smd_id: {
+    await queryInterface.createTable('journals', {
+      j_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      smd_master_id: {
-        type: Sequelize.INTEGER
-      },
-      smd_ref_code: {
+      j_acc_code: {
         type: Sequelize.STRING
       },
-      smd_employee_t7: {
+      j_date: {
         type: Sequelize.STRING
       },
-
-      smd_donor_t1:{
+      j_ref_code: {
         type: Sequelize.STRING
       },
-
-      smd_salary_expense_t2s:{
+      j_d_c: {
         type: Sequelize.STRING
       },
-
-      smd_benefit_expense_t2b:{
+      j_desc: {
         type: Sequelize.STRING
       },
-
-      smd_allocation:{
+      j_amount: {
         type: Sequelize.DOUBLE
       },
-
-      smd_status:{
-        type: Sequelize.INTEGER
+      j_t1: {
+        type: Sequelize.STRING
       },
-
+      j_t2: {
+        type: Sequelize.STRING
+      },
+      j_t3: {
+        type: Sequelize.STRING
+      },
+      j_t4: {
+        type: Sequelize.STRING
+      },
+      j_t5: {
+        type: Sequelize.STRING
+      },
+      j_t6: {
+        type: Sequelize.STRING
+      },
+      j_t7: {
+        type: Sequelize.STRING
+      },
+      j_name: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -49,6 +61,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('salary_mapping_details');
+    await queryInterface.dropTable('journals');
   }
 };

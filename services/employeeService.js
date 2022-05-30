@@ -525,6 +525,15 @@ async function getInactiveEmployees() {
     )
 }
 
+async function getEmployeesByPfaLocation(pfaId, locationId) {
+    return await employee.findAll({where:{
+            emp_pension_id: pfaId,
+            emp_location_id: locationId
+
+    }
+    })
+}
+
 
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
@@ -600,7 +609,8 @@ module.exports = {
     getEmployees,
     getInactiveEmployees,
     unSuspendEmployee,
-    getAllEmployeesByLocation
+    getAllEmployeesByLocation,
+    getEmployeesByPfaLocation
     //updateDepartment,
     //setNewDepartment,
 }
