@@ -440,6 +440,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         })
 
         let empArray = []
+        let empIdArray = []
         let journalDetail = {}
         let addJournal
 
@@ -723,6 +724,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             totalNetSalary = totalNetSalary + emp.netSalary
             totalEmployeeNhf = totalEmployeeNhf + emp.employeeNhf
             totalEmployeeNsitf  = totalEmployeeNsitf + emp.employeeNsitf
+            empIdArray.push(emp.employeeT7)
         }
 
 
@@ -867,18 +869,22 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             })
             let totalPension = 0
             for (const emp of employees) {
-                for (const pensionPayment of pensionPayments) {
-                    let amount = 0
 
-                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(salaryMasterData.smm_month, salaryMasterData.smm_year, emp.emp_id, pensionPayment.pd_id).then((data) => {
-                        return data
-                    })
-                    if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-                        amount = parseFloat(checkSalary.salary_amount)
+                if(empIdArray.includes(emp.emp_unique_id)){
+                    for (const pensionPayment of pensionPayments) {
+                        let amount = 0
+
+                        let checkSalary = await salary.getEmployeeSalaryMonthYearPd(salaryMasterData.smm_month, salaryMasterData.smm_year, emp.emp_id, pensionPayment.pd_id).then((data) => {
+                            return data
+                        })
+                        if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                            amount = parseFloat(checkSalary.salary_amount)
+                        }
+
+                        totalPension = totalPension + amount
                     }
-
-                    totalPension = totalPension + amount
                 }
+
             }
             journalDetail = {}
             journalDetail.j_acc_code = pfa.provider_code
