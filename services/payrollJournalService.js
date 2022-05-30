@@ -10,12 +10,19 @@ async function getAllPayrollJournal() {
 
 async function getPayrollJournal(pjId) {
     return await PayrollJournal.findOne({where:{
-        pj_id: pjId
+            pj_id: pjId
         }});
 }
 async function getPayrollJournalByJournalItem(pjItem) {
     return await PayrollJournal.findOne({where:{
-        pj_journal_item: pjItem
+            pj_journal_item: pjItem
+        }});
+}
+
+async function getPayrollJournalByJournalItemLocation(pjItem, location) {
+    return await PayrollJournal.findOne({where:{
+            pj_journal_item: pjItem,
+            pj_location: location
         }});
 }
 
@@ -61,5 +68,6 @@ module.exports = {
     deletePayrollJournal,
     getAllPayrollJournal,
     getPayrollJournal,
-    getPayrollJournalByJournalItem
+    getPayrollJournalByJournalItem,
+    getPayrollJournalByJournalItemLocation
 }
