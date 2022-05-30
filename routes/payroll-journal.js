@@ -422,6 +422,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             return res.status(400).json('Salary Mapping Master Does not Exist')
         }
 
+        if(parseInt(salaryMasterData.smm_posted) === 1){
+            return res.status(400).json('Salary Mapping Already Posted')
+        }
+
         let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
             return data
         })
@@ -935,6 +939,48 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         // next(err);
     }
 });
+
+router.post('/get-Journal', auth(), async function (req, res, next) {
+    try {
+        const schema = Joi.object({
+            j_month: Joi.string().required(),
+            j_year: Joi.string().required(),
+            j_location: Joi.number().required(),
+        })
+        const validationResult = schema.validate(req.body)
+        const j_month = req.body.j_month
+        const j_year = req.body.j_year
+        const j_location = req.body.j_location
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        let salaryMappingMaster = await salaryMappingMasterService.getSalaryMappingMasterByMonthYearLocation(j_month, j_year, j_location).then((data)=>{
+            return data
+
+        })
+
+        if(_.isEmpty(salaryMappingMaster) || _.isNull(salaryMappingMaster)){
+            return res.status(400).json('No salary mapping master found')
+        }
+
+        let journals = await journalService.getJournalByRefCode(salaryMappingMaster.smm_ref_code).then((data)=>{
+           return   data
+        });
+
+        if(_.isEmpty(journals) || _.isNull(journals)){
+            return res.status(400).json('No journals found')
+        }
+
+        return res.status(200).json(journals)
+
+    } catch (err) {
+        console.error(`Error while adding user `, err.message);
+        next(err);
+    }
+});
+
 
 router.get('/test-unique-array', auth(), async function (req, res, next) {
     try {
