@@ -916,6 +916,17 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             }
         }
 
+        const approveMaster = await salaryMappingMasterService.approveSalaryMappingMaster(salaryMasterData.smm_id).then((data)=>{
+            return data
+        })
+
+        if(_.isEmpty(approveMaster) || _.isNull(approveMaster)){
+
+           await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data)=>{
+                return data
+            })
+            return res.status(400).json('An error occurred while approving salary mapping master')
+        }
 
         return res.status(200).json('Processed Successfully')
     } catch (err) {
