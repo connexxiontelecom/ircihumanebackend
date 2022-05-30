@@ -46,8 +46,6 @@ router.get('/', auth(), async function (req, res, next) {
     }
 });
 
-
-
 router.post('/', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
@@ -184,7 +182,6 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
     }
 });
 
-
 router.post('/upload-mapping-detail/:masterId', auth(), async function (req, res, next) {
     try {
         const masterId = req.params['masterId']
@@ -304,7 +301,6 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
     }
 });
 
-
 router.get('/salary-mappings', auth(), async function (req, res, next) {
     try {
         const mappingsMaster = await salaryMappingMasterService.getSalaryMappingsMaster().then((data) => {
@@ -326,7 +322,6 @@ router.get('/salary-mappings', auth(), async function (req, res, next) {
         // next(err);
     }
 });
-
 
 router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, res, next) {
     try {
@@ -413,7 +408,6 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
         // next(err);
     }
 });
-
 
 router.get('/process-salary-mapping/:masterId', auth(), async function (req, res, next) {
     try {
@@ -829,8 +823,6 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         // next(err);
     }
 });
-
-
 
 router.get('/test-unique-array', auth(), async function (req, res, next) {
     try {
