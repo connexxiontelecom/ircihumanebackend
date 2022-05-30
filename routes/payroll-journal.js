@@ -591,6 +591,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
+                journalDetail.j_month = salaryMasterData.smm_month
+                journalDetail.j_year = salaryMasterData.smm_year
                 journalDetail.j_t6 = empLocationCode
                 journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
                 journalDetail.j_name = empName
@@ -619,6 +621,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
+                journalDetail.j_month = salaryMasterData.smm_month
+                journalDetail.j_year = salaryMasterData.smm_year
                 journalDetail.j_t6 = empLocationCode
                 journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
                 journalDetail.j_name = empName
@@ -647,6 +651,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
+                journalDetail.j_month = salaryMasterData.smm_month
+                journalDetail.j_year = salaryMasterData.smm_year
                 journalDetail.j_t6 = empLocationCode
                 journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7
                 journalDetail.j_name = empName
@@ -703,6 +709,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
         journalDetail.j_t5 = '2NGA'
+        journalDetail.j_month = salaryMasterData.smm_month
+        journalDetail.j_year = salaryMasterData.smm_year
         journalDetail.j_t6 = mappingLocationData.l_t6_code
         journalDetail.j_t7 = "null"
         journalDetail.j_name = "null"
@@ -730,6 +738,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
         journalDetail.j_t5 = '2NGA'
+        journalDetail.j_month = salaryMasterData.smm_month
+        journalDetail.j_year = salaryMasterData.smm_year
         journalDetail.j_t6 = mappingLocationData.l_t6_code
         journalDetail.j_t7 = "null"
         journalDetail.j_name = "null"
@@ -793,6 +803,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             journalDetail.j_t3 = "Null"
             journalDetail.j_t4 = '2NG'
             journalDetail.j_t5 = '2NGA'
+            journalDetail.j_month = salaryMasterData.smm_month
+            journalDetail.j_year = salaryMasterData.smm_year
             journalDetail.j_t6 = mappingLocationData.l_t6_code
             journalDetail.j_t7 = "null"
             journalDetail.j_name = "null"
@@ -842,7 +854,6 @@ router.get('/test-unique-array', auth(), async function (req, res, next) {
         // next(err);
     }
 });
-
 
 
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test

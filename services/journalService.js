@@ -16,6 +16,8 @@ async function addJournal(journal) {
         j_t5: journal.j_t5,
         j_t6: journal.j_t6,
         j_t7: journal.j_t7,
+        j_month: journal.j_month,
+        j_year: journal.j_year,
         j_name: journal.j_name
     });
 }
