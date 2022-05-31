@@ -308,11 +308,16 @@ router.get('/salary-mappings', auth(), async function (req, res, next) {
         })
         let finalMapping = []
         for (const mapping of mappingsMaster) {
+
+            let locationData = await locationService.getLocationById(mapping.smm_location).then((data) => {
+              return data
+            })
             let details = await salaryMappingDetailsService.getSalaryMappingDetails(mapping.smm_id).then((data) => {
                 return data
             })
             let newMapping = JSON.parse(JSON.stringify(mapping));
             newMapping.smm_total = details.length
+            newMapping.location = locationData
             finalMapping.push(newMapping)
         }
         return res.status(200).json(finalMapping)
