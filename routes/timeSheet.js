@@ -14,7 +14,7 @@ const publicHolidays = require('../services/publicHolidayServiceSetup')
 const supervisorAssignment = require('../services/supervisorAssignmentService');
 const logs = require('../services/logService');
 const authorizationAction = require('../services/authorizationActionService');
-
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 
 /* Add to time sheet */
 router.get('/', auth(), async function (req, res, next) {
@@ -198,6 +198,10 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
         if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(404).json(`Employee Does Not Exist`)
         } else {
+         /* empSupervisor = employeeData.emp_supervisor_id;
+          if(empSupervisor === null || empSupervisor === ''){
+            return res.status(400).json("You currently have no supervisor to assess your submission.")
+          }*/
 
             const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
                 return data
@@ -287,7 +291,13 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
                     await updateTimeSheet(tsData.ts_id, timeObject)
                   }
                 }
-
+             /* const subject = "Timesheet submission";
+              const body = "Your timesheet was submitted";
+              //emp
+              const url = req.headers.referer;
+              const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+              const notifySupervisor = await notificationModel.registerNotification(subject, "There's a timesheet submission waiting for your assessment. Kindly attend to it.", employeeData.emp_supervisor_id, 0, url);
+*/
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": "Prefilled Time Sheet",

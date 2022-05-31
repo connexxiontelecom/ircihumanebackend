@@ -10,7 +10,8 @@ const logs = require('../services/logService')
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const authorizationAction = require('../services/authorizationActionService');
 const employee = require("../services/employeeService");
-
+const {sequelize, Sequelize} = require("../services/db");
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -73,12 +74,20 @@ router.post('/add-time-allocation', auth(), async function (req, res, next) {
                   const recordExist = await authorizationAction.getOneAuthorizationByRefNo(data.ta_ref_no);
                     if(_.isNull(recordExist) || _.isEmpty(recordExist)){
                       await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
-                        .then((val) => {
+                        .then(async (val) => {
+
                           const logData = {
                             "log_user_id": req.user.username.user_id,
                             "log_description": "Added Time Allocation",
                             "log_date": new Date()
                           }
+                          const subject = "Timesheet submission";
+                          const body = "Your timesheet was submitted";
+                          //emp
+                          const url = req.headers.referer;
+                          const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+                          const notifySupervisor = await notificationModel.registerNotification(subject, "There's a timesheet submission waiting for your assessment. Kindly attend to it.", employeeData.emp_supervisor_id, 0, url);
+
                           logs.addLog(logData).then((logRes) => {
                             return res.status(200).json('Action Successful')
                           })
