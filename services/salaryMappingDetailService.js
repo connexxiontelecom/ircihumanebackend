@@ -26,8 +26,16 @@ async function getSalaryMappingDetails(masterId){
         }})
 }
 
+async function getSalaryMappingDetailsByMasterEmployee(masterId, employee){
+    return await SalaryMappingDetails.findAll({where:{
+            smd_master_id: masterId,
+            smd_employee_t7: employee
+        }})
+}
+
 module.exports = {
     addSalaryMappingDetail,
     removeSalaryMappingDetails,
-    getSalaryMappingDetails
+    getSalaryMappingDetails,
+    getSalaryMappingDetailsByMasterEmployee
 }
