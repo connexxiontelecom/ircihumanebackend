@@ -16,7 +16,8 @@ const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const sectorService = require('../services/departmentService');
 const employeeService = require('../services/employeeService');
-
+const {sequelize, Sequelize} = require("../services/db");
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 /* state routes. */
 
 router.get('/', auth(), travelApplicationService.getTravelApplications);
@@ -93,35 +94,44 @@ router.post('/new-travel-application', auth(), async (req, res) => {
 
             //supervisorAssignmentService.getEmployeeSupervisor(req.body.employee).then((sup)=>{
             //if(sup){
+          const url = req.headers.referer;
             let daysRequested = differenceInBusinessDays(endDate, startDate);
             if (parseInt(daysRequested) >= 1) {
-                travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then((data) => {
-                    const travelapp_id = data.travelapp_id;
-                    const breakdowns = req.body.breakdown;
-                    breakdowns.map((breakdown) => {
-                        travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
-                    });
-                    if (req.body.travel_category === 1) {
+                travelApplicationService.setNewTravelApplication(travelRequest, daysRequested).then(async (data) => {
+                  const travelapp_id = data.travelapp_id;
+                  const breakdowns = req.body.breakdown;
+                  breakdowns.map((breakdown) => {
+                    travelApplicationBreakdownService.setNewTravelApplicationBreakdown(breakdown, travelapp_id);
+                  });
+                  if (req.body.travel_category === 1) {
 
-                        const t2CodeArray = req.body.t2_code;
-                        t2CodeArray.map((t2Data) => {
-                            travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
-                        });
-                    }
-                    sectorLeads.map((sectorLead) => {
-                        authorizationAction.registerNewAction(3, travelapp_id, sectorLead.d_sector_lead_id, 0, "Travel application initialized.")
-                            .then((outcome) => {
-                                const logData = {
-                                    "log_user_id": req.user.username.user_id,
-                                    "log_description": "Travel application ",
-                                    "log_date": new Date()
-                                }
-                                logs.addLog(logData).then((logRes) => {
-                                    /*return res.status(200).json('Your travel application was successfully registered.');*/
-                                })
-                            });
+                    const t2CodeArray = req.body.t2_code;
+                    t2CodeArray.map((t2Data) => {
+                      travelApplicationT2Service.setNewTravelApplicationT2(travelapp_id, t2Data.code)
                     });
-                    return res.status(200).json('Your travel application was successfully registered.');
+                  }
+                  sectorLeads.map((sectorLead) => {
+                    authorizationAction.registerNewAction(3, travelapp_id, sectorLead.d_sector_lead_id, 0, "Travel application initialized.")
+                      .then(async (outcome) => {
+
+                        const logData = {
+                          "log_user_id": req.user.username.user_id,
+                          "log_description": "Travel application ",
+                          "log_date": new Date()
+                        }
+                        const subject = "New Travel application";
+                        //const body = "Your timesheet was submitted";
+                        //emp
+
+                        const notifySupervisor = await notificationModel.registerNotification(subject, "Kindly attend to this travel application.", sectorLead.d_sector_lead_id, 0, url);
+
+                        logs.addLog(logData).then((logRes) => {
+                          /*return res.status(200).json('Your travel application was successfully registered.');*/
+                        })
+                      });
+                  });
+                  const notify = await notificationModel.registerNotification("New Travel application", "Your travel application was submitted", req.body.employee, 11, url);
+                  return res.status(200).json('Your travel application was successfully registered.');
 
                 });
             } else {
@@ -136,7 +146,7 @@ router.post('/new-travel-application', auth(), async (req, res) => {
         }
 
     } catch (e) {
-        return res.status(400).json(`Something went wrong. Inspect and try again.${e.message}`);
+        return res.status(400).json(`Something went wrong. Inspect and try again`);
     }
 });
 
