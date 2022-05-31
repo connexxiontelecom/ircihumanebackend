@@ -607,7 +607,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 for (const salary of salaryDetails) {
                     if (parseInt(salary.payment.pd_payment_type) === 1) {
 
-                        if (parseInt(empSalary.payment.pd_employee) === 1) {
+                        if (parseInt(salary.payment.pd_employee) === 1) {
                             fullGross = parseFloat(salary.salary_amount) + fullGross
                         }
 
