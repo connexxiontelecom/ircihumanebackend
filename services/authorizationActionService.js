@@ -14,7 +14,7 @@ const timeSheetService = require('../services/timeSheetService');
 const timeAllocationService = require('../services/timeAllocationService');
 const employeeService = require('../services/employeeService');
 const Op = Sequelize.Op;
-
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
@@ -90,8 +90,16 @@ const updateAuthorizationStatus = async (req, res) => {
                     auth_type: type,
                     auth_travelapp_id: appId
                 });
+              const subject = "Self-service update!";
+              const body = "An event recently occurred on one of your self-service areas.";
+              //emp
+              const url = req.headers.referer;
+              //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+              const notifyOfficer = await notificationModel.registerNotification(subject, "Your action was recorded.", officer, 0, url);
+              const notifyNextOfficer = await notificationModel.registerNotification(subject, "You've been chosen to act on a task.", nextOfficer, 0, url);
 
-                //Log
+
+              //Log
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": `Log on authorization: Authorized request.`,
@@ -206,7 +214,15 @@ const updateAuthorizationStatus = async (req, res) => {
                         });
                         break;
                 }
-                //Log
+              const subject = "Self-service update!";
+              const body = "An event recently occurred on one of your self-service areas.";
+              //emp
+              const url = req.headers.referer;
+              //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+              const notifyOfficer = await notificationModel.registerNotification(subject, "Request finally marked as closed.", officer, 0, url);
+              //const notifyNextOfficer = await notificationModel.registerNotification(subject, "You've been chosen to act on a task.", nextOfficer, 0, url);
+
+              //Log
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": `Log on authorization: marked request as final.`,

@@ -18,7 +18,7 @@ const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize
 const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
 const employees = require("../services/employeeService");
-
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 
 /* Get leave application */
 router.get('/', auth(), async function (req, res, next) {
@@ -165,10 +165,17 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         })
 
         const leaveAppId = leaveApplicationResponse.leapp_id;
-        hrpoints.map((hrp) => {
-            const authorizationResponse = authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
-                return data
-            });
+        hrpoints.map(async (hrp) => {
+          const subject = "New leave application";
+          const body = "Kindly attend to this leave application.";
+          //emp
+          const authorizationResponse = authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
+            return data
+          });
+          const url = req.headers.referer;
+          //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+          const notifySupervisor = await notificationModel.registerNotification(subject, body, hrp.hfp_emp_id, 0, url);
+
         })
 
       //send mail
