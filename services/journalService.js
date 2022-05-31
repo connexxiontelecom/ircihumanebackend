@@ -29,9 +29,17 @@ async function removeJournalByRefCode(refCode) {
         }
     });
 }
+async function getJournalByRefCode(refCode) {
+    return await Journal.findAll({
+        where: {
+            j_ref_code: refCode
+        }
+    });
+}
 
 
 module.exports = {
     addJournal,
-    removeJournalByRefCode
+    removeJournalByRefCode,
+    getJournalByRefCode
 }

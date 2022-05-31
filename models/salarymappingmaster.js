@@ -1,4 +1,6 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
+const LocationModel = require("./Location")(sequelize, Sequelize.DataTypes)
 const {
   Model
 } = require('sequelize');
@@ -29,5 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'salarymappingmaster',
     tableName: 'salary_mapping_master'
   });
+
+
   return salarymappingmaster;
 };

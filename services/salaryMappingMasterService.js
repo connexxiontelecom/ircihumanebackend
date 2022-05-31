@@ -11,6 +11,16 @@ async function addSalaryMappingMaster(salaryMappingMaster) {
     });
 }
 
+async function getSalaryMappingMasterByMonthYearLocation(month, year, location) {
+    return await SalaryMappingMaster.findOne({ where:{
+            smm_month: month,
+            smm_year: year,
+            smm_location: location,
+        }
+
+    });
+}
+
 async function removeSalaryMappingMaster(smmId){
     return await SalaryMappingMaster.destroy({where:{
         smm_id: smmId
@@ -46,7 +56,8 @@ async function getSalaryMappingsMaster(){
         ['smm_month', 'DESC'],
             ['smm_year', 'DESC'],
             ['smm_id', 'DESC'],
-    ]})
+    ]
+    })
 }
 
 module.exports = {
@@ -55,5 +66,6 @@ module.exports = {
     getSalaryMappingMaster,
     getSalaryMappingsMaster,
     getSalaryMappingMasterByRefCode,
-    approveSalaryMappingMaster
+    approveSalaryMappingMaster,
+    getSalaryMappingMasterByMonthYearLocation
 }
