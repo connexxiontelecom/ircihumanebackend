@@ -32,8 +32,6 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'salary_mapping_master'
   });
 
-salarymappingmaster.belongsTo(LocationModel, {as: 'location', foreignKey: 'smm_location'})
-salarymappingmaster.hasMany(LocationModel, { foreignKey: 'location_id' })
 
   return salarymappingmaster;
 };
