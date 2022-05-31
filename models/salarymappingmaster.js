@@ -1,4 +1,6 @@
 'use strict';
+const {sequelize, Sequelize} = require("../services/db");
+const LocationModel = require("./Location")(sequelize, Sequelize.DataTypes)
 const {
   Model
 } = require('sequelize');
@@ -29,5 +31,9 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'salarymappingmaster',
     tableName: 'salary_mapping_master'
   });
+
+salarymappingmaster.belongsTo(LocationModel, {as: 'location', foreignKey: 'smm_location'})
+salarymappingmaster.hasMany(LocationModel, { foreignKey: 'location_id' })
+
   return salarymappingmaster;
 };

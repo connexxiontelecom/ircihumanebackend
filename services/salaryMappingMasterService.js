@@ -56,7 +56,10 @@ async function getSalaryMappingsMaster(){
         ['smm_month', 'DESC'],
             ['smm_year', 'DESC'],
             ['smm_id', 'DESC'],
-    ]})
+    ],
+        include: ['location']
+
+    })
 }
 
 module.exports = {
