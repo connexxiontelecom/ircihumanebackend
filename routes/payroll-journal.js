@@ -996,6 +996,36 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     }
 });
 
+router.get('/undo-salary-mapping/:masterId', auth(), async function (req, res, next) {
+    try {
+
+        const masterId = req.params['masterId']
+
+        let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
+            return res.status(400).json('Salary Mapping Master Does not Exist')
+        }
+
+        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
+            return data
+        })
+        await  salaryMappingDetailsService.removeSalaryMappingDetails(salaryMasterData.smm_id).then((data) => {
+            return data
+        })
+
+        await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id).then((data) => {
+            return data
+        })
+
+        return res.status(200).json('Salary Mapping Undone Successfully')
+    } catch (err) {
+        return res.status(400).json(err.message)
+    }
+});
+
 router.post('/get-Journal', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
