@@ -26,7 +26,7 @@ router.get('/', auth(), async function (req, res, next) {
         let userArray = [];
         for (const user of userData) {
             let userPermission = [ ]
-            const permissionData = await permissionService.getPermission(checkUserExisting.user_id).then((data)=>{
+            const permissionData = await permissionService.getPermission(user.user_id).then((data)=>{
                 return data
             })
             if(!_.isEmpty(permissionData)){
