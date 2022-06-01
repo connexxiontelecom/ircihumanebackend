@@ -405,14 +405,26 @@ router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
             return res.status(404).json('An error occurred')
         }
 
-        const updatePermission = await permissionService.updatePermission(permissionObject).then((data) => {
+        const permissionData = await permissionService.getPermission(req.params['user_id']).then((data)=>{
             return data
         })
+
+        if(_.isEmpty(permissionData) || _.isNull(permissionData)){
+            const addPermission = await permissionService.addPermission(permissionObject).then((data) => {
+                return data
+            })
+
+        }else{
+            const updatePermission = await permissionService.updatePermission(permissionObject).then((data) => {
+                return data
+            })
+
+        }
 
 
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": "Added new user",
+            "log_description": "Updated user",
             "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
