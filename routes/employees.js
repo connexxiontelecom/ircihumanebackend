@@ -79,6 +79,7 @@ router.patch('/update-employee/:emp_id', auth(), async function (req, res, next)
         next(err);
     }
 });
+
 router.patch('/update-employee-backoffice/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
