@@ -8,7 +8,7 @@ const helper = require('../helper');
 async function findAllTimeAllocations() {
     return await TimeAllocation.findAll({
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as: 'employee'}]
     })
 }
 
@@ -77,7 +77,7 @@ async function findTimeAllocationDetail(month, year, empId) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -85,7 +85,7 @@ async function findOneTimeAllocationDetail(month, year, empId) {
     return await TimeAllocation.findOne({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as: 'employee'}]
     })
 }
 

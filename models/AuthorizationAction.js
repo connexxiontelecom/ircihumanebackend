@@ -17,6 +17,37 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+        static async getAuthorizationActionByAuthTravelAppIdOfficerType(authId, officerId, type){
+          return AuthorizationAction.findOne({
+            where:{
+              auth_travelapp_id:authId,
+              auth_officer_id:officerId,
+              auth_type: type
+            }
+          })
+        }
+
+        static async markAsReAssignedApplication(authId, officerId, type){
+          return await AuthorizationAction.update({
+            auth_status:3, //reassigned
+          },{
+            where:{
+              auth_travelapp_id:authId,
+              auth_officer_id: officerId,
+              auth_type: type
+            }
+          });
+        }
+
+        static async addNewAuthOfficer(data){
+          return AuthorizationAction.create({
+            auth_travelapp_id: data.appId,
+            auth_officer_id:data.officer,
+            auth_status:data.status,
+            auth_type:data.type,
+            auth_comment:data.comment,
+          })
+        }
     };
     AuthorizationAction.init({
         auth_id: {

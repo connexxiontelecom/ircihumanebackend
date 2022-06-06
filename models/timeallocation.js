@@ -4,6 +4,9 @@ const {
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const LocationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const SectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const AuthorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class timeallocation extends Model {
     /**
@@ -14,6 +17,36 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getTimesheetSubmissionByStatus(status){
+      return await timeallocation.findAll({
+        where:{ta_status:status},
+        include:[
+          {model:Employee, as:'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+              {model:SectorModel, as: 'sector'},
+            ]},
+          {model:AuthorizationModel, as:'timesheet_authorizer', include:[{model: Employee, as: 'officers'}]},
+        ],
+        order:[['ta_id', 'DESC']]
+      })
+    }
+    static async getTimesheetSubmissionByRefNo(ref_no){
+      return await timeallocation.findAll({
+        where:{ta_ref_no:ref_no},
+        include:[
+          {model:Employee, as:'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+              {model:SectorModel, as: 'sector'},
+            ]},
+          {model:AuthorizationModel, as:'timesheet_authorizer', include:[{model: Employee, as: 'officers'}]},
+        ],
+        order:[['ta_id', 'DESC']]
+      })
+    }
+
   };
   timeallocation.init(      {
     ta_id: {
@@ -40,6 +73,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'TimeAllocation',
     tableName: 'time_allocations'
   });
-  timeallocation.belongsTo(Employee, { foreignKey: 'ta_emp_id' })
+  timeallocation.belongsTo(Employee, { foreignKey: 'ta_emp_id', as: 'employee' })
+  timeallocation.belongsTo(AuthorizationModel, { foreignKey: 'ta_ref_no', as: 'timesheet_authorizer', sourceKey: 'auth_travelapp_id' })
   return timeallocation;
 };

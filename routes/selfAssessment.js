@@ -1126,5 +1126,14 @@ router.get('/get-all-emp-self-assessments/:empId/:year', auth(), async function(
   }
 });
 
+router.get('/get-self-assessments-status/:status', auth(), async function(req, res){
+  try{
+    const status = req.params.status;
+    const assessments = await selfAssessmentMasterModel.getAllSelfAssessmentsByStatus(status);
+    return res.status(200).json(assessments);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again later.")
+  }
+});
 
 module.exports = router;

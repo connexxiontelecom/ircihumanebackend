@@ -242,8 +242,22 @@ const updateAuthorizationStatus = async (req, res) => {
 }
 
 
-const getAuthorizationByOfficerId = async (officerId, type) => {
-    return await authorizationModel.findAll({where: {auth_officer_id: officerId, auth_type: type}})
+const getAuthorizationByOfficerId = async (req, res) => {
+  try{
+    const { type, authId } = req.params;
+    const result =  await authorizationModel.findAll({
+      where: {
+        auth_status:0,
+        auth_type: parseInt(type),
+        auth_travelapp_id: authId
+      },
+      include:[{model:EmployeeModel, as: 'officers'}]
+    });
+    return res.status(200).json(result);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again."+e.message);
+  }
+
 }
 
 // const getAuthorizationLog = async (authId, type )=>{
@@ -255,7 +269,7 @@ const getAuthorizationByOfficerId = async (officerId, type) => {
 
 async function getAuthorizationLog(authId, type) {
     return await authorizationModel.findAll({
-        //order:[['auth_id', 'DESC']],
+        order:[['auth_id', 'DESC']],
         where: {auth_travelapp_id: authId, auth_type: type},
         include: ['officers', 'role']
     });
