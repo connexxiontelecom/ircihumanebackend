@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     ou_name: DataTypes.STRING
   }, {
     sequelize,
+    tableName: 'operation_units',
     modelName: 'operationunit',
   });
   return operationunit;
