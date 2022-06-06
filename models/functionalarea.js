@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     fa_name: DataTypes.STRING
   }, {
     sequelize,
+    tableName: 'functional_areas',
     modelName: 'functionalarea',
   });
   return functionalarea;

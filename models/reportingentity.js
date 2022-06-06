@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     re_name: DataTypes.STRING
   }, {
     sequelize,
+    tableName: 'reporting_entities',
     modelName: 'reportingentity',
   });
   return reportingentity;
