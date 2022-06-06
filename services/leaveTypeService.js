@@ -120,7 +120,7 @@ async function getAccruableLeaves() {
 async function getLeaveType(leaveTypeId) {
     return await leaveType.findOne({
         where: {
-            leave_type_id: 1
+            leave_type_id: leaveTypeId
         }
     })
 }
