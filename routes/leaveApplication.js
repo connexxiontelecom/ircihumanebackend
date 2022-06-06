@@ -19,6 +19,7 @@ const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize
 const logs = require('../services/logService')
 const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 
 /* Get leave application */
 router.get('/', auth(), async function (req, res, next) {
@@ -382,4 +383,75 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     return res.status(400).json("Something went wrong."+e.message);
   }
 });
+
+router.get('/get-leave-applications/:status', auth(), async function(req, res){
+  try{
+    const status = req.params.status;
+    const leaves = await leaveAppModel.getLeaveApplicationsByStatus(status);
+    return res.status(200).json(leaves);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again later.")
+  }
+});
+
+router.patch('/re-assign-leave/:leaveId', auth(), async function(req, res){
+  try{
+    const schema = Joi.object({
+      reassignTo: Joi.number().required(),
+      assignedTo: Joi.number().required(),
+      leaveId: Joi.number().allow(null, ''),
+
+    })
+    const leaveReAssignmentRequest = req.body
+    const validationResult = schema.validate(leaveReAssignmentRequest, {abortEarly: false});
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    if(parseInt(req.body.assignedTo) === parseInt(req.body.reassignTo)){
+      return res.status(400).json("You cannot re-assign to the same person.");
+    }
+    const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
+    if(!assignedOfficer){
+      return res.status(400).json("The assigned officer does not exist.")
+    }
+    const reAssignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.reassignTo));
+    if(!reAssignedOfficer){
+      return res.status(400).json("The re-assign officer does not exist.")
+    }
+    const leaveId = req.params.leaveId;
+    const leave = await leaveAppModel.getLeaveApplicationById(leaveId);
+    if(!leave){
+      return res.status(400).json("There's no record for this leave application request.");
+    }
+    const officerLeave = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(leave.leapp_id, req.body.assignedTo, 1)
+    if(!officerLeave){
+      return res.status(400).json("There's no leave assigned to this selected employee.");
+    }
+    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(leaveId, parseInt(req.body.assignedTo), 1);
+    if(!markAsReAssign){
+      return res.status(400).json("Something went wrong. Try again.");
+    }
+    const comment = `Leave application that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
+      const data = {
+        appId:leaveId,
+        officer:req.body.reassignTo,
+        status:0,
+        type:1,
+        comment:comment,
+      }
+    const reAssignment = await authorizationModel.addNewAuthOfficer(data);
+
+    const subject = "Leave application re-assignment";
+    //const body = "Kindly attend to this leave application.";
+    const url = req.headers.referer;
+    const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
+    const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
+    const notifyEmployee = await notificationModel.registerNotification(subject, comment, leave.leapp_empid, 0, url);
+
+    return res.status(200).json("Leave application re-assigned successfully.");
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again."+e.message);
+  }
+});
+
 module.exports = router;

@@ -279,7 +279,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_bank_id: employeeData.emp_bank_id,
         emp_state_id: employeeData.emp_state_id,
         emp_lga_id: employeeData.emp_lga_id,
-        emp_marital_status: employeeData.emp_marital_status,
+
         emp_spouse_name: employeeData.emp_spouse_name,
         emp_spouse_phone_no: employeeData.emp_spouse_phone_no,
         emp_next_of_kin_name: employeeData.emp_next_of_kin_name,
@@ -300,7 +300,8 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_location_id: employeeData.emp_location_id,
         //emp_bvn: employeeData.emp_bvn,
         //emp_nhf: employeeData.emp_nhf,
-        emp_paye_no: employeeData.emp_paye_no,
+        emp_paye_no: employeeData.emp_paye_no, //employeeData.emp_paye_no,
+        emp_marital_status: employeeData.emp_marital_status,
         emp_pension_no: employeeData.emp_pension_no,
         emp_pensionable: employeeData.emp_pension,
         emp_bvn: employeeData.emp_bvn,

@@ -18,6 +18,7 @@ const sectorService = require('../services/departmentService');
 const employeeService = require('../services/employeeService');
 const {sequelize, Sequelize} = require("../services/db");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
 /* state routes. */
 
 router.get('/', auth(), travelApplicationService.getTravelApplications);
@@ -31,7 +32,7 @@ router.post('/new-travel-application', auth(), async (req, res) => {
             per_diem: Joi.alternatives().conditional('travel_category', {is: 1, then: Joi.number().required()}),
             t2_code: Joi.alternatives().conditional('travel_category', {
                 is: 1, then: Joi.array().items(Joi.object({
-                    code: Joi.number().required()
+                    code: Joi.string().allow(null, '')
                 }))
             }),
             /*t2_code: Joi.alternatives().conditional('travel_category', { is: 2, then: Joi.array().items(Joi.object({
@@ -253,5 +254,16 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
 
     }
 });*/
+
+router.get('/get-travel-application-status/:status', auth(), async function(req, res){
+  try{
+    const status = req.params.status;
+    const apps = await travelApplicationModel.getTravelApplicationsByStatus(status);
+    return res.status(200).json(apps);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again later."+e.message)
+  }
+});
+
 
 module.exports = router;

@@ -66,6 +66,22 @@ module.exports = (sequelize, DataTypes) => {
         group: ['sam_year', 'sam_emp_id']
       })
     }
+    static async getAllSelfAssessmentsByStatus(status){
+      return await selfassessmentmaster.findAll({
+        include:[
+          {model:EmployeeModel, as:'employee',
+            include: [
+              {model: locationModel, as: 'location'},
+              {model: sectorModel, as: 'sector'},
+            ]},
+          {model:goalSettingModel, as:'goal'},
+          {model: EmployeeModel, as:'supervisor'}
+        ],
+        where: {sam_status:status }, //only approved
+        order:[ ['sam_id', 'DESC'] ],
+        group: ['sam_year', 'sam_emp_id']
+      })
+    }
     static async getAllEmployeeSelfAssessments(empId, year){
       return await selfassessmentmaster.findAll({
         where: { sam_year: year, sam_emp_id: empId },
