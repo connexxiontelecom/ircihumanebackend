@@ -82,9 +82,9 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             return res.status(400).json('Leave start date cannot be before today or today')
         }
 
-        if (String(startYear) !== String(endYear)) {
-            return res.status(400).json('Leave period must be within the same year')
-        }
+        // if (String(startYear) !== String(endYear)) {
+        //     return res.status(400).json('Leave period must be within the same year')
+        // }
 
 
         let daysRequested = await differenceInBusinessDays(endDate, startDate)
@@ -138,20 +138,14 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             });
 
 
-
             if (_.isNull(accruedDays) || accruedDays === 0) {
                 return res.status(400).json('No Leave Accrued for Selected Leave')
             }
 
 
-            const sumLeave = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((data) => {
-                return data
-            })
-
-
-           /* if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
+           if (parseInt(daysRequested) > parseInt(accruedDays)) {
                 return res.status(400).json("Days Requested Greater than Accrued Days")
-            }*/
+            }
         }
 
         leaveApplicationRequest['leapp_year'] = startYear

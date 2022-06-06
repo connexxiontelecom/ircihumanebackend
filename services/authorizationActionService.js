@@ -17,10 +17,12 @@ const Op = Sequelize.Op;
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const leaveApplicationService = require('../services/leaveApplicationService');
 
 
 const helper = require('../helper');
 const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
+const {addLeaveAccrual} = require("../routes/leaveAccrual");
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
@@ -121,6 +123,25 @@ const updateAuthorizationStatus = async (req, res) => {
                                 leapp_id: appId
                             }
                         });
+
+                        const leaveApplicationData = await leaveApplicationService.getLeaveApplicationWithId(appId).then((data)=>{
+                            return data
+                        })
+
+                        let leaveDate = new Date(leaveApplicationData.leapp_start_date)
+
+                        const leaveAccrual = {
+                            lea_emp_id: leaveApplicationData.leapp_empid,
+                            lea_month: leaveDate.getFullYear(),
+                            lea_year: leaveDate.getMonth() + 1,
+                            lea_leave_type: leaveApplicationData.leapp_leave_type,
+                            lea_rate: parseFloat(leaveApplicationData.leapp_total_days)
+                        }
+
+                        const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                            return data
+                        })
+
 
                         //update timesheet
                       const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);

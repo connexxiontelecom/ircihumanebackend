@@ -11,7 +11,8 @@ async function addLeaveAccrual(accrualData) {
         lea_month: accrualData.lea_month,
         lea_year: accrualData.lea_year,
         lea_leave_type: accrualData.lea_leave_type,
-        lea_rate: accrualData.lea_rate
+        lea_rate: accrualData.lea_rate,
+        lea_archives: 0
     });
 }
 
@@ -51,7 +52,8 @@ async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_t
         where: {
             lea_emp_id: employee_id,
             lea_year: year,
-            lea_leave_type: leave_type
+            lea_leave_type: leave_type,
+            lea_archives: 0
         }
     })
 }
