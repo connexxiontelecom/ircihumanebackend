@@ -18,10 +18,112 @@ const _ = require('lodash')
 router.get('/', auth(), async function (req, res, next) {
     try {
 
-        await users.findAllUsers().then((data) => {
-            return res.status(200).json(data);
-
+        let userData = await users.findAllUsers().then((data) => {
+           return data
         })
+
+        userData = JSON.parse( JSON.stringify( userData ) );
+        let userArray = [];
+        for (const user of userData) {
+            let userPermission = [ ]
+            const permissionData = await permissionService.getPermission(user.user_id).then((data)=>{
+                return data
+            })
+            if(!_.isEmpty(permissionData)){
+
+                if(parseInt(permissionData.perm_manage_user) === 1){
+                    userPermission.push('MANAGE_USER')
+                }
+
+                if(parseInt(permissionData.perm_hr_config) === 1){
+                    userPermission.push('HR_CONFIG')
+                }
+                if(parseInt(permissionData.perm_payroll_config) === 1){
+                    userPermission.push('PAYROLL_CONFIG')
+                }
+
+                if(parseInt(permissionData.perm_payment_definition) === 1){
+                    userPermission.push('PAYMENT_DEFINITION')
+                }
+
+                if(parseInt(permissionData.perm_onboard_employee) === 1){
+                    userPermission.push('ONBOARD_EMPLOYEE')
+                }
+
+                if(parseInt(permissionData.perm_manage_employee) === 1){
+                    userPermission.push('MANAGE_EMPLOYEE')
+                }
+
+                if(parseInt(permissionData.perm_assign_supervisors) === 1){
+                    userPermission.push('ASSIGN_SUPERVISORS')
+                }
+
+                if(parseInt(permissionData.perm_announcement) === 1){
+                    userPermission.push('ANNOUNCEMENT')
+                }
+
+                if(parseInt(permissionData.perm_query) === 1){
+                    userPermission.push('QUERY')
+                }
+
+                if(parseInt(permissionData.perm_leave) === 1){
+                    userPermission.push('LEAVE')
+                }
+
+                if(parseInt(permissionData.perm_travel) === 1){
+                    userPermission.push('TRAVEL')
+                }
+
+                if(parseInt(permissionData.perm_timesheet) === 1){
+                    userPermission.push('TIMESHEET')
+                }
+
+                if(parseInt(permissionData.perm_self_assessment) === 1){
+                    userPermission.push('SELF_ASSESSMENT')
+                }
+
+                if(parseInt(permissionData.perm_leave_management) === 1){
+                    userPermission.push('LEAVE_MANAGEMENT')
+                }
+
+                if(parseInt(permissionData.perm_setup_variations) === 1){
+                    userPermission.push('SETUP_VARIATIONS')
+                }
+
+                if(parseInt(permissionData.perm_confirm_variations) === 1){
+                    userPermission.push('CONFIRM_VARIATIONS')
+                }
+
+                if(parseInt(permissionData.perm_approve_variations) === 1){
+                    userPermission.push('APPROVE_VARIATIONS')
+                }
+
+                if(parseInt(permissionData.perm_decline_variations) === 1){
+                    userPermission.push('DECLINE_VARIATIONS')
+                }
+                if(parseInt(permissionData.perm_run_payroll) === 1){
+                    userPermission.push('RUN_PAYROLL')
+                }
+
+                if(parseInt(permissionData.perm_undo_payroll) === 1){
+                    userPermission.push('UNDO_PAYROLL')
+                }
+
+                if(parseInt(permissionData.perm_confirm_payroll) === 1){
+                    userPermission.push('CONFIRM_PAYROLL')
+                }
+
+                if(parseInt(permissionData.perm_approve_payroll) === 1){
+                    userPermission.push('APPROVE_PAYROLL')
+                }
+                user.permission = userPermission
+                user.permissionData = permissionData
+            }
+
+            userArray.push(user)
+        }
+
+        return res.status(200).json(userArray);
     } catch (err) {
         return res.status(400).json(`Error while fetching users ${err.message}`)
     }
@@ -303,14 +405,26 @@ router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
             return res.status(404).json('An error occurred')
         }
 
-        const updatePermission = await permissionService.updatePermission(permissionObject).then((data) => {
+        const permissionData = await permissionService.getPermission(req.params['user_id']).then((data)=>{
             return data
         })
+
+        if(_.isEmpty(permissionData) || _.isNull(permissionData)){
+            const addPermission = await permissionService.addPermission(permissionObject).then((data) => {
+                return data
+            })
+
+        }else{
+            const updatePermission = await permissionService.updatePermission(permissionObject).then((data) => {
+                return data
+            })
+
+        }
 
 
         const logData = {
             "log_user_id": req.user.username.user_id,
-            "log_description": "Added new user",
+            "log_description": "Updated user",
             "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {

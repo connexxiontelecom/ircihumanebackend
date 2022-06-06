@@ -11,6 +11,9 @@ const Department = require("../models/Department")(sequelize, Sequelize.DataType
 const StateModel = require("../models/State")(sequelize, Sequelize.DataTypes);
 const LgaModel = require("../models/localgovernment")(sequelize, Sequelize.DataTypes);
 const pensionModel = require("../models/PensionProvider")(sequelize, Sequelize.DataTypes);
+const ReportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes);
+const OperationUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes);
+const FunctionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes);
 
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 //const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
@@ -104,6 +107,10 @@ module.exports = (sequelize, DataTypes) => {
         emp_unit_name: DataTypes.STRING,
         emp_cost_center: DataTypes.STRING,
         emp_nin: DataTypes.STRING,
+        emp_d4: DataTypes.INTEGER,
+        emp_d5: DataTypes.INTEGER,
+        emp_d6: DataTypes.INTEGER,
+        emp_d7: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
@@ -145,6 +152,16 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(pensionModel, {as:'pension', foreignKey:'emp_pension_id'});
     Employee.hasMany(pensionModel, {foreignKey: 'pension_provider_id'})
+
+    Employee.belongsTo(OperationUnitModel, {as:'operationUnit', foreignKey:'emp_d4'});
+    Employee.hasMany(OperationUnitModel, {foreignKey: 'ou_id'})
+
+    Employee.belongsTo(ReportingEntityModel, {as:'reportingEntity', foreignKey:'emp_d5'});
+    Employee.hasMany(ReportingEntityModel, {foreignKey: 're_id'})
+
+    Employee.belongsTo(FunctionalAreaModel, {as:'functionalArea', foreignKey:'emp_d6'});
+    Employee.hasMany(FunctionalAreaModel, {foreignKey: 'fa_id'})
+
 
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
     //Employee.belongsTo(travelApplicationModel, { foreignKey:'emp_id', as: 'applicant' });
