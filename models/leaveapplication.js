@@ -7,6 +7,9 @@ const {
 const {sequelize, Sequelize} = require("../services/db");
 const LeaveType = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const LocationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const SectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const AuthorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class leaveApplication extends Model {
     /**
@@ -38,6 +41,21 @@ module.exports = (sequelize, DataTypes) => {
       return await leaveApplication.findAll({
         where:{leapp_status:1}, //approved
         include:[{model:Employee, as:'employee'}, {model:LeaveType, as:'leave_type'}],
+        order:[['leapp_id', 'DESC']]
+      })
+    }
+    static async getLeaveApplicationsByStatus(status){
+      return await leaveApplication.findAll({
+        where:{leapp_status:status},
+        include:[
+          {model:Employee, as:'employee',
+          include:[
+            {model:LocationModel, as: 'location'},
+            {model:SectorModel, as: 'sector'},
+          ]},
+          {model:LeaveType, as:'leave_type'},
+          {model:AuthorizationModel, as:'leave_authorizer', include:[{model: Employee, as: 'officers'}]},
+        ],
         order:[['leapp_id', 'DESC']]
       })
     }
@@ -104,6 +122,8 @@ module.exports = (sequelize, DataTypes) => {
 
   leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_approve_by'})
   leaveApplication.hasMany(Employee, {  foreignKey: 'emp_id' })
+
+  leaveApplication.hasMany(AuthorizationModel, {as:'leave_authorizer', foreignKey: 'auth_travelapp_id', sourceKey:'leapp_id'})
 
 
   return leaveApplication;

@@ -11,7 +11,10 @@ const supervisorAssignmentService = require('../services/supervisorAssignmentSer
 const authorizationAction = require('../services/authorizationActionService');
 const employee = require("../services/employeeService");
 const {sequelize, Sequelize} = require("../services/db");
+const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const timeAllocationModel = require('../models/timeallocation')(sequelize, Sequelize.DataTypes);
+const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -24,7 +27,7 @@ router.get('/', auth(), async function (req, res, next) {
 
         return res.status(200).json(timeAllocationBreakDown)
     } catch (err) {
-        return res.status(400).json(`Error while fetching time allocation `);
+        return res.status(400).json(`Error while fetching time allocation `+err.message);
 
     }
 });
@@ -290,6 +293,75 @@ router.get('/authorization/:super_id', auth(), async function (req, res, next) {
 });
 
 
+router.get('/get-timesheet-submission/:status', auth(), async function(req, res){
+  try{
+    const status = req.params.status;
+    const allocations = await timeAllocationModel.getTimesheetSubmissionByStatus(status);
+    return res.status(200).json(allocations);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again later."+e.message)
+  }
+});
 
+router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
+  try{
+    const schema = Joi.object({
+      reassignTo: Joi.number().required(),
+      assignedTo: Joi.number().required(),
+      ref_no: Joi.string().allow(null, ''),
+
+    })
+    const timesheetReAssignmentRequest = req.body
+    const validationResult = schema.validate(timesheetReAssignmentRequest, {abortEarly: false});
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    if(parseInt(req.body.assignedTo) === parseInt(req.body.reassignTo)){
+      return res.status(400).json("You cannot re-assign to the same person.");
+    }
+    const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
+    if(!assignedOfficer){
+      return res.status(400).json("The assigned officer does not exist.")
+    }
+    const reAssignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.reassignTo));
+    if(!reAssignedOfficer){
+      return res.status(400).json("The re-assign officer does not exist.")
+    }
+    const ref_no = req.params.ref_no;
+
+    const timesheet = await timeAllocationModel.getTimesheetSubmissionByRefNo(ref_no);
+    if(!timesheet){
+      return res.status(400).json("There's no record for this timesheet submission.");
+    }
+    const officerTimesheet = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(ref_no, req.body.assignedTo, 2)
+    if(!officerTimesheet){
+      return res.status(400).json("There's no timesheet assigned to this selected employee.");
+    }
+    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(ref_no, parseInt(req.body.assignedTo), 2);
+    if(!markAsReAssign){
+      return res.status(400).json("Something went wrong. Try again.");
+    }
+    const comment = `Timesheet that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
+    const data = {
+      appId:ref_no,
+      officer:req.body.reassignTo,
+      status:0,
+      type:2,
+      comment:comment,
+    }
+    const reAssignment = await authorizationModel.addNewAuthOfficer(data);
+
+    const subject = "Timesheet re-assignment";
+    //const body = "Kindly attend to this leave application.";
+    const url = req.headers.referer;
+    const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
+    const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
+    const notifyEmployee = await notificationModel.registerNotification(subject, comment, timesheet.ta_emp_id, 0, url);
+
+    return res.status(200).json("Timesheet re-assigned successfully.");
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again."+e.message);
+  }
+});
 
 module.exports = router;
