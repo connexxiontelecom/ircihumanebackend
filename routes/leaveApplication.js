@@ -364,7 +364,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
 
 
     const leaveId = req.params.leaveId;
-    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+    let leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
         return data
     });
     if(_.isNull(leave) || _.isEmpty(leave)){
@@ -379,6 +379,10 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
         return data
     })
 
+       leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+          return data
+      });
+
       let leaveDate = new Date(leave.leapp_start_date)
 
       const leaveAccrual = {
@@ -386,7 +390,8 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
           lea_month: leaveDate.getFullYear(),
           lea_year: leaveDate.getMonth() + 1,
           lea_leave_type: leave.leapp_leave_type,
-          lea_rate: 0 - parseFloat(leave.leapp_total_days)
+          lea_rate: 0 - parseFloat(leave.leapp_total_days),
+          lea_archives: 0
       }
       const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
           return data
