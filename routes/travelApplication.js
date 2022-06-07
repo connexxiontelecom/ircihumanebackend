@@ -202,8 +202,6 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
       ids.push(parseInt(app.auth_travelapp_id));
     });
 
-    return res.status(200).json(authOfficers)
-
     const travelApplicationsForAuth = await travelApplicationService.getTravelApplicationsForAuthorization(_.uniq(ids)).then((data) => {
       return data
     });
