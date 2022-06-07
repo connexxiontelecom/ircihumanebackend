@@ -84,7 +84,7 @@ router.post('/new-travel-application', auth(), async (req, res) => {
       if (_.isEmpty(emp) || _.isNull(emp)) {
         return res.status(400).json("Could not find employee record.");
       }
-      const empSectorId = emp.emp_job_role_id;
+      const empSectorId = parseInt(emp.emp_department_id);
 
       const sectorLeads = await sectorService.getDepartmentSectorLeadBySectorId(empSectorId).then((sec) => {
         return sec;
