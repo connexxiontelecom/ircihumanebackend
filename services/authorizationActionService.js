@@ -135,7 +135,7 @@ const updateAuthorizationStatus = async (req, res) => {
                             lea_month: leaveDate.getFullYear(),
                             lea_year: leaveDate.getMonth() + 1,
                             lea_leave_type: leaveApplicationData.leapp_leave_type,
-                            lea_rate: parseFloat(leaveApplicationData.leapp_total_days)
+                            lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days)
                         }
 
                         const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {

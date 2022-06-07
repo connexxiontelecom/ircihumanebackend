@@ -10,6 +10,7 @@ const differenceInDays = require('date-fns/differenceInDays')
 const isBefore = require('date-fns/isBefore')
 const leaveApplication = require('../services/leaveApplicationService')
 const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual");
+const leaveAccrualService = require("../services/leaveAccrualService");
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const leaveTypeService = require('../services/leaveTypeService');
@@ -339,13 +340,13 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     let endDate = new Date(statusRequest.end_date);
     let endYear = endDate.getFullYear();
 
-    if (isBefore(startDate, new Date())) {
-      return res.status(400).json('Leave start date cannot be before today or today')
-    }
-
-    if (String(startYear) !== String(endYear)) {
-      return res.status(400).json('Leave period must be within the same year')
-    }
+    // if (isBefore(startDate, new Date())) {
+    //   return res.status(400).json('Leave start date cannot be before today or today')
+    // }
+    //
+    // if (String(startYear) !== String(endYear)) {
+    //   return res.status(400).json('Leave period must be within the same year')
+    // }
 
     let daysRequested
     if(startDate.getDay() === 6 || startDate.getDay() === 0){
@@ -363,7 +364,9 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
 
 
     const leaveId = req.params.leaveId;
-    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId));
+    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+        return data
+    });
     if(_.isNull(leave) || _.isEmpty(leave)){
       return res.status(400).json("Leave application does not exist.");
     }
@@ -371,6 +374,23 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     if(_.isNull(status) || _.isEmpty(status)){
       return res.status(400).json("Could not update record. Try again.");
     }
+
+    const removeAccruals = await leaveAccrualService.removeLeaveAccrualByLeaveApplication(parseInt(leaveId)).then((data)=>{
+        return data
+    })
+
+      let leaveDate = new Date(leave.leapp_start_date)
+
+      const leaveAccrual = {
+          lea_emp_id: leave.leapp_empid,
+          lea_month: leaveDate.getFullYear(),
+          lea_year: leaveDate.getMonth() + 1,
+          lea_leave_type: leave.leapp_leave_type,
+          lea_rate: 0 - parseFloat(leave.leapp_total_days)
+      }
+      const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+          return data
+      })
     return res.status(200).json("Leave period updated");
   }catch (e) {
     return res.status(400).json("Something went wrong."+e.message);
