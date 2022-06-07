@@ -284,12 +284,13 @@ const updateAuthorizationStatus = async (req, res) => {
 //
 // }
 
-async function getAuthorizationByOfficerId(type, authId){
+async function getAuthorizationByOfficerId(supervisorId, type){
   return  await authorizationModel.findAll({
     where: {
       auth_status:0,
       auth_type: parseInt(type),
-      auth_travelapp_id: authId
+      //auth_travelapp_id: authId,
+      auth_officer_id: supervisorId
     },
     include:[{model:EmployeeModel, as: 'officers'}]
   });

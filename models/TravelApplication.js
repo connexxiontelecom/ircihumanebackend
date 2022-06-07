@@ -33,6 +33,19 @@ module.exports = (sequelize, DataTypes) => {
           order:[['travelapp_id', 'DESC']]
         })
       }
+      static async getTravelApplicationsById(travelId){
+        return await TravelApplication.findOne({
+          where:{travelapp_id:travelId},
+          /*include:[
+            {model:Employee, as:'applicant',
+              include:[
+                {model:LocationModel, as: 'location'},
+                {model:SectorModel, as: 'sector'},
+              ]},
+            {model:AuthorizationModel, as:'authorizers', include:[{model: Employee, as: 'officers'}]},
+          ],*/
+        })
+      }
     };
     TravelApplication.init({
         travelapp_id: {
