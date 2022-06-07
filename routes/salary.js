@@ -1452,7 +1452,9 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                         lea_month: payrollMonth,
                                         lea_year: payrollYear,
                                         lea_leave_type: leaveType.leave_type_id,
-                                        lea_rate: parseFloat(leaveType.lt_rate)
+                                        lea_rate: parseFloat(leaveType.lt_rate),
+                                        lea_leaveapp_id: 0,
+                                        lea_archives: 0
                                     }
 
                                     const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {

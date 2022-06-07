@@ -91,6 +91,10 @@ async function sumLeaveUsedByYearEmployeeLeaveType(year, employee_id, leave_type
     })
 }
 
+async function getLeaveApplicationWithId(id){
+    return await LeaveApplication.findOne({where: {leapp_id: id}, include: ['employee', LeaveType]})
+}
+
 
 // async function findLocationAllowanceById(la_id){
 //     return await LocationAllowance.findOne({ where: { la_id: la_id }, include: [Location, Pd]  })
@@ -127,6 +131,7 @@ module.exports = {
     findEmployeeLeaveApplication,
     getLeaveApplicationsForAuthorization,
     getLeaveApplicationsById,
-  findAllApprovedLeaveApplications,
-  findAllActiveLeaveApplications
+    findAllApprovedLeaveApplications,
+    findAllActiveLeaveApplications,
+    getLeaveApplicationWithId
 }
