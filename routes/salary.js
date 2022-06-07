@@ -4899,7 +4899,7 @@ router.post('/pension-report', auth(), async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
+            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
                 return data
             })
         } else {
