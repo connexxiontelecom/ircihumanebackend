@@ -1132,7 +1132,7 @@ router.get('/get-self-assessments-status/:status', auth(), async function(req, r
     const assessments = await selfAssessmentMasterModel.getAllSelfAssessmentsByStatus(status);
     return res.status(200).json(assessments);
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again later.")
+    return res.status(400).json("Something went wrong. Try again later."+e.message)
   }
 });
 
