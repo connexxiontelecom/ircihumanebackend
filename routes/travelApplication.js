@@ -17,8 +17,10 @@ const supervisorAssignmentService = require('../services/supervisorAssignmentSer
 const sectorService = require('../services/departmentService');
 const employeeService = require('../services/employeeService');
 const {sequelize, Sequelize} = require("../services/db");
+const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
+const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 /* state routes. */
 
 router.get('/', auth(), travelApplicationService.getTravelApplications);
@@ -200,7 +202,7 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
       ids.push(parseInt(app.auth_travelapp_id));
     });
 
-
+    return res.status(200).json(authOfficers)
 
     const travelApplicationsForAuth = await travelApplicationService.getTravelApplicationsForAuthorization(_.uniq(ids)).then((data) => {
       return data
@@ -276,6 +278,66 @@ router.get('/get-travel-application-status/:status', auth(), async function (req
     return res.status(200).json(apps);
   } catch (e) {
     return res.status(400).json("Something went wrong. Try again later." + e.message)
+  }
+});
+
+router.patch('/re-assign-travel-application/:appId', auth(), async function(req, res){
+  try{
+    const schema = Joi.object({
+      reassignTo: Joi.number().required(),
+      assignedTo: Joi.number().required(),
+      appId: Joi.number().allow(null, ''),
+
+    })
+    const travelReAssignmentRequest = req.body
+    const validationResult = schema.validate(travelReAssignmentRequest, {abortEarly: false});
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    if(parseInt(req.body.assignedTo) === parseInt(req.body.reassignTo)){
+      return res.status(400).json("You cannot re-assign to the same person.");
+    }
+    const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
+    if(!assignedOfficer){
+      return res.status(400).json("The assigned officer does not exist.")
+    }
+    const reAssignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.reassignTo));
+    if(!reAssignedOfficer){
+      return res.status(400).json("The re-assign officer does not exist.")
+    }
+    const travelId = req.params.appId;
+    const travel = await travelApplicationModel.getTravelApplicationsById(travelId);
+    if(!travel){
+      return res.status(400).json("There's no record for this travel application request.");
+    }
+    const officerTravel = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(leave.leapp_id, req.body.assignedTo, 1)
+    if(!officerTravel){
+      return res.status(400).json("There's no travel application assigned to this employee.");
+    }
+    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(travelId, parseInt(req.body.assignedTo), 3);
+    if(!markAsReAssign){
+      return res.status(400).json("Something went wrong. Try again.");
+    }
+    const comment = `Travel application that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
+    const data = {
+      appId:travelId,
+      officer:req.body.reassignTo,
+      status:0,
+      type:3,
+      comment:comment,
+    }
+    const reAssignment = await authorizationModel.addNewAuthOfficer(data);
+
+    const subject = "Travel application re-assignment";
+    //const body = "Kindly attend to this leave application.";
+    const url = req.headers.referer;
+    const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
+    const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
+    const notifyEmployee = await notificationModel.registerNotification(subject, comment, travel.travelapp_employee_id, 0, url);
+
+    return res.status(200).json("Travel application re-assigned successfully.");
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
   }
 });
 
