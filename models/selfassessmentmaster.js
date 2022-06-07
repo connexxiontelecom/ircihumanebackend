@@ -7,6 +7,7 @@ const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTyp
 const goalSettingModel = require("../models/goalsetting")(sequelize, Sequelize.DataTypes);
 const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes);
 const sectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes);
+const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class selfassessmentmaster extends Model {
     /**
@@ -85,7 +86,11 @@ module.exports = (sequelize, DataTypes) => {
     static async getAllEmployeeSelfAssessments(empId, year){
       return await selfassessmentmaster.findAll({
         where: { sam_year: year, sam_emp_id: empId },
-        include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}, {model: EmployeeModel, as:'supervisor'}],
+        include:[
+          {model:EmployeeModel, as:'employee'},
+          {model:goalSettingModel, as:'goal'},
+          {model: EmployeeModel, as:'supervisor'}
+        ],
       })
     }
   };
@@ -122,5 +127,7 @@ module.exports = (sequelize, DataTypes) => {
   selfassessmentmaster.belongsTo(EmployeeModel,{foreignKey:'sam_supervisor_id', as:'supervisor'});
   selfassessmentmaster.belongsTo(EmployeeModel,{foreignKey:'sam_emp_id', as:'employee'});
   selfassessmentmaster.belongsTo(goalSettingModel,{foreignKey:'sam_gs_id', as:'goal'});
+  selfassessmentmaster.belongsTo(authorizationModel,
+    { foreignKey: 'sam_supervisor_id', as: 'authorizers', sourceKey: 'travelapp_id' });
   return selfassessmentmaster;
 };

@@ -108,14 +108,14 @@ async function findTimeAllocationsEmployee(empId) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
 async function findTimeAllocationsByRefNo(ref_no) {
     return await TimeAllocation.findAll({
         where: {ta_ref_no: ref_no},
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 

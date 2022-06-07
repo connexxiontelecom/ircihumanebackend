@@ -1,3 +1,4 @@
+
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const _ = require('lodash');
@@ -263,21 +264,35 @@ const updateAuthorizationStatus = async (req, res) => {
 }
 
 
-const getAuthorizationByOfficerId = async (req, res) => {
-  try{
-    const { type, authId } = req.params;
-    const result =  await authorizationModel.findAll({
-      where: {
-        auth_status:0,
-        auth_type: parseInt(type),
-        auth_travelapp_id: authId
-      },
-      include:[{model:EmployeeModel, as: 'officers'}]
-    });
-    return res.status(200).json(result);
-  }catch (e) {
-    return res.status(400).json("Something went wrong. Try again."+e.message);
-  }
+// const getAuthorizationByOfficerId = async (req, res) => {
+//   try{
+//     const { type, authId } = req.params;
+//     const result =  await authorizationModel.findAll({
+//       where: {
+//         auth_status:0,
+//         auth_type: parseInt(type),
+//         auth_travelapp_id: authId
+//       },
+//       include:[{model:EmployeeModel, as: 'officers'}]
+//     });
+//     return res.status(200).json(result);
+//   }catch (e) {
+//     return res.status(400).json("Something went wrong. Try again.");
+//   }
+//
+//
+//
+// }
+
+async function getAuthorizationByOfficerId(type, authId){
+  return  await authorizationModel.findAll({
+    where: {
+      auth_status:0,
+      auth_type: parseInt(type),
+      auth_travelapp_id: authId
+    },
+    include:[{model:EmployeeModel, as: 'officers'}]
+  });
 
 }
 
