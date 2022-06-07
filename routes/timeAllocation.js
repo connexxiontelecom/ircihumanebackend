@@ -260,7 +260,7 @@ router.get('/get-employee-time-allocation/:emp_id', auth(), async function (req,
 
         return res.status(200).json(timeAllocationBreakDown)
     } catch (err) {
-        return res.status(400).json(`Error while fetching time allocation `);
+        return res.status(400).json(`Error while fetching time allocation `+err.message);
         next(err);
     }
 });
@@ -287,7 +287,7 @@ router.get('/authorization/:super_id', auth(), async function (req, res, next) {
         })
 
     } catch (err) {
-        res.status(400).json(`Error while fetching time allocation `);
+        return res.status(400).json(`Error while fetching time allocation `);
         next(err);
     }
 });

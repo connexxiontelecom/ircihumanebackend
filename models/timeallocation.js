@@ -41,7 +41,9 @@ module.exports = (sequelize, DataTypes) => {
               {model:LocationModel, as: 'location'},
               {model:SectorModel, as: 'sector'},
             ]},
-          {model:AuthorizationModel, as:'timesheet_authorizer', include:[{model: Employee, as: 'officers'}]},
+          {model:AuthorizationModel, as:'timesheet_authorizer',
+            include:[{model: Employee, as: 'officers'}]
+          },
         ],
         order:[['ta_id', 'DESC']]
       })
@@ -74,6 +76,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'time_allocations'
   });
   timeallocation.belongsTo(Employee, { foreignKey: 'ta_emp_id', as: 'employee' })
-  timeallocation.belongsTo(AuthorizationModel, { foreignKey: 'ta_ref_no', as: 'timesheet_authorizer', sourceKey: 'auth_travelapp_id' })
+  timeallocation.belongsTo(AuthorizationModel,
+    { foreignKey: 'ta_ref_no', as: 'timesheet_authorizer', sourceKey:'auth_officer_id' }
+    )
   return timeallocation;
 };
