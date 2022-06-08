@@ -26,6 +26,12 @@ async function addPermission(permission) {
         perm_undo_payroll: permission.perm_undo_payroll,
         perm_confirm_payroll: permission.perm_confirm_payroll,
         perm_approve_payroll: permission.perm_approve_payroll,
+        perm_journal_code_setup: permission.perm_journal_code_setup,
+        perm_salary_mapping: permission.perm_salary_mapping,
+        perm_undo_salary_mapping: permission.perm_undo_salary_mapping,
+        perm_payroll_journal: permission.perm_payroll_journal,
+        perm_application_tracking: permission.perm_application_tracking,
+        perm_supervisor_reassignment: permission.perm_supervisor_reassignment,
     });
 }
 
@@ -54,6 +60,12 @@ async function updatePermission(permission) {
             perm_undo_payroll: permission.perm_undo_payroll,
             perm_confirm_payroll: permission.perm_confirm_payroll,
             perm_approve_payroll: permission.perm_approve_payroll,
+            perm_journal_code_setup: permission.perm_journal_code_setup,
+            perm_salary_mapping: permission.perm_salary_mapping,
+            perm_undo_salary_mapping: permission.perm_undo_salary_mapping,
+            perm_payroll_journal: permission.perm_payroll_journal,
+            perm_application_tracking: permission.perm_application_tracking,
+            perm_supervisor_reassignment: permission.perm_supervisor_reassignment,
         },
         {
             where: {

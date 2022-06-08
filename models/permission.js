@@ -42,6 +42,12 @@ module.exports = (sequelize, DataTypes) => {
     perm_undo_payroll: DataTypes.INTEGER,
     perm_confirm_payroll: DataTypes.INTEGER,
     perm_approve_payroll: DataTypes.INTEGER,
+    perm_journal_code_setup: DataTypes.INTEGER,
+    perm_salary_mapping: DataTypes.INTEGER,
+    perm_undo_salary_mapping: DataTypes.INTEGER,
+    perm_payroll_journal: DataTypes.INTEGER,
+    perm_application_tracking: DataTypes.INTEGER,
+    perm_supervisor_reassignment: DataTypes.INTEGER,
 
   }, {
     sequelize,
