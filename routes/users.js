@@ -116,6 +116,30 @@ router.get('/', auth(), async function (req, res, next) {
                 if(parseInt(permissionData.perm_approve_payroll) === 1){
                     userPermission.push('APPROVE_PAYROLL')
                 }
+
+                if(parseInt(permissionData.perm_journal_code_setup) === 1){
+                    userPermission.push('JOURNAL_CODE_SETUP')
+                }
+
+                if(parseInt(permissionData.perm_salary_mapping) === 1){
+                    userPermission.push('SALARY_MAPPING')
+                }
+
+                if(parseInt(permissionData.perm_undo_salary_mapping) === 1){
+                    userPermission.push('UNDO_SALARY_MAPPING')
+                }
+
+                if(parseInt(permissionData.perm_payroll_journal) === 1){
+                    userPermission.push('PAYROLL_JOURNAL')
+                }
+
+                if(parseInt(permissionData.perm_application_tracking) === 1){
+                    userPermission.push('APPLICATION_TRACKING')
+                }
+
+                if(parseInt(permissionData.perm_supervisor_reassignment) === 1){
+                    userPermission.push('SUPERVISOR_REASSIGNMENT')
+                }
                 user.permission = userPermission
                 user.permissionData = permissionData
             }
@@ -163,7 +187,13 @@ router.post('/add-user', auth(), async function (req, res, next) {
             perm_run_payroll: Joi.number().required(),
             perm_undo_payroll: Joi.number().required(),
             perm_confirm_payroll: Joi.number().required(),
-            perm_approve_payroll: Joi.number().required()
+            perm_approve_payroll: Joi.number().required(),
+            perm_journal_code_setup: Joi.number().required(),
+            perm_salary_mapping: Joi.number().required(),
+            perm_undo_salary_mapping: Joi.number().required(),
+            perm_payroll_journal: Joi.number().required(),
+            perm_application_tracking: Joi.number().required(),
+            perm_supervisor_reassignment: Joi.number().required(),
         })
 
 
@@ -225,7 +255,13 @@ router.post('/add-user', auth(), async function (req, res, next) {
                 perm_run_payroll: req.body.perm_run_payroll,
                 perm_undo_payroll: req.body.perm_undo_payroll,
                 perm_confirm_payroll: req.body.perm_confirm_payroll,
-                perm_approve_payroll: req.body.perm_approve_payroll
+                perm_approve_payroll: req.body.perm_approve_payroll,
+                perm_journal_code_setup: req.body.perm_journal_code_setup,
+                perm_salary_mapping: req.body.perm_salary_mapping,
+                perm_undo_salary_mapping: req.body.perm_undo_salary_mapping,
+                perm_payroll_journal: req.body.perm_payroll_journal,
+                perm_application_tracking: req.body.perm_application_tracking,
+                perm_supervisor_reassignment: req.body.perm_supervisor_reassignment,
             }
             const addPermission = await permissionService.addPermission(permissionObject).then((data) => {
                 return data
@@ -295,7 +331,13 @@ router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
             perm_run_payroll: Joi.number().required(),
             perm_undo_payroll: Joi.number().required(),
             perm_confirm_payroll: Joi.number().required(),
-            perm_approve_payroll: Joi.number().required()
+            perm_approve_payroll: Joi.number().required(),
+            perm_journal_code_setup: Joi.number().required(),
+            perm_salary_mapping: Joi.number().required(),
+            perm_undo_salary_mapping: Joi.number().required(),
+            perm_payroll_journal: Joi.number().required(),
+            perm_application_tracking: Joi.number().required(),
+            perm_supervisor_reassignment: Joi.number().required(),
         })
 
         const schemaWithPassword = Joi.object({
@@ -328,7 +370,13 @@ router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
             perm_run_payroll: Joi.number().required(),
             perm_undo_payroll: Joi.number().required(),
             perm_confirm_payroll: Joi.number().required(),
-            perm_approve_payroll: Joi.number().required()
+            perm_approve_payroll: Joi.number().required(),
+            perm_journal_code_setup: Joi.number().required(),
+            perm_salary_mapping: Joi.number().required(),
+            perm_undo_salary_mapping: Joi.number().required(),
+            perm_payroll_journal: Joi.number().required(),
+            perm_application_tracking: Joi.number().required(),
+            perm_supervisor_reassignment: Joi.number().required(),
         })
 
         let validationResult;
@@ -386,7 +434,13 @@ router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
             perm_run_payroll: req.body.perm_run_payroll,
             perm_undo_payroll: req.body.perm_undo_payroll,
             perm_confirm_payroll: req.body.perm_confirm_payroll,
-            perm_approve_payroll: req.body.perm_approve_payroll
+            perm_approve_payroll: req.body.perm_approve_payroll,
+            perm_journal_code_setup: req.body.perm_journal_code_setup,
+            perm_salary_mapping: req.body.perm_salary_mapping,
+            perm_undo_salary_mapping: req.body.perm_undo_salary_mapping,
+            perm_payroll_journal: req.body.perm_payroll_journal,
+            perm_application_tracking: req.body.perm_application_tracking,
+            perm_supervisor_reassignment: req.body.perm_supervisor_reassignment,
         }
         const userData = await users.findUserByUserId(req.params['user_id']).then((data) => {
             return data;
@@ -565,13 +619,33 @@ router.post('/login', async function (req, res, next) {
                         userPermission.push('APPROVE_PAYROLL')
                     }
 
+                    if(parseInt(permissionData.perm_journal_code_setup) === 1){
+                        userPermission.push('JOURNAL_CODE_SETUP')
+                    }
+
+                    if(parseInt(permissionData.perm_salary_mapping) === 1){
+                        userPermission.push('SALARY_MAPPING')
+                    }
+
+                    if(parseInt(permissionData.perm_undo_salary_mapping) === 1){
+                        userPermission.push('UNDO_SALARY_MAPPING')
+                    }
+
+                    if(parseInt(permissionData.perm_payroll_journal) === 1){
+                        userPermission.push('PAYROLL_JOURNAL')
+                    }
+
+                    if(parseInt(permissionData.perm_application_tracking) === 1){
+                        userPermission.push('APPLICATION_TRACKING')
+                    }
+
+                    if(parseInt(permissionData.perm_supervisor_reassignment) === 1){
+                        userPermission.push('SUPERVISOR_REASSIGNMENT')
+                    }
+
                 }
 
                 checkUserExisting.permission = userPermission
-
-
-
-
 
                 if (parseInt(checkUserExisting.user_type) === 2 || parseInt(checkUserExisting.user_type) === 3) {
 
