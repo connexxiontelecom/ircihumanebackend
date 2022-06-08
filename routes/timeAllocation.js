@@ -271,7 +271,8 @@ router.get('/authorization/:super_id', auth(), async function (req, res, next) {
         let super_id = req.params.super_id
         let ref_no = [];
         let timeObj = {};
-        await authorizationAction.getAuthorizationByOfficerId(super_id, 2).then((data) => {
+
+        await authorizationAction.getAuthorizationByTypeOfficerId(2,super_id).then((data) => {
             data.map((da) => {
                 ref_no.push(da.auth_travelapp_id)
             });

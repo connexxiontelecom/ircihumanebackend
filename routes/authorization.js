@@ -10,3 +10,4 @@ router.get('/:type/:authId', auth(), authorizationService.getAuthorizationByOffi
 
 
 module.exports = router;
+
