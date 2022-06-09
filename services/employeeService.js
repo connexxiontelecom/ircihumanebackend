@@ -483,6 +483,16 @@ async function changePassword(req, res) {
                 }, {
                     where: {user_id: userId}
                 });
+                const logData = {
+                  "log_user_id": req.user.username.user_id,
+                  "log_description": "Changed password",
+                  "log_date": new Date()
+                }
+                logs.addLog(logData).then((logRes) => {
+
+                  return res.status(200).json('Password changed successfully.')
+                })
+
                 return res.status(200).json(user);
             } else {
                 return res.status(400).json('Incorrect Password')
