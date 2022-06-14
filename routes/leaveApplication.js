@@ -263,7 +263,8 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
         let leaveObj = {};
         let ids = [];
         let authId = [];
-        const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId, 1).then((data) => {
+        const authAction =
+          await authorizationAction.getAuthorizationByTypeOfficerId(1,supervisorId).then((data) => {
             return data
         })
         authAction.map((app) => {
