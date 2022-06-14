@@ -2124,7 +2124,10 @@ router.get('/pull-salary-routine-locations', auth(), async function (req, res, n
 
 
                                 if (parseInt(empSalary.payment.pd_payment_type) === 1) {
-                                    grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                                    if (parseInt(empSalary.payment.pd_employee) === 1) {
+                                        grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
+                                    }
+                                    // grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                                 } else {
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
@@ -2157,6 +2160,7 @@ router.get('/pull-salary-routine-locations', auth(), async function (req, res, n
                         }
                     }
 
+                    locationTotalNetPay = locationTotalNetPay + netSalary
                     locationTotalGross = locationTotalGrossII + locationTotalGross
                     locationTotalDeduction = totalDeduction + locationTotalDeduction
 
@@ -2166,7 +2170,8 @@ router.get('/pull-salary-routine-locations', auth(), async function (req, res, n
                         locationCode: locationData.location_t6_code,
                         locationTotalGross: locationTotalGross,
                         locationTotalDeduction: locationTotalDeduction,
-                        locationTotalNet: locationTotalGross - locationTotalDeduction,
+                       // locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        locationTotalNet: locationTotalNetPay,
                         locationEmployeesCount: locationTotalEmployee,
                         month: payrollMonth,
                         year: payrollYear
@@ -4899,7 +4904,7 @@ router.post('/pension-report', auth(), async function (req, res, next) {
         const location = payrollRequest.pym_location
         let employees
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
+            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
                 return data
             })
         } else {

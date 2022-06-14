@@ -76,7 +76,9 @@ router.post('/add-time-allocation', auth(), async function (req, res, next) {
                   //return res.status(200).json(data.ta_ref_no);
                   const recordExist = await authorizationAction.getOneAuthorizationByRefNo(data.ta_ref_no);
                     if(_.isNull(recordExist) || _.isEmpty(recordExist)){
-                      await authorizationAction.registerNewAction(2, data.ta_ref_no, employeeData.emp_supervisor_id, 0, "Time allocation/time sheet initialized.")
+                      await authorizationAction.registerTimeAllocationAction(2,
+                        data.ta_ref_no, employeeData.emp_supervisor_id, 0,
+                        "Time allocation/time sheet initialized.", req.body.ta_month, req.body.ta_year)
                         .then(async (val) => {
 
                           const logData = {

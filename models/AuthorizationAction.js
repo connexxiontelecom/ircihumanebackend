@@ -63,6 +63,9 @@ module.exports = (sequelize, DataTypes) => {
         auth_status: {type:DataTypes.INTEGER, defaultValue:0, comment:"0=pending,1=approved,2=declined"},
         auth_type: {type:DataTypes.INTEGER, defaultValue:1, comment:"1=leave,2=time-sheet,3=travel,4=self"},
         auth_comment:{type:DataTypes.STRING, allowNull:true},
+        auth_ts_month:{type:DataTypes.STRING, allowNull:true},
+        auth_ts_year:{type:DataTypes.STRING, allowNull:true},
+        auth_ts_activity:{type:DataTypes.STRING, allowNull:true},
         auth_role_id:{type:DataTypes.INTEGER, allowNull:true},
         createdAt: {
             field: 'created_at',

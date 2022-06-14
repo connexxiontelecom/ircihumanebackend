@@ -210,7 +210,7 @@ async function getEmployee(employeeId) {
 
 async function getEmployees() {
     return await employee.findAll({
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit']
+        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit', 'pension']
     })
 }
 
@@ -434,7 +434,7 @@ async function getAllEmployeesByLocation(locationId) {
             where: {
                 emp_location_id: locationId,
             },
-            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'pension']
         }
     )
 

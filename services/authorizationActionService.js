@@ -38,6 +38,18 @@ const registerNewAction = async (auth_type, travel_app, officer, status, comment
     });
 
 }
+const registerTimeAllocationAction = async (auth_type, travel_app, officer, status, comment, month, year) => {
+    return await authorizationModel.create({
+        auth_officer_id: officer,
+        auth_status: status,
+        auth_comment: comment,
+        auth_type: auth_type,
+        auth_travelapp_id: travel_app,
+        auth_ts_month: month,
+        auth_ts_year: year,
+    });
+
+}
 
 const getOneAuthorizationByRefNo = async (ref_no) => {
   return await authorizationModel.findOne({where:{auth_travelapp_id:ref_no}});
@@ -320,6 +332,7 @@ module.exports = {
     getAuthorizationByOfficerId,
     getAuthorizationLog,
     getOneAuthorizationByRefNo,
-  getAuthorizationByTypeOfficerId
+  getAuthorizationByTypeOfficerId,
+  registerTimeAllocationAction
 
 }
