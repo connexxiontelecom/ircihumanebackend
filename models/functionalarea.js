@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getAllFunctionalAreas(){
+      return await functionalarea.findAll();
+    }
+
   };
   functionalarea.init({
     fa_id: {

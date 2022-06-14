@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getAllReportingEntities(){
+      return await reportingentity.findAll();
+    }
   };
   reportingentity.init({
     re_id: {

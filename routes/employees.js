@@ -20,6 +20,11 @@ const supervisorModel = require('../models/supervisorassignment')(sequelize, Seq
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 const employeeModel = require('../models/Employee')(sequelize, Sequelize.DataTypes);
+
+const ReportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes);
+const OperationUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes);
+const FunctionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes);
+
 const s3 = new AWS.S3({
     accessKeyId: `${process.env.ACCESS_KEY}`,
     secretAccessKey: `${process.env.SECRET_KEY}`
@@ -555,6 +560,29 @@ router.post('/get-employee-report', auth(), async function (req, res, next) {
     }
 })
 
+
+router.get('/get-d-codes/:type', async function(req, res){
+  try{
+    const type = req.params.type;
+    let data = null;
+    switch(type){
+      case 'd4':
+        data = await OperationUnitModel.getAllOperationUnits();
+        break;
+      case 'd5':
+        data = await ReportingEntityModel.getAllReportingEntities();
+        break;
+      case 'd6':
+        data = await FunctionalAreaModel.getAllFunctionalAreas();
+        break;
+      default:
+        data = null;
+    }
+    return res.status(200).json(data);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
+  }
+});
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     return new Promise(async (resolve, reject) => {
         let s3Res;

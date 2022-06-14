@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+    static async getAllOperationUnits(){
+      return await operationunit.findAll();
+    }
   };
   operationunit.init({
     ou_id: {
