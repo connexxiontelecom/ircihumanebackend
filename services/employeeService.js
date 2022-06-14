@@ -6,6 +6,9 @@ const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 const userModel = require("../models/user")(sequelize, Sequelize.DataTypes)
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
 const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const operationalUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes)
+const reportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes)
+const functionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -198,12 +201,14 @@ async function getEmployee(employeeId) {
         where: {emp_id: employeeId},
         include: [ 'location',
           'jobrole', 'sector', 'bank',
-          'lga', 'state', 'pension',
+          'lga', 'state', 'pension','operationUnit',
+          'reportingEntity', 'functionalArea',
           {model:employee, as: 'supervisor',
             include: [
               {model:Department, as:'sector'},
-              {model: locationModel, as:'location'}
-            ]},
+              {model: locationModel, as:'location'},
+            ]
+          },
         ]
     })
 }
@@ -308,6 +313,10 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_pension_id: employeeData.emp_pension_id,
         emp_nhf: employeeData.emp_nhf,
         emp_nin: employeeData.emp_nin,
+        emp_d4: employeeData.emp_d4,
+        emp_d5: employeeData.emp_d5,
+        emp_d6: employeeData.emp_d6,
+        emp_d7: employeeData.emp_d7,
         //emp_nin: employeeData.emp_sector,
     }, {
         where: {
@@ -483,6 +492,16 @@ async function changePassword(req, res) {
                 }, {
                     where: {user_id: userId}
                 });
+                const logData = {
+                  "log_user_id": req.user.username.user_id,
+                  "log_description": "Changed password",
+                  "log_date": new Date()
+                }
+                logs.addLog(logData).then((logRes) => {
+
+                  return res.status(200).json('Password changed successfully.')
+                })
+
                 return res.status(200).json(user);
             } else {
                 return res.status(400).json('Incorrect Password')

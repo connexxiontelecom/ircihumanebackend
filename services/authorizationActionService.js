@@ -38,6 +38,18 @@ const registerNewAction = async (auth_type, travel_app, officer, status, comment
     });
 
 }
+const registerTimeAllocationAction = async (auth_type, travel_app, officer, status, comment, month, year) => {
+    return await authorizationModel.create({
+        auth_officer_id: officer,
+        auth_status: status,
+        auth_comment: comment,
+        auth_type: auth_type,
+        auth_travelapp_id: travel_app,
+        auth_ts_month: month,
+        auth_ts_year: year,
+    });
+
+}
 
 const getOneAuthorizationByRefNo = async (ref_no) => {
   return await authorizationModel.findOne({where:{auth_travelapp_id:ref_no}});
@@ -264,27 +276,27 @@ const updateAuthorizationStatus = async (req, res) => {
 }
 
 
-// const getAuthorizationByOfficerId = async (req, res) => {
-//   try{
-//     const { type, authId } = req.params;
-//     const result =  await authorizationModel.findAll({
-//       where: {
-//         auth_status:0,
-//         auth_type: parseInt(type),
-//         auth_travelapp_id: authId
-//       },
-//       include:[{model:EmployeeModel, as: 'officers'}]
-//     });
-//     return res.status(200).json(result);
-//   }catch (e) {
-//     return res.status(400).json("Something went wrong. Try again.");
-//   }
-//
-//
-//
-// }
+ const getAuthorizationByOfficerId = async (req, res) => {
+   try{
+     const { type, authId } = req.params;
+     const result =  await authorizationModel.findAll({
+       where: {
+         auth_status:0,
+         auth_type: parseInt(type),
+         auth_travelapp_id: authId
+       },
+       include:[{model:EmployeeModel, as: 'officers'}]
+     });
+     return res.status(200).json(result);
+   }catch (e) {
+     return res.status(400).json("Something went wrong. Try again.");
+   }
 
-async function getAuthorizationByOfficerId(supervisorId, type){
+
+
+ }
+
+async function getAuthorizationByTypeOfficerId(type, supervisorId){
   return  await authorizationModel.findAll({
     where: {
       auth_status:0,
@@ -319,6 +331,8 @@ module.exports = {
     //getTravelAuthorizationByOfficerId,
     getAuthorizationByOfficerId,
     getAuthorizationLog,
-    getOneAuthorizationByRefNo
+    getOneAuthorizationByRefNo,
+  getAuthorizationByTypeOfficerId,
+  registerTimeAllocationAction
 
 }

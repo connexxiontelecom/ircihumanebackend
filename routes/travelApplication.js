@@ -194,7 +194,7 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
     const supervisorId = req.params.id;
     let travelObj = {};
 
-    const authOfficers = await authorizationAction.getAuthorizationByOfficerId(supervisorId, 3).then((data) => {
+    const authOfficers = await authorizationAction.getAuthorizationByTypeOfficerId(3,supervisorId).then((data) => {
       return data
     })
     const ids = [];
@@ -304,11 +304,12 @@ router.patch('/re-assign-travel-application/:appId', auth(), async function(req,
       return res.status(400).json("The re-assign officer does not exist.")
     }
     const travelId = req.params.appId;
+    //return res.status(400).json(travelId);
     const travel = await travelApplicationModel.getTravelApplicationsById(travelId);
     if(!travel){
       return res.status(400).json("There's no record for this travel application request.");
     }
-    const officerTravel = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(leave.leapp_id, req.body.assignedTo, 1)
+    const officerTravel = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(travel.travelapp_id, req.body.assignedTo, 3)
     if(!officerTravel){
       return res.status(400).json("There's no travel application assigned to this employee.");
     }
@@ -335,7 +336,7 @@ router.patch('/re-assign-travel-application/:appId', auth(), async function(req,
 
     return res.status(200).json("Travel application re-assigned successfully.");
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
+    return res.status(400).json("Something went wrong. Try again."+e.message);
   }
 });
 
