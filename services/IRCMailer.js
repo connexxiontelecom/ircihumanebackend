@@ -1,6 +1,8 @@
 const path = require('path')
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-handlebars');
+const dotenv = require('dotenv');
+dotenv.config();
 
 // const transport = nodemailer.createTransport({
 //   host: "smtp.mailtrap.io",
@@ -26,12 +28,21 @@ const hbs = require('nodemailer-handlebars');
 //     },
 // });
 
+// const transport = nodemailer.createTransport({
+//     host: "smtp.mailtrap.io",
+//     port: 2525,
+//     auth: {
+//         user: "d00b66bb7e3062",
+//         pass: "611de82767b826"
+//     }
+// });
+
 const transport = nodemailer.createTransport({
-    host: "smtp.mailtrap.io",
-    port: 2525,
+    host: process.env.SMTP_HOST,
+    port: 465,
     auth: {
-        user: "d00b66bb7e3062",
-        pass: "611de82767b826"
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
     }
 });
 
