@@ -4126,6 +4126,10 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
+                        employeeD7: emp.emp_d7,
+                        employeeD4: emp.operationUnit.ou_name,
+                        employeeD6: emp.functionalArea.fa_name,
+                        employeeD5: emp.reportingEntity.re_name,
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                         location: locationName,
@@ -4261,6 +4265,12 @@ router.post('/deduction-report', auth(), async function (req, res, next) {
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
+
+                        employeeD7: emp.emp_d7,
+                        employeeD4: emp.operationUnit.ou_name,
+                        employeeD6: emp.functionalArea.fa_name,
+                        employeeD5: emp.reportingEntity.re_name,
+
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                         location: locationName,
@@ -4401,6 +4411,12 @@ router.post('/variation-report', auth(), async function (req, res, next) {
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
+
+                        employeeD7: emp.emp_d7,
+                        employeeD4: emp.operationUnit.ou_name,
+                        employeeD6: emp.functionalArea.fa_name,
+                        employeeD5: emp.reportingEntity.re_name,
+
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                         location: locationName,
@@ -4557,6 +4573,13 @@ router.post('/deduction-report-type', auth(), async function (req, res, next) {
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
+
+                    employeeD7: emp.emp_d7,
+                    employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,
+
+
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     location: locationName,
@@ -4851,6 +4874,12 @@ router.post('/pay-order', auth(), async function (req, res, next) {
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
+
+                    employeeD7: emp.emp_d7,
+                    employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,
+
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     accountNumber: employeeSalaries[0].salary_account_number,
@@ -5053,6 +5082,13 @@ router.post('/pension-report', auth(), async function (req, res, next) {
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
+
+                    employeeD7: emp.emp_d7,
+                    employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,
+
+
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     accountNumber: emp.emp_account_no,
@@ -5248,6 +5284,13 @@ router.post('/nhf-report', auth(), async function (req, res, next) {
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
+
+                    employeeD7: emp.emp_d7,
+                    employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,
+
+
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     accountNumber: emp.emp_account_no,
@@ -5423,6 +5466,13 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
+
+                    employeeD7: emp.emp_d7,
+                    employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,
+
+
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     location: locationName,
@@ -5593,6 +5643,13 @@ router.post('/tax-report', auth(), async function (req, res, next) {
 
                 let salaryObject = {
                     employeeId: emp.emp_id,
+
+                    employeeD7: emp.emp_d7,
+                    employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,
+
+
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                     employeePaye: emp.emp_paye_no,
@@ -5774,7 +5831,7 @@ router.get('/payslipemail', auth(), async function (req, res, next) {
           yearNumber: '2022'
       }
 
-     const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
+     const mailerRes =  await mailer.paySlipSendMail('oki-peter@connexxiongroup.com', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
           return data
       })
      return res.status(200).json(mailerRes)
@@ -5782,7 +5839,7 @@ router.get('/payslipemail', auth(), async function (req, res, next) {
       //   const mailerRes =  await mailer.sendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', 'text').then((data)=>{
       //     return data
       // })
-     //return res.status(200).json(mailerRes)
+     return res.status(200).json(mailerRes)
 
     }
 
