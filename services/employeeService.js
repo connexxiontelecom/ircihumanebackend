@@ -45,6 +45,10 @@ const createNewEmployee = async (req, res, next) => {
             unique_id: Joi.string().required().messages({'any.required': 'Enter unique ID in the field provided'}),
             personal_email: Joi.string().allow(null, ''),
             office_email: Joi.string().allow(null, ''),
+            emp_d4: Joi.number().allow(null, ''),
+            emp_d7: Joi.string().allow(null, ''),
+            emp_d5: Joi.number().allow(null, ''),
+            emp_d6: Joi.number().allow(null, ''),
             // birth_date: Joi.date().required().messages({'any.required':'Enter employee birth date'}),
             //personal_email: Joi.string().required().messages({'any.required': 'Enter a valid personal email address'}),
             //office_email: Joi.string().required().messages({'any.required': 'Enter a valid office email address'}),
@@ -129,6 +133,10 @@ const createNewEmployee = async (req, res, next) => {
                                             emp_account_no: req.body.account_no,
                                             emp_bank_id: req.body.bank,
                                             emp_salary_structure_setup: 0,
+                                            emp_d4: req.body.emp_d4,
+                                            emp_d5: req.body.emp_d5,
+                                            emp_d6: req.body.emp_d6,
+                                            emp_d7: req.body.emp_d7,
                                             emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg'
                                         }).catch(errHandler);
 
