@@ -4127,9 +4127,9 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
                     let salaryObject = {
                         employeeId: emp.emp_id,
                         employeeD7: emp.emp_d7,
-                        employeeD4: emp.operationUnit.ou_name,
+                        /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
-                        employeeD5: emp.reportingEntity.re_name,
+                        employeeD5: emp.reportingEntity.re_name,*/
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
                         location: locationName,
@@ -4267,9 +4267,9 @@ router.post('/deduction-report', auth(), async function (req, res, next) {
                         employeeId: emp.emp_id,
 
                         employeeD7: emp.emp_d7,
-                        employeeD4: emp.operationUnit.ou_name,
+                        /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
-                        employeeD5: emp.reportingEntity.re_name,
+                        employeeD5: emp.reportingEntity.re_name,*/
 
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
@@ -4413,9 +4413,9 @@ router.post('/variation-report', auth(), async function (req, res, next) {
                         employeeId: emp.emp_id,
 
                         employeeD7: emp.emp_d7,
-                        employeeD4: emp.operationUnit.ou_name,
+                        /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
-                        employeeD5: emp.reportingEntity.re_name,
+                        employeeD5: emp.reportingEntity.re_name,*/
 
                         employeeName: employeeSalaries[0].salary_emp_name,
                         employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
@@ -4575,9 +4575,9 @@ router.post('/deduction-report-type', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                    employeeD4: emp.operationUnit.ou_name,
+                    /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
 
 
                     employeeName: employeeSalaries[0].salary_emp_name,
@@ -4876,9 +4876,9 @@ router.post('/pay-order', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                    employeeD4: emp.operationUnit.ou_name,
+                   /* employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
 
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
@@ -5084,9 +5084,9 @@ router.post('/pension-report', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                    employeeD4: emp.operationUnit.ou_name,
+                    /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
 
 
                     employeeName: employeeSalaries[0].salary_emp_name,
@@ -5286,9 +5286,9 @@ router.post('/nhf-report', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                    employeeD4: emp.operationUnit.ou_name,
+                    /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
 
 
                     employeeName: employeeSalaries[0].salary_emp_name,
@@ -5468,9 +5468,9 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                    employeeD4: emp.operationUnit.ou_name,
+                    /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
 
 
                     employeeName: employeeSalaries[0].salary_emp_name,
@@ -5645,9 +5645,9 @@ router.post('/tax-report', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                    employeeD4: emp.operationUnit.ou_name,
+                    /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
 
 
                     employeeName: employeeSalaries[0].salary_emp_name,
