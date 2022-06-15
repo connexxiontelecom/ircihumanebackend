@@ -405,7 +405,8 @@ async function getActiveEmployees() {
         where: {
             emp_status: 1
         },
-        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector',
+          'functionalArea', 'reportingEntity', 'operationUnit']
     })
 }
 
@@ -451,7 +452,7 @@ async function getAllEmployeesByLocation(locationId) {
             where: {
                 emp_location_id: locationId,
             },
-            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'pension']
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'pension', 'operationUnit', 'reportingEntity', 'functionalArea']
         }
     )
 
