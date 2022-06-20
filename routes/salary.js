@@ -1808,7 +1808,7 @@ router.get('/undo-salary-routine', auth(), async function (req, res, next) {
 });
 
 
-router.post('/undo-salary-routine', auth([ROLES.UNDO_PAYROLL]), async function (req, res, next) {
+router.post('/undo-salary-routine', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -2354,8 +2354,7 @@ router.get('/pull-confirmed-salary-routine-locations', auth(), async function (r
         }
 
     } catch (err) {
-        console.log(err.message)
-        next(err);
+        return res.status(400).json(err.message)
 
     }
 });
@@ -3833,6 +3832,10 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
             })
 
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+
+                if(parseInt(employeeSalaries[0].salary_approved) === 0){
+                    return res.status(400).json(`Salary for this month has not been approved`)
+                }
 
                 for (const empSalary of employeeSalaries) {
 
