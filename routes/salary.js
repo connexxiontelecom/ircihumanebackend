@@ -5834,7 +5834,7 @@ router.get('/payslipemail', auth(), async function (req, res, next) {
           yearNumber: '2022'
       }
 
-     const mailerRes =  await mailer.paySlipSendMail('oki-peter@connexxiongroup.com', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
+     const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
           return data
       })
      return res.status(200).json(mailerRes)
