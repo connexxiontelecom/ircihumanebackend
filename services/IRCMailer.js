@@ -116,12 +116,12 @@ async function paySlipSendMail(from, to, subject, templateParams){
 
 
 
-        await transport.sendMail(message, function(err, res){
+   return   await transport.sendMail(message, function(err, res){
             if (err) {
-                console.log(err)
+                return err
             }
             else {
-                console.log(res);
+                return res
             }
         })
     }catch (e) {
