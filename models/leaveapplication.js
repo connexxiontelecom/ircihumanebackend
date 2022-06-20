@@ -76,6 +76,13 @@ module.exports = (sequelize, DataTypes) => {
         {where:{leapp_id:leaveId}
         });
     }
+
+    static async getAllEmployeeApprovedLeaveApplications(empId){
+      return await leaveApplication.findAll({
+        where:{leapp_empid:empId, leapp_status: 1}
+      })
+    }
+
   };
   leaveApplication.init({
     leapp_id: {
