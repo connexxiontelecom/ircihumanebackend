@@ -14,7 +14,10 @@ const publicHolidays = require('../services/publicHolidayServiceSetup')
 const supervisorAssignment = require('../services/supervisorAssignmentService');
 const logs = require('../services/logService');
 const authorizationAction = require('../services/authorizationActionService');
+const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
+const timeSheetService = require("../services/timeSheetService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const leaveApplicationModel = require('../models/leaveapplication')(sequelize, Sequelize.DataTypes);
 
 /* Add to time sheet */
 router.get('/', auth(), async function (req, res, next) {
@@ -68,8 +71,37 @@ router.post('/add-time-sheet', auth(), async function (req, res, next) {
         });
 
 
+
+
         if (_.isEmpty(tsData)) {
-            await addTimeSheet(timeSheetRequest)
+            await addTimeSheet(timeSheetRequest);
+
+          /*const leaveApps = await leaveApplicationModel.getAllEmployeeApprovedLeaveApplications(req.body.ts_emp_id);
+          if(!(_.isNull(leaveApps)) || !(_.isEmpty(leaveApps)) ){
+              for (const leaf of leaveApps) {
+                let startDate = new Date(leaf.leapp_start_date);
+                let endDate = new Date(leaf.leapp_end_date);
+                let numDays;
+                if(startDate.getDay() === 6 || startDate.getDay() === 0){
+                  numDays = await differenceInBusinessDays(endDate, startDate) + 2;
+                }else{
+                  numDays = await differenceInBusinessDays(endDate, startDate) + 1;
+                }
+                let i = 0;
+                if(numDays > 0){
+                  for(i=0; i<= numDays; i++){
+                    const loopPeriod = {
+                      emp_id:leaf.leapp_empid,
+                      day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
+                      month: startDate.getUTCMonth() + 1,
+                      year: startDate.getUTCFullYear()
+                    }
+                    await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+                  }
+                }
+              }
+
+          }*/
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": "Added Time Sheet",
@@ -291,6 +323,33 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
                     await updateTimeSheet(tsData.ts_id, timeObject)
                   }
                 }
+               //Update timesheet
+              const leaveApps = await leaveApplicationModel.getAllEmployeeApprovedLeaveApplications(empId);
+              if(!(_.isNull(leaveApps)) || !(_.isEmpty(leaveApps)) ){
+                for (const leaf of leaveApps) {
+                  let startDate = new Date(leaf.leapp_start_date);
+                  let endDate = new Date(leaf.leapp_end_date);
+                  let numDays;
+                  if(startDate.getDay() === 6 || startDate.getDay() === 0){
+                    numDays = await differenceInBusinessDays(endDate, startDate) + 2;
+                  }else{
+                    numDays = await differenceInBusinessDays(endDate, startDate) + 1;
+                  }
+                  let i = 0;
+                  if(numDays > 0){
+                    for(i=0; i<= numDays; i++){
+                      const loopPeriod = {
+                        emp_id:leaf.leapp_empid,
+                        day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
+                        month: startDate.getUTCMonth() + 1,
+                        year: startDate.getUTCFullYear()
+                      }
+                      await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+                    }
+                  }
+                }
+
+              }
              /* const subject = "Timesheet submission";
               const body = "Your timesheet was submitted";
               //emp
@@ -310,7 +369,7 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
         }
 
     } catch (err) {
-        return res.status(400).json(`Error while adding time sheet `);
+        return res.status(400).json(`Error while adding time sheet `+err.message);
         next(err);
     }
 });
