@@ -119,6 +119,12 @@ const createNewEmployee = async (req, res, next) => {
                     if (!_.isNull(employeeData)) {
                         return res.status(400).json("Employee Phone Number Already Exists")
                     } else {
+
+                       let accountNumber =  req.body.account_no;
+                        let letter = accountNumber.charAt(0);
+                        if(letter !== `'`){
+                            accountNumber = `'${accountNumber}`
+                        }
                         employee.create({
                             emp_first_name: req.body.first_name,
                             emp_last_name: req.body.last_name,
@@ -129,8 +135,7 @@ const createNewEmployee = async (req, res, next) => {
                             emp_phone_no: req.body.phone_no,
                             emp_location_id: req.body.location,
                             emp_job_role_id: req.body.job_role,
-                            //emp_department_id: req.body.department,
-                            emp_account_no: req.body.account_no,
+                            emp_account_no: accountNumber,
                             emp_bank_id: req.body.bank,
                             emp_salary_structure_setup: 0,
                             emp_d4: req.body.emp_d4,
@@ -248,13 +253,18 @@ async function setSupervisor(employeeId, supervisorId) {
 }
 
 async function updateEmployee(employeeId, employeeData) {
+    let accountNumber =  employeeData.emp_account_no;
+    let letter = accountNumber.charAt(0);
+    if(letter !== `'`){
+        accountNumber = `'${accountNumber}`
+    }
     return await employee.update({
         emp_first_name: employeeData.emp_first_name,
         emp_last_name: employeeData.emp_last_name,
         emp_other_name: employeeData.emp_other_name,
         emp_qualification: employeeData.emp_qualification,
         emp_phone_no: employeeData.emp_phone_no,
-        emp_account_no: employeeData.emp_account_no,
+        emp_account_no: accountNumber,
         emp_bank_id: employeeData.emp_bank_id,
         emp_state_id: employeeData.emp_state_id,
         emp_lga_id: employeeData.emp_lga_id,
@@ -280,6 +290,11 @@ async function updateEmployee(employeeId, employeeData) {
 }
 
 async function updateEmployeeFromBackoffice(employeeId, employeeData) {
+    let accountNumber =  employeeData.emp_account_no;
+    let letter = accountNumber.charAt(0);
+    if(letter !== `'`){
+        accountNumber = `'${accountNumber}`
+    }
     return await employee.update({
         emp_first_name: employeeData.emp_first_name,
         emp_last_name: employeeData.emp_last_name,
@@ -288,11 +303,10 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_office_email: employeeData.emp_office_email,
         emp_qualification: employeeData.emp_qualification,
         emp_phone_no: employeeData.emp_phone_no,
-        emp_account_no: employeeData.emp_account_no,
+        emp_account_no: accountNumber,
         emp_bank_id: employeeData.emp_bank_id,
         emp_state_id: employeeData.emp_state_id,
         emp_lga_id: employeeData.emp_lga_id,
-
         emp_spouse_name: employeeData.emp_spouse_name,
         emp_spouse_phone_no: employeeData.emp_spouse_phone_no,
         emp_next_of_kin_name: employeeData.emp_next_of_kin_name,
