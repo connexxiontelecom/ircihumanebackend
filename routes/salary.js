@@ -735,7 +735,11 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
                 for (const emp of employees) {
 
-
+                    let accountNumber =  emp.emp_account_no;
+                    let letter = accountNumber.charAt(1);
+                    if(letter !== "'"){
+                        accountNumber = `'${letter}`
+                    }
 
                     let empDepartmentId = 0
                     if (!(_.isEmpty(emp.emp_department_id) || _.isNull(emp.emp_department_id))) {
@@ -838,6 +842,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                             for (const empVP of employeeVariationalPayments) {
 
 
+
                                 salaryObject = {
                                     salary_empid: emp.emp_id,
                                     salary_paymonth: payrollMonth,
@@ -856,7 +861,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                     salary_emp_start_date: emp.emp_hire_date,
                                     salary_emp_end_date: emp.emp_contract_end_date,
                                     salary_bank_id: emp.emp_bank_id,
-                                    salary_account_number: emp.emp_account_no,
+                                    salary_account_number: accountNumber,
                                     salary_sort_code: emp.bank.bank_code
 
                                 }
@@ -930,7 +935,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                         salary_emp_start_date: emp.emp_hire_date,
                                         salary_emp_end_date: emp.emp_contract_end_date,
                                         salary_bank_id: emp.emp_bank_id,
-                                        salary_account_number: emp.emp_account_no,
+                                        salary_account_number: accountNumber,
                                         salary_sort_code: emp.bank.bank_code
 
                                     }
@@ -977,7 +982,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_emp_start_date: emp.emp_hire_date,
                                             salary_emp_end_date: emp.emp_contract_end_date,
                                             salary_bank_id: emp.emp_bank_id,
-                                            salary_account_number: emp.emp_account_no,
+                                            salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code
 
                                         }
@@ -1077,7 +1082,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_emp_start_date: emp.emp_hire_date,
                                             salary_emp_end_date: emp.emp_contract_end_date,
                                             salary_bank_id: emp.emp_bank_id,
-                                            salary_account_number: emp.emp_account_no,
+                                            salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code
 
                                         }
@@ -1117,7 +1122,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_emp_start_date: emp.emp_hire_date,
                                             salary_emp_end_date: emp.emp_contract_end_date,
                                             salary_bank_id: emp.emp_bank_id,
-                                            salary_account_number: emp.emp_account_no,
+                                            salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code
 
                                         }
@@ -1160,7 +1165,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_emp_start_date: emp.emp_hire_date,
                                             salary_emp_end_date: emp.emp_contract_end_date,
                                             salary_bank_id: emp.emp_bank_id,
-                                            salary_account_number: emp.emp_account_no,
+                                            salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code
 
                                         }
@@ -1202,7 +1207,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_emp_start_date: emp.emp_hire_date,
                                             salary_emp_end_date: emp.emp_contract_end_date,
                                             salary_bank_id: emp.emp_bank_id,
-                                            salary_account_number: emp.emp_account_no,
+                                            salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code
 
                                         }
@@ -1243,7 +1248,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_emp_start_date: emp.emp_hire_date,
                                             salary_emp_end_date: emp.emp_contract_end_date,
                                             salary_bank_id: emp.emp_bank_id,
-                                            salary_account_number: emp.emp_account_no,
+                                            salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code
 
                                         }
@@ -1418,7 +1423,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                     salary_emp_start_date: emp.emp_hire_date,
                                     salary_emp_end_date: emp.emp_contract_end_date,
                                     salary_bank_id: emp.emp_bank_id,
-                                    salary_account_number: emp.emp_account_no,
+                                    salary_account_number: accountNumber,
                                     salary_sort_code: emp.bank.bank_code
 
                                 }
