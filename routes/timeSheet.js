@@ -221,7 +221,8 @@ router.get('/get-time-sheets/:emp_id', auth(), async function (req, res, next) {
 
 router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
     try {
-        const empId = req.params.emp_id
+        const empId = req.params.emp_id;
+        const randomString = Math.random().toString(36).slice(2);
 
         const employeeData = await employee.getEmployee(empId).then((data) => {
             return data
@@ -266,6 +267,7 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
                           ts_start: '0',
                           ts_end: '0',
                           ts_duration: 0,
+                          ts_ref_no:randomString,
                           ts_is_present: 3,//weekend
                         }
                     } else {
@@ -281,6 +283,7 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
                                     ts_end: employeeData.emp_location_id === 7  ? '17:30' : '17:00',
                                     ts_duration: '8.15',
                                     ts_is_present: 1,
+                                    ts_ref_no:randomString,
                                 }
                             } else {
                                 timeObject = {
@@ -292,6 +295,7 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
                                     ts_end: '15:00',
                                     ts_duration: 7.0,
                                     ts_is_present: 1,
+                                    ts_ref_no:randomString,
                                 }
                             }
 
@@ -312,6 +316,7 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
                             ts_end: '0',
                             ts_duration: 0,
                             ts_is_present: 2,
+                            ts_ref_no:randomString,
                           }
                         }
                     }
