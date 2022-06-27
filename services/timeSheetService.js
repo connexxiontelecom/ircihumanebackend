@@ -19,6 +19,7 @@ async function addTimeSheet(timeSheetData) {
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
         ts_is_present: timeSheetData.ts_is_present,
+        ts_ref_no: timeSheetData.ts_ref_no
     });
 }
 
@@ -33,6 +34,7 @@ async function updateTimeSheet(ts_id, timeSheetData) {
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
         ts_is_present: timeSheetData.ts_is_present,
+        ts_ref_no: timeSheetData.ts_ref_no
 
     }, {
         where: {
