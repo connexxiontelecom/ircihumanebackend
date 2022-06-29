@@ -8,7 +8,7 @@ const logs = require('../services/logService')
 
 
 /* Get all Ratings */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         rating.findAllRating().then((data) => {
@@ -25,11 +25,12 @@ router.get('/', auth, async function (req, res, next) {
 
 
 /* Add to Rating */
-router.post('/add-rating', auth, async function (req, res, next) {
+router.post('/add-rating', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             rating_name: Joi.string().required(),
-            rating_desc: Joi.string().required(),
+            rating_desc: Joi.string().allow(null),
+            rating_period: Joi.number().required(),
         })
 
         const ratingRequest = req.body
@@ -69,7 +70,7 @@ router.post('/add-rating', auth, async function (req, res, next) {
 });
 
 /* Update Salary Rating */
-router.patch('/update-rating/:rating_id', auth, async function (req, res, next) {
+router.patch('/update-rating/:rating_id', auth(), async function (req, res, next) {
     try {
         const ratingId = req.params.rating_id
         const schema = Joi.object({
@@ -144,5 +145,80 @@ router.patch('/update-rating/:rating_id', auth, async function (req, res, next) 
     }
 });
 
+router.patch('/update-end-year-rating-status/:rating_id', auth(), async function (req, res, next) {
+  try {
+    const ratingId = req.params.rating_id
+    const schema = Joi.object({
+      rating_status: Joi.number().required(),
+    })
 
+    const ratingRequest = req.body
+    const validationResult = schema.validate(ratingRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    await rating.findRating(ratingId).then((data) => {
+      if (_.isEmpty(data) || _.isNull(data)) {
+        return res.status(400).json(`Rating Does Not Exists`)
+      } else {
+            rating.updateRatingStatus(ratingId, ratingRequest).then((data) => {
+              if (_.isEmpty(data) || _.isNull(data)) {
+                return res.status(400).json(`An Error Occurred while Updating Rating`)
+              } else {
+
+                const logData = {
+                  "log_user_id": req.user.username.user_id,
+                  "log_description": "Updated Rating",
+                  "log_date": new Date()
+                }
+                logs.addLog(logData).then((logRes) => {
+                  return res.status(200).json('Action Successful')
+                })
+
+
+              }
+            })
+
+      }
+
+    })
+
+
+  } catch (err) {
+    return res.status(400).json(`Error while adding time sheet `);
+    next(err);
+  }
+});
+
+router.get('/get-end-ratings/:rating_id/:period', auth(), async function(req, res){
+  try{
+
+  }catch (e) {
+
+  }
+});
+
+router.get('/get-end-year-ratings', auth(), async function(req, res){
+  try{
+    const ratings = await rating.findAllEndYearRatings().then(res=>{
+      return res;
+    })
+    return res.status(200).json(ratings);
+  }catch (e) {
+    return res.status(400).json('Something went wrong.')
+  }
+});
+
+router.get('/rating-details/:id', auth(), async function(req, res){
+  try{
+    const ratingId = req.params.id;
+    const result = await rating.findRating(parseInt(ratingId)).then(res=>{
+      return res;
+    });
+    return res.status(200).json(result);
+  }catch (e) {
+    return res.status(400).json('Something went wrong. Try again.')
+  }
+});
 module.exports = router;

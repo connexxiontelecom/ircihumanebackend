@@ -89,6 +89,9 @@
     const leaveApplication = require('./routes/leaveApplication')
     app.use('/leave-application', leaveApplication)
 
+    const leaveDoc = require('./routes/leaveDoc')
+    app.use('/leavedoc', leaveDoc)
+
     const supervisorAssignment = require('./routes/supervisorAssignment')
     app.use('/supervisor-assignment', supervisorAssignment)
 
@@ -137,6 +140,9 @@
     const selfAssessmentRouter = require('./routes/selfAssessment')
     app.use('/self-assessment', selfAssessmentRouter)
 
+    const hrFocalPointRouter = require('./routes/hrfocalpoint')
+    app.use('/hr-focal-point', hrFocalPointRouter)
+
     const endYearAssessmentRouter = require('./routes/endOfYearAssessment')
     app.use('/end-year-assessment', endYearAssessmentRouter)
 
@@ -152,8 +158,16 @@
     const leaveAccrualRouter = require('./routes/leaveAccrual')
     app.use('/leave-accrual', leaveAccrualRouter.router)
 
-    app.get('/',  async function(req, res) {
+    const notificationRouter = require('./routes/notification')
+    app.use('/notifications', notificationRouter);
 
+    const endYearResponseRouter = require('./routes/endOfYearResponse')
+    app.use('/end-year-response', endYearResponseRouter);
+
+    const payrollJournalRouter = require('./routes/payroll-journal')
+    app.use('/payroll-journal', payrollJournalRouter);
+
+    app.get('/',  async function(req, res) {
         res.send('you got here. so get out')
     });
 

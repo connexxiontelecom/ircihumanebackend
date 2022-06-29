@@ -6,7 +6,7 @@ const logs = require('../services/logService');
 
 
 /* Get All Logs */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         await logs.findAllLogs().then((data) => {
@@ -20,7 +20,7 @@ router.get('/', auth, async function (req, res, next) {
 
 
 /* Add User */
-router.post('/add-log', auth, async function (req, res, next) {
+router.post('/add-log', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             log_user_id: Joi.string().required(),
@@ -46,7 +46,7 @@ router.post('/add-log', auth, async function (req, res, next) {
 });
 
 /* UpdateUser */
-router.patch('/update-user/:user_id', auth, async function (req, res, next) {
+router.patch('/update-user/:user_id', auth(), async function (req, res, next) {
     try {
 
         const schemaWithoutPassword = Joi.object({

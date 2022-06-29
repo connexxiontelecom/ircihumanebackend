@@ -5,10 +5,11 @@ const auth = require("../middleware/auth");
 const _ = require('lodash')
 const goalSettingYear = require('../services/goalSettingYearService');
 const logs = require('../services/logService')
-
+const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+const isBefore = require('date-fns/isBefore')
 
 /* Get All goals setting */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await goalSettingYear.getGoalSettingYear().then((data) => {
             return res.status(200).json(data);
@@ -18,23 +19,22 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 
-router.post('/add-year', auth, async function (req, res, next) {
+router.post('/add-year', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             gsy_year: Joi.string().required(),
-
-        })
-
+            gsy_from: Joi.string().required(),
+            gsy_to: Joi.string().required(),
+        });
         const gsyRequest = req.body
         const validationResult = schema.validate(gsyRequest)
-
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
         const existingRecords = await goalSettingYear.getGoalSettingYear().then((data) => {
             return data
-        })
+        });
         if (!(_.isEmpty(existingRecords) || _.isNull(existingRecords))) {
             const removeResponse = await goalSettingYear.removeGoalSettingYear().then((data) => {
                 return data
@@ -45,6 +45,20 @@ router.post('/add-year', auth, async function (req, res, next) {
             }
 
         }
+
+
+
+
+      let startDate = new Date(req.body.gsy_from);
+      //let startYear = startDate.getFullYear();
+
+      /*let endDate = new Date(req.body.period_to);
+      let endYear = endDate.getFullYear();*/
+
+      // if (isBefore(startDate, new Date())) {
+      //   return res.status(400).json('Start period cannot be before today or today')
+      // }
+
         const addResponse = await goalSettingYear.addGoalSettingYear(gsyRequest).then((data) => {
             return data
         })
@@ -57,7 +71,7 @@ router.post('/add-year', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-open-end-Year', auth, async function (req, res, next) {
+router.get('/get-open-end-Year', auth(), async function (req, res, next) {
     try {
         await goalSetting.findEndYearGoals().then((data) => {
             return res.status(200).json(data);
@@ -68,7 +82,7 @@ router.get('/get-open-end-Year', auth, async function (req, res, next) {
 });
 
 /* Add goal */
-router.post('/add-goal-setting', auth, async function (req, res, next) {
+router.post('/add-goal-setting', auth(), async function (req, res, next) {
     try {
         //check if year from date equals year entered,
         // check if from date is not greater than to date
@@ -156,7 +170,7 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
 
 /* Close Goal  */
 
-router.patch('/close-goal-setting/:gs_id', auth, async function (req, res, next) {
+router.patch('/close-goal-setting/:gs_id', auth(), async function (req, res, next) {
     try {
         const gsId = req.params.gs_id
         const schema = Joi.object({

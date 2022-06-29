@@ -6,10 +6,10 @@ const departmentService = require('../services/departmentService');
 
 /* Pension provider routes. */
 
-router.get('/', auth, departmentService.getDepartments);
-router.post('/', auth, departmentService.setNewDepartment);
-router.get('/:id', auth, departmentService.getDepartmentById);
-router.patch('/:id', auth, departmentService.updateDepartment);
+router.get('/', auth(), departmentService.getDepartments);
+router.post('/', auth(), departmentService.setNewDepartment);
+router.get('/:id', auth(), departmentService.getDepartmentById);
+router.patch('/:id', auth(), departmentService.updateDepartment);
 
 
 module.exports = router;

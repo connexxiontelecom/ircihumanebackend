@@ -1,14 +1,16 @@
 const Joi = require('joi')
-const express = require('express');
-const router = express.Router();
-const auth = require("../middleware/auth");
-const paymentDefinition = require('../services/paymentDefinitionService');
+const express = require('express')
+const router = express.Router()
+const auth = require("../middleware/auth")
+const paymentDefinition = require('../services/paymentDefinitionService')
 const logs = require('../services/logService')
+const variationalPayment = require('../services/variationalPaymentService')
+const salary = require('../services/salaryService')
 const _ = require('lodash')
 
 
 /* Get All Payment Definitions */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -21,8 +23,40 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 
+/* Get employee Payment Definitions */
+router.get('/employee-payment-definition', auth(), async function (req, res, next) {
+    try {
 
-router.get('/variational-payments', auth, async function (req, res, next) {
+        // return res.status(200).json(req.user.username);
+
+        // await paymentDefinition.findAllEmployeeCodes().then((data) => {
+        //     return res.status(200).json(data);
+        // })
+
+        await paymentDefinition.findAllCodes().then((data) => {
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
+    }
+});
+
+/* Get employee Payment Definitions */
+router.get('/employer-payment-definition', auth(), async function (req, res, next) {
+    try {
+
+        // return res.status(200).json(req.user.username);
+
+        await paymentDefinition.findAllEmployerCodes().then((data) => {
+            return res.status(200).json(data);
+        })
+    } catch (err) {
+        return res.status(400).json(`Error while fetching payment definition ${err.message}`)
+    }
+});
+
+
+router.get('/variational-payments', auth(), async function (req, res, next) {
     try {
         await paymentDefinition.getVariationalPayments().then((data) => {
             return res.status(200).json(data);
@@ -33,7 +67,7 @@ router.get('/variational-payments', auth, async function (req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-payment-definition', auth, async function (req, res, next) {
+router.post('/add-payment-definition', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             pd_payment_code: Joi.string().required(),
@@ -176,7 +210,7 @@ router.post('/add-payment-definition', auth, async function (req, res, next) {
 });
 
 /* Update Payment Definition */
-router.patch('/update-payment-definition/:pd_id', auth, async function (req, res, next) {
+router.patch('/update-payment-definition/:pd_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
@@ -329,6 +363,60 @@ router.patch('/update-payment-definition/:pd_id', auth, async function (req, res
     } catch (err) {
 
         console.error(`Error while updating payment definitions `, err.message);
+        next(err);
+    }
+});
+
+
+/* Delete Payment Definition */
+router.post('/delete-payment-definition', auth(), async function (req, res, next) {
+    try {
+        const schema = Joi.object({
+            pd_id: Joi.number().required(),
+        })
+
+        const paymentDefinitionRequest = req.body
+        const validationResult = schema.validate(paymentDefinitionRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const pdId = paymentDefinitionRequest.pd_id
+        const paymentDefinitionDetails = await paymentDefinition.findPaymentById(pdId).then((data) => {
+            return data
+        })
+        if (_.isNull(paymentDefinitionDetails) || _.isEmpty(paymentDefinitionDetails)) {
+            return res.status(404).json(`Payment Definition doesn't exist`)
+        }
+
+        const salaryUse = await salary.getSalaryPd(pdId).then((data) => {
+            return data
+        })
+
+        const variationalPaymentUse = await variationalPayment.getVariationalPaymentPayType(pdId).then((data) => {
+            return data
+        })
+
+        if ((_.isEmpty(variationalPaymentUse) || _.isNull(variationalPaymentUse)) && (_.isEmpty(salaryUse) || _.isNull(salaryUse))) {
+
+            const deletePayment = await paymentDefinition.deletePayment(pdId).then((data) => {
+                return data
+            })
+            const logData = {
+                "log_user_id": req.user.username.user_id,
+                "log_description": "Delete payment definition",
+                "log_date": new Date()
+            }
+            logs.addLog(logData).then((logRes) => {
+                return res.status(200).json(`Payment Definition Deleted`)
+            })
+
+        } else {
+            return res.status(400).json('Payment Definition Already in Use')
+        }
+    } catch (err) {
+        console.error(`Error while Deleting Payment definition `, err.message);
         next(err);
     }
 });

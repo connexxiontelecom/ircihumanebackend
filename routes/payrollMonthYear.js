@@ -5,10 +5,10 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const payrollMonthYear = require('../services/payrollMonthYearService');
 const logs = require('../services/logService')
-
+const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 
 /* Get All Payment Definitions */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -22,7 +22,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Payment Definition */
-router.post('/add-payroll-month-year', auth, async function (req, res, next) {
+router.post('/add-payroll-month-year', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             pym_month: Joi.string().required(),
@@ -35,6 +35,29 @@ router.post('/add-payroll-month-year', auth, async function (req, res, next) {
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
+
+        let checkPendingRoutine = await payrollMonthYearLocation.findAllPending().then((data) => {
+            return data
+        })
+        if (!_.isEmpty(checkPendingRoutine)) {
+            return res.status(400).json('Please Confirm Previous Payroll Run')
+        }
+        let checkConfirmedRoutine = await payrollMonthYearLocation.findAllConfirmed().then((data) => {
+            return data
+        })
+
+        if (!_.isEmpty(checkConfirmedRoutine)) {
+            return res.status(400).json('Please Approve Previous Payroll Run')
+        }
+
+        // let checkPreviousRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonthYearRequest.pym_month, payrollMonthYearRequest.year).then((data)=>{
+        //     return data
+        // })
+        //
+        // if(!_.isEmpty(checkPreviousRun)){
+        //     return res.status(400).json('Payroll Routine Already Run for Period Entered')
+        // }
+
 
         await payrollMonthYear.findPayrollMonthYear().then((data) => {
             if (_.isEmpty(data)) {

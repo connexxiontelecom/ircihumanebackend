@@ -23,6 +23,7 @@ async function addPaymentDefinition(pd) {
         pd_percentage: pd.pd_percentage,
         pd_tax: pd.pd_tax,
         pd_total_gross: pd.pd_total_gross,
+        pd_total_gross_ii: pd.pd_total_gross_ii,
         pd_welfare: pd.pd_welfare,
         pd_employee: pd.pd_employee,
     });
@@ -54,6 +55,7 @@ async function updatePaymentDefinition(pd, pd_id) {
         pd_percentage: pd.pd_percentage,
         pd_tax: pd.pd_tax,
         pd_total_gross: pd.pd_total_gross,
+        pd_total_gross_ii: pd.pd_total_gross_ii,
         pd_welfare: pd.pd_welfare,
         pd_employee: pd.pd_employee,
 
@@ -74,6 +76,14 @@ async function findBasicPaymentDefinition() {
 
 async function findAllCodes() {
     return await Pd.findAll()
+}
+
+async function findAllEmployeeCodes() {
+    return await Pd.findAll({where: {pd_employee: 1}})
+}
+
+async function findAllEmployerCodes() {
+    return await Pd.findAll({where: {pd_employer: 2}})
 }
 
 async function getVariationalPayments() {
@@ -119,12 +129,54 @@ async function getWelfare() {
     })
 }
 
+async function getPensionPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_pension: 1
+        }
+    })
+}
+
+async function getNhfPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_nhf: 1
+        }
+    })
+}
+
+async function getNsitfPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_nsitf: 1
+        }
+    })
+}
+
+async function getTaxPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_tax: 1
+        }
+    })
+}
+
+async function deletePayment(pdId) {
+    return await Pd.destroy({
+        where: {
+            pd_id: pdId
+        }
+    })
+}
+
 
 module.exports = {
     addPaymentDefinition,
     findPaymentByCode,
     findPaymentById,
     findAllCodes,
+    findAllEmployerCodes,
+    findAllEmployeeCodes,
     updatePaymentDefinition,
     findSumPercentage,
     findCodeWithGross,
@@ -132,6 +184,11 @@ module.exports = {
     getVariationalPayments,
     findTax,
     getComputedPayments,
-    getWelfare
+    getWelfare,
+    getPensionPayments,
+    getNhfPayments,
+    deletePayment,
+    getTaxPayments,
+    getNsitfPayments
 
 }

@@ -17,6 +17,37 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+        static async getAuthorizationActionByAuthTravelAppIdOfficerType(authId, officerId, type){
+          return AuthorizationAction.findOne({
+            where:{
+              auth_travelapp_id:authId,
+              auth_officer_id:officerId,
+              auth_type: type
+            }
+          })
+        }
+
+        static async markAsReAssignedApplication(authId, officerId, type){
+          return await AuthorizationAction.update({
+            auth_status:3, //reassigned
+          },{
+            where:{
+              auth_travelapp_id:authId,
+              auth_officer_id: officerId,
+              auth_type: type
+            }
+          });
+        }
+
+        static async addNewAuthOfficer(data){
+          return AuthorizationAction.create({
+            auth_travelapp_id: data.appId,
+            auth_officer_id:data.officer,
+            auth_status:data.status,
+            auth_type:data.type,
+            auth_comment:data.comment,
+          })
+        }
     };
     AuthorizationAction.init({
         auth_id: {
@@ -32,6 +63,9 @@ module.exports = (sequelize, DataTypes) => {
         auth_status: {type:DataTypes.INTEGER, defaultValue:0, comment:"0=pending,1=approved,2=declined"},
         auth_type: {type:DataTypes.INTEGER, defaultValue:1, comment:"1=leave,2=time-sheet,3=travel,4=self"},
         auth_comment:{type:DataTypes.STRING, allowNull:true},
+        auth_ts_month:{type:DataTypes.STRING, allowNull:true},
+        auth_ts_year:{type:DataTypes.STRING, allowNull:true},
+        auth_ts_activity:{type:DataTypes.STRING, allowNull:true},
         auth_role_id:{type:DataTypes.INTEGER, allowNull:true},
         createdAt: {
             field: 'created_at',

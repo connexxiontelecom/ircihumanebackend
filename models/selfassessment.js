@@ -12,6 +12,30 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getSelfAssessmentByGoalEmpId(goalId, empId){
+      return await selfAssessment.findAll({where:{sa_gs_id:goalId, sa_emp_id:empId}})
+    }
+
+    static async updateSelfAssessmentStatus(goalId, empId){
+      return await  selfAssessment.update({
+        sa_status: 1
+      }, {
+        where: {sa_gs_id: goalId, sa_emp_id: empId}
+      })
+    }
+
+    /*static async updateSelfAssessmentStatus(data, goalId, empId){
+      return await selfAssessment.update({
+        sa_supervisor_id:data.supervisor,
+        sa_date_approved:new Date(),
+        sa_supervisor_comment:data.comment,
+        sa_status:data.status,
+        sa_master_id:data.master,
+      },{
+        where:{sa_gs_id:goalId, sa_emp_id:empId}
+      })
+    }*/
   };
   selfAssessment.init({
     sa_id:{
@@ -24,11 +48,29 @@ module.exports = (sequelize, DataTypes) => {
     sa_comment: DataTypes.STRING,
     sa_response: DataTypes.STRING,
     sa_eya_id: DataTypes.INTEGER,
-    sa_status: DataTypes.INTEGER
+    sa_status: DataTypes.INTEGER,
+    sa_master_id: DataTypes.INTEGER,
+    sa_update: DataTypes.TEXT,
+    sa_accomplishment: DataTypes.TEXT,
+    sa_challenges: DataTypes.TEXT,
+    sa_support_needed: DataTypes.TEXT,
+    sa_next_steps: DataTypes.TEXT,
+    createdAt: {
+      //field: 'created_at',
+      type: DataTypes.DATE,
+      defaultValue:sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+    updatedAt: {
+      //field: 'updated_at',
+      type: DataTypes.DATE,
+      defaultValue:sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+
   }, {
     sequelize,
     modelName: 'selfAssessment',
-    tableName: 'self_assessments'
+    tableName: 'self_assessments',
+    timestamps:false,
   });
   return selfAssessment;
 };

@@ -9,25 +9,10 @@ const employees = require('../services/employeeService');
 const logs = require('../services/logService')
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 
-/* Add end of year question Assessment */
-router.get('/', auth, async function (req, res, next) {
-    try {
-
-        const questions = await endYearAssessment.getEndOfYearAssessmentQuestions().then((data) => {
-            return data
-        })
-
-        return res.status(200).json(questions)
-
-    } catch (err) {
-        console.error(`Error while fetching questions `, err.message);
-        next(err);
-    }
-});
 
 
 /* Add end of year question Assessment */
-router.post('/add-question', auth, async function (req, res, next) {
+router.post('/add-question', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object().keys({
@@ -94,7 +79,7 @@ router.post('/add-question', auth, async function (req, res, next) {
 });
 
 
-router.patch('/update-question/:eya_id', auth, async function (req, res, next) {
+router.patch('/update-question/:eya_id', auth(), async function (req, res, next) {
     try {
 
         let eyaId = req.params.eya_id
@@ -145,5 +130,14 @@ router.patch('/update-question/:eya_id', auth, async function (req, res, next) {
     }
 });
 
-
+router.get('/', auth(), async function(req, res){
+  try{
+    const questions = await endYearAssessment.getEndOfYearAssessmentQuestions().then(res=>{
+      return res;
+    });
+    return res.status(200).json(questions);
+  }catch (e) {
+    return res.status(400).json('Something went wrong. ')
+  }
+});
 module.exports = router;

@@ -12,6 +12,14 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+
+        static async getPublicHolidayByGroup(groupId){
+          return PublicHoliday.findAll({where: {'ph_group': groupId}});
+        }
+        static async destroyPublicHolidayByGroup(groupId){
+          return PublicHoliday.destroy({where: {'ph_group': groupId}});
+        }
+
     };
     PublicHoliday.init({
         ph_id: {
@@ -29,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         ph_to_day: DataTypes.STRING,
         ph_to_month: DataTypes.STRING,
         ph_to_year: DataTypes.STRING,
+        ph_group: DataTypes.STRING,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

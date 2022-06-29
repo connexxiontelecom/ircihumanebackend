@@ -14,7 +14,19 @@ async function addSalary(salary) {
         salary_pd: salary.salary_pd,
         salary_share: salary.salary_share,
         salary_tax: salary.salary_tax,
-        salary_amount: salary.salary_amount
+        salary_amount: salary.salary_amount,
+        salary_location_id: salary.salary_location_id,
+        salary_jobrole_id: salary.salary_jobrole_id,
+        salary_department_id: salary.salary_department_id,
+        salary_gross: salary.salary_gross,
+        salary_grade: salary.salary_grade,
+        salary_emp_name: salary.salary_emp_name,
+        salary_emp_unique_id: salary.salary_emp_unique_id,
+        salary_emp_start_date: salary.salary_emp_start_date,
+        salary_emp_end_date: salary.salary_emp_end_date,
+        salary_bank_id: salary.salary_bank_id,
+        salary_account_number: salary.salary_account_number,
+        salary_sort_code: salary.salary_sort_code
     });
 }
 
@@ -37,17 +49,92 @@ async function undoSalaryMonthYear(month, year, employees) {
     })
 }
 
+async function undoSalaryMonthYearLocation(month, year, locationId) {
+    return await Salary.destroy({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_location_id: locationId
+        }
+    })
+}
+
+async function getDistinctEmployeesLocationMonthYear(month, year, locationId){
+    return await Salary.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid']
+
+        ],
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_location_id: locationId
+        }
+
+       //include: ['employee']
+    })
+}
+
+async function getDistinctEmployeesApprovedMonthYear(month, year){
+    return await Salary.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid']
+
+        ],
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+        }
+
+       //include: ['employee']
+    })
+}
+
+async function getDistinctEmployeesMonthYear(month, year){
+    return await Salary.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')) ,'salary_empid'],
+
+        ],
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+        }
+    })
+}
+
 async function getEmployeeSalary(month, year, empId) {
     return await Salary.findAll({
         where: {
             salary_paymonth: month,
             salary_payyear: year,
             salary_empid: empId
+        }, include: ['employee', 'payment', 'bank']
+    })
+}
+
+async function getEmployeeSalaryByUniqueId(month, year, empId) {
+    return await Salary.findAll({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_emp_unique_id: empId
+        }, include: ['employee', 'payment', 'bank']
+    })
+}
+
+async function getEmployeeSalaryMonthYearPd(month, year, empId, pd) {
+    return await Salary.findOne({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_empid: empId,
+            salary_pd: pd
         }, include: ['employee', 'payment']
     })
 }
 
-async function approveSalary(month, year, user, date) {
+async function approveSalary(month, year, user, date, location) {
     return await Salary.update({
             salary_approved: 1,
             salary_approved_by: user,
@@ -57,12 +144,13 @@ async function approveSalary(month, year, user, date) {
             where: {
                 salary_paymonth: month,
                 salary_payyear: year,
+                salary_location_id: location
 
             },
         })
 }
 
-async function confirmSalary(month, year, user, date) {
+async function confirmSalary(month, year, user, date, location) {
     return await Salary.update({
             salary_confirmed: 1,
             salary_confirmed_by: user,
@@ -72,9 +160,34 @@ async function confirmSalary(month, year, user, date) {
             where: {
                 salary_paymonth: month,
                 salary_payyear: year,
+                salary_location_id: location
 
             },
         })
+}
+
+async function unconfirmSalary(month, year, user, date, location) {
+    return await Salary.update({
+            salary_confirmed: 0,
+            salary_confirmed_by: user,
+            salary_confirmed_date: date
+        },
+        {
+            where: {
+                salary_paymonth: month,
+                salary_payyear: year,
+                salary_location_id: location
+
+            },
+        })
+}
+
+async function getSalaryPd(pd) {
+    return await Salary.findOne({
+        where: {
+            salary_pd: pd
+        }
+    })
 }
 
 module.exports = {
@@ -83,5 +196,13 @@ module.exports = {
     undoSalaryMonthYear,
     getEmployeeSalary,
     approveSalary,
-    confirmSalary
+    confirmSalary,
+    unconfirmSalary,
+    getEmployeeSalaryMonthYearPd,
+    undoSalaryMonthYearLocation,
+    getDistinctEmployeesLocationMonthYear,
+    getDistinctEmployeesMonthYear,
+    getSalaryPd,
+    getDistinctEmployeesApprovedMonthYear,
+    getEmployeeSalaryByUniqueId
 }

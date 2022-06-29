@@ -6,6 +6,7 @@ const {
 
 const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const Bank = require("../models/Bank")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class salary extends Model {
     /**
@@ -35,7 +36,19 @@ module.exports = (sequelize, DataTypes) => {
     salary_approved_by: DataTypes.INTEGER,
     salary_approved_date: DataTypes.DATE,
     salary_confirmed_by: DataTypes.INTEGER,
-    salary_confirmed_date: DataTypes.DATE
+    salary_confirmed_date: DataTypes.DATE,
+    salary_location_id: DataTypes.INTEGER,
+    salary_jobrole_id: DataTypes.INTEGER,
+    salary_department_id: DataTypes.INTEGER,
+    salary_grade: DataTypes.TEXT,
+    salary_gross: DataTypes.DOUBLE,
+    salary_emp_name: DataTypes.TEXT,
+    salary_emp_unique_id: DataTypes.TEXT,
+    salary_emp_start_date: DataTypes.DATE,
+    salary_emp_end_date: DataTypes.DATE,
+    salary_bank_id: DataTypes.TEXT,
+    salary_account_number: DataTypes.TEXT,
+    salary_sort_code: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'salary',
@@ -47,6 +60,9 @@ module.exports = (sequelize, DataTypes) => {
 
   salary.belongsTo(Employee, {as: 'employee', foreignKey: 'salary_empid'})
   salary.hasMany(Employee, { foreignKey: 'emp_id' })
+
+  salary.belongsTo(Bank, {as: 'bank', foreignKey: 'salary_bank_id'})
+  salary.hasMany(Bank, { foreignKey: 'bank_id' })
 
 
 

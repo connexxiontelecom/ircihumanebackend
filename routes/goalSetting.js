@@ -11,7 +11,7 @@ const logs = require('../services/logService')
 
 
 /* Get All goals setting */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await goalSetting.findGoals().then((data) => {
             return res.status(200).json(data);
@@ -21,7 +21,7 @@ router.get('/', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-open-goal-setting', auth, async function (req, res, next) {
+router.get('/get-open-goal-setting', auth(), async function (req, res, next) {
     try {
         await goalSetting.findOpenGoals().then((data) => {
             return res.status(200).json(data);
@@ -31,7 +31,7 @@ router.get('/get-open-goal-setting', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-open-end-Year', auth, async function (req, res, next) {
+router.get('/get-open-end-Year', auth(), async function (req, res, next) {
     try {
         await goalSetting.findEndYearGoals().then((data) => {
             return res.status(200).json(data);
@@ -42,16 +42,13 @@ router.get('/get-open-end-Year', auth, async function (req, res, next) {
 });
 
 /* Add goal */
-router.post('/add-goal-setting', auth, async function (req, res, next) {
+router.post('/add-goal-setting', auth(), async function (req, res, next) {
     try {
         //check if year from date equals year entered,
         // check if from date is not greater than to date
 
         const schema = Joi.object({
-            gs_from: Joi.string().required(),
-            gs_to: Joi.string().required(),
             gs_activity: Joi.string().required(),
-
         })
 
         const gsRequest = req.body
@@ -73,6 +70,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
         //const to = gsRequest.gs_to
         // const toYear = to.getFullYear()
         const year = goalSettingYearData.gsy_year
+        const from = goalSettingYearData.gsy_from
+        const to = goalSettingYearData.gsy_to
 
         const goalSettingActivityYear = await goalSetting.findGoalSetting(gsRequest.gs_activity, year).then((data) => {
             return data
@@ -110,8 +109,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
             }
 
             let goalSettingObject = {
-                gs_from: gsRequest.gs_from,
-                gs_to: gsRequest.gs_to,
+                gs_from: from,
+                gs_to: to,
                 gs_activity: gsRequest.gs_activity,
                 gs_year: year,
                 gs_status: 1,
@@ -127,8 +126,8 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
 
                 let goalSettingLogObject = {
                     gsl_activity: gsRequest.gs_activity,
-                    gsl_year: gsRequest.gs_year,
-                    gsl_status: gsRequest.gs_status
+                    gsl_year: year,
+                    gsl_status: 1
                 }
 
                 await goalSettingLog.addGoalSettingLog(goalSettingLogObject).then((data) => {
@@ -155,7 +154,7 @@ router.post('/add-goal-setting', auth, async function (req, res, next) {
 
 /* Close Goal  */
 
-router.patch('/close-goal-setting/:gs_id', auth, async function (req, res, next) {
+router.patch('/close-goal-setting/:gs_id', auth(), async function (req, res, next) {
     try {
         const gsId = req.params.gs_id
         const schema = Joi.object({
@@ -173,7 +172,17 @@ router.patch('/close-goal-setting/:gs_id', auth, async function (req, res, next)
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        await goalSetting.closeGoalSetting(gsId).then((data) => {
+        const openGs = await goalSetting.findOpenGoals();
+        openGs.map(async (gs)=>{
+          await goalSetting.updateGoalSettingStatus(gs.gs_id, 0);
+        })
+        let status = null;
+        if(parseInt(req.body.gs_status) === 0){
+          status = 1;
+        }else if(parseInt(req.body.gs_status) === 1){
+          status = 0;
+        }
+        await goalSetting.updateGoalSettingStatus(gsId, status).then((data) => {
             if (_.isEmpty(data) || _.isNull(data)) {
                 return res.status(400).json("An Error Occurred")
             } else {

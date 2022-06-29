@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
+    gsy_from: DataTypes.TEXT,
+    gsy_to: DataTypes.TEXT,
     gsy_year: DataTypes.TEXT
   }, {
     sequelize,

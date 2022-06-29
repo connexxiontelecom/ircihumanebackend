@@ -14,12 +14,13 @@ const leaveTypeModel = require("../models/LeaveType")(sequelize, Sequelize.DataT
 
 async function addLeaveAccrual(data) {
     const schema = Joi.object({
-
         lea_emp_id: Joi.number().required(),
         lea_month: Joi.number().required(),
         lea_year: Joi.number().required(),
         lea_leave_type: Joi.number().required(),
-        lea_rate: Joi.number().precision(2).required()
+        lea_rate: Joi.number().precision(2).required(),
+        lea_leaveapp_id : Joi.number().required(),
+        lea_archives: Joi.number().required()
     })
 
     const validationResult = schema.validate(data)
@@ -32,8 +33,6 @@ async function addLeaveAccrual(data) {
 
 
 async function removeLeaveAccrual(data) {
-
-
     return await leaveAccrual.removeLeaveAccrual(data)
 
 }
@@ -61,7 +60,7 @@ async function computeLeaveAccruals(data) {
 
 
 
-router.get('/get-leave-acrruals/:emp_id', auth, async function (req, res, next) {
+router.get('/get-leave-acrruals/:emp_id', auth(), async function (req, res, next) {
     try {
         const empId = req.params.emp_id
 

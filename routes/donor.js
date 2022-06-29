@@ -7,7 +7,7 @@ const logs = require('../services/logService')
 
 
 /* Get All donors */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
 
         // return res.status(200).json(req.user.username);
@@ -21,11 +21,12 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Donor */
-router.post('/add-donor', auth, async function (req, res, next) {
+router.post('/add-donor', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
+            sector: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -41,6 +42,8 @@ router.post('/add-donor', auth, async function (req, res, next) {
                 return res.status(400).json('Donor Code Already Exist')
 
             } else {
+
+
                 donor.addDonor(donorRequest).then((data) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
@@ -56,18 +59,19 @@ router.post('/add-donor', auth, async function (req, res, next) {
             }
         })
     } catch (err) {
-        console.error(`Error while adding donor `, err.message);
+        return res.status(400).json(`Error while adding donor `);
         next(err);
     }
 });
 
 /* Update Payment Definition */
-router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
+router.patch('/update-donor/:donor_id', auth(), async function (req, res, next) {
     try {
 
         const schema = Joi.object({
             donor_code: Joi.string().required(),
             donor_description: Joi.string().required(),
+            sector: Joi.number().required(),
         })
 
         const donorRequest = req.body
@@ -123,9 +127,19 @@ router.patch('/update-donor/:donor_id', auth, async function (req, res, next) {
 });
 
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth(), async (req, res) => {
     try {
         await donor.findDonorById(req.params.id).then((data) => {
+            return res.status(200).json(data);
+        })
+    } catch (e) {
+        return res.status(400).json("Something went wrong. Try again.");
+    }
+});
+
+router.get('/sector/:sectorId', auth(), async (req, res) => {
+    try {
+        await donor.findDonorByLocationId(req.params.sectorId).then((data) => {
             return res.status(200).json(data);
         })
     } catch (e) {

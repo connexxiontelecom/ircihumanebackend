@@ -1,4 +1,4 @@
-const {QueryTypes} = require('sequelize')
+const {QueryTypes, where} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 const Joi = require('joi');
@@ -57,6 +57,10 @@ async function findUserByUsername(username) {
 
 async function suspendUser(username) {
     return await User.update({user_status: 0}, {where: {user_username: username}})
+}
+
+async function unSuspendUser(username) {
+    return await User.update({user_status: 1}, {where: {user_username: username}})
 }
 
 async function findUserByUserId(userId) {
@@ -148,6 +152,12 @@ async function changePassword(req, res, next) {
     }
 }
 
+async function deleteUser(userId){
+    return await User.destroy({where: {
+        user_id: userId
+        }})
+}
+
 
 module.exports = {
     addUser,
@@ -157,5 +167,7 @@ module.exports = {
     updateUser,
     findAllUsers,
     changePassword,
-    suspendUser
+    suspendUser,
+    unSuspendUser,
+    deleteUser
 }

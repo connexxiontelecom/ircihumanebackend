@@ -1,3 +1,4 @@
+
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
 const _ = require('lodash');
@@ -13,11 +14,16 @@ const timeSheetPenaltyService = require('../services/timesheetPenaltyService');
 const timeSheetService = require('../services/timeSheetService');
 const timeAllocationService = require('../services/timeAllocationService');
 const employeeService = require('../services/employeeService');
+const Op = Sequelize.Op;
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const leaveApplicationService = require('../services/leaveApplicationService');
 
 
 const helper = require('../helper');
+const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
+const {addLeaveAccrual} = require("../routes/leaveAccrual");
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
@@ -31,6 +37,22 @@ const registerNewAction = async (auth_type, travel_app, officer, status, comment
         auth_travelapp_id: travel_app
     });
 
+}
+const registerTimeAllocationAction = async (auth_type, travel_app, officer, status, comment, month, year) => {
+    return await authorizationModel.create({
+        auth_officer_id: officer,
+        auth_status: status,
+        auth_comment: comment,
+        auth_type: auth_type,
+        auth_travelapp_id: travel_app,
+        auth_ts_month: month,
+        auth_ts_year: year,
+    });
+
+}
+
+const getOneAuthorizationByRefNo = async (ref_no) => {
+  return await authorizationModel.findOne({where:{auth_travelapp_id:ref_no}});
 }
 
 const updateAuthorizationStatus = async (req, res) => {
@@ -83,8 +105,16 @@ const updateAuthorizationStatus = async (req, res) => {
                     auth_type: type,
                     auth_travelapp_id: appId
                 });
+              const subject = "Self-service update!";
+              const body = "An event recently occurred on one of your self-service areas.";
+              //emp
+              const url = req.headers.referer;
+              //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+              const notifyOfficer = await notificationModel.registerNotification(subject, "Your action was recorded.", officer, 0, url);
+              const notifyNextOfficer = await notificationModel.registerNotification(subject, "You've been chosen to act on a task.", nextOfficer, 0, url);
 
-                //Log
+
+              //Log
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": `Log on authorization: Authorized request.`,
@@ -106,6 +136,51 @@ const updateAuthorizationStatus = async (req, res) => {
                                 leapp_id: appId
                             }
                         });
+
+                        const leaveApplicationData = await leaveApplicationService.getLeaveApplicationWithId(appId).then((data)=>{
+                            return data
+                        })
+
+                        let leaveDate = new Date(leaveApplicationData.leapp_start_date)
+
+                        const leaveAccrual = {
+                            lea_emp_id: leaveApplicationData.leapp_empid,
+                            lea_month: leaveDate.getFullYear(),
+                            lea_year: leaveDate.getMonth() + 1,
+                            lea_leave_type: leaveApplicationData.leapp_leave_type,
+                            lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days)
+                        }
+
+                        const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                            return data
+                        })
+
+
+                        //update timesheet
+                      const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);
+                      if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){
+                        let startDate = new Date(leaveApp.leapp_start_date);
+                        let endDate = new Date(leaveApp.leapp_end_date);
+                        let numDays
+                        if(startDate.getDay() === 6 || startDate.getDay() === 0){
+                          numDays = await differenceInBusinessDays(endDate, startDate) + 2;
+                        }else{
+                          numDays = await differenceInBusinessDays(endDate, startDate) + 1;
+                        }
+                        let i = 0;
+                        if(numDays > 0){
+                          for(i=0; i<= numDays; i++){
+                            const loopPeriod = {
+                              emp_id:leaveApp.leapp_empid,
+                              day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
+                              month: startDate.getUTCMonth() + 1,
+                              year: startDate.getUTCFullYear()
+                            }
+                            await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+                          }
+                        }
+
+                      }
                         break;
                     case 2: //time sheet
 
@@ -126,7 +201,7 @@ const updateAuthorizationStatus = async (req, res) => {
                         });
 
                         if (_.isEmpty(timealloc) || _.isNull(timealloc)) {
-                            return res.status(400).json("Whoops! Record does not exist. yeess");
+                            return res.status(400).json("Whoops! Record does not exist.");
 
                         } else {
 
@@ -173,7 +248,15 @@ const updateAuthorizationStatus = async (req, res) => {
                         });
                         break;
                 }
-                //Log
+              const subject = "Self-service update!";
+              const body = "An event recently occurred on one of your self-service areas.";
+              //emp
+              const url = req.headers.referer;
+              //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+              const notifyOfficer = await notificationModel.registerNotification(subject, "Request finally marked as closed.", officer, 0, url);
+              //const notifyNextOfficer = await notificationModel.registerNotification(subject, "You've been chosen to act on a task.", nextOfficer, 0, url);
+
+              //Log
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": `Log on authorization: marked request as final.`,
@@ -193,8 +276,37 @@ const updateAuthorizationStatus = async (req, res) => {
 }
 
 
-const getAuthorizationByOfficerId = async (officerId, type) => {
-    return await authorizationModel.findAll({where: {auth_officer_id: officerId, auth_type: type}})
+ const getAuthorizationByOfficerId = async (req, res) => {
+   try{
+     const { type, authId } = req.params;
+     const result =  await authorizationModel.findAll({
+       where: {
+         auth_status:0,
+         auth_type: parseInt(type),
+         auth_travelapp_id: authId
+       },
+       include:[{model:EmployeeModel, as: 'officers'}]
+     });
+     return res.status(200).json(result);
+   }catch (e) {
+     return res.status(400).json("Something went wrong. Try again.");
+   }
+
+
+
+ }
+
+async function getAuthorizationByTypeOfficerId(type, supervisorId){
+  return  await authorizationModel.findAll({
+    where: {
+      auth_status:0,
+      auth_type: parseInt(type),
+      //auth_travelapp_id: authId,
+      auth_officer_id: supervisorId
+    },
+    include:[{model:EmployeeModel, as: 'officers'}]
+  });
+
 }
 
 // const getAuthorizationLog = async (authId, type )=>{
@@ -206,7 +318,7 @@ const getAuthorizationByOfficerId = async (officerId, type) => {
 
 async function getAuthorizationLog(authId, type) {
     return await authorizationModel.findAll({
-        //order:[['auth_id', 'DESC']],
+        order:[['auth_id', 'DESC']],
         where: {auth_travelapp_id: authId, auth_type: type},
         include: ['officers', 'role']
     });
@@ -218,6 +330,9 @@ module.exports = {
     updateAuthorizationStatus,
     //getTravelAuthorizationByOfficerId,
     getAuthorizationByOfficerId,
-    getAuthorizationLog
+    getAuthorizationLog,
+    getOneAuthorizationByRefNo,
+  getAuthorizationByTypeOfficerId,
+  registerTimeAllocationAction
 
 }

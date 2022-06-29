@@ -17,7 +17,7 @@ const errHandler = (err) => {
 const getJobRoles = async (req, res) => {
     const roles = await jobRole.findAll({
         attributes: ['job_role', 'jb_department_id', 'job_role_id', 'description'],
-        include: [Department]
+        //include: [Department]
     });
     res.status(200).json(roles)
 }
@@ -97,9 +97,14 @@ const updateJobRole = async (req, res, next) => {
 
 }
 
+async function findJobRoleById(jobRoleId) {
+    return await jobRole.findOne({where: {job_role_id: jobRoleId}});
+}
+
 module.exports = {
     getJobRoleById,
     getJobRoles,
     updateJobRole,
     setNewJobRole,
+    findJobRoleById
 }

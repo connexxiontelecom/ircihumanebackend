@@ -9,7 +9,7 @@ async function addRating(ratingData) {
     return await Rating.create({
         rating_name: ratingData.rating_name,
         rating_desc: ratingData.rating_desc,
-
+        rating_time_period: ratingData.rating_period,
     });
 }
 
@@ -23,6 +23,17 @@ async function updateRating(ratingId, ratingData) {
             rating_id: ratingId
         }
     });
+}
+
+async function updateRatingStatus(ratingId, ratingData) {
+  return await Rating.update({
+    rating_status: ratingData.rating_status,
+
+  }, {
+    where: {
+      rating_id: ratingId
+    }
+  });
 }
 
 async function findRating(ratingId) {
@@ -39,11 +50,16 @@ async function findAllRating() {
     return await Rating.findAll()
 }
 
+async function findAllEndYearRatings() {
+  return await Rating.findAll({where: {rating_time_period: 3, rating_status: 1}})
+}
 
 module.exports = {
     addRating,
     updateRating,
     findRating,
     findAllRating,
-    findRatingByName
+    findRatingByName,
+  updateRatingStatus,
+  findAllEndYearRatings
 }

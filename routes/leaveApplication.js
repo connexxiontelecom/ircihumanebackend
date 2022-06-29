@@ -6,20 +6,24 @@ const router = express.Router()
 const auth = require("../middleware/auth");
 const {format} = require('date-fns');
 const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
+const differenceInDays = require('date-fns/differenceInDays')
 const isBefore = require('date-fns/isBefore')
 const leaveApplication = require('../services/leaveApplicationService')
 const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual");
+const leaveAccrualService = require("../services/leaveAccrualService");
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const leaveTypeService = require('../services/leaveTypeService');
+const IRCMailerService = require('../services/IRCMailer');
 const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize.DataTypes);
 const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
 const employees = require("../services/employeeService");
-
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 
 /* Get leave application */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         let appId = [];
         let leaveObj = {};
@@ -41,7 +45,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 /* Add Location Allowance */
-router.post('/add-leave-application', auth, async function (req, res, next) {
+router.post('/add-leave-application', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             leapp_empid: Joi.number().required(),
@@ -80,9 +84,9 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
             return res.status(400).json('Leave start date cannot be before today or today')
         }
 
-        if (String(startYear) !== String(endYear)) {
-            return res.status(400).json('Leave period must be within the same year')
-        }
+        // if (String(startYear) !== String(endYear)) {
+        //     return res.status(400).json('Leave period must be within the same year')
+        // }
 
 
         let daysRequested = await differenceInBusinessDays(endDate, startDate)
@@ -119,6 +123,9 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
             return res.status(400).json('Invalid Leave Type');
 
         }
+      if(daysRequested > parseInt(leaveTypeData.leave_duration)){
+        return res.status(400).json('Leave duration exceed leave duration for this leave type.')
+      }
 
         if (parseInt(leaveTypeData.lt_accrue) === 1) {
             const accrualData = {
@@ -130,19 +137,15 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
 
             const accruedDays = await computeLeaveAccruals(accrualData).then((data) => {
                 return data
-            })
+            });
+
 
             if (_.isNull(accruedDays) || accruedDays === 0) {
                 return res.status(400).json('No Leave Accrued for Selected Leave')
             }
 
 
-            const sumLeave = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(startYear, leaveApplicationRequest.leapp_empid, leaveApplicationRequest.leapp_leave_type).then((data) => {
-                return data
-            })
-
-
-            if (parseInt(daysRequested) > (parseInt(accruedDays) - sumLeave)) {
+           if (parseInt(daysRequested) > parseInt(accruedDays)) {
                 return res.status(400).json("Days Requested Greater than Accrued Days")
             }
         }
@@ -158,18 +161,29 @@ router.post('/add-leave-application', auth, async function (req, res, next) {
         })
 
         const leaveAppId = leaveApplicationResponse.leapp_id;
-        hrpoints.map((hrp) => {
-            const authorizationResponse = authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
-                return data
-            });
+        hrpoints.map(async (hrp) => {
+          const subject = "New leave application";
+          const body = "Kindly attend to this leave application.";
+          //emp
+          const authorizationResponse = authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
+            return data
+          });
+          const url = req.headers.referer;
+          //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+          const notifySupervisor = await notificationModel.registerNotification(subject, body, hrp.hfp_emp_id, 0, url);
+
         })
 
+      //send mail
+      const subject = 'Leave application';
+      const body = "Your leave application was received. ";
+      await IRCMailerService.sendMail('no-reply@irc.com',emp.emp_office_email,subject, body);
 
         /* if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
              return res.status(400).json('An Error Occurred')
          }*/
 
-        return res.status(200).json('Action Successful')
+        return res.status(200).json(leaveApplicationResponse)
 
     } catch (err) {
         console.error(`Error while adding location allowance `, err.message);
@@ -182,7 +196,7 @@ router.get('/approved-applications', async (req, res) => {
     try {
         let appId = [];
         let leaveObj = {};
-        await leaveApplication.findAllApprovedLeaveApplications().then((data) => {
+        await leaveApplication.findAllActiveLeaveApplications().then((data) => {
             data.map((app) => {
                 appId.push(app.leapp_id);
             });
@@ -200,7 +214,7 @@ router.get('/approved-applications', async (req, res) => {
 });
 
 /* Get Employee Leave application */
-router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) {
+router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next) {
     try {
 
         let empId = req.params['emp_id'];
@@ -231,7 +245,7 @@ router.get('/get-employee-leave/:emp_id', auth, async function (req, res, next) 
     }
 });
 
-router.get('/:id', auth, async (req, res) => { //get leave application details
+router.get('/:id', auth(), async (req, res) => { //get leave application details
     const id = parseInt(req.params.id);
     try {
         const application = await leaveApplication.getLeaveApplicationsById(id);
@@ -243,13 +257,14 @@ router.get('/:id', auth, async (req, res) => { //get leave application details
     }
 });
 
-router.get('/authorization/supervisor/:id', auth, async (req, res) => {
+router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
     try {
         const supervisorId = req.params.id;
         let leaveObj = {};
         let ids = [];
         let authId = [];
-        const authAction = await authorizationAction.getAuthorizationByOfficerId(supervisorId, 1).then((data) => {
+        const authAction =
+          await authorizationAction.getAuthorizationByTypeOfficerId(1,supervisorId).then((data) => {
             return data
         })
         authAction.map((app) => {
@@ -274,4 +289,189 @@ router.get('/authorization/supervisor/:id', auth, async (req, res) => {
         return res.status(400).json("Something went wrong. Try again.");
     }
 });
+
+router.patch('/update-leaveapp-status/:leaveId', auth(), async (req, res)=>{
+  try{
+    const schema = Joi.object({
+      leave: Joi.number().required(),
+      status: Joi.number().required(),
+    })
+
+    const statusRequest = req.body
+    const validationResult = schema.validate(statusRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const leaveId = req.params.leaveId;
+    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId));
+    if(_.isNull(leave) || _.isEmpty(leave)){
+      return res.status(400).json("Leave application does not exist.");
+    }
+    const status = await leaveAppModel.updateLeaveAppStatus(parseInt(leaveId), req.body.status);
+    if(_.isNull(status) || _.isEmpty(status)){
+      return res.status(400).json("Could not update record. Try again.");
+    }
+    return res.status(200).json("Leave status updated.");
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+});
+router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
+  try{
+    const schema = Joi.object({
+      //leave: Joi.number().required(),
+      start_date: Joi.string().required(),
+      end_date: Joi.string().required(),
+    })
+
+    const statusRequest = req.body
+    const validationResult = schema.validate(statusRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    let startDate = new Date(statusRequest.start_date);
+    let startYear = startDate.getFullYear();
+    //let date = new Date(statusRequest.start_date)
+    //let day = startDate.getDay();
+    //return res.status(200).json(day);
+
+    let endDate = new Date(statusRequest.end_date);
+    let endYear = endDate.getFullYear();
+
+    // if (isBefore(startDate, new Date())) {
+    //   return res.status(400).json('Leave start date cannot be before today or today')
+    // }
+    //
+    // if (String(startYear) !== String(endYear)) {
+    //   return res.status(400).json('Leave period must be within the same year')
+    // }
+
+    let daysRequested
+    if(startDate.getDay() === 6 || startDate.getDay() === 0){
+      daysRequested = await differenceInBusinessDays(endDate, startDate) + 2;
+    }else{
+      daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
+    }
+
+
+    //return res.status(200).json(daysRequested)
+    const empId = req.user.username.user_id;
+    if (parseInt(daysRequested) <= 0) {
+      return res.status(400).json('Leave duration must be greater or equal to 1')
+    }
+
+
+    const leaveId = req.params.leaveId;
+    let leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+        return data
+    });
+    if(_.isNull(leave) || _.isEmpty(leave)){
+      return res.status(400).json("Leave application does not exist.");
+    }
+    const status = await leaveAppModel.updateLeaveAppPeriod(parseInt(leaveId), req.body.start_date, req.body.end_date, daysRequested);
+    if(_.isNull(status) || _.isEmpty(status)){
+      return res.status(400).json("Could not update record. Try again.");
+    }
+
+    const removeAccruals = await leaveAccrualService.removeLeaveAccrualByLeaveApplication(parseInt(leaveId)).then((data)=>{
+        return data
+    })
+
+       leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+          return data
+      });
+
+      let leaveDate = new Date(leave.leapp_start_date)
+
+      const leaveAccrual = {
+          lea_emp_id: leave.leapp_empid,
+          lea_month: leaveDate.getFullYear(),
+          lea_year: leaveDate.getMonth() + 1,
+          lea_leave_type: leave.leapp_leave_type,
+          lea_rate: 0 - parseFloat(leave.leapp_total_days),
+          lea_archives: 0
+      }
+      const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+          return data
+      })
+    return res.status(200).json("Leave period updated");
+  }catch (e) {
+    return res.status(400).json("Something went wrong."+e.message);
+  }
+});
+
+router.get('/get-leave-applications/:status', auth(), async function(req, res){
+  try{
+    const status = req.params.status;
+    const leaves = await leaveAppModel.getLeaveApplicationsByStatus(status);
+    return res.status(200).json(leaves);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again later.")
+  }
+});
+
+router.patch('/re-assign-leave/:leaveId', auth(), async function(req, res){
+  try{
+    const schema = Joi.object({
+      reassignTo: Joi.number().required(),
+      assignedTo: Joi.number().required(),
+      leaveId: Joi.number().allow(null, ''),
+
+    })
+    const leaveReAssignmentRequest = req.body
+    const validationResult = schema.validate(leaveReAssignmentRequest, {abortEarly: false});
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+    if(parseInt(req.body.assignedTo) === parseInt(req.body.reassignTo)){
+      return res.status(400).json("You cannot re-assign to the same person.");
+    }
+    const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
+    if(!assignedOfficer){
+      return res.status(400).json("The assigned officer does not exist.")
+    }
+    const reAssignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.reassignTo));
+    if(!reAssignedOfficer){
+      return res.status(400).json("The re-assign officer does not exist.")
+    }
+    const leaveId = req.params.leaveId;
+    const leave = await leaveAppModel.getLeaveApplicationById(leaveId);
+    if(!leave){
+      return res.status(400).json("There's no record for this leave application request.");
+    }
+    const officerLeave = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(leave.leapp_id, req.body.assignedTo, 1)
+    if(!officerLeave){
+      return res.status(400).json("There's no leave assigned to this selected employee.");
+    }
+    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(leaveId, parseInt(req.body.assignedTo), 1);
+    if(!markAsReAssign){
+      return res.status(400).json("Something went wrong. Try again.");
+    }
+    const comment = `Leave application that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
+      const data = {
+        appId:leaveId,
+        officer:req.body.reassignTo,
+        status:0,
+        type:1,
+        comment:comment,
+      }
+    const reAssignment = await authorizationModel.addNewAuthOfficer(data);
+
+    const subject = "Leave application re-assignment";
+    //const body = "Kindly attend to this leave application.";
+    const url = req.headers.referer;
+    const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
+    const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
+    const notifyEmployee = await notificationModel.registerNotification(subject, comment, leave.leapp_empid, 0, url);
+
+    return res.status(200).json("Leave application re-assigned successfully.");
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again."+e.message);
+  }
+});
+
 module.exports = router;

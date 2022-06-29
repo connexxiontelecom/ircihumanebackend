@@ -5,11 +5,17 @@ const employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 const userModel = require("../models/user")(sequelize, Sequelize.DataTypes)
 const Department = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const operationalUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes)
+const reportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes)
+const functionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const logs = require('../services/logService')
 const users = require('../services/userService')
+const IRCMailerService = require('../services/IRCMailer');
+const uuid = require("uuid");
 
 const helper = require('../helper');
 const errHandler = (err) => {
@@ -27,6 +33,8 @@ const getAllEmployee = async (req, res) => {
 
 }
 const createNewEmployee = async (req, res, next) => {
+    const text = uuid.v4();
+    const password = text.substr(24,12);
     try {
         const schema = Joi.object({
             first_name: Joi.string()
@@ -35,16 +43,22 @@ const createNewEmployee = async (req, res, next) => {
             last_name: Joi.string().required().messages({'any.required': 'Enter last name in the field provided'}),
             //other_name: Joi.string(),
             unique_id: Joi.string().required().messages({'any.required': 'Enter unique ID in the field provided'}),
+            personal_email: Joi.string().allow(null, ''),
+            office_email: Joi.string().allow(null, ''),
+            emp_d4: Joi.number().allow(null, ''),
+            emp_d7: Joi.string().allow(null, ''),
+            emp_d5: Joi.number().allow(null, ''),
+            emp_d6: Joi.number().allow(null, ''),
             // birth_date: Joi.date().required().messages({'any.required':'Enter employee birth date'}),
-            personal_email: Joi.string().required().messages({'any.required': 'Enter a valid personal email address'}),
-            office_email: Joi.string().required().messages({'any.required': 'Enter a valid office email address'}),
+            //personal_email: Joi.string().required().messages({'any.required': 'Enter a valid personal email address'}),
+            //office_email: Joi.string().required().messages({'any.required': 'Enter a valid office email address'}),
             phone_no: Joi.string().required().messages({'any.required': 'Enter employee phone number'}),
             // qualification: Joi.string().required().messages({'any.required':'Enter employee qualification'}),
             // address: Joi.string().required().messages({'any.required':'Enter employee residential address'}),
             location: Joi.number().required().messages({'any.required': 'Select employee location from the list provided'}),
             //subsidiary: Joi.number().required().messages({'any.required':'Which of the subsidiaries does this employee belongs to?'}),
             job_role: Joi.number().required().messages({"any.required": "What's this employee's job role?"}),
-            department: Joi.number().required().messages({"any.required": "What's this employee's Sector?"}),
+            //department: Joi.number().required().messages({"any.required": "What's this employee's Sector?"}),
             //grade_level: Joi.number().required().messages({"any.required":"What's this employee's grade level?"}),
             account_no: Joi.string().required().messages({"any.required": "Enter employee's account number"}),
             bank: Joi.number().required().messages({"any.required": "Choose the bank associated with the account number you entered?"}),
@@ -93,85 +107,98 @@ const createNewEmployee = async (req, res, next) => {
                 return res.status(400).json("Employee Id Already Exists")
             } else {
 
-                getEmployeeByPersonalEmail(req.body.personal_email).then((employeeData) => {
+                //getEmployeeByPersonalEmail(req.body.personal_email).then((employeeData) => {
+                //if (!_.isNull(employeeData)) {
+                // return res.status(400).json("Employee Personal Email Already Exists")
+                // } else {
+                //getEmployeeByOfficialEmail(req.body.office_email).then((employeeData) => {
+                //if (!_.isNull(employeeData)) {
+                //return res.status(400).json("Employee Official Email Already Exists")
+                // } else {
+                getEmployeeByPhoneNumber(req.body.phone_no).then((employeeData) => {
                     if (!_.isNull(employeeData)) {
-                        return res.status(400).json("Employee Personal Email Already Exists")
+                        return res.status(400).json("Employee Phone Number Already Exists")
                     } else {
-                        getEmployeeByOfficialEmail(req.body.office_email).then((employeeData) => {
-                            if (!_.isNull(employeeData)) {
-                                return res.status(400).json("Employee Official Email Already Exists")
-                            } else {
-                                getEmployeeByPhoneNumber(req.body.phone_no).then((employeeData) => {
-                                    if (!_.isNull(employeeData)) {
-                                        return res.status(400).json("Employee Phone Number Already Exists")
-                                    } else {
-                                        employee.create({
-                                            emp_first_name: req.body.first_name,
-                                            emp_last_name: req.body.last_name,
-                                            emp_other_name: req.body.other_name,
-                                            emp_unique_id: req.body.unique_id,
-                                            emp_personal_email: req.body.personal_email,
-                                            emp_office_email: req.body.office_email,
-                                            emp_phone_no: req.body.phone_no,
-                                            emp_location_id: req.body.location,
-                                            emp_job_role_id: req.body.job_role,
-                                            emp_department_id: req.body.department,
-                                            emp_account_no: req.body.account_no,
-                                            emp_bank_id: req.body.bank,
-                                            emp_salary_structure_setup: 0,
-                                            emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg'
-                                        }).catch(errHandler);
 
-                                        const userData = {
-                                            user_username: req.body.unique_id,
-                                            user_name: `${req.body.first_name} ${req.body.first_name}`,
-                                            user_email: req.body.office_email,
-                                            user_password: 'password1234',
-                                            user_type: 2,
-                                            user_token: 1,
-                                            user_status: 1,
-                                        }
-                                        users.findUserByEmail(req.body.office_email).then((data) => {
-                                            if (data) {
-                                                employee.destroy({
-                                                    where: {
-                                                        emp_unique_id: req.body.unique_id,
-                                                    }
-                                                })
-                                                return res.status(400).json('Email Already taken')
+                       let accountNumber =  req.body.account_no;
+                        let letter = accountNumber.charAt(0);
+                        if(letter !== `'`){
+                            accountNumber = `'${accountNumber}`
+                        }
+                        employee.create({
+                            emp_first_name: req.body.first_name,
+                            emp_last_name: req.body.last_name,
+                            emp_other_name: req.body.other_name,
+                            emp_unique_id: req.body.unique_id,
+                            emp_personal_email: req.body.personal_email,
+                            emp_office_email: req.body.office_email,
+                            emp_phone_no: req.body.phone_no,
+                            emp_location_id: req.body.location,
+                            emp_job_role_id: req.body.job_role,
+                            emp_account_no: accountNumber,
+                            emp_bank_id: req.body.bank,
+                            emp_salary_structure_setup: 0,
+                            emp_d4: req.body.emp_d4,
+                            emp_d5: req.body.emp_d5,
+                            emp_d6: req.body.emp_d6,
+                            emp_d7: req.body.emp_d7,
+                            emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg'
+                        }).catch(errHandler);
 
-                                            } else {
-                                                users.findUserByUsername(req.body.unique_id).then((data) => {
-                                                    if (data) {
-                                                        employee.destroy({
-                                                            where: {
-                                                                emp_unique_id: req.body.unique_id,
-                                                            }
-                                                        })
-                                                        return res.status(400).json('Username Already taken')
-
-                                                    } else {
-                                                        users.addUser(userData).then((data) => {
-                                                            const logData = {
-                                                                "log_user_id": req.user.username.user_id,
-                                                                "log_description": `Log on employee enrollment: Added a new employee(${req.body.first_name} ${req.body.last_name})`,
-                                                                "log_date": new Date()
-                                                            }
-                                                            logs.addLog(logData).then((logRes) => {
-                                                                return res.status(201).json(`New employee(${req.body.first_name}) enrollment was done successfully.`);
-                                                            })
-                                                        })
-                                                    }
-                                                })
-                                            }
-                                        })
+                        const userData = {
+                            user_username: req.body.unique_id,
+                            user_name: `${req.body.first_name} ${req.body.first_name}`,
+                            user_email: req.body.office_email,
+                            user_password: password,//'password1234',
+                            user_type: 2,
+                            user_token: 1,
+                            user_status: 1,
+                        }
+                        //users.findUserByEmail(req.body.office_email).then((data) => {
+                        /*if (data) {
+                            employee.destroy({
+                                where: {
+                                    emp_unique_id: req.body.unique_id,
+                                }
+                            })
+                            return res.status(400).json('Email Already taken')
+*/
+                        //} else {
+                        users.findUserByUsername(req.body.unique_id).then((data) => {
+                            if (data) {
+                                employee.destroy({
+                                    where: {
+                                        emp_unique_id: req.body.unique_id,
                                     }
                                 })
-                            }
+                                return res.status(400).json('Username Already taken')
 
+                            } else {
+                                users.addUser(userData).then((data) => {
+                                    const logData = {
+                                        "log_user_id": req.user.username.user_id,
+                                        "log_description": `Log on employee enrollment: Added a new employee(${req.body.first_name} ${req.body.last_name})`,
+                                        "log_date": new Date()
+                                    }
+                                    logs.addLog(logData).then((logRes) => {
+                                        return res.status(201).json(`New employee(${req.body.first_name}) enrollment was done successfully.`);
+                                    })
+                                })
+                                //send mail
+                                //signature: from, to, subject, text
+                                const message = `Here's your login credentials \n Email: ${req.body.office_email} \n Password: ${password} \n Do well to login to change this system generated password to something you can remember.`;
+                                IRCMailerService.sendMail("no-reply@irc.org",req.body.office_email, "Login credentials",  message)
+                            }
                         })
+                        //}
+                        //})
                     }
                 })
+                // }
+
+                // })
+                //}
+                //})
 
             }
         })
@@ -185,7 +212,23 @@ const createNewEmployee = async (req, res, next) => {
 async function getEmployee(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'jobrole', 'sector']
+        include: [ 'location',
+            'jobrole', 'sector', 'bank',
+            'lga', 'state', 'pension','operationUnit',
+            'reportingEntity', 'functionalArea',
+            {model:employee, as: 'supervisor',
+                include: [
+                    {model:Department, as:'sector'},
+                    {model: locationModel, as:'location'},
+                ]
+            },
+        ]
+    })
+}
+
+async function getEmployees() {
+    return await employee.findAll({
+        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit', 'pension']
     })
 }
 
@@ -210,13 +253,18 @@ async function setSupervisor(employeeId, supervisorId) {
 }
 
 async function updateEmployee(employeeId, employeeData) {
+    let accountNumber =  employeeData.emp_account_no;
+    let letter = accountNumber.charAt(0);
+    if(letter !== `'`){
+        accountNumber = `'${accountNumber}`
+    }
     return await employee.update({
         emp_first_name: employeeData.emp_first_name,
         emp_last_name: employeeData.emp_last_name,
         emp_other_name: employeeData.emp_other_name,
         emp_qualification: employeeData.emp_qualification,
         emp_phone_no: employeeData.emp_phone_no,
-        emp_account_no: employeeData.emp_account_no,
+        emp_account_no: accountNumber,
         emp_bank_id: employeeData.emp_bank_id,
         emp_state_id: employeeData.emp_state_id,
         emp_lga_id: employeeData.emp_lga_id,
@@ -242,17 +290,23 @@ async function updateEmployee(employeeId, employeeData) {
 }
 
 async function updateEmployeeFromBackoffice(employeeId, employeeData) {
+    let accountNumber =  employeeData.emp_account_no;
+    let letter = accountNumber.charAt(0);
+    if(letter !== `'`){
+        accountNumber = `'${accountNumber}`
+    }
     return await employee.update({
         emp_first_name: employeeData.emp_first_name,
         emp_last_name: employeeData.emp_last_name,
         emp_other_name: employeeData.emp_other_name,
+        emp_personal_email: employeeData.emp_personal_email,
+        emp_office_email: employeeData.emp_office_email,
         emp_qualification: employeeData.emp_qualification,
         emp_phone_no: employeeData.emp_phone_no,
-        emp_account_no: employeeData.emp_account_no,
+        emp_account_no: accountNumber,
         emp_bank_id: employeeData.emp_bank_id,
         emp_state_id: employeeData.emp_state_id,
         emp_lga_id: employeeData.emp_lga_id,
-        emp_marital_status: employeeData.emp_marital_status,
         emp_spouse_name: employeeData.emp_spouse_name,
         emp_spouse_phone_no: employeeData.emp_spouse_phone_no,
         emp_next_of_kin_name: employeeData.emp_next_of_kin_name,
@@ -270,10 +324,22 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_department_id: employeeData.emp_department_id,
         emp_sex: employeeData.emp_sex,
         emp_religion: employeeData.emp_religion,
+        emp_location_id: employeeData.emp_location_id,
+        //emp_bvn: employeeData.emp_bvn,
+        //emp_nhf: employeeData.emp_nhf,
+        emp_paye_no: employeeData.emp_paye_no, //employeeData.emp_paye_no,
+        emp_marital_status: employeeData.emp_marital_status,
+        emp_pension_no: employeeData.emp_pension_no,
+        emp_pensionable: employeeData.emp_pension,
         emp_bvn: employeeData.emp_bvn,
+        emp_pension_id: employeeData.emp_pension_id,
         emp_nhf: employeeData.emp_nhf,
-        emp_paye_no: employeeData.emp_paye_no,
-        emp_pension_no: employeeData.emp_pension_no
+        emp_nin: employeeData.emp_nin,
+        emp_d4: employeeData.emp_d4,
+        emp_d5: employeeData.emp_d5,
+        emp_d6: employeeData.emp_d6,
+        emp_d7: employeeData.emp_d7,
+        //emp_nin: employeeData.emp_sector,
     }, {
         where: {
             emp_id: employeeId
@@ -297,14 +363,14 @@ async function updateGrossSalary(employeeId, employeeGross) {
 async function getEmployeeById(employeeId) {
     return await employee.findOne({
         where: {emp_unique_id: employeeId},
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit']
     })
 }
 
 async function getEmployeeByIdOnly(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit']
     })
 }
 
@@ -353,7 +419,8 @@ async function getActiveEmployees() {
         where: {
             emp_status: 1
         },
-        include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector',
+            'functionalArea', 'reportingEntity', 'operationUnit']
     })
 }
 
@@ -380,13 +447,26 @@ async function suspendEmployee(employeeId, suspensionReason) {
 
 }
 
+
+
 async function getActiveEmployeesByLocation(locationId) {
     return await employee.findAll({
             where: {
                 emp_location_id: locationId,
-                emp_status: 1
+                emp_status: [1, 2]
             },
-            include: ['supervisor', 'location', 'bank', 'jobrole', 'sector']
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit']
+        }
+    )
+
+}
+
+async function getAllEmployeesByLocation(locationId) {
+    return await employee.findAll({
+            where: {
+                emp_location_id: locationId,
+            },
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'pension', 'operationUnit', 'reportingEntity', 'functionalArea']
         }
     )
 
@@ -411,6 +491,7 @@ async function changePassword(req, res) {
             confirm_password: Joi.string().required(),
             userId: Joi.number().required(),
         })
+
         const passwordRequest = req.body
         const validationResult = schema.validate(passwordRequest)
 
@@ -418,10 +499,12 @@ async function changePassword(req, res) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
         const {current_password, new_password, confirm_password, userId} = req.body;
+
         if (new_password !== confirm_password) return res.status(400).json("Password confirmation mis-match.");
         const user = await userModel.geUserById(userId);
 
         if (!user) return res.status(400).json("User does not exist.");
+
 
         bcrypt.compare(current_password, user.user_password, function (err, response) {
             if (err) {
@@ -435,7 +518,17 @@ async function changePassword(req, res) {
                 }, {
                     where: {user_id: userId}
                 });
-                return res.status(200).json(user);
+                const logData = {
+                    "log_user_id": req.user.username.user_id,
+                    "log_description": "Changed password",
+                    "log_date": new Date()
+                }
+                logs.addLog(logData).then((logRes) => {
+
+                    return res.status(200).json('Password changed successfully.')
+                })
+
+                // return res.status(200).json(user);
             } else {
                 return res.status(400).json('Incorrect Password')
             }
@@ -462,6 +555,29 @@ async function changePassword(req, res) {
     }
 
 
+}
+
+async function getInactiveEmployees() {
+    return await employee.findAll({
+            where:
+                {
+                    emp_status: {
+                        [Op.or]: [0, 2, null]
+                    }
+                },
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
+
+        }
+    )
+}
+
+async function getEmployeesByPfaLocation(pfaId, locationId) {
+    return await employee.findAll({where:{
+            emp_pension_id: pfaId,
+            emp_location_id: locationId
+
+        }
+    })
 }
 
 
@@ -535,7 +651,12 @@ module.exports = {
     suspendEmployee,
     unSuspendEmployee,
     getActiveEmployeesByLocation,
-    changePassword
+    changePassword,
+    getEmployees,
+    getInactiveEmployees,
+    unSuspendEmployee,
+    getAllEmployeesByLocation,
+    getEmployeesByPfaLocation
     //updateDepartment,
     //setNewDepartment,
 }

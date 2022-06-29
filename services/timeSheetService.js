@@ -5,7 +5,7 @@ const TimeSheet = require("../models/timesheet")(sequelize, Sequelize.DataTypes)
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 const employeeService = require("../services/employeeService");
 const timesheetPenaltyService = require("../services/timesheetPenaltyService");
-
+const Op = Sequelize.Op;
 const helper = require('../helper');
 
 
@@ -19,6 +19,7 @@ async function addTimeSheet(timeSheetData) {
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
         ts_is_present: timeSheetData.ts_is_present,
+        ts_ref_no: timeSheetData.ts_ref_no
     });
 }
 
@@ -33,6 +34,7 @@ async function updateTimeSheet(ts_id, timeSheetData) {
         ts_end: timeSheetData.ts_end,
         ts_duration: timeSheetData.ts_duration,
         ts_is_present: timeSheetData.ts_is_present,
+        ts_ref_no: timeSheetData.ts_ref_no
 
     }, {
         where: {
@@ -74,6 +76,20 @@ async function updateTimeSheetDayEntryStatus(empId, day, month, year) {
     }
 
 }
+async function updateTimesheetByDateRange(data) {
+    const timesheet = await TimeSheet.update({
+        ts_is_present: 4 //leave
+    }, {
+      where:{
+        ts_emp_id: data.emp_id,
+        ts_day: data.day,
+        ts_month: data.month,
+        ts_year: data.year
+      }
+    });
+}
+
+
 
 async function getTimeSheetDayEntry(empId, day, month, year) {
     return await TimeSheet.findOne({
@@ -126,11 +142,6 @@ async function getLatestTimeSheet() {
 
 async function findTimeSheetMonth(empId, month, year) {
     return await TimeSheet.findAll({
-        // group:['ts_month', 'ts_year'],
-        /* attributes:[
-             [sequelize.fn('distinct', sequelize.col('ts_month')), 'thisMonth'],
-             [sequelize.fn('distinct', sequelize.col('ts_year')), 'thisYear']
-         ],*/
         where: {ts_emp_id: empId, ts_month: month, ts_year: year}
     })
 }
@@ -138,7 +149,7 @@ async function findTimeSheetMonth(empId, month, year) {
 async function findTimeSheetByMonthOnly(month, year) {
     return await TimeSheet.findAll({
         //group:['ts_month', 'ts_year'],
-        where: {ts_month: month, ts_year: year}
+        where: { ts_month: month, ts_year: year, ts_status:null }
     })
 }
 
@@ -185,5 +196,6 @@ module.exports = {
     getAttendanceStatus,
     computeSalaryPayableByTimesheet,
     getTimeSheetDayEntry,
-    updateTimeSheetDayEntryStatus
+    updateTimeSheetDayEntryStatus,
+    updateTimesheetByDateRange
 }

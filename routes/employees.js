@@ -5,6 +5,8 @@ const _ = require('lodash')
 const logs = require('../services/logService')
 const employees = require('../services/employeeService')
 const documents = require('../services/employeeDocumentsService')
+const isWeekend = require('date-fns/isWeekend')
+const IRCMailerService = require('../services/IRCMailer')
 const supervisorAssignment = require('../services/supervisorAssignmentService');
 const auth = require("../middleware/auth");
 const Joi = require("joi");
@@ -13,6 +15,16 @@ const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const path = require('path')
 const user = require("../services/userService");
+const {sequelize, Sequelize} = require("../services/db");
+const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
+const employeeModel = require('../models/Employee')(sequelize, Sequelize.DataTypes);
+
+const ReportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes);
+const OperationUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes);
+const FunctionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes);
+
 const s3 = new AWS.S3({
     accessKeyId: `${process.env.ACCESS_KEY}`,
     secretAccessKey: `${process.env.SECRET_KEY}`
@@ -20,12 +32,12 @@ const s3 = new AWS.S3({
 
 
 /* GET employees. */
-router.get('/', auth, employees.getAllEmployee);
+router.get('/', auth(), employees.getAllEmployee);
 /*router.get('/getemployee', async function(req, res, next){
 
 })*/
 
-router.get('/get-employee/:emp_id', auth, async function (req, res, next) {
+router.get('/get-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         await employees.getEmployee(empId).then((data) => {
@@ -42,9 +54,9 @@ router.get('/get-employee/:emp_id', auth, async function (req, res, next) {
     }
 })
 
-router.post('/employee-enrollment', auth, employees.createNewEmployee);
+router.post('/employee-enrollment', auth(), employees.createNewEmployee);
 
-router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
+router.patch('/update-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         await employees.getEmployee(empId).then((data) => {
@@ -72,14 +84,29 @@ router.patch('/update-employee/:emp_id', auth, async function (req, res, next) {
         next(err);
     }
 });
-router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, res, next) {
+
+router.patch('/update-employee-backoffice/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
-        await employees.getEmployee(empId).then((data) => {
+        await employees.getEmployee(empId).then(async (data) => {
             if (_.isEmpty(data)) {
                 return res.status(400).json(`Employee Doesn't Exist`)
             } else {
                 const employeeData = req.body
+
+                const employeeHireDate = new Date(employeeData.emp_hire_date)
+
+                const employeeContractEndDate = new Date(employeeData.emp_contract_end_date)
+
+                // const checkEmployeeHireDateWeekend = await isWeekend(employeeHireDate)
+                //
+                // const checkEmployeeContractEndDateWeekend = await isWeekend(employeeContractEndDate)
+                //
+                // if(checkEmployeeContractEndDateWeekend || checkEmployeeHireDateWeekend){
+                //     return res.status(400).json('Hire date or contract end date cannot be a weekend')
+                // }
+              //return res.status(200).json(employeeData.emp_paye_no);
+
                 employees.updateEmployeeFromBackoffice(empId, employeeData).then((data) => {
                     const logData = {
                         "log_user_id": req.user.username.user_id,
@@ -102,7 +129,7 @@ router.patch('/update-employee-backoffice/:emp_id', auth, async function (req, r
 });
 
 
-router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) {
+router.patch('/suspend-employee/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
         const schema = Joi.object({
@@ -174,8 +201,54 @@ router.patch('/suspend-employee/:emp_id', auth, async function (req, res, next) 
     }
 });
 
+router.patch('/unsuspend-employee/:emp_id', auth(), async function (req, res, next) {
+    try {
+        let empId = req.params['emp_id']
+   /*     const schema = Joi.object({
+            emp_suspension_reason: Joi.string().required(),
+        })
 
-router.patch('/upload-profile-pic/:empId', auth, async function (req, res, next) {
+        const suspensionRequest = req.body
+        const validationResult = schema.validate(suspensionRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }*/
+
+
+        const employeeData = await employees.getEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(employeeData)) {
+            return res.status(400).json(`Employee Doesn't Exist`)
+        }
+
+        const suspendResponse = await employees.unSuspendEmployee(empId).then((data) => {
+            return data
+        })
+
+        if (_.isEmpty(suspendResponse) || _.isNull(suspendResponse)) {
+            return res.status(400).json(`An Error Occurred`)
+        }
+          const logData = {
+              "log_user_id": req.user.username.user_id,
+              "log_description": "Suspended Employee",
+              "log_date": new Date()
+          }
+          await logs.addLog(logData).then((logRes) => {
+
+              return res.status(200).json('Action Successful')
+          });
+
+    } catch (err) {
+        console.error(`An error occurred while updating Employee `, err.message);
+        next(err);
+    }
+});
+
+
+router.patch('/upload-profile-pic/:empId', auth(), async function (req, res, next) {
     try {
         let empId = req.params['empId']
         const employeeDatum = await employees.getEmployee(empId).then((data) => {
@@ -221,7 +294,7 @@ router.patch('/upload-profile-pic/:empId', auth, async function (req, res, next)
 });
 
 
-router.post('/upload-documents/:empId', auth, async function (req, res, next) {
+router.post('/upload-documents/:empId', auth(), async function (req, res, next) {
     try {
 
         let empId = req.params['empId']
@@ -276,8 +349,7 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
             }
 
             return res.status(200).json(`Action Successful`)
-        }
-        else {
+        } else {
             const uploadResponse = await uploadFile(docs).then((response) => {
                 return response
             }).catch(err => {
@@ -306,7 +378,7 @@ router.post('/upload-documents/:empId', auth, async function (req, res, next) {
 });
 
 
-router.post('/set-supervisor', auth, async function (req, res, next) {
+router.post('/set-supervisor', auth(), async function (req, res, next) {
     try {
         const schema = Joi.object({
             emp_supervisor_status: Joi.number().required(),
@@ -354,7 +426,7 @@ router.post('/set-supervisor', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-supervisor', auth, async function (req, res, next) {
+router.get('/get-supervisor', auth(), async function (req, res, next) {
     try {
         await employees.getSupervisors().then((data) => {
             return res.status(200).json(data)
@@ -365,7 +437,7 @@ router.get('/get-supervisor', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-none-supervisor', auth, async function (req, res, next) {
+router.get('/get-none-supervisor', auth(), async function (req, res, next) {
     try {
         await employees.getNoneSupervisors().then((data) => {
             return res.status(200).json(data)
@@ -376,7 +448,7 @@ router.get('/get-none-supervisor', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-supervisor-employees/:emp_id', auth, async function (req, res, next) {
+router.get('/get-supervisor-employees/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -386,18 +458,27 @@ router.get('/get-supervisor-employees/:emp_id', auth, async function (req, res, 
         if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
             return res.status(400).json(` Employee Does Not exist`)
         } else {
-            await employees.getSupervisorEmployee(empId).then((data) => {
+          const listOfEmps = await employeeModel.getListOfEmployeesSupervising(empId);
+
+          const empIds = [];
+             listOfEmps.map((emp)=>{
+               empIds.push(emp.emp_id)
+             })
+             const submission = await selfAssessmentMasterModel.getSupervisorSelfAssessment(empIds);
+           return res.status(200).json(submission)
+
+           /* await employees.getSupervisorEmployee(empId).then((data) => {
                 return res.status(200).json(data)
-            })
+            })*/
         }
 
     } catch (err) {
-        console.error(`An error occurred while fetching`, err.message);
+        console.error(`An error occurred while fetching`);
         next(err);
     }
 });
 
-router.post('/upload-files', auth, async function (req, res, next) {
+router.post('/upload-files', auth(), async function (req, res, next) {
     try {
 
         return res.status(200).json(req.files.test)
@@ -413,7 +494,7 @@ router.post('/upload-files', auth, async function (req, res, next) {
     }
 });
 
-router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
+router.get('/get-documents/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         const employeeData = await employees.getEmployee(empId).then((data) => {
@@ -434,7 +515,74 @@ router.get('/get-documents/:emp_id', auth, async function (req, res, next) {
     }
 });
 
-router.post('/change-password', employees.changePassword);
+router.post('/change-password', auth(), employees.changePassword);
+
+router.post('/get-employee-report', auth(), async function (req, res, next) {
+    try {
+        const schema = Joi.object({
+            type: Joi.any().required(),
+        })
+
+        const employeeRequest = req.body
+        const validationResult = schema.validate(employeeRequest)
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        let employeesArray = []
+        if (typeof employeeRequest.type === 'string') {
+            if (employeeRequest.type === 'all') {
+                employeesArray = await employees.getEmployees().then((data) => {
+                    return data
+                })
+            } else {
+                return res.status(400).json('Invalid Parameters Sent')
+            }
+        } else if (typeof employeeRequest.type === 'number') {
+            if (parseInt(employeeRequest.type) === 1) {
+                employeesArray = await employees.getActiveEmployees().then((data) => {
+                    return data
+                })
+            } else if (parseInt(employeeRequest.type) === 0) {
+                employeesArray = await employees.getInactiveEmployees().then((data) => {
+                    return data
+                })
+            } else {
+                return res.status(400).json('Invalid Parameters Sent')
+            }
+        }
+        return res.status(200).json(employeesArray)
+
+    } catch (err) {
+        return res.status(200).json(`An error occurred while fetching Employee `);
+        next(err);
+    }
+})
+
+
+router.get('/get-d-codes/:type', async function(req, res){
+  try{
+    const type = req.params.type;
+    let data = null;
+    switch(type){
+      case 'd4':
+        data = await OperationUnitModel.getAllOperationUnits();
+        break;
+      case 'd5':
+        data = await ReportingEntityModel.getAllReportingEntities();
+        break;
+      case 'd6':
+        data = await FunctionalAreaModel.getAllFunctionalAreas();
+        break;
+      default:
+        data = null;
+    }
+    return res.status(200).json(data);
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again.");
+  }
+});
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     return new Promise(async (resolve, reject) => {
         let s3Res;

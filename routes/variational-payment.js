@@ -14,8 +14,10 @@ const logs = require('../services/logService')
 const salary = require("../services/salaryService");
 const {sequelize} = require("../services/db");
 const documents = require("../services/employeeDocumentsService");
+const payrollMonthYearLocation = require('../services/payrollMonthYearLocationService')
 const path = require("path");
 const AWS = require("aws-sdk");
+const {removePayrollMonthYearLocation} = require("../services/payrollMonthYearLocationService");
 const s3 = new AWS.S3({
     accessKeyId: `${process.env.ACCESS_KEY}`,
     secretAccessKey: `${process.env.SECRET_KEY}`
@@ -23,7 +25,7 @@ const s3 = new AWS.S3({
 
 
 /* Get All variational payments */
-router.get('/', auth, async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
     try {
         await variationalPayment.getVariationalPayments().then((data) => {
             return res.status(200).json(data);
@@ -34,7 +36,7 @@ router.get('/', auth, async function (req, res, next) {
 });
 
 
-router.post('/', auth, async (req, res, next) => {
+router.post('/', auth(), async (req, res, next) => {
     try {
         // const scheme = Joi.array().items(Joi.object().keys({
         //     name: Joi.string().required(),
@@ -58,11 +60,7 @@ router.post('/', auth, async (req, res, next) => {
 
         //return  res.status(200).json(vpRequest)
 
-        const salaryRoutineCheck = await salary.getSalaryMonthYear(req.body.month, req.body.year).then((data) => {
-            return data
-        })
 
-        if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
 
             let employeeId = req.body.employee
             let payments = req.body.payments
@@ -74,155 +72,161 @@ router.post('/', auth, async (req, res, next) => {
             })
             if (!(_.isNull(employeeData) || _.isEmpty(employeeData))) {
 
+                let salaryRoutine = await  removePayrollMonthYearLocation(parseInt(req.body.month), parseInt(req.body.year), parseInt(employeeData.emp_location_id) ).then((data)=>{
+                    return data
+                })
+
+                if(_.isNull(salaryRoutine) || _.isEmpty(salaryRoutine)){
+                    for (const payment of payments) {
+                        const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(employeeId), parseInt(req.body.year), parseInt(req.body.month), parseInt(payment.payment_definition)).then((data) => {
+                            return data
+                        })
+
+                        if (!(_.isNull(checkExisting) || _.isEmpty(checkExisting))) {
+                            if ((parseInt(checkExisting.vp_confirm) === 0) || (parseInt(checkExisting.vp_confirm) === 2)) {
+                                await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
+                            } else {
+
+                                return res.status(400).json(`${checkExisting.payment.pd_payment_name} already actioned for employee, consider updating`)
+                            }
+
+                        }
+
+                        if (parseFloat(payment.amount) > 0) {
+                            const vpObject = {
+                                vp_emp_id: parseInt(employeeId),
+                                vp_payment_def_id: parseInt(payment.payment_definition),
+                                vp_amount: parseFloat(payment.amount),
+                                vp_payment_month: parseInt(req.body.month),
+                                vp_payment_year: parseInt(req.body.year)
+                            }
+                            const addVariationalPaymentResponse = await variationalPayment.setNewVariationalPayment(vpObject).then((data) => {
+                                return data
+                            })
+
+                            if (_.isEmpty(addVariationalPaymentResponse) || _.isNull(addVariationalPaymentResponse)) {
+
+                                const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                                    return data
+                                })
+
+                                return res.status(400).json('An error Occurred while adding variational Payments')
+
+                            }
+                        }
+
+
+                    }
+
+
+                    // if (Array.isArray(docs)) {
+                    //
+                    //     for (const doc of docs) {
+                    //         const uploadResponse = await uploadFile(doc).then((response) => {
+                    //             return response
+                    //         })
+                    //
+                    //         if (_.isEmpty(uploadResponse)){
+                    //             let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //                 return data
+                    //             })
+                    //             const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //                 return data
+                    //             })
+                    //
+                    //             return res.status(400).json('An error Occurred while Uploading Documents')
+                    //
+                    //         }
+                    //
+                    //         const documentData = {
+                    //             vd_emp_id: employeeId,
+                    //             vd_month: parseInt(req.body.month),
+                    //             vd_year: parseInt(req.body.year),
+                    //             vd_doc: uploadResponse
+                    //         }
+                    //         let documentAddResponse = await variationalPaymentDocument.setNewVariationalDocument(documentData).then((data) => {
+                    //             return data
+                    //         })
+                    //         if (_.isEmpty(documentAddResponse) || _.isNull(documentAddResponse)) {
+                    //
+                    //             let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //                 return data
+                    //             })
+                    //             const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //                 return data
+                    //             })
+                    //
+                    //             return res.status(400).json('An error Occurred while Uploading Documents')
+                    //
+                    //
+                    //         }
+                    //
+                    //     }
+                    // }
+                    // else {
+                    //     const uploadResponse = await uploadFile(docs).then((response) => {
+                    //         return response
+                    //     }).catch(err => {
+                    //         return res.status(400).json(err)
+                    //     })
+                    //
+                    //     if (_.isEmpty(uploadResponse)) {
+                    //         let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //             return data
+                    //         })
+                    //         const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //             return data
+                    //         })
+                    //
+                    //         return res.status(400).json('An error Occurred while Uploading Documents')
+                    //
+                    //     }
+                    //     const documentData = {
+                    //         vd_emp_id: employeeId,
+                    //         vd_month: parseInt(req.body.month),
+                    //         vd_year: parseInt(req.body.year),
+                    //         vd_doc: uploadResponse
+                    //     }
+                    //
+                    //     let documentAddResponse = await variationalPaymentDocument.setNewVariationalDocument(documentData).then((data) => {
+                    //         return data
+                    //     })
+                    //     if (_.isEmpty(documentAddResponse) || _.isNull(documentAddResponse)) {
+                    //         let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //             return data
+                    //         })
+                    //         const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
+                    //             return data
+                    //         })
+                    //
+                    //         return res.status(400).json('An error Occurred while Uploading Documents')
+                    //
+                    //
+                    //     }
+                    //     return res.status(200).json('Action Successful')
+                    // }
+
+                    return res.status(200).json('Action Successful')
+                } else{
+                    return res.status(400).json("Payroll Routine already run for this location for this period");
+                }
+
                 //return res.status(400).json(employeeData);
 
-                for (const payment of payments) {
-                    const checkExisting = await variationalPayment.checkDuplicateEntry(parseInt(employeeId), parseInt(req.body.year), parseInt(req.body.month), parseInt(payment.payment_definition)).then((data) => {
-                        return data
-                    })
 
-                    if (!(_.isNull(checkExisting) || _.isEmpty(checkExisting))) {
-                        if ((parseInt(checkExisting.vp_confirm) === 0) || (parseInt(checkExisting.vp_confirm) === 2)) {
-                            await variationalPayment.deletePaymentEntry(checkExisting.vp_id).then()
-                        } else {
-
-                            return res.status(400).json(`${checkExisting.payment.pd_payment_name} already actioned for employee, consider updating`)
-                        }
-
-                    }
-
-                    if (parseFloat(payment.amount) > 0) {
-                        const vpObject = {
-                            vp_emp_id: parseInt(employeeId),
-                            vp_payment_def_id: parseInt(payment.payment_definition),
-                            vp_amount: parseFloat(payment.amount),
-                            vp_payment_month: parseInt(req.body.month),
-                            vp_payment_year: parseInt(req.body.year)
-                        }
-                        const addVariationalPaymentResponse = await variationalPayment.setNewVariationalPayment(vpObject).then((data) => {
-                            return data
-                        })
-
-                        if (_.isEmpty(addVariationalPaymentResponse) || _.isNull(addVariationalPaymentResponse)) {
-
-                            const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                                return data
-                            })
-
-                            return res.status(400).json('An error Occurred while adding variational Payments')
-
-                        }
-                    }
-
-
-                }
-
-
-                if (Array.isArray(docs)) {
-
-                    for (const doc of docs) {
-                        const uploadResponse = await uploadFile(doc).then((response) => {
-                            return response
-                        })
-
-                        if (_.isEmpty(uploadResponse)){
-                            let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                                return data
-                            })
-                            const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                                return data
-                            })
-
-                            return res.status(400).json('An error Occurred while Uploading Documents')
-
-                        }
-
-                        const documentData = {
-                            vd_emp_id: employeeId,
-                            vd_month: parseInt(req.body.month),
-                            vd_year: parseInt(req.body.year),
-                            vd_doc: uploadResponse
-                        }
-                        let documentAddResponse = await variationalPaymentDocument.setNewVariationalDocument(documentData).then((data) => {
-                            return data
-                        })
-                        if (_.isEmpty(documentAddResponse) || _.isNull(documentAddResponse)) {
-
-                            let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                                return data
-                            })
-                            const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                                return data
-                            })
-
-                            return res.status(400).json('An error Occurred while Uploading Documents')
-
-
-                        }
-
-                    }
-                }
-                else {
-                    const uploadResponse = await uploadFile(docs).then((response) => {
-                        return response
-                    }).catch(err => {
-                        return res.status(400).json(err)
-                    })
-
-                    if (_.isEmpty(uploadResponse)) {
-                        let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                            return data
-                        })
-                        const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                            return data
-                        })
-
-                        return res.status(400).json('An error Occurred while Uploading Documents')
-
-                    }
-                    const documentData = {
-                        vd_emp_id: employeeId,
-                        vd_month: parseInt(req.body.month),
-                        vd_year: parseInt(req.body.year),
-                        vd_doc: uploadResponse
-                    }
-
-                    let documentAddResponse = await variationalPaymentDocument.setNewVariationalDocument(documentData).then((data) => {
-                        return data
-                    })
-                    if (_.isEmpty(documentAddResponse) || _.isNull(documentAddResponse)) {
-                        let removeResponse = variationalPaymentDocument.deletePaymentDocument(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                            return data
-                        })
-                        const removePayments = await variationalPayment.deletePaymentEntryEmployeeMonthYear(employeeId, parseInt(req.body.month), parseInt(req.body.year)).then((data) => {
-                            return data
-                        })
-
-                        return res.status(400).json('An error Occurred while Uploading Documents')
-
-
-                    }
-                    return res.status(200).json('Action Successful')
-                }
-
-
-                return res.status(200).json('Action Successful')
 
             } else {
                 return res.status(404).json('Employee Does not Exists')
             }
 
-        } else {
-            return res.status(400).json("Payroll Routine already run for this period");
 
-        }
 
     } catch (e) {
         return res.status(400).json(`Error while posting variational payment  ${e.message}`);
     }
 });
 
-router.post('/single-payment', auth, async (req, res) => {
+router.post('/single-payment', auth(), async (req, res) => {
     try {
         const requestBody = req.body;
         const payroll = await payrollMonthYear.findPayrollMonthYear().then((res) => {
@@ -282,7 +286,7 @@ router.post('/single-payment', auth, async (req, res) => {
     }
 });
 
-router.get('/:id', auth, async (req, res, next) => {
+router.get('/:id', auth(), async (req, res, next) => {
     try {
         const id = req.params.id;
         variationalPayment.getVariationalPaymentById(id).then((data) => {
@@ -293,7 +297,7 @@ router.get('/:id', auth, async (req, res, next) => {
     }
 });
 
-router.post('/confirm-payment', auth, async (req, res, next) => {
+router.post('/confirm-payment', auth(), async (req, res, next) => {
     try {
         const schema = Joi.object({
             status: Joi.number().required(),
@@ -321,7 +325,7 @@ router.post('/confirm-payment', auth, async (req, res, next) => {
     }
 });
 
-router.get('/current-payment/:year/:month', auth, async (req, res, next) => {
+router.get('/current-payment/:year/:month', auth(), async (req, res, next) => {
     try {
         let month = req.params.month
         let year = req.params.year
@@ -333,7 +337,7 @@ router.get('/current-payment/:year/:month', auth, async (req, res, next) => {
     }
 });
 
-router.get('/current-pending-payment/:year/:month', auth, async (req, res, next) => {
+router.get('/current-pending-payment/:year/:month', auth(), async (req, res, next) => {
     try {
         let month = req.params.month
         let year = req.params.year
@@ -345,7 +349,7 @@ router.get('/current-pending-payment/:year/:month', auth, async (req, res, next)
     }
 });
 
-router.patch('/update-payment-amount/:id', auth, async (req, res, next) => {
+router.patch('/update-payment-amount/:id', auth(), async (req, res, next) => {
     try {
         const schema = Joi.object({
             vp_amount: Joi.number().required(),
@@ -384,7 +388,7 @@ router.patch('/update-payment-amount/:id', auth, async (req, res, next) => {
 });
 
 
-router.get('/unconfirmed-payment', auth, async (req, res, next) => {
+router.get('/unconfirmed-payment', auth(), async (req, res, next) => {
     try {
         await variationalPayment.getUnconfirmedVariationalPayment().then((data) => {
             return res.status(200).json(data);

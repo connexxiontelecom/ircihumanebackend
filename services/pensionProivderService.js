@@ -8,20 +8,21 @@ const errHandler = (err) => {
     console.log("Error: ", err);
 }
 const getPensionProviders = async (req, res) => {
-    const providers = await pension.findAll({attributes: ['provider_name', 'pension_provider_id']});
+    const providers = await pension.findAll({attributes: ['provider_name', 'pension_provider_id', 'provider_code']});
     res.status(200).json(providers)
 }
 const setNewPensionProvider = async (req, res, next) => {
     try {
         const schema = Joi.object({
-            provider_name: Joi.string().required()
+            provider_name: Joi.string().required(),
+            provider_code: Joi.string().required()
         });
         const pensionRequest = req.body
         const validationResult = schema.validate(pensionRequest)
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message);
         }
-        await pension.create({provider_name: req.body.provider_name})
+        await pension.create({provider_name: req.body.provider_name, provider_code: req.body.provider_code})
             .catch(errHandler);
         //Log
         const logData = {
@@ -46,7 +47,8 @@ const getPensionProviderById = async (req, res) => {
 const updatePensionProvider = async (req, res) => {
     try {
         const schema = Joi.object({
-            provider_name: Joi.string().required()
+            provider_name: Joi.string().required(),
+            provider_code: Joi.string().required()
         });
         const pensionRequest = req.body
         const validationResult = schema.validate(pensionRequest)
@@ -56,6 +58,7 @@ const updatePensionProvider = async (req, res) => {
         const provider_id = req.params.id;
         const b = await pension.update({
             provider_name: req.body.provider_name,
+            provider_code: req.body.provider_code
         }, {
             where: {
                 pension_provider_id: provider_id
@@ -76,9 +79,14 @@ const updatePensionProvider = async (req, res) => {
 
 }
 
+async function getAllPensionProviders(){
+    return await pension.findAll({attributes: ['provider_name', 'pension_provider_id', 'provider_code']});
+}
+
 module.exports = {
     getPensionProviderById,
     getPensionProviders,
     updatePensionProvider,
     setNewPensionProvider,
+    getAllPensionProviders
 }

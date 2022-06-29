@@ -1,13 +1,31 @@
 const {QueryTypes} = require('sequelize')
 const {sequelize, Sequelize} = require('./db');
+const Joi = require("joi");
 const SelfAssessment = require("../models/selfassessment")(sequelize, Sequelize.DataTypes)
 
 
 async function addSelfAssessment(selfAssessmentData) {
+    return await SelfAssessment.create(selfAssessmentData);
+  /*{
+      sa_gs_id: selfAssessmentData.sa_gs_id,
+      sa_emp_id: selfAssessmentData.sa_emp_id,
+      sa_comment: selfAssessmentData.sa_comment,
+      sa_master_id: selfAssessmentData.sa_master_id
+  }*/
+}
+
+async function addSelfAssessmentMidYear(selfAssessmentData) {
     return await SelfAssessment.create({
         sa_gs_id: selfAssessmentData.sa_gs_id,
         sa_emp_id: selfAssessmentData.sa_emp_id,
-        sa_comment: selfAssessmentData.sa_comment
+        sa_comment: selfAssessmentData.sa_comment,
+        sa_master_id: selfAssessmentData.sa_master_id,
+        sa_update: selfAssessmentData.sa_update,
+        sa_accomplishment: selfAssessmentData.sa_accomplishment,
+        sa_challenges: selfAssessmentData.sa_challenges,
+        sa_support_needed: selfAssessmentData.sa_support_needed,
+        sa_next_steps: selfAssessmentData.sa_next_steps
+
     });
 }
 
@@ -42,6 +60,17 @@ async function respondSelfAssessment(saId, saResponse) {
             sa_id: saId
         }
     })
+}
+
+async function getSelfAssessmentQuestionsByMasterId(masterId){
+  return await SelfAssessment.findAll({
+    where: { sa_master_id: masterId } ,
+  });
+}
+async function getOneSelfAssessmentByMasterId(masterId){
+  return await SelfAssessment.findOne({
+    where: {sa_master_id: masterId}
+  });
 }
 
 async function updateSelfAssessment(saId, saComment) {
@@ -88,7 +117,22 @@ async function updateQuestion(eyaId, question) {
 
 async function findSelfAssessmentsEmployeeYear(empId, gsId) {
     return await SelfAssessment.findAll({where: {sa_gs_id: gsId, sa_emp_id: empId}})
+}
 
+async function approveSelfAssessment(gsId, empId) {
+    return await SelfAssessment.update({
+        sa_status: 1
+    }, {
+        where: {sa_gs_id: gsId, sa_emp_id: empId}
+    })
+}
+
+async function approveSelfAssessmentByMasterId(masterId) {
+    return await SelfAssessment.update({
+        sa_status: 1
+    }, {
+        where: {sa_master_id: masterId}
+    })
 }
 
 
@@ -103,5 +147,10 @@ module.exports = {
     updateSelfAssessment,
     supervisorUpdateSelfAssessment,
     findSelfAssessmentsEmployeeYear,
-    selfAssessmentStatusUpdate
+    selfAssessmentStatusUpdate,
+    addSelfAssessmentMidYear,
+    approveSelfAssessment,
+    approveSelfAssessmentByMasterId,
+  getSelfAssessmentQuestionsByMasterId,
+  getOneSelfAssessmentByMasterId
 }

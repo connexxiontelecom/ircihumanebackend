@@ -7,6 +7,9 @@ const {
 const {sequelize, Sequelize} = require("../services/db");
 const LeaveType = require("../models/LeaveType")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const LocationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const SectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const AuthorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class leaveApplication extends Model {
     /**
@@ -26,6 +29,14 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+     static async getLeaveApplicationById(leaveId){
+      return await leaveApplication.findOne({
+        where:{leapp_id:leaveId}
+      })
+    }
+
+
+
     static async getApprovedApplications(){
       return await leaveApplication.findAll({
         where:{leapp_status:1}, //approved
@@ -33,7 +44,44 @@ module.exports = (sequelize, DataTypes) => {
         order:[['leapp_id', 'DESC']]
       })
     }
+    static async getLeaveApplicationsByStatus(status){
+      return await leaveApplication.findAll({
+        where:{leapp_status:status},
+        include:[
+          {model:Employee, as:'employee',
+          include:[
+            {model:LocationModel, as: 'location'},
+            {model:SectorModel, as: 'sector'},
+          ]},
+          {model:LeaveType, as:'leave_type'},
+          {model:AuthorizationModel, as:'leave_authorizer', include:[{model: Employee, as: 'officers'}]},
+        ],
+        order:[['leapp_id', 'DESC']]
+      })
+    }
 
+    static async updateLeaveAppStatus(leaveId, status){
+      return await leaveApplication.update({
+      leapp_status:status},
+        {where:{leapp_id:leaveId}
+      });
+    }
+
+    static async updateLeaveAppPeriod(leaveId, start, end, length){
+      return await leaveApplication.update({
+          leapp_start_date:start,
+          leapp_end_date:end,
+          leapp_total_days:(length ),
+        },
+        {where:{leapp_id:leaveId}
+        });
+    }
+
+    static async getAllEmployeeApprovedLeaveApplications(empId){
+      return await leaveApplication.findAll({
+        where:{leapp_empid:empId, leapp_status: 1}
+      })
+    }
 
   };
   leaveApplication.init({
@@ -81,6 +129,8 @@ module.exports = (sequelize, DataTypes) => {
 
   leaveApplication.belongsTo(Employee, { as: 'approve', foreignKey: 'leapp_approve_by'})
   leaveApplication.hasMany(Employee, {  foreignKey: 'emp_id' })
+
+  leaveApplication.hasMany(AuthorizationModel, {as:'leave_authorizer', foreignKey: 'auth_travelapp_id', sourceKey:'leapp_id'})
 
 
   return leaveApplication;

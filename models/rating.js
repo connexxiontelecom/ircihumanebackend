@@ -20,7 +20,9 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
     rating_name: DataTypes.STRING,
-    rating_desc: DataTypes.STRING
+    rating_desc: DataTypes.STRING,
+    rating_time_period: DataTypes.INTEGER,
+    rating_status: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'ratings',

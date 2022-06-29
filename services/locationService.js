@@ -84,6 +84,7 @@ const updateLocation = async (req, res, next) => {
             location_name: Joi.string().required(),
             location_state: Joi.number().required(),
             location_t6_code: Joi.string().required(),
+            focal_points: Joi.array().required(),
         });
         const locationRequest = req.body
         const validationResult = schema.validate(locationRequest)
@@ -100,6 +101,22 @@ const updateLocation = async (req, res, next) => {
                 location_id: location_id
             }
         });
+      const focal_points = req.body.focal_points;
+        const hrpoints = await hrFocalPointModel.getHrFocalPointsByLocationId(location_id);
+        const existing = [];
+        hrpoints.map((lin)=>{
+          existing.push(lin.hfp_emp_id);
+        });
+      if(existing.length > 0){
+        const destroyEx = await hrFocalPointModel.destroyHrFocalPoints(location_id, existing);
+      }
+      focal_points.map((point)=>{
+        let fp = {
+          hfp_location_id:location_id,//loca.location_id,
+          hfp_emp_id:point.value
+        };
+        hrFocalPointModel.addHrFocalPoint(fp);
+      });
         //Log
         const logData = {
             "log_user_id": req.user.username.user_id,
@@ -117,10 +134,15 @@ const updateLocation = async (req, res, next) => {
 
 }
 
+async function findLocationById(locationId) {
+    return await location.findOne({where: {location_id: locationId}})
+}
+
 module.exports = {
     getLocationById,
     getLocations,
     updateLocation,
     setNewLocation,
+    findLocationById
 
 }

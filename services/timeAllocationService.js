@@ -8,7 +8,7 @@ const helper = require('../helper');
 async function findAllTimeAllocations() {
     return await TimeAllocation.findAll({
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as: 'employee'}]
     })
 }
 
@@ -20,7 +20,9 @@ async function addTimeAllocation(timeAllocationData) {
         ta_year: timeAllocationData.ta_year,
         ta_tcode: timeAllocationData.ta_tcode,
         ta_charge: timeAllocationData.ta_charge,
-        ta_ref_no: timeAllocationData.ta_ref_no
+        ta_ref_no: timeAllocationData.ta_ref_no,
+        ta_t0_code: timeAllocationData.ta_t0_code,
+        ta_t0_percent: timeAllocationData.ta_t0_percent
 
     });
 }
@@ -42,9 +44,14 @@ async function deleteTimeAllocation(timeAllocationData) {
         where: {ta_ref_no: timeAllocationData.ta_ref_no}
     });
 }
+async function deleteTimeAllocationByIds(Ids) {
+    return await TimeAllocation.destroy({
+        where: {ta_id: Ids}
+    });
+}
 
-/*
-async function updateTimeAllocation(ta_id, timeAllocationData){
+
+async function updateTimeAllocationByTaId(ta_id, timeAllocationData){
     return await TimeAllocation.update({
         ta_emp_id: timeAllocationData.ta_emp_id,
         ta_month: timeAllocationData.ta_month,
@@ -57,7 +64,7 @@ async function updateTimeAllocation(ta_id, timeAllocationData){
                 ta_id:ta_id
             }
         });
-}*/
+}
 
 async function findTimeAllocation(empId, month, year) {
     return await TimeAllocation.findAll({
@@ -70,7 +77,7 @@ async function findTimeAllocationDetail(month, year, empId) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -78,7 +85,7 @@ async function findOneTimeAllocationDetail(month, year, empId) {
     return await TimeAllocation.findOne({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as: 'employee'}]
     })
 }
 
@@ -92,8 +99,8 @@ async function findTimeAllocationDetailMonthYear(month, year) {
 
 async function findTimeAllocationsDetail(empId, month, year) {
     return await TimeAllocation.findAll({
-        where: {ta_emp_id: empId, ta_month: month, ta_year: year},
-        include: [Employee]
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status:null},
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -101,14 +108,14 @@ async function findTimeAllocationsEmployee(empId) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
 async function findTimeAllocationsByRefNo(ref_no) {
     return await TimeAllocation.findAll({
         where: {ta_ref_no: ref_no},
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -121,8 +128,8 @@ async function findOneTimeAllocationByRefNo(ref_no) {
 
 async function sumTimeAllocation(empId, month, year) {
     return await TimeAllocation.sum('ta_charge', {
-        where: {ta_emp_id: empId, ta_month: month, ta_year: year},
-        include: [Employee]
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status:null},
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -137,6 +144,7 @@ module.exports = {
     addTimeAllocation,
     findTimeAllocation,
     updateTimeAllocation,
+  updateTimeAllocationByTaId,
     sumTimeAllocation,
     deleteTimeAllocation,
     getTimeAllocationApplicationsForAuthorization,
@@ -147,5 +155,6 @@ module.exports = {
     findAllTimeAllocations,
     findTimeAllocationDetailMonthYear,
     findOneTimeAllocationByRefNo,
-    findOneTimeAllocationDetail
+    findOneTimeAllocationDetail,
+  deleteTimeAllocationByIds
 }

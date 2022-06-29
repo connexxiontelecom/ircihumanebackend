@@ -5,7 +5,9 @@ const {
 const {sequelize, Sequelize} = require("../services/db");
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 //const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
-
+const LocationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const SectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const AuthorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
     class TravelApplication extends Model {
         /**
@@ -16,6 +18,34 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
         }
+
+      static async getTravelApplicationsByStatus(status){
+        return await TravelApplication.findAll({
+          where:{travelapp_status:status},
+          include:[
+            {model:Employee, as:'applicant',
+              include:[
+                {model:LocationModel, as: 'location'},
+                {model:SectorModel, as: 'sector'},
+              ]},
+            {model:AuthorizationModel, as:'authorizers', include:[{model: Employee, as: 'officers'}]},
+          ],
+          order:[['travelapp_id', 'DESC']]
+        })
+      }
+      static async getTravelApplicationsById(travelId){
+        return await TravelApplication.findOne({
+          where:{travelapp_id:travelId},
+          /*include:[
+            {model:Employee, as:'applicant',
+              include:[
+                {model:LocationModel, as: 'location'},
+                {model:SectorModel, as: 'sector'},
+              ]},
+            {model:AuthorizationModel, as:'authorizers', include:[{model: Employee, as: 'officers'}]},
+          ],*/
+        })
+      }
     };
     TravelApplication.init({
         travelapp_id: {
@@ -62,7 +92,8 @@ module.exports = (sequelize, DataTypes) => {
         timestamps:false
     });
     TravelApplication.belongsTo(Employee, { foreignKey: 'travelapp_employee_id', as: "applicant"});
-    //TravelApplication.belongsToMany(authorizationModel, { through: 'auth_travelapp_id', as: 'authorizers' });
+    TravelApplication.belongsTo(AuthorizationModel,
+      { foreignKey: 'travelapp_id', as: 'authorizers', sourceKey: 'auth_travelapp_id' });
 
     return TravelApplication;
 };
