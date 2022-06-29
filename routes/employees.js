@@ -515,7 +515,7 @@ router.get('/get-documents/:emp_id', auth(), async function (req, res, next) {
     }
 });
 
-router.post('/change-password', employees.changePassword);
+router.post('/change-password', auth(), employees.changePassword);
 
 router.post('/get-employee-report', auth(), async function (req, res, next) {
     try {
