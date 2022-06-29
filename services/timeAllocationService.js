@@ -69,7 +69,7 @@ async function updateTimeAllocationByTaId(ta_id, timeAllocationData){
 async function findTimeAllocation(empId, month, year) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -93,7 +93,7 @@ async function findTimeAllocationDetailMonthYear(month, year) {
     return await TimeAllocation.findOne({
         where: {ta_month: month, ta_year: year},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -122,7 +122,7 @@ async function findTimeAllocationsByRefNo(ref_no) {
 async function findOneTimeAllocationByRefNo(ref_no) {
     return await TimeAllocation.findOne({
         where: {ta_ref_no: ref_no},
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
