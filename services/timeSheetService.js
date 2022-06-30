@@ -123,7 +123,7 @@ async function computeSalaryPayableByTimesheet(daysAbsent, divisor, empId) {
 }
 
 async function findTimeSheet(empId, day, month, year) {
-    return await TimeSheet.findOne({where: {ts_emp_id: empId, ts_day: day, ts_month: month, ts_year: year}})
+    return await TimeSheet.findOne({where: {ts_emp_id: empId, ts_day: day, ts_month: month, ts_year: year, ts_status:null}})
 
 }
 
