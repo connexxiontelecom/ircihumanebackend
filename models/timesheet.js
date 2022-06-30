@@ -40,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     ts_end: DataTypes.TEXT,
     ts_duration: DataTypes.DOUBLE,
     ts_ref_no: DataTypes.TEXT,
+    ts_status: DataTypes.TEXT,
     ts_is_present: DataTypes.INTEGER,
 
   }, {
