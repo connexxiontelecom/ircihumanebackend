@@ -145,6 +145,11 @@ async function findTimeSheetMonth(empId, month, year) {
         where: {ts_emp_id: empId, ts_month: month, ts_year: year, ts_status:null}
     })
 }
+async function findTimeSheetMonthByRefNo(ref_no) {
+    return await TimeSheet.findAll({
+        where: {ts_ref_no:ref_no}
+    })
+}
 
 async function findTimeSheetByMonthOnly(month, year) {
     return await TimeSheet.findAll({
@@ -197,5 +202,6 @@ module.exports = {
     computeSalaryPayableByTimesheet,
     getTimeSheetDayEntry,
     updateTimeSheetDayEntryStatus,
-    updateTimesheetByDateRange
+    updateTimesheetByDateRange,
+  findTimeSheetMonthByRefNo
 }
