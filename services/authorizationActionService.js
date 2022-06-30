@@ -195,6 +195,14 @@ const updateAuthorizationStatus = async (req, res) => {
                             }
                         });
 
+                        const tsData = await timeSheetModel.update({
+                            ts_status: status,
+                        }, {
+                            where: {
+                                ts_ref_no: appId
+                            }
+                        });
+
 
                         const timealloc = await timeAllocationService.findOneTimeAllocationByRefNo(appId).then((val) => {
                             return val;
