@@ -299,7 +299,7 @@ const updateAuthorizationStatus = async (req, res) => {
 async function getAuthorizationByTypeOfficerId(type, supervisorId){
   return  await authorizationModel.findAll({
     where: {
-      auth_status:0,
+      //auth_status:0,
       auth_type: parseInt(type),
       //auth_travelapp_id: authId,
       auth_officer_id: supervisorId
