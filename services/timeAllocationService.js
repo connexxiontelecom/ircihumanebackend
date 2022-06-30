@@ -99,7 +99,7 @@ async function findTimeAllocationDetailMonthYear(month, year) {
 
 async function findTimeAllocationsDetail(empId, month, year) {
     return await TimeAllocation.findAll({
-        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status:null},
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year},
         include: [{model:Employee, as:'employee'}]
     })
 }
