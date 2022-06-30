@@ -133,6 +133,13 @@ async function sumTimeAllocation(empId, month, year) {
     })
 }
 
+async function sumTimeAllocation(empId, month, year) {
+    return await TimeAllocation.sum('ta_charge', {
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year},
+        include: [{model:Employee, as:'employee'}]
+    })
+}
+
 const getTimeAllocationApplicationsForAuthorization = async (appIds) => {
     return await TimeAllocation.findAll({
         where: {ta_ref_no: appIds}
