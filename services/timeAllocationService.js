@@ -80,6 +80,13 @@ async function findTimeAllocationDetail(month, year, empId) {
         include: [{model:Employee, as:'employee'}]
     })
 }
+async function findTimeAllocationDetailByRefNo(ref_no) {
+    return await TimeAllocation.findAll({
+        where: {ta_ref_no:ref_no},
+        order: [['ta_id', 'DESC']],
+        include: [{model:Employee, as:'employee'}]
+    })
+}
 
 async function findOneTimeAllocationDetail(month, year, empId) {
     return await TimeAllocation.findOne({
@@ -164,5 +171,6 @@ module.exports = {
     findOneTimeAllocationByRefNo,
     findOneTimeAllocationDetail,
   deleteTimeAllocationByIds,
-  timeAllocationStatus
+  timeAllocationStatus,
+  findTimeAllocationDetailByRefNo
 }
