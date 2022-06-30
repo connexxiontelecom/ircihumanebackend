@@ -379,23 +379,24 @@ router.get('/preload-date/:emp_id', auth(), async function (req, res, next) {
     }
 });
 
-router.get('/time-sheet/:month/:year/:emp_id', auth(), async function (req, res) {
+router.get('/time-sheet/:month/:year/:emp_id/:ref_no', auth(), async function (req, res) {
     try {
         const empId = parseInt(req.params.emp_id);
         const month = parseInt(req.params.month);
         const year = parseInt(req.params.year);
+        const refNo = req.params.ref_no;
         const userId = req.user.username.user_id;
-        const oneTimeAllocation = await timeSheetAllocation.findOneTimeAllocationDetail(month, year, empId).then((data) => {
-            return data;
-        });
-        const timeAllocation = await timeSheetAllocation.findTimeAllocationDetail(month, year, empId).then((data) => {
+        // const oneTimeAllocation = await timeSheetAllocation.findOneTimeAllocationDetail(month, year, empId).then((data) => {
+        //     return data;
+        // });
+        const timeAllocation = await timeSheetAllocation.findTimeAllocationDetailByRefNo(refNo).then((data) => {
             return data;
         });
 
-        if (_.isNull(oneTimeAllocation) || _.isEmpty(oneTimeAllocation)) {
+        if (_.isNull(timeAllocation) || _.isEmpty(timeAllocation)) {
             return res.status(404).json("No time allocation found.");
         }
-        const timesheet = await timeSheet.findTimeSheetMonth(empId, month, year).then((time) => {
+        const timesheet = await timeSheet.findTimeSheetMonthByRefNo(refNo).then((time) => {
             return time;
         });
         if (_.isEmpty(timesheet) || _.isNull(timesheet)) {
@@ -403,7 +404,7 @@ router.get('/time-sheet/:month/:year/:emp_id', auth(), async function (req, res)
         }
 
 
-        await authorizationAction.getAuthorizationLog(oneTimeAllocation.ta_ref_no, 2).then((log) => {
+        await authorizationAction.getAuthorizationLog(refNo, 2).then((log) => {
             return res.status(200).json({timesheet, timeAllocation, log});
         })
 
