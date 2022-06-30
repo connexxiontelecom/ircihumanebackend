@@ -142,7 +142,7 @@ async function getLatestTimeSheet() {
 
 async function findTimeSheetMonth(empId, month, year) {
     return await TimeSheet.findAll({
-        where: {ts_emp_id: empId, ts_month: month, ts_year: year}
+        where: {ts_emp_id: empId, ts_month: month, ts_year: year, ts_status:null}
     })
 }
 
