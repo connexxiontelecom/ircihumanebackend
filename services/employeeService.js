@@ -419,7 +419,7 @@ async function getActiveEmployees() {
         where: {
             emp_status: 1
         },
-        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector',
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector','lga','state',
             'functionalArea', 'reportingEntity', 'operationUnit']
     })
 }
@@ -565,7 +565,7 @@ async function getInactiveEmployees() {
                         [Op.or]: [0, 2, null]
                     }
                 },
-            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector',
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'lga','state',
               'functionalArea', 'reportingEntity', 'operationUnit']
 
         }
