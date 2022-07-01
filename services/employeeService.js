@@ -565,7 +565,8 @@ async function getInactiveEmployees() {
                         [Op.or]: [0, 2, null]
                     }
                 },
-            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector']
+            include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector',
+              'functionalArea', 'reportingEntity', 'operationUnit']
 
         }
     )
