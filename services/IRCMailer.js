@@ -130,9 +130,44 @@ async function paySlipSendMail(from, to, subject, templateParams){
 
 }
 
+async function resetPasswordSendMail(from, to, subject, templateParams){
+    try{
+
+        const message = {
+            from: from,
+            to: to,
+            subject: subject,
+            text: 'Wooohooo it works!!',
+            template: 'payslipnotification',
+            context: {
+                name: templateParams.name,
+                department: templateParams.department,
+                jobRole: templateParams.jobRole,
+                employeeId: templateParams.employeeId,
+                password: templateParams.password
+            }
+        };
+
+
+
+   return   await transport.sendMail(message, function(err, res){
+            if (err) {
+                return err
+            }
+            else {
+                return res
+            }
+        })
+    }catch (e) {
+
+    }
+
+}
+
 //sendMail('trendingnow@gmail.com', 'you@me.com', 'Subject goes here...', 'Here goes the content..')
 
 module.exports = {
   sendMail,
-    paySlipSendMail
+    paySlipSendMail,
+    resetPasswordSendMail
 }
