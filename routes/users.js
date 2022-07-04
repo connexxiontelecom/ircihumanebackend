@@ -12,6 +12,8 @@ const notificationModel = require("../models/notification")(sequelize, Sequelize
 const permissionService = require("../services/permissionService");
 const ROLES = require('../roles')
 const _ = require('lodash')
+const mailer = require("../services/IRCMailer");
+const employee = require("../services/employeeService");
 
 
 /* Get All Users */
@@ -721,6 +723,76 @@ function generateAccessToken(username) {
 
 
 router.post('/change-password', auth, users.changePassword);
+
+/* Login User */
+router.post('/forgot-password', async function (req, res, next) {
+
+    try {
+        const user = req.body
+
+        let checkUserExisting =  await users.findUserByEmail(user.user_username).then((data) => {
+            return data
+        })
+
+        if(_.isEmpty(checkUserExisting) || _.isNull(checkUserExisting)){
+            return res.status(404).json('Invalid Username')
+        }
+
+        if (parseInt(checkUserExisting.user_status) !== 1){
+            return res.status(400).json('User Account Suspended')
+        }
+
+        let newPassword = generatePassword(10)
+
+        let updatePassword = await users.updateUserPassword(checkUserExisting.user_id, newPassword).then((data) => {
+            return data
+        })
+
+        let tempEmp = await employee.getEmployeeById(checkUserExisting.user_username).then((data) => {
+            return data
+        })
+
+        let empJobRole = 'N/A'
+        if (parseInt(tempEmp.emp_job_role_id) > 0) {
+            empJobRole = tempEmp.jobrole.job_role
+        }
+
+        let sectorName = 'N/A'
+        if (parseInt(tempEmp.emp_department_id) > 0) {
+            sectorName = `${tempEmp.sector.department_name} - ${tempEmp.sector.d_t3_code}`
+        }
+
+        const templateParams = {
+            name: `${tempEmp.emp_first_name} ${tempEmp.emp_last_name}`,
+            department: sectorName,
+            jobRole: empJobRole,
+            employeeId: checkUserExisting.user_username,
+            password: newPassword
+        }
+
+        const mailerRes =  await mailer.resetPasswordSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Password Reset', templateParams).then((data)=>{
+            return data
+        })
+
+        return res.status(200).json(`Password Reset Successful, Check your email for new password`)
+
+
+    } catch (err) {
+        return res.status(400).json(`Error while logging user ${err.message}`)
+    }
+});
+
+function generatePassword(length) {
+    let result           = '';
+    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let charactersLength = characters.length;
+    for (let i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
+
 
 
 module.exports = router;
