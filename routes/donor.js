@@ -36,10 +36,10 @@ router.post('/add-donor', auth(), async function (req, res, next) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
 
-        await donor.findDonorByCode(donorRequest.donor_code).then((data) => {
+        await donor.findDonorByCodeSector(donorRequest.donor_code, donorRequest.sector).then((data) => {
             if (data) {
 
-                return res.status(400).json('Donor Code Already Exist')
+                return res.status(400).json('Donor Code & sector Already Exist.')
 
             } else {
 
