@@ -19,6 +19,10 @@ async function findDonorByCode(donorCode) {
     return await Donor.findOne({where: {donor_code: donorCode}})
 }
 
+async function findDonorByCodeSector(donorCode, sector) {
+    return await Donor.findOne({where: {donor_code: donorCode, donor_sector: sector}})
+}
+
 async function findDonorById(donorId) {
     return await Donor.findOne({where: {donor_id: donorId}})
 }
@@ -52,6 +56,7 @@ module.exports = {
     findDonorByCode,
     findDonorById,
     updateDonor,
-    findDonorByLocationId
+    findDonorByLocationId,
+  findDonorByCodeSector
 
 }
