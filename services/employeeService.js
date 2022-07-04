@@ -306,9 +306,11 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_phone_no: employeeData.emp_phone_no,
         emp_account_no: accountNumber,
         emp_bank_id: employeeData.emp_bank_id,
+
         emp_state_id: employeeData.emp_state_id,
         emp_lga_id: employeeData.emp_lga_id,
-        emp_spouse_name: employeeData.emp_spouse_name,
+
+      emp_spouse_name: employeeData.emp_spouse_name,
         emp_spouse_phone_no: employeeData.emp_spouse_phone_no,
         emp_next_of_kin_name: employeeData.emp_next_of_kin_name,
         emp_next_of_kin_address: employeeData.emp_next_of_kin_address,
