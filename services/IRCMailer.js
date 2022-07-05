@@ -138,7 +138,7 @@ async function resetPasswordSendMail(from, to, subject, templateParams){
             to: to,
             subject: subject,
             text: 'Wooohooo it works!!',
-            template: 'payslipnotification',
+            template: 'resetpassword',
             context: {
                 name: templateParams.name,
                 department: templateParams.department,
