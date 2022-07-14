@@ -738,7 +738,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                     let accountNumber =  emp.emp_account_no;
                     let letter = accountNumber.charAt(1);
                     if(letter !== "'"){
-                        accountNumber = `'${letter}`
+                        accountNumber = `'${accountNumber}`
                     }
 
                     let empDepartmentId = 0
