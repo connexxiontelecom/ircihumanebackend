@@ -8,6 +8,7 @@ const leaveApplicationModel = require("../models/leaveapplication")(sequelize, S
 const timeSheetModel = require("../models/timesheet")(sequelize, Sequelize.DataTypes);
 const timeAllocationModel = require("../models/timeallocation")(sequelize, Sequelize.DataTypes);
 const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const hrFocalModel = require('../models/hrfocalpoint')(sequelize, Sequelize)
 const Joi = require('joi');
 const logs = require('../services/logService');
 const timeSheetPenaltyService = require('../services/timesheetPenaltyService');
@@ -65,6 +66,7 @@ const updateAuthorizationStatus = async (req, res) => {
             type: Joi.number().required(),
             comment: Joi.string().required(),
             role: Joi.number().required(),
+            contactGroup: Joi.number().allow(null, ''),
 
             markAsFinal: Joi.number().required().valid(0, 1),
             nextOfficer: Joi.alternatives().conditional('markAsFinal', {is: 0, then: Joi.number().required()}),
@@ -87,10 +89,8 @@ const updateAuthorizationStatus = async (req, res) => {
 
         if (!_.isNull(application) || !_.isEmpty(application)) {
             if (application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
-
-
             const auth = await authorizationModel.update({
-                auth_status: status,
+                auth_status: 0,
                 auth_comment: comment,
                 auth_role_id: role,
             }, {
@@ -100,11 +100,43 @@ const updateAuthorizationStatus = async (req, res) => {
             });
 
             if (markAsFinal === 0) {
-                await authorizationModel.create({
+              switch (type){
+                case 1:
+                  const leaveData = await leaveApplicationService.getLeaveApplicationWithId(appId).then((ldata)=>{
+                    return ldata
+                  })
+                  const emp = await employeeService.getEmployeeByIdOnly(leaveData.leapp_empid).then((e)=>{
+                    return e;
+                  });
+                  res.status(200).json(req.body.contactGroup);
+                  if(req.body.contactGroup === 1){ //HR Focal point
+                    const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
+                      return hr;
+                    })
+                    hrFocal.map(async (n) => {
+                      await authorizationModel.create({
+                        auth_officer_id: n.hfp_emp_id,
+                        auth_type: type,
+                        auth_travelapp_id: appId
+                      });
+                    })
+
+                  }else if(req.body.contactGroup === 2){
+                    await authorizationModel.create({
+                      auth_officer_id: emp.emp_supervisor_id,
+                      auth_type: type,
+                      auth_travelapp_id: appId
+                    });
+                  }
+                break;
+                default:
+                  await authorizationModel.create({
                     auth_officer_id: nextOfficer,
                     auth_type: type,
                     auth_travelapp_id: appId
-                });
+                  });
+              }
+
               const subject = "Self-service update!";
               const body = "An event recently occurred on one of your self-service areas.";
               //emp
