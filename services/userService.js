@@ -47,6 +47,20 @@ async function updateUser(user, user_id) {
     });
 }
 
+async function updateUserPassword(userId, password) {
+
+        const salt = await bcrypt.genSalt(10);
+        password = await bcrypt.hash(password, salt);
+
+    return await User.update({
+        user_password: password,
+    }, {
+        where: {
+            user_id: userId
+        }
+    });
+}
+
 async function findUserByEmail(email) {
     return await User.findOne({where: {user_email: email}})
 }
@@ -169,5 +183,6 @@ module.exports = {
     changePassword,
     suspendUser,
     unSuspendUser,
-    deleteUser
+    deleteUser,
+    updateUserPassword,
 }

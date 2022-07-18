@@ -66,7 +66,7 @@ const updateAuthorizationStatus = async (req, res) => {
             type: Joi.number().required(),
             comment: Joi.string().required(),
             role: Joi.number().required(),
-            contactGroup: Joi.allow('', null),
+            contactGroup: Joi.number().allow(null, ''),
 
             markAsFinal: Joi.number().required().valid(0, 1),
             nextOfficer: Joi.alternatives().conditional('markAsFinal', {is: 0, then: Joi.number().required()}),
@@ -90,7 +90,7 @@ const updateAuthorizationStatus = async (req, res) => {
         if (!_.isNull(application) || !_.isEmpty(application)) {
             if (application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
             const auth = await authorizationModel.update({
-                auth_status: status,
+                auth_status: 0,
                 auth_comment: comment,
                 auth_role_id: role,
             }, {
@@ -108,6 +108,7 @@ const updateAuthorizationStatus = async (req, res) => {
                   const emp = await employeeService.getEmployeeByIdOnly(leaveData.leapp_empid).then((e)=>{
                     return e;
                   });
+                  res.status(200).json(req.body.contactGroup);
                   if(req.body.contactGroup === 1){ //HR Focal point
                     const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
                       return hr;
