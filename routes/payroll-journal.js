@@ -239,6 +239,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             return res.status(400).json('Salary Mapping Master Does not Exist')
         }
 
+        await sleep(60000);
+
         if (!fs.existsSync('./file.xlsx')) {
             await salaryMappingDetailsService.removeSalaryMappingDetails(masterId)
             await salaryMappingMasterService.removeSalaryMappingMaster(masterId)
@@ -310,7 +312,7 @@ router.get('/salary-mappings', auth(), async function (req, res, next) {
         for (const mapping of mappingsMaster) {
 
             let locationData = await locationService.findLocationById(mapping.smm_location).then((data) => {
-              return data
+                return data
             })
             let details = await salaryMappingDetailsService.getSalaryMappingDetails(mapping.smm_id).then((data) => {
                 return data
@@ -538,7 +540,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
 
             let salaryMappingAllocation = await salaryMappingDetailsService.getSalaryMappingDetailsByMasterEmployee(salaryMasterData.smm_id, salaryMappingDetail.smd_employee_t7).then((data) => {
-              return data
+                return data
             })
 
             let totalAllocation = 0
@@ -921,9 +923,22 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
         for(const pfa of pfas){
 
-            let employees = await employeeService.getEmployeesByPfaLocation(pfa.pension_provider_id, salaryMasterData.smm_location).then((data) => {
+            let pfaEmployees = await salaryService.getEmployeesByPfaLocation(pfa.pension_provider_id, salaryMasterData.smm_location, salaryMasterData.smm_month, salaryMasterData.smm_year ).then((data) => {
                 return data
             })
+
+            let tempPfaEmployees = []
+            for(const emp of pfaEmployees){
+                let tempEmp = {
+                    emp_unique_id: emp.salary_emp_unique_id,
+                    emp_id: emp.salary_empid
+                }
+                tempPfaEmployees.push(tempEmp)
+            }
+
+            const employees = _.uniqWith(tempPfaEmployees, _.isEqual)
+
+
             let totalPension = 0
             for (const emp of employees) {
 
@@ -982,7 +997,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
         if(_.isEmpty(approveMaster) || _.isNull(approveMaster)){
 
-           await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data)=>{
+            await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data)=>{
                 return data
             })
             return res.status(400).json('An error occurred while approving salary mapping master')
@@ -1052,7 +1067,7 @@ router.post('/get-Journal', auth(), async function (req, res, next) {
         }
 
         let journals = await journalService.getJournalByRefCode(salaryMappingMaster.smm_ref_code).then((data)=>{
-           return   data
+            return   data
         });
 
         if(_.isEmpty(journals) || _.isNull(journals)){
@@ -1091,6 +1106,121 @@ router.get('/test-unique-array', auth(), async function (req, res, next) {
     }
 });
 
+router.get('/test-pfa-journals/:masterId', auth(), async function (req, res, next) {
+    try {
+        const masterId = req.params['masterId']
+
+        let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
+            return data
+        })
+
+        let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
+            return data
+        })
+        salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
+        salaryMasterData.smm_total = details.length
+
+        let empArray = [];
+
+        for (const salaryMappingDetail of details) {
+            let empObject = {
+                employeeT7: salaryMappingDetail.smd_employee_t7,
+                employeeTax: 0,
+                netSalary: 0,
+                employeeNhf: 0,
+                employeeNsitf: 0
+
+            }
+            empArray.push(empObject)
+        }
+
+
+        empArray = _.uniqWith(empArray, _.isEqual)
+        let totalTax = 0
+        let totalNetSalary = 0
+        let totalEmployeeNhf = 0
+        let totalEmployeeNsitf = 0
+        let empIdArray = [];
+
+        for(const emp of empArray){
+            totalTax = totalTax + emp.employeeTax
+            totalNetSalary = totalNetSalary + emp.netSalary
+            totalEmployeeNhf = totalEmployeeNhf + emp.employeeNhf
+            totalEmployeeNsitf  = totalEmployeeNsitf + emp.employeeNsitf
+            empIdArray.push(emp.employeeT7)
+        }
+
+
+
+        let pfas = await pensionProviderService.getAllPensionProviders().then((data) => {
+            return data
+        });
+
+        let pensionPayments = await paymentDefinitionService.getPensionPayments().then((data) => {
+            return data
+        })
+
+        let pensionArrays = [];
+        let employeePenArrays =[];
+
+        for(const pfa of pfas){
+
+
+            let employees = await employeeService.getEmployeesByPfaLocation(pfa.pension_provider_id, 1).then((data) => {
+                return data
+            })
+            let totalPension = 0
+            for (const emp of employees) {
+                let amount = 0
+                let countEmployees = 0;
+
+                if(empIdArray.includes(emp.emp_unique_id)){
+
+                    for (const pensionPayment of pensionPayments) {
+
+
+                        let checkSalary = await salary.getEmployeeSalaryMonthYearPd(salaryMasterData.smm_month, salaryMasterData.smm_year, emp.emp_id, pensionPayment.pd_id).then((data) => {
+                            return data
+                        })
+                        if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+                            amount = amount + parseFloat(checkSalary.salary_amount)
+                        }
+                    }
+
+                    if(amount > 0){
+                        countEmployees++;
+                    }
+                }
+
+
+                totalPension = totalPension + amount
+
+            }
+
+
+            let pensionObject = {
+                totalPension: totalPension,
+                pfa: pfa.provider_name,
+                totalEmployees: countEmployees,
+            }
+            pensionArrays.push(
+                pensionObject
+            )
+
+
+
+        }
+
+
+        return res.status(200).json(pensionArrays);
+    } catch (err) {
+        return res.status(400).json(err.message)
+        // console.error( err.message);
+        // next(err);
+    }
+});
+
+
 
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     return new Promise(async (resolve, reject) => {
@@ -1113,6 +1243,12 @@ const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
         });
     })
 
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 }
 
 
