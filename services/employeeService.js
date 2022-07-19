@@ -579,7 +579,6 @@ async function getEmployeesByPfaLocation(pfaId, locationId) {
     return await employee.findAll({where:{
             emp_pension_id: pfaId,
             emp_location_id: locationId
-
         }
     })
 }
