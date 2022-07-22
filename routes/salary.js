@@ -3475,6 +3475,12 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
                 sectorName = `${tempEmp.sector.department_name} - ${tempEmp.sector.d_t3_code}`
             }
 
+            const urlString = JSON.stringify({
+                employee:emp.salary_empid,
+                month: parseInt(payrollMonth),
+                year: parseInt(payrollYear)
+            });
+
             const templateParams = {
                 monthYear: `${payrollMonth} ${payrollYear}`,
                 name: `${tempEmp.emp_first_name} ${tempEmp.emp_last_name}`,
@@ -3482,7 +3488,8 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
                 jobRole: empJobRole,
                 employeeId: emp.salary_empid,
                 monthNumber: parseInt(payrollMonth),
-                yearNumber: parseInt(payrollYear)
+                yearNumber: parseInt(payrollYear),
+                url:btoa(urlString)
             }
 
             const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Payslip Notification', templateParams).then((data)=>{
