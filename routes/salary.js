@@ -3482,8 +3482,6 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
                 year: parseInt(payrollYear)
             });
             urlString = btoa(urlString)
-            //urlString = urlString.replace("=", "")
-
 
             const templateParams = {
                 monthYear: `${payrollMonth} ${payrollYear}`,
@@ -3498,7 +3496,7 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
 
             tempParamsArray.push(templateParams)
 
-            const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
+            const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Payslip Notification', templateParams).then((data)=>{
                 return data
             })
 
