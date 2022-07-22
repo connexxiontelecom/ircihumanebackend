@@ -822,9 +822,9 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
                         if (formatContractEndDate !== formatLastDayOfMonth) {
                             daysBeforeStart = await businessDaysDifference(formatLastDayOfMonthReverse, reverseFormatContractEndDate)
-                           if(!isWeekend(contractEndDate)){
-                               daysBeforeStart--
-                           }
+                            if(!isWeekend(contractEndDate)){
+                                daysBeforeStart--
+                            }
 
                             empGross = empGross - (daysBeforeStart * (empGross / 22))
                         }
@@ -2183,7 +2183,7 @@ router.get('/pull-salary-routine-locations', auth(), async function (req, res, n
                         locationCode: locationData.location_t6_code,
                         locationTotalGross: locationTotalGross,
                         locationTotalDeduction: locationTotalDeduction,
-                       // locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        // locationTotalNet: locationTotalGross - locationTotalDeduction,
                         locationTotalNet: locationTotalNetPay,
                         locationEmployeesCount: locationTotalEmployee,
                         month: payrollMonth,
@@ -3460,6 +3460,7 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
             return data
         })
         // return res.status(200).json(empSalaries)
+        let tempParamsArray = [];
         for (const emp of empSalaries) {
             let tempEmp = await employee.getEmployee(emp.salary_empid).then((data) => {
                 return data
@@ -3475,11 +3476,14 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
                 sectorName = `${tempEmp.sector.department_name} - ${tempEmp.sector.d_t3_code}`
             }
 
-            const urlString = JSON.stringify({
+            let urlString = JSON.stringify({
                 employee:emp.salary_empid,
                 month: parseInt(payrollMonth),
                 year: parseInt(payrollYear)
             });
+            urlString = btoa(urlString)
+            //urlString = urlString.replace("=", "")
+
 
             const templateParams = {
                 monthYear: `${payrollMonth} ${payrollYear}`,
@@ -3489,12 +3493,16 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
                 employeeId: emp.salary_empid,
                 monthNumber: parseInt(payrollMonth),
                 yearNumber: parseInt(payrollYear),
-                url:btoa(urlString)
+                urlString:urlString
             }
 
-            const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Payslip Notification', templateParams).then((data)=>{
+            tempParamsArray.push(templateParams)
+
+            const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
                 return data
             })
+
+
         }
 
         const logData = {
@@ -3503,7 +3511,7 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
             "log_date": new Date()
         }
         await logs.addLog(logData).then((logRes) => {
-            return res.status(200).json(`Payroll Confirmed`)
+            return res.status(200).json(tempParamsArray)
         })
 
     } catch (err) {
@@ -4899,9 +4907,9 @@ router.post('/pay-order', auth(), async function (req, res, next) {
                     employeeId: emp.emp_id,
 
                     employeeD7: emp.emp_d7,
-                   /* employeeD4: emp.operationUnit.ou_name,
-                    employeeD6: emp.functionalArea.fa_name,
-                    employeeD5: emp.reportingEntity.re_name,*/
+                    /* employeeD4: emp.operationUnit.ou_name,
+                     employeeD6: emp.functionalArea.fa_name,
+                     employeeD5: emp.reportingEntity.re_name,*/
 
                     employeeName: employeeSalaries[0].salary_emp_name,
                     employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
@@ -5844,25 +5852,25 @@ router.post('/salary-tes-routine', auth(), async function (req, res, next) {
 router.get('/payslipemail', auth(), async function (req, res, next) {
     try {
 
-      const templateParams = {
-          monthYear: 'April 2022',
-          name: 'Jane Doe',
-          department: 'Engineering',
-          jobRole: 'Full Stack Developer',
-          employeeId: '3',
-          monthNumber: '4',
-          yearNumber: '2022'
-      }
+        const templateParams = {
+            monthYear: 'April 2022',
+            name: 'Jane Doe',
+            department: 'Engineering',
+            jobRole: 'Full Stack Developer',
+            employeeId: '3',
+            monthNumber: '4',
+            yearNumber: '2022'
+        }
 
-     const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
-          return data
-      })
-     return res.status(200).json(mailerRes)
+        const mailerRes =  await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams).then((data)=>{
+            return data
+        })
+        return res.status(200).json(mailerRes)
 
-      //   const mailerRes =  await mailer.sendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', 'text').then((data)=>{
-      //     return data
-      // })
-     return res.status(200).json(mailerRes)
+        //   const mailerRes =  await mailer.sendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', 'text').then((data)=>{
+        //     return data
+        // })
+        return res.status(200).json(mailerRes)
 
     }
 

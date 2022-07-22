@@ -110,7 +110,8 @@ async function paySlipSendMail(from, to, subject, templateParams){
                 jobRole: templateParams.jobRole,
                 employeeId: templateParams.employeeId,
                 monthNumber: templateParams.monthNumber,
-                yearNumber: templateParams.yearNumber
+                yearNumber: templateParams.yearNumber,
+                urlString: templateParams.urlString
             }
         };
 
