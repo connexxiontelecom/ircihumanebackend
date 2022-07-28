@@ -6,9 +6,7 @@ const helper = require('../helper');
 
 
 async function addPaymentDefinition(pd) {
-
-
-    return await Pd.create({
+return await Pd.create({
         pd_payment_code: pd.pd_payment_code,
         pd_payment_name: pd.pd_payment_name,
         pd_payment_type: pd.pd_payment_type,
@@ -39,8 +37,7 @@ async function findPaymentById(id) {
 }
 
 async function updatePaymentDefinition(pd, pd_id) {
-
-    return await Pd.update({
+ return await Pd.update({
         pd_payment_code: pd.pd_payment_code,
         pd_payment_name: pd.pd_payment_name,
         pd_payment_type: pd.pd_payment_type,
@@ -169,6 +166,14 @@ async function deletePayment(pdId) {
     })
 }
 
+async function getPayrollJournalPayments() {
+    return await Pd.findAll({
+        where: {
+            pd_payroll_journal: 1
+        }
+    })
+}
+
 
 module.exports = {
     addPaymentDefinition,
@@ -189,6 +194,7 @@ module.exports = {
     getNhfPayments,
     deletePayment,
     getTaxPayments,
-    getNsitfPayments
+    getNsitfPayments,
+    getPayrollJournalPayments
 
 }
