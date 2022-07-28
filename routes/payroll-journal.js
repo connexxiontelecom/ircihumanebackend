@@ -786,6 +786,88 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             empIdArray.push(emp.employeeT7)
         }
 
+        const payrollJournalPayments = await paymentDefinitionService.getPayrollJournalPayments().then((data)=>{
+          return data
+        })
+
+        let paymentName = ''
+        for(const payment of payrollJournalPayments){
+            let empName = ''
+            let empJobRole  = ''
+            let empSectorCode = ''
+            let empLocationCode = ''
+            let empLocation = ''
+            let empSector = ''
+            paymentName = payment.pd_payment_name
+            paymentName = paymentName.replace(/\s+/g, '-').toLowerCase();
+            for (const emp of empIdArray){
+                let salaryDetails = await salaryService.getEmployeeSalaryByUniqueIdAndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
+                    return data
+                })
+
+                if(!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)){
+
+                    empName = salaryDetails.salary_emp_name
+                    let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails.salary_jobrole_id).then((data) => {
+                        return data
+                    })
+
+                    if (!_.isEmpty(empJobRoleData)) {
+                        empJobRole = empJobRoleData.job_role
+                    }
+
+                    let empLocationData = await locationService.findLocationById(salaryDetails.salary_location_id).then((data) => {
+                        return data
+                    })
+
+                    if (!_.isEmpty(empLocationData)) {
+                        empLocation = empLocationData.location_name
+                        empLocationCode = empLocationData.l_t6_code
+                    }
+
+                    let empSectorData = await sectorService.findDepartmentById(salaryDetails.salary_department_id).then((data) => {
+                        return data
+                    })
+
+                    if (!_.isEmpty(empSectorData)) {
+                        empSector = empSectorData.department_name
+                        empSectorCode = empSectorData.t3_code
+                    }
+
+                    journalDetail.j_acc_code = payment.pd_payment_code
+                    journalDetail.j_date = formatLastDayOfMonth
+                    journalDetail.j_ref_code = salaryMasterData.smm_ref_code
+                    journalDetail.j_desc = `${salaryMasterData.smm_month}-${paymentName}-${empJobRole}`
+                    journalDetail.j_d_c = "C"
+                    journalDetail.j_amount = 0 - parseFloat(salaryDetails.salary_amount)
+                    journalDetail.j_t1 = null
+                    journalDetail.j_t2 = null
+                    journalDetail.j_t3 = empSectorCode
+                    journalDetail.j_t4 = '2NG'
+                    journalDetail.j_t5 = '2NGA'
+                    journalDetail.j_month = salaryMasterData.smm_month
+                    journalDetail.j_year = salaryMasterData.smm_year
+                    journalDetail.j_t6 = empLocationCode
+                    journalDetail.j_t7 = emp
+                    journalDetail.j_name = empName
+
+                    addJournal = await journalService.addJournal(journalDetail).then((data)=>{
+                        return data
+                    })
+
+                    if(_.isEmpty(addJournal) || _.isNull(addJournal)){
+                        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data)=>{
+                            return data
+                        })
+
+                        return res.status(400).json('An error occurred while creating journal entry')
+                    }
+
+                }
+
+            }
+        }
+
 
         journalDetail = {}
         journalDetail.j_acc_code = nsitfPayrollCode.pj_code

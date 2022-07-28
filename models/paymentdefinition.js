@@ -38,7 +38,8 @@ module.exports = (sequelize, DataTypes) => {
     pd_employee: DataTypes.INTEGER,
     pd_pension: DataTypes.INTEGER,
     pd_nhf: DataTypes.INTEGER,
-    pd_nsitf: DataTypes.INTEGER
+    pd_nsitf: DataTypes.INTEGER,
+    pd_payroll_journal: DataTypes.INTEGER,
 
   }, {
     sequelize,
@@ -65,6 +66,7 @@ pd_welfare ( 1 = welfare, 0 = non welfare)
 pd_value ( 1 = flat, 2 is computed)
 pd_amount ( 1 adjusted gross, 2 is adjusted basic, 4 full basic, 3 full gross, 5 adjusted gross )
 pd_total_gross ( 1 = sum to gross, 0 = No)
+pd_payroll_journal ( 1 = payroll journal, 0 = no payroll journal)
 
 
  */
