@@ -146,6 +146,63 @@ router.get('/employee-leave-accruals', async (req, res)=>{
     return res.status(400).json("Something went wrong.");
   }
 });
+router.post('/year', async (req, res)=>{
+  try{
+    const year = parseInt(req.body.year);
+    const accruals = await leaveAccrualModel.getAllLeaveAccrualsByYear(year);
+    const leave_types = await leaveTypeModel.getAllLeaveTypes();
+    const data = {
+      accruals,
+      leave_types
+    }
+
+    return res.status(200).json(data);
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+});
+
+router.get('/:year/:empId', async (req, res)=>{
+  try{
+    const year = parseInt(req.params.year);
+    const empId = parseInt(req.params.empId);
+    const total = await leaveAccrualModel.getTotalAccruedAllLeaveAccrualsByYearEmpId(year, empId); //getAllLeaveAccrualsByYear
+    //const taken = await leaveAccrualModel.getTotalTakenLeaveAccrualsByYearEmpId(year, empId);
+    //const left = await leaveAccrualModel.getEmployeeLeftLeaveAccrualsByYearEmpId(year, empId);
+    //const archived = await leaveAccrualModel.getTotalArchiveLeaveAccrualsByYearEmpId(year, empId);
+    //const leave_types = await leaveTypeModel.getAllLeaveTypes();
+    const leave_types = await leaveTypeModel.getAllLeaveTypes();
+    const data = {
+      total,
+      leave_types
+     // taken,
+      //archived,
+      /*used,
+      left,
+      archived,*/
+
+    }
+
+    return res.status(200).json(data);
+  }catch (e) {
+    return res.status(400).json("Something went wrong."+e.message);
+  }
+});
+
+router.get('/employee-leave-accruals', async (req, res)=>{
+  try{
+    const accruals = await leaveAccrualModel.getAllLeaveAccruals();
+    const leave_types = await leaveTypeModel.getAllLeaveTypes();
+    const data = {
+      accruals,
+      leave_types
+    }
+
+    return res.status(200).json(data);
+  }catch (e) {
+    return res.status(400).json("Something went wrong.");
+  }
+});
 
 module.exports = {
     router,
