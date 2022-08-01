@@ -171,16 +171,18 @@ router.get('/:year/:empId', async (req, res)=>{
     //const left = await leaveAccrualModel.getEmployeeLeftLeaveAccrualsByYearEmpId(year, empId);
     //const archived = await leaveAccrualModel.getTotalArchiveLeaveAccrualsByYearEmpId(year, empId);
     //const leave_types = await leaveTypeModel.getAllLeaveTypes();
-      const leave_types = await leaveTypeModel.getAllLeaveTypes();
+      const leave_types = await leaveType.getAllLeaves();
      const employeeLeaveData = [ ]
       for(const leaveType of leave_types){
          const leaveTypeId = leaveType.leave_type_id;
-         const leaveData = await leaveAccrual.sumAllLeaveByEmployeeYear(year, empId, leaveTypeId);
+         const totalAccrued = await leaveAccrual.getTotalAccruedLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
+            const totalTaken = await leaveAccrual.getTotalTakenLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
+            const totalArchived = await leaveAccrual.getArchivedLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
          const employeeLeaveObject = {
              leaveType: leaveType.leave_name,
-             totalUsed: leaveData.totalTaken,
-             totalAccrued: leaveData.totalAccrued,
-             totalArchived : leaveData.totalArchived
+             totalTaken: totalTaken[0].totalTaken,
+             totalAccrued: totalAccrued[0].totalAccrued,
+             totalArchived : totalArchived.length
          }
          employeeLeaveData.push(employeeLeaveObject);
       }
