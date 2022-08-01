@@ -171,19 +171,21 @@ router.get('/:year/:empId', async (req, res)=>{
     //const left = await leaveAccrualModel.getEmployeeLeftLeaveAccrualsByYearEmpId(year, empId);
     //const archived = await leaveAccrualModel.getTotalArchiveLeaveAccrualsByYearEmpId(year, empId);
     //const leave_types = await leaveTypeModel.getAllLeaveTypes();
-    const leave_types = await leaveTypeModel.getAllLeaveTypes();
-    const data = {
-      total,
-      leave_types
-     // taken,
-      //archived,
-      /*used,
-      left,
-      archived,*/
+      const leave_types = await leaveTypeModel.getAllLeaveTypes();
+     const employeeLeaveData = [ ]
+      for(const leaveType of leave_types){
+         const leaveTypeId = leaveType.leave_type_id;
+         const leaveData = await leaveAccrual.sumAllLeaveByEmployeeYear(year, empId, leaveTypeId);
+         const employeeLeaveObject = {
+             leaveType: leaveType.leave_name,
+             totalUsed: leaveData.totalTaken,
+             totalAccrued: leaveData.totalAccrued,
+             totalArchived : leaveData.totalArchived
+         }
+         employeeLeaveData.push(employeeLeaveObject);
+      }
 
-    }
-
-    return res.status(200).json(data);
+    return res.status(200).json(employeeLeaveData);
   }catch (e) {
     return res.status(400).json("Something went wrong."+e.message);
   }
