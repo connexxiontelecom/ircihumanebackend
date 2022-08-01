@@ -62,6 +62,26 @@ async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_t
     })
 }
 
+async function sumAllLeaveByEmployeeYear(year, empId, leaveType) {
+
+    return await LeaveAccrual.findAll({
+        attributes: [
+            [sequelize.literal(`(SELECT SUM(lea_rate) FROM leave_accruals WHERE lea_rate > 0 AND lea_emp_id = ${empId} AND lea_year = ${year} AND lea_leave_type = ${leaveType} ) `),'totalAccrued'],
+            [sequelize.literal(`(SELECT SUM(lea_rate) FROM leave_accruals WHERE lea_rate < 0 AND lea_emp_id = ${empId} AND lea_year = ${year} AND lea_leave_type = ${leaveType}) `),'totalTaken'],
+            [sequelize.literal(`(SELECT SUM(lea_rate) FROM leave_accruals WHERE lea_archives = 1 AND lea_emp_id = ${empId} AND lea_year = ${year} AND lea_leave_type = ${leaveType}) `),'totalArchived'],
+        ],
+        where: {
+                lea_emp_id: empId,
+                lea_year: year,
+                lea_leave_type: leaveType,
+            }
+
+    });
+
+}
+
+
+
 
 module.exports = {
     addLeaveAccrual,
@@ -69,6 +89,7 @@ module.exports = {
     sumLeaveAccrualByYearEmployeeLeaveType,
     removeLeaveAccrual,
     removeLeaveAccrualEmployees,
-    removeLeaveAccrualByLeaveApplication
+    removeLeaveAccrualByLeaveApplication,
+    sumAllLeaveByEmployeeYear
 
 }
