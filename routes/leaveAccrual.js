@@ -158,7 +158,7 @@ router.post('/year', async (req, res)=>{
 
     return res.status(200).json(data);
   }catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json("Something went wrong."+e.message);
   }
 });
 
