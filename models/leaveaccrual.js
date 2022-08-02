@@ -20,6 +20,16 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
 
+        static async addLeaveAccrual(empId, month, year, leaveType, noOfDays){
+          leaveAccrual.create({
+              lea_emp_id: empId,
+              lea_month: month,
+              lea_year: year,
+              lea_leave_type: leaveType,
+              lea_rate: noOfDays
+            })
+        }
+
         static async getAllLeaveAccruals(year) {
             return await leaveAccrual.findAll({
                 attributes:['lea_id', 'lea_emp_id',
