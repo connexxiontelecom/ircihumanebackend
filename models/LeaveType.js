@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         static async getAllLeaveTypes(){
           return await LeaveType.findAll();
         }
+      static async getAllLeaveTypesByStatus(status){
+        return await LeaveType.findAll({
+          where:{lt_accrue: status }
+        });
+      }
     };
     LeaveType.init({
         leave_type_id: {
