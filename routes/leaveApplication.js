@@ -230,8 +230,13 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                 return res.status(404).json(`Employee Doesn't Exist`)
             } else {
                 leaveApplication.findEmployeeLeaveApplication(empId).then((data) => {
-                    data.map((app) => {
-                        appId.push(app.leapp_id);
+                    data.map(async (app) => {
+                      appId.push(app.leapp_id);
+                      if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
+                        // console.log('Still running');
+                      } else {
+                        await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 3);
+                      }
                     });
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                         leaveObj = {
