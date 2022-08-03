@@ -202,8 +202,12 @@ router.get('/approved-applications', async (req, res) => {
         let appId = [];
         let leaveObj = {};
         await leaveApplication.findAllActiveLeaveApplications().then((data) => {
-            data.map((app) => {
-                appId.push(app.leapp_id);
+            data.map(async (app) => {
+              appId.push(app.leapp_id);
+              if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
+              } else {
+                await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
+              }
             });
             authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                 leaveObj = {
@@ -233,7 +237,6 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                     data.map(async (app) => {
                       appId.push(app.leapp_id);
                       if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
-                        // console.log('Still running');
                       } else {
                         await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
                       }
@@ -418,6 +421,12 @@ router.get('/get-leave-applications/:status', auth(), async function(req, res){
   try{
     const status = req.params.status;
     const leaves = await leaveAppModel.getLeaveApplicationsByStatus(status);
+    leaves.map(async (app) => {
+      if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
+      } else {
+        await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
+      }
+    })
     return res.status(200).json(leaves);
   }catch (e) {
     return res.status(400).json("Something went wrong. Try again later.")
