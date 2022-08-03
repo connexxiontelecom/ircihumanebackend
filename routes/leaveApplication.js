@@ -235,7 +235,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                       if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
                         // console.log('Still running');
                       } else {
-                        await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 3);
+                        await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
                       }
                     });
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
