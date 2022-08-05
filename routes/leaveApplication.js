@@ -22,6 +22,7 @@ const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 
+
 /* Get leave application */
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -204,7 +205,7 @@ router.get('/approved-applications', async (req, res) => {
         await leaveApplication.findAllActiveLeaveApplications().then((data) => {
             data.map(async (app) => {
               appId.push(app.leapp_id);
-              if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
+              if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 3) {
               } else {
                 await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
               }
@@ -236,7 +237,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                 leaveApplication.findEmployeeLeaveApplication(empId).then((data) => {
                     data.map(async (app) => {
                       appId.push(app.leapp_id);
-                      if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
+                      if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 1) {
                       } else {
                         await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
                       }
@@ -266,7 +267,7 @@ router.get('/:id', auth(), async (req, res) => { //get leave application details
         const previousApplications = await leaveAppModel.getPreviousApplications(application.leapp_empid, id);
         return res.status(200).json({application, log, previousApplications});
     } catch (e) {
-        return res.status(400).json("Something went wrong. Try again." + e.message);
+        return res.status(400).json("Something went wrong. Try again.");
     }
 });
 
@@ -422,7 +423,7 @@ router.get('/get-leave-applications/:status', auth(), async function(req, res){
     const status = req.params.status;
     const leaves = await leaveAppModel.getLeaveApplicationsByStatus(status);
     leaves.map(async (app) => {
-      if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 1) {
+      if (new Date() > new Date(app.leapp_end_date).getTime() && app.leapp_status == 3) {
       } else {
         await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
       }
@@ -492,5 +493,22 @@ router.patch('/re-assign-leave/:leaveId', auth(), async function(req, res){
     return res.status(400).json("Something went wrong. Try again."+e.message);
   }
 });
+
+router.get('/schedule/cron', auth(), async function(req, res){
+  try{
+    const result = await  leaveApplication.getApprovedLeaves();
+    result.map(async (re) => {
+      if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) && (new Date() < new Date(re.leapp_end_date).getTime())) {
+        await leaveAppModel.updateLeaveAppStatus(re.leapp_id, 3);
+      }
+
+    })
+    return res.status(200).json('Good');
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+
 
 module.exports = router;
