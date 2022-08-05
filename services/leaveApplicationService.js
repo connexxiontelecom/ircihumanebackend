@@ -119,8 +119,17 @@ async function getLeaveApplicationWithId(id){
 const getLeaveApplicationsForAuthorization = async (leaveAppIds) => {
     return await LeaveApplication.findAll({
         where: {leapp_id: leaveAppIds},
+      order: [
+        ['leapp_id', 'DESC'],
+      ],
         include: [Leave, 'employee', 'verify', 'recommend', 'approve']
     })
+}
+
+const getApprovedLeaves = async () =>{
+  return await LeaveApplication.findAll({
+    where: {leapp_status: 1}
+  })
 }
 
 
@@ -133,5 +142,6 @@ module.exports = {
     getLeaveApplicationsById,
     findAllApprovedLeaveApplications,
     findAllActiveLeaveApplications,
-    getLeaveApplicationWithId
+    getLeaveApplicationWithId,
+    getApprovedLeaves
 }
