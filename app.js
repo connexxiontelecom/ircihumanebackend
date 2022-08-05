@@ -3,7 +3,6 @@
     const bodyParser = require('body-parser');
     const cors = require('cors');
     const fileUpload = require('express-fileupload');
-
     const app = express();
     app.use(cors());
     app.use(express.json());
@@ -165,11 +164,31 @@
     app.use('/end-year-response', endYearResponseRouter);
 
     const payrollJournalRouter = require('./routes/payroll-journal')
+    const nodeCron = require("node-cron");
     app.use('/payroll-journal', payrollJournalRouter);
 
     app.get('/',  async function(req, res) {
         res.send('you got here. so get out')
     });
+
+    async function updateApprovedLeaveStatus() {
+      try {
+        /*const result = await leaveApplication.getApprovedLeaves();
+        result.map(async (re) => {
+          if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) && (new Date() < new Date(re.leapp_end_date).getTime())) {
+            await leaveAppModel.updateLeaveAppStatus(re.leapp_id, 3);
+          }
+
+        })*/
+        console.log('Every five minutes!');
+        //return res.status(200).json('Good');
+      } catch (e) {
+        //return res.status(400).json('Whoops!');
+      }
+    }
+
+    const job = nodeCron.schedule("*/1 * * * *", updateApprovedLeaveStatus);
+    job.start();
 
     /* Error handler middleware */
     app.use((err, req, res, next) => {
