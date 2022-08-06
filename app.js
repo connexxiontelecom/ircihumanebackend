@@ -24,7 +24,7 @@
     const leaveTypeRouter = require('./routes/leave-type');
     const stateRouter = require('./routes/state');
     const employeeCategoryRouter = require('./routes/employee-category');
-
+    const leaveApplicationService = require('./services/leaveApplicationService');
     app.use('/employees', employeeRouter);
    app.use('/banks', bankRouter);
     app.use('/pension-providers', pensionProviderRouter);
@@ -173,15 +173,13 @@
 
     async function updateApprovedLeaveStatus() {
       try {
-        /*const result = await leaveApplication.getApprovedLeaves();
+        const result = await leaveApplicationService.getApprovedLeaves();
         result.map(async (re) => {
-          if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) && (new Date() < new Date(re.leapp_end_date).getTime())) {
-            await leaveAppModel.updateLeaveAppStatus(re.leapp_id, 3);
+          if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) ) {
+            await leaveApplicationService.updateLeaveAppStatus(re.leapp_id, 3);
           }
 
-        })*/
-        console.log('Every five minutes!');
-        //return res.status(200).json('Good');
+        })
       } catch (e) {
         //return res.status(400).json('Whoops!');
       }

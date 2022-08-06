@@ -132,6 +132,17 @@ const getApprovedLeaves = async () =>{
   })
 }
 
+const updateLeaveAppStatus = async (leaveId, status) =>{
+  return await LeaveApplication.update({
+      leapp_status:status},
+    {where:{leapp_id:leaveId}
+    });
+
+  /*return await LeaveApplication.findAll({
+    where: {leapp_status: 1}
+  })*/
+}
+
 
 module.exports = {
     addLeaveApplication,
@@ -143,5 +154,6 @@ module.exports = {
     findAllApprovedLeaveApplications,
     findAllActiveLeaveApplications,
     getLeaveApplicationWithId,
-    getApprovedLeaves
+    getApprovedLeaves,
+  updateLeaveAppStatus
 }
