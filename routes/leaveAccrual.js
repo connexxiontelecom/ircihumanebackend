@@ -160,7 +160,7 @@ router.post('/year', auth(), async (req, res)=>{
 
     return res.status(200).json(data);
   }catch (e) {
-    return res.status(400).json("Something went wrong."+e.message);
+    return res.status(400).json("Something went wrong.");
   }
 });
 
@@ -194,7 +194,7 @@ router.get('/:year/:empId', auth(), async (req, res)=>{
       //employeeLeaveData.push(leaveEmp);
     return res.status(200).json(leaveEmp);
   }catch (e) {
-    return res.status(400).json("Something went wrong."+e.message);
+    return res.status(400).json("Something went wrong.");
   }
 });
 

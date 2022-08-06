@@ -88,9 +88,10 @@ const updateAuthorizationStatus = async (req, res) => {
             });
 
         if (!_.isNull(application) || !_.isEmpty(application)) {
-            if (application.auth_officer_id !== officer) return res.status(400).json("You do not have permission to authorize this request.");
+            if (application.auth_officer_id !== officer)
+              return res.status(400).json("You do not have permission to authorize this request.");
             const auth = await authorizationModel.update({
-                auth_status: 0,
+                auth_status: req.body.status,
                 auth_comment: comment,
                 auth_role_id: role,
             }, {
@@ -108,7 +109,7 @@ const updateAuthorizationStatus = async (req, res) => {
                   const emp = await employeeService.getEmployeeByIdOnly(leaveData.leapp_empid).then((e)=>{
                     return e;
                   });
-                  res.status(200).json(req.body.contactGroup);
+                  //res.status(200).json(req.body.contactGroup);
                   if(req.body.contactGroup === 1){ //HR Focal point
                     const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
                       return hr;
@@ -177,8 +178,8 @@ const updateAuthorizationStatus = async (req, res) => {
 
                         const leaveAccrual = {
                             lea_emp_id: leaveApplicationData.leapp_empid,
-                            lea_month: leaveDate.getFullYear(),
-                            lea_year: leaveDate.getMonth() + 1,
+                            lea_year: leaveDate.getFullYear(),
+                            lea_month: leaveDate.getMonth() + 1,
                             lea_leave_type: leaveApplicationData.leapp_leave_type,
                             lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days),
                             lea_leaveapp_id: leaveApplicationData.leapp_id
