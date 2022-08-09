@@ -21,6 +21,8 @@ const logs = require('../services/logService')
 const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+const {businessDaysDifference} = require("../services/dateService");
+const isWeekend = require("date-fns/isWeekend");
 
 
 /* Get leave application */
@@ -90,12 +92,19 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         // }
 
 
-        let daysRequested ;//= await differenceInBusinessDays(endDate, startDate)
-        if(startDate.getDay() === 6 || startDate.getDay() === 0){
-          daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
-        }else{
-          daysRequested = await differenceInBusinessDays(endDate, startDate);
+        let daysRequested = 0;
+        daysRequested = await businessDaysDifference(endDate, startDate);
+        let parsedEndDate = new Date(endDate);
+        let checkSecondDateWeekend = await isWeekend(parsedEndDate)
+        if (!checkSecondDateWeekend) {
+            daysRequested--;
         }
+        //
+        // if(startDate.getDay() === 6 || startDate.getDay() === 0){
+        //   daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
+        // }else{
+        //   daysRequested = await differenceInBusinessDays(endDate, startDate);
+        // }
         const empId = req.user.username.user_id;
         if (parseInt(daysRequested) <= 0) {
             return res.status(400).json('Leave duration must be greater or equal to 1')
