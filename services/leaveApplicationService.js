@@ -59,7 +59,7 @@ async function findAllActiveLeaveApplications() {
   let currentDate = new Date();
   return await LeaveApplication.findAll({
     where:{
-      leapp_status:1,
+      leapp_status:[1,3,4],
      // leapp_start_date: { [Op.gte]: currentDate.getTime() }
       }, //approved & active
     order: [
