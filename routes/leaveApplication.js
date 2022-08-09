@@ -427,8 +427,7 @@ router.get('/get-leave-applications/:status', auth(), async function(req, res){
     const status = req.params.status;
     const leaves = await leaveAppModel.getLeaveApplicationsByStatus(status);
     leaves.map(async (app) => {
-      if (new Date() > new Date(app.leapp_end_date).getTime() && app.leapp_status == 3) {
-      } else {
+      if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
         await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
       }
     })
