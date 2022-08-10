@@ -109,7 +109,6 @@ const updateAuthorizationStatus = async (req, res) => {
                   const emp = await employeeService.getEmployeeByIdOnly(leaveData.leapp_empid).then((e)=>{
                     return e;
                   });
-                  //res.status(200).json(req.body.contactGroup);
                   if(req.body.contactGroup === 1){ //HR Focal point
                     const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
                       return hr;
@@ -128,14 +127,14 @@ const updateAuthorizationStatus = async (req, res) => {
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
+                  }else{
+                    await authorizationModel.create({
+                      auth_officer_id: nextOfficer,
+                      auth_type: type,
+                      auth_travelapp_id: appId
+                    });
                   }
                 break;
-                default:
-                  await authorizationModel.create({
-                    auth_officer_id: nextOfficer,
-                    auth_type: type,
-                    auth_travelapp_id: appId
-                  });
               }
 
               const subject = "Self-service update!";
