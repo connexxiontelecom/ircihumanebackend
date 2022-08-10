@@ -253,7 +253,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                       let office = "";
                       officers.map((off)=>{
-                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id}), `;
+                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id})\n, `;
                       })
                         leaveObj = {
                             data,
@@ -427,7 +427,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
       })
     return res.status(200).json("Leave period updated");
   }catch (e) {
-    return res.status(400).json("Something went wrong."+e.message);
+    return res.status(400).json("Something went wrong.");
   }
 });
 
