@@ -440,12 +440,12 @@ router.get('/supervisor-end-year-response/:masterId', auth(), async function(req
 
     const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
     if(_.isEmpty(result) || _.isNull(result)){
-      return res.status(400).json("Could not retrieve supervisor responses");
+      return res.status(200).json("Awaiting supervisor's response.");
     }else{
       return res.status(200).json(result);
     }
   }catch (e) {
-    return res.status(400).json("Something went wrong."+e.message);
+    return res.status(400).json("Something went wrong.");
   }
 })
 
