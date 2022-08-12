@@ -185,7 +185,7 @@ router.get('/:year/:empId', auth(), async (req, res)=>{
          employeeLeaveData.push(employeeLeaveObject);
       }
     const emp = await employee.getEmployeeByIdOnly(empId);
-    const leaveTypes = await leaveTypeModel.getAllLeaveTypesByStatus(0)
+    const leaveTypes = await leaveTypeModel.getAllLeaveTypesByStatus() //0
       const leaveEmp = {
         employee:emp,
         employeeLeaveData,
