@@ -94,11 +94,11 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
 
         let daysRequested = 0;
         daysRequested = await businessDaysDifference(endDate, startDate);
-        let parsedEndDate = new Date(endDate);
-        let checkSecondDateWeekend = await isWeekend(parsedEndDate)
-        if (!checkSecondDateWeekend) {
-            daysRequested--;
-        }
+        // let parsedEndDate = new Date(endDate);
+        // let checkSecondDateWeekend = await isWeekend(parsedEndDate)
+        // if (!checkSecondDateWeekend) {
+        //     daysRequested--;
+        // }
         //
         // if(startDate.getDay() === 6 || startDate.getDay() === 0){
         //   daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
@@ -138,9 +138,9 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             return res.status(400).json('Invalid Leave Type');
 
         }
-      if(daysRequested > parseInt(leaveTypeData.leave_duration)){
-        return res.status(400).json('Leave duration exceed leave duration for this leave type.')
-      }
+        if(daysRequested > parseInt(leaveTypeData.leave_duration)){
+            return res.status(400).json('Leave duration exceed leave duration for this leave type.')
+        }
 
         if (parseInt(leaveTypeData.lt_accrue) === 1) {
             const accrualData = {
@@ -160,7 +160,7 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             }
 
 
-           if (parseInt(daysRequested) > parseInt(accruedDays)) {
+            if (parseInt(daysRequested) > parseInt(accruedDays)) {
                 return res.status(400).json("Days Requested Greater than Accrued Days")
             }
         }
@@ -253,7 +253,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                       let office = "";
                       officers.map((off)=>{
-                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id})\n, `;
+                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id}), `;
                       })
                         leaveObj = {
                             data,
@@ -427,7 +427,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
       })
     return res.status(200).json("Leave period updated");
   }catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json("Something went wrong."+e.message);
   }
 });
 

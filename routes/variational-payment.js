@@ -92,7 +92,7 @@ router.post('/', auth(), async (req, res, next) => {
 
                         }
 
-                        if (parseFloat(payment.amount) > 0) {
+                        if (parseFloat(payment.amount) !== 0) {
                             const vpObject = {
                                 vp_emp_id: parseInt(employeeId),
                                 vp_payment_def_id: parseInt(payment.payment_definition),
