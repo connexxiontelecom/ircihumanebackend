@@ -46,6 +46,29 @@ async function removeLeaveAccrualByLeaveApplication(leaveAppId) {
     });
 }
 
+async function archiveLeaveAccrualByLeaveApplication(empId, month, year, type) {
+    return await LeaveAccrual.update({
+      lea_archives: 1,
+    }, {
+      where: {
+        lea_emp_id: empId,
+        lea_month: month,
+        lea_year: year,
+        lea_leave_type: type,
+      }
+    })
+}
+async function findLeaveAccrualByLeaveApplication(empId, month, year, type) {
+    return await LeaveAccrual.findOne({
+      where: {
+        lea_emp_id: empId,
+        lea_month: month,
+        lea_year: year,
+        lea_leave_type: type,
+      }
+    })
+}
+
 
 async function findLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_type) {
     return await LeaveAccrual.findAll({where: {lea_emp_id: employee_id, lea_year: year, lea_leave_type: leave_type}})
@@ -141,6 +164,8 @@ module.exports = {
     sumAllLeaveByEmployeeYear,
     getArchivedLeaveAccrualByYearEmployeeLeaveType,
     getTotalTakenLeaveAccrualByYearEmployeeLeaveType,
-    getTotalAccruedLeaveAccrualByYearEmployeeLeaveType
+    getTotalAccruedLeaveAccrualByYearEmployeeLeaveType,
+  archiveLeaveAccrualByLeaveApplication,
+  findLeaveAccrualByLeaveApplication
 
 }
