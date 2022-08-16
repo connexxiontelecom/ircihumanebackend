@@ -41,6 +41,16 @@ module.exports = (sequelize, DataTypes) => {
         static async getListOfEmployeesSupervising(empId){
             return await Employee.findAll({where:{emp_supervisor_id:empId}})
         }
+
+        static async updateEmployeeRelocatableStatus(empId, status){
+            return await Employee.update({
+              emp_relocatable: status,
+            }, {
+              where: {
+                emp_id: empId
+              }
+            })
+        }
     };
     Employee.init({
         emp_id: {
@@ -111,6 +121,7 @@ module.exports = (sequelize, DataTypes) => {
         emp_d5: DataTypes.INTEGER,
         emp_d6: DataTypes.INTEGER,
         emp_d7: DataTypes.INTEGER,
+        emp_relocatable: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

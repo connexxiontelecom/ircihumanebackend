@@ -124,6 +124,13 @@ async function getLeaveType(leaveTypeId) {
         }
     })
 }
+async function getLeaveTypeByName(leaveName) {
+    return await leaveType.findOne({
+        where: {
+            leave_name: leaveName
+        }
+    })
+}
 
 
 module.exports = {
@@ -133,5 +140,6 @@ module.exports = {
     setNewLeaveType,
     getAllLeaves,
     getAccruableLeaves,
-    getLeaveType
+    getLeaveType,
+    getLeaveTypeByName
 }

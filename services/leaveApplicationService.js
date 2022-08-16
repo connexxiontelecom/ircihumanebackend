@@ -144,6 +144,7 @@ const updateLeaveAppStatus = async (leaveId, status) =>{
 }
 
 
+
 module.exports = {
     addLeaveApplication,
     sumLeaveUsedByYearEmployeeLeaveType,
