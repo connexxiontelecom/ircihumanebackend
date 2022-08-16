@@ -606,4 +606,29 @@ const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
 
 }
 
+router.post('/swap-relocatable-status', async function(req, res){
+  try {
+    const schema = Joi.object({
+      empId: Joi.number().required(),
+      status: Joi.number().required(),
+    })
+
+    const updateRequest = req.body
+    const validationResult = schema.validate(updateRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+  const emp = await employeeModel.getEmployeeById(parseInt(req.body.empId));
+    if(_.isNull(emp) || _.isEmpty(emp)){
+      return res.status(400).json("No record found.");
+    }
+    const updateEmp = await employeeModel.updateEmployeeRelocatableStatus(parseInt(req.body.empId), parseInt(req.body.status));
+    return res.status(200).json("Record updated!")
+
+  } catch (err) {
+    return res.status(200).json(`An error occurred while fetching Employee `);
+  }
+});
+
 module.exports = router;
