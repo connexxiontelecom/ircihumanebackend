@@ -219,7 +219,8 @@ router.post('/add-accruals', auth(), async (req, res)=>{
       noOfDays: Joi.number().required(),
       narration: Joi.string().required(),
       empId: Joi.number().required(),
-      leaveType: Joi.number().required()
+      leaveType: Joi.number().required(),
+      expiresOn: Joi.string().allow(null, ''),
     })
 
     const accrualRequest = req.body
@@ -233,7 +234,7 @@ router.post('/add-accruals', auth(), async (req, res)=>{
     }
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
-    const accrual = await leaveAccrualModel.addLeaveAccrual(parseInt(req.body.empId),month, year, parseInt(req.body.leaveType), parseInt(req.body.noOfDays));
+    const accrual = await leaveAccrualModel.addLeaveAccrual(parseInt(req.body.empId),month, year, parseInt(req.body.leaveType), parseInt(req.body.noOfDays), req.body.expiresOn);
     //Log
     const logData = {
       "log_user_id": req.user.username.user_id,
