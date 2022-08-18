@@ -233,9 +233,9 @@ async function getEmployees() {
     })
 }
 
-async function getNonRelocatableEmployees() {
+async function getEmployeeByRelocatableStatus(status) {
     return await employee.findAll({
-        where:{emp_relocatable:0}
+        where:{emp_relocatable:status}
     })
 }
 
@@ -666,7 +666,7 @@ module.exports = {
     unSuspendEmployee,
     getAllEmployeesByLocation,
     getEmployeesByPfaLocation,
-  getNonRelocatableEmployees
+  getEmployeeByRelocatableStatus
     //updateDepartment,
     //setNewDepartment,
 }

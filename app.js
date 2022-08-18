@@ -189,7 +189,7 @@
         let travelAccrualDays = [`18-8-${currentYear}`, `1-1-${currentYear}`,`1-4-${currentYear}`, `1-7-${currentYear}`];
         let travelAccrualExpires = [`${currentYear+1}-1-14`, `${currentYear}-4-14`,`${currentYear}-7-14`, `${currentYear}-9-14`];
         if(!(_.isEmpty(travelDayLeave)) || !(_.isNull(travelDayLeave))){
-          const nonRelocatableEmployees = await employeeService.getNonRelocatableEmployees();
+          const nonRelocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(0);
 
           if(travelAccrualDays.includes(currentDate)){
             nonRelocatableEmployees.map(async (reEmp) => {
@@ -241,8 +241,49 @@
       }
     }
 
+    async function runCronJobForRnRLeaveType(){
+      try {
+        const months = [2,4,6,8,10,12];
+        const cDate = new Date();
+        const currentDay = cDate.getDate();
+        const currentMonth = new Date().getMonth()+1;
+        const currentYear = new Date().getFullYear();
+        const result = await leaveApplicationService.getApprovedLeaves();
+        const rNrLeaveType = await leaveTypeService.getLeaveTypeByName('R & R');
+        if(!(_.isEmpty(rNrLeaveType)) || !(_.isNull(rNrLeaveType))){
+          const relocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(1);
+
+          if(months.includes(currentMonth)){
+            relocatableEmployees.map(async (reEmp) => {
+              const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(reEmp.emp_id, currentMonth, currentYear, rNrLeaveType.leave_type_id);
+              if(_.isEmpty(existing) || _.isNull(existing)){
+                let expiresOn = `${currentYear}-${currentMonth === 12 ? 1 : currentMonth+1}-15`;
+                const data = {
+                  lea_emp_id: reEmp.emp_id,
+                  lea_month: currentMonth,
+                  lea_year: currentYear,
+                  lea_leave_type: rNrLeaveType.leave_type_id,
+                  lea_rate: parseFloat(rNrLeaveType.leave_duration),
+                  lea_archives: 0,
+                  lea_leaveapp_id: 0,
+                  lea_expires_on: expiresOn
+                }
+                await leaveAccrualService.addLeaveAccrual(data);
+              }
+
+            })
+          }
+
+        }
+      } catch (e) {
+        //return res.status(400).json('Whoops!');
+      }
+    }
+
     const job = nodeCron.schedule("0 0 * * *", updateApprovedLeaveStatus);
+    const monthlyRoutine = nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType);
     job.start();
+    monthlyRoutine.start();
 
     /* Error handler middleware */
     app.use((err, req, res, next) => {
