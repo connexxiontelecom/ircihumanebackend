@@ -102,10 +102,11 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         if (parseInt(daysRequested) <= 0) {
             return res.status(400).json('Leave duration must be greater or equal to 1')
         }
+
         let n = 1;
         const holidays = [];
         const yearPublicHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
-        if(!(_.isEmpty(yearPublicHolidays) || !(_.isNull(yearPublicHolidays)) )) {
+        if(!(_.isEmpty(yearPublicHolidays)) || !(_.isNull(yearPublicHolidays) ) ) {
           yearPublicHolidays.map((hols) => {
             holidays.push(`${hols.ph_year}-${hols.ph_month}-${hols.ph_day}`);
           })
@@ -116,6 +117,9 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             }
           }
         }
+      //return res.status(200).json(holidays)
+      //return res.status(200).json(yearPublicHolidays)
+      //return res.status(200).json(daysRequested)
         const emp = await employees.getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid)).then((ed) => {
             return ed;
         });

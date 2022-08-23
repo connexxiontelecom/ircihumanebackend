@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 
         static async getThisYearsPublicHolidays(){
           return await PublicHoliday.findAll({
-            where: {ph_year: new Date().getFullYear()}
+            where: {ph_year: new Date().getFullYear(), ph_archive:0}
           })
         }
 
@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
         ph_to_month: DataTypes.STRING,
         ph_to_year: DataTypes.STRING,
         ph_group: DataTypes.STRING,
+        ph_archive: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
