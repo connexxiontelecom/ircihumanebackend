@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
           return PublicHoliday.destroy({where: {'ph_group': groupId}});
         }
 
+        static async getThisYearsPublicHolidays(){
+          return await PublicHoliday.findAll({
+            where: {ph_year: new Date().getFullYear()}
+          })
+        }
+
     };
     PublicHoliday.init({
         ph_id: {
