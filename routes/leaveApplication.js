@@ -17,8 +17,10 @@ const leaveTypeService = require('../services/leaveTypeService');
 const IRCMailerService = require('../services/IRCMailer');
 const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize.DataTypes);
 const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
+const publicHolidayModel = require("../models/PublicHoliday")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
 const employees = require("../services/employeeService");
+const timeSheetService = require("../services/timeSheetService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 const {businessDaysDifference} = require("../services/dateService");
@@ -110,6 +112,23 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             return res.status(400).json('Leave duration must be greater or equal to 1')
         }
 
+        let n = 1;
+        const holidays = [];
+        const yearPublicHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
+        if(!(_.isEmpty(yearPublicHolidays)) || !(_.isNull(yearPublicHolidays) ) ) {
+          yearPublicHolidays.map((hols) => {
+            holidays.push(`${hols.ph_year}-${hols.ph_month}-${hols.ph_day}`);
+          })
+          for (n = 1; n <= daysRequested; n++) {
+            let setDate = `${startDate.getUTCFullYear()}-${startDate.getUTCMonth() + 1}-${(startDate.getUTCDate() + n)}`
+            if(holidays.includes(setDate)){
+              daysRequested -=1;
+            }
+          }
+        }
+      //return res.status(200).json(holidays)
+      //return res.status(200).json(yearPublicHolidays)
+      //return res.status(200).json(daysRequested)
         const emp = await employees.getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid)).then((ed) => {
             return ed;
         });
