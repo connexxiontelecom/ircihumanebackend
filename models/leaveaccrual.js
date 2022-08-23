@@ -20,13 +20,14 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
 
-        static async addLeaveAccrual(empId, month, year, leaveType, noOfDays){
+        static async addLeaveAccrual(empId, month, year, leaveType, noOfDays, expiresOn){
           leaveAccrual.create({
               lea_emp_id: empId,
               lea_month: month,
               lea_year: year,
               lea_leave_type: leaveType,
-              lea_rate: noOfDays
+              lea_rate: noOfDays,
+              lea_expires_on: expiresOn
             })
         }
 
@@ -210,6 +211,8 @@ module.exports = (sequelize, DataTypes) => {
         lea_year: DataTypes.INTEGER,
         lea_leave_type: DataTypes.INTEGER,
         lea_rate: DataTypes.DECIMAL,
+        lea_expires_on: DataTypes.DATEONLY,
+        lea_archives: DataTypes.INTEGER,
 
     }, {
         sequelize,

@@ -20,6 +20,19 @@ module.exports = (sequelize, DataTypes) => {
           return PublicHoliday.destroy({where: {'ph_group': groupId}});
         }
 
+        static async archivePublicHolidayByGroup(groupId){
+          return PublicHoliday.update(
+            {ph_archive: 1},
+            {where: {'ph_group': groupId}}
+          );
+        }
+
+        static async getThisYearsPublicHolidays(){
+          return await PublicHoliday.findAll({
+            where: {ph_year: new Date().getFullYear(), ph_archive:0}
+          })
+        }
+
     };
     PublicHoliday.init({
         ph_id: {
@@ -38,6 +51,7 @@ module.exports = (sequelize, DataTypes) => {
         ph_to_month: DataTypes.STRING,
         ph_to_year: DataTypes.STRING,
         ph_group: DataTypes.STRING,
+        ph_archive: DataTypes.INTEGER,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

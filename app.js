@@ -3,6 +3,7 @@
     const bodyParser = require('body-parser');
     const cors = require('cors');
     const fileUpload = require('express-fileupload');
+    const _ = require('lodash')
     const app = express();
     app.use(cors());
     app.use(express.json());
@@ -25,6 +26,9 @@
     const stateRouter = require('./routes/state');
     const employeeCategoryRouter = require('./routes/employee-category');
     const leaveApplicationService = require('./services/leaveApplicationService');
+    const leaveTypeService = require('./services/leaveTypeService');
+    const employeeService = require('./services/employeeService');
+    const leaveAccrualService = require('./services/leaveAccrualService');
     app.use('/employees', employeeRouter);
    app.use('/banks', bankRouter);
     app.use('/pension-providers', pensionProviderRouter);
@@ -174,6 +178,58 @@
     async function updateApprovedLeaveStatus() {
       try {
         const result = await leaveApplicationService.getApprovedLeaves();
+        const travelDayLeave = await leaveTypeService.getLeaveTypeByName('Travel Day');
+        const cDate = new Date();
+        const currentDay = cDate.getDate();
+        const currentMonth = new Date().getMonth()+1;
+        const currentYear = new Date().getFullYear();
+        const currentDate = `${currentDay}-${currentMonth}-${currentYear}`;
+        const reverseCurrentDate = `${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay}`;
+
+        let travelAccrualDays = [`18-8-${currentYear}`, `1-1-${currentYear}`,`1-4-${currentYear}`, `1-7-${currentYear}`];
+        let travelAccrualExpires = [`${currentYear+1}-1-14`, `${currentYear}-4-14`,`${currentYear}-7-14`, `${currentYear}-9-14`];
+        if(!(_.isEmpty(travelDayLeave)) || !(_.isNull(travelDayLeave))){
+          const nonRelocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(0);
+
+          if(travelAccrualDays.includes(currentDate)){
+            nonRelocatableEmployees.map(async (reEmp) => {
+              const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(reEmp.emp_id, currentMonth, currentYear, travelDayLeave.leave_type_id);
+
+              if(_.isEmpty(existing) || _.isNull(existing)){
+                let expiresOn = null;
+                if(currentDate === travelAccrualDays[0]){
+                  expiresOn = travelAccrualExpires[0]
+                }else if(currentDate === travelAccrualDays[1]){
+                  expiresOn = travelAccrualExpires[1]
+                }else if(currentDate === travelAccrualDays[2]){
+                  expiresOn = travelAccrualExpires[2]
+                }else if(currentDate === travelAccrualDays[3]){
+                  expiresOn = travelAccrualExpires[3]
+                }
+                const data = {
+                  lea_emp_id: reEmp.emp_id,
+                  lea_month: currentMonth,
+                  lea_year: currentYear,
+                  lea_leave_type: travelDayLeave.leave_type_id,
+                  lea_rate: parseFloat(travelDayLeave.leave_duration),
+                  lea_archives: 0,
+                  lea_leaveapp_id: 0,
+                  lea_expires_on: expiresOn
+                }
+                await leaveAccrualService.addLeaveAccrual(data);
+              }
+
+            })
+          }
+            const leaveAccruals = await leaveAccrualService.getLeaveAccruals();
+            leaveAccruals.map(async (leaveAccr) => {
+              if(reverseCurrentDate === leaveAccr.lea_expires_on){
+                const inst = await leaveAccrualService.archiveAccrual(leaveAccr.lea_id);
+              }
+            })
+
+        }
+
         result.map(async (re) => {
           if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) ) {
             await leaveApplicationService.updateLeaveAppStatus(re.leapp_id, 3);
@@ -185,8 +241,49 @@
       }
     }
 
-    const job = nodeCron.schedule("*/1 * * * *", updateApprovedLeaveStatus);
+    async function runCronJobForRnRLeaveType(){
+      try {
+        const months = [2,4,6,8,10,12];
+        const cDate = new Date();
+        const currentDay = cDate.getDate();
+        const currentMonth = new Date().getMonth()+1;
+        const currentYear = new Date().getFullYear();
+        const result = await leaveApplicationService.getApprovedLeaves();
+        const rNrLeaveType = await leaveTypeService.getLeaveTypeByName('R & R');
+        if(!(_.isEmpty(rNrLeaveType)) || !(_.isNull(rNrLeaveType))){
+          const relocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(1);
+
+          if(months.includes(currentMonth)){
+            relocatableEmployees.map(async (reEmp) => {
+              const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(reEmp.emp_id, currentMonth, currentYear, rNrLeaveType.leave_type_id);
+              if(_.isEmpty(existing) || _.isNull(existing)){
+                let expiresOn = `${currentYear}-${currentMonth === 12 ? 1 : currentMonth+1}-15`;
+                const data = {
+                  lea_emp_id: reEmp.emp_id,
+                  lea_month: currentMonth,
+                  lea_year: currentYear,
+                  lea_leave_type: rNrLeaveType.leave_type_id,
+                  lea_rate: parseFloat(rNrLeaveType.leave_duration),
+                  lea_archives: 0,
+                  lea_leaveapp_id: 0,
+                  lea_expires_on: expiresOn
+                }
+                await leaveAccrualService.addLeaveAccrual(data);
+              }
+
+            })
+          }
+
+        }
+      } catch (e) {
+        //return res.status(400).json('Whoops!');
+      }
+    }
+
+    const job = nodeCron.schedule("0 0 * * *", updateApprovedLeaveStatus);
+    const monthlyRoutine = nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType);
     job.start();
+    monthlyRoutine.start();
 
     /* Error handler middleware */
     app.use((err, req, res, next) => {
