@@ -301,6 +301,26 @@ const  deletePublicHolidayByGroup = async (req, res) =>{
 
 }
 
+const  archivePublicHolidayByGroup = async (req, res) =>{
+  try{
+    const groupId = req.params.id;
+    const pubHols = await PublicHoliday.getPublicHolidayByGroup(groupId);
+
+    if(_.isNull(pubHols) || _.isEmpty(pubHols)){
+      return res.status(400).json("Whoops! No record found.")
+    }
+    const deleteHols =  await PublicHoliday.archivePublicHolidayByGroup(groupId);
+    if(deleteHols){
+      return res.status(200).json("Public holiday(s) archived.")
+    }else{
+      return res.status(400).json("Could not archive public holiday. Try again later.")
+    }
+  }catch (e) {
+    return res.status(400).json("Something went wrong. Try again. "+e.message)
+  }
+
+}
+
 
 module.exports = {
     setNewPublicHoliday,
@@ -311,5 +331,6 @@ module.exports = {
     fetchSpecificPublicHoliday,
     updatePublicHoliday,
   getAllIndividualPublicHolidays,
-  deletePublicHolidayByGroup
+  deletePublicHolidayByGroup,
+  archivePublicHolidayByGroup
 }
