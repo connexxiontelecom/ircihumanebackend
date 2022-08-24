@@ -2357,7 +2357,7 @@ router.get('/pull-confirmed-salary-routine-locations', auth(), async function (r
                         locationCode: locationData.location_t6_code,
                         locationTotalGross: locationTotalGross,
                         locationTotalDeduction: locationMainTotalDeduction,
-                        locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        locationTotalNet: locationTotalGross - locationMainTotalDeduction,
                         locationEmployeesCount: locationTotalEmployee,
                         month: payrollMonth,
                         year: payrollYear
