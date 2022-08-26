@@ -109,7 +109,7 @@ const updateAuthorizationStatus = async (req, res) => {
                   const emp = await employeeService.getEmployeeByIdOnly(leaveData.leapp_empid).then((e)=>{
                     return e;
                   });
-                  if(req.body.contactGroup === 1){ //HR Focal point
+                  if(parseInt(req.body.contactGroup) === 1){ //HR Focal point
                     const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
                       return hr;
                     })
@@ -121,19 +121,19 @@ const updateAuthorizationStatus = async (req, res) => {
                       });
                     })
 
-                  }else if(req.body.contactGroup === 2){
+                  }else if(parseInt(req.body.contactGroup) === 2){
                     await authorizationModel.create({
                       auth_officer_id: emp.emp_supervisor_id,
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
-                  }else{
+                  }/*else{
                     await authorizationModel.create({
                       auth_officer_id: nextOfficer,
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
-                  }
+                  }*/
                 break;
               }
 
