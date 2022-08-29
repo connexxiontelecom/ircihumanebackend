@@ -56,7 +56,8 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             leapp_start_date: Joi.string().required(),
             leapp_end_date: Joi.string().required(),
             leapp_alt_email: Joi.string(),
-            leapp_alt_phone: Joi.string()
+            leapp_alt_phone: Joi.string(),
+            leaveDuration: Joi.number().allow('', null),
             // leapp_verify_by: Joi.number().required(),
             // leapp_verify_date: Joi.string().required(),
             // leapp_verify_comment: Joi.string().required(),
@@ -92,34 +93,31 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         // }
 
 
-        let daysRequested ;//= await differenceInBusinessDays(endDate, startDate)
-        if(startDate.getDay() === 6 || startDate.getDay() === 0){
-          daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
-        }else{
-          daysRequested = await differenceInBusinessDays(endDate, startDate);
-        }
+        let daysRequested = leaveApplicationRequest.leaveDuration;
+       /* daysRequested =  differenceInBusinessDays(endDate, startDate) + 1; //differenceInBusinessDays starts counting from the next day
+        const diffTime = Math.abs(endDate - startDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
         const empId = req.user.username.user_id;
-        if (parseInt(daysRequested) <= 0) {
-            return res.status(400).json('Leave duration must be greater or equal to 1')
-        }
-
-        let n = 1;
+        let n = 0;
         const holidays = [];
         const yearPublicHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
         if(!(_.isEmpty(yearPublicHolidays)) || !(_.isNull(yearPublicHolidays) ) ) {
           yearPublicHolidays.map((hols) => {
             holidays.push(`${hols.ph_year}-${hols.ph_month}-${hols.ph_day}`);
           })
-          for (n = 1; n <= daysRequested; n++) {
+          for (n = 0; n < diffDays; n++) {
             let setDate = `${startDate.getUTCFullYear()}-${startDate.getUTCMonth() + 1}-${(startDate.getUTCDate() + n)}`
             if(holidays.includes(setDate)){
-              daysRequested -=1;
+              daysRequested = daysRequested - 1;
             }
           }
+        }*/
+        if (parseInt(daysRequested) <= 0) {
+            return res.status(400).json('Leave duration must be greater or equal to 1')
         }
-      //return res.status(200).json(holidays)
-      //return res.status(200).json(yearPublicHolidays)
-      //return res.status(200).json(daysRequested)
+
+      //return res.status(200).json(daysRequested);
+      //return res.status(200).json(holidays);
         const emp = await employees.getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid)).then((ed) => {
             return ed;
         });
