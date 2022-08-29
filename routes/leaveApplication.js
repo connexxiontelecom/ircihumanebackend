@@ -23,6 +23,8 @@ const employees = require("../services/employeeService");
 const timeSheetService = require("../services/timeSheetService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+const {businessDaysDifference} = require("../services/dateService");
+const isWeekend = require("date-fns/isWeekend");
 
 
 /* Get leave application */
@@ -146,9 +148,9 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             return res.status(400).json('Invalid Leave Type');
 
         }
-      if(daysRequested > parseInt(leaveTypeData.leave_duration)){
-        return res.status(400).json('Leave duration exceed leave duration for this leave type.')
-      }
+        if(daysRequested > parseInt(leaveTypeData.leave_duration)){
+            return res.status(400).json('Leave duration exceed leave duration for this leave type.')
+        }
 
         if (parseInt(leaveTypeData.lt_accrue) === 1) {
             const accrualData = {
@@ -168,7 +170,7 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             }
 
 
-           if (parseInt(daysRequested) > parseInt(accruedDays)) {
+            if (parseInt(daysRequested) > parseInt(accruedDays)) {
                 return res.status(400).json("Days Requested Greater than Accrued Days")
             }
         }
@@ -261,7 +263,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                       let office = "";
                       officers.map((off)=>{
-                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id})\n, `;
+                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id}), `;
                       })
                         leaveObj = {
                             data,

@@ -2264,6 +2264,8 @@ router.get('/pull-confirmed-salary-routine-locations', auth(), async function (r
                     let locationTotalGrossII = 0
                     let locationTotalGrossI = 0
                     let locationTotalDeduction = 0
+                    let mainTotalDeduction = 0
+                    let locationMainTotalDeduction = 0
                     let locationTotalNetPay = 0
                     let locationTotalEmployee = 0
                     let grossSalary = 0
@@ -2310,6 +2312,10 @@ router.get('/pull-confirmed-salary-routine-locations', auth(), async function (r
                                 if (parseInt(empSalary.payment.pd_payment_type) === 1) {
                                     grossSalary = parseFloat(empSalary.salary_amount) + grossSalary
                                 } else {
+                                    if (parseInt(empSalary.payment.pd_total_gross_ii) === 0 && parseInt(empSalary.payment.pd_total_gross) === 0) {
+
+                                        mainTotalDeduction = parseFloat(empSalary.salary_amount) + mainTotalDeduction
+                                    }
                                     totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction
                                 }
                             }
@@ -2343,14 +2349,15 @@ router.get('/pull-confirmed-salary-routine-locations', auth(), async function (r
 
                     locationTotalGross = locationTotalGrossII + locationTotalGross
                     locationTotalDeduction = totalDeduction + locationTotalDeduction
+                    locationMainTotalDeduction = mainTotalDeduction + locationMainTotalDeduction
 
                     let locationSalaryObject = {
                         locationId: locationData.location_id,
                         locationName: locationData.location_name,
                         locationCode: locationData.location_t6_code,
                         locationTotalGross: locationTotalGross,
-                        locationTotalDeduction: locationTotalDeduction,
-                        locationTotalNet: locationTotalGross - locationTotalDeduction,
+                        locationTotalDeduction: locationMainTotalDeduction,
+                        locationTotalNet: locationTotalGross - locationMainTotalDeduction,
                         locationEmployeesCount: locationTotalEmployee,
                         month: payrollMonth,
                         year: payrollYear
