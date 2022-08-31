@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
         lt_mode: DataTypes.INTEGER,
         lt_rate: DataTypes.DOUBLE,
         lt_accrue: DataTypes.INTEGER,
+      lt_attachment_required: {
+        type: DataTypes.INTEGER,
+        defaultValue:0,
+      },
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,
