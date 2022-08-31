@@ -27,7 +27,7 @@ const getCurrentYearPublicHolidays = async (req, res) => {
         const holidays = await PublicHoliday.getThisYearsPublicHolidays();
         return res.status(200).json(holidays)
     } catch (err) {
-        return res.status(500).json({message: `Error while fetching public holidays ${err.message}`})
+        return res.status(400).json({message: `Error while fetching public holidays ${err.message}`})
     }
 }
 const getAllIndividualPublicHolidays = async (req, res) => {
