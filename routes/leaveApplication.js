@@ -263,7 +263,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                       let office = "";
                       officers.map((off)=>{
-                        office += `${off.officers.emp_first_name} ${off.officers.emp_last_name} (${off.officers.emp_unique_id}), `;
+                        office += `${off.officers.emp_first_name} (${off.officers.emp_unique_id}), `;
                       })
                         leaveObj = {
                             data,

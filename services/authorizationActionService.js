@@ -90,6 +90,7 @@ const updateAuthorizationStatus = async (req, res) => {
         if (!_.isNull(application) || !_.isEmpty(application)) {
             if (application.auth_officer_id !== officer)
               return res.status(400).json("You do not have permission to authorize this request.");
+            const authEmployee = await EmployeeModel.getEmployeeById(officer);
             const auth = await authorizationModel.update({
                 auth_status: req.body.status,
                 auth_comment: comment,
@@ -99,6 +100,29 @@ const updateAuthorizationStatus = async (req, res) => {
                     auth_travelapp_id: appId, auth_type: type, auth_officer_id: officer
                 }
             });
+            const similarPendingRequest = await authorizationModel.findAll({
+              where:{
+                auth_status:0,
+                auth_type:type,
+                auth_travelapp_id: appId
+              }
+            });
+
+            if(!(_.isEmpty(similarPendingRequest)) || !(_.isNull(similarPendingRequest))){
+              similarPendingRequest.map(async (pend) => {
+                await authorizationModel.update({
+                  auth_status: req.body.status,
+                  auth_comment: `This request was approved by ${authEmployee.emp_first_name} ${authEmployee.emp_last_name} (${authEmployee.emp_unique_id}) on your behalf. `,
+                  auth_role_id: role,
+                }, {
+                  where: {
+                    auth_travelapp_id: pend.auth_travelapp_id,
+                    auth_type: pend.auth_type,
+                    auth_officer_id: pend.auth_officer_id
+                  }
+                });
+              })
+            }
 
             if (markAsFinal === 0) {
               switch (type){
