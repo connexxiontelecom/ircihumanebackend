@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
               lea_year: year,
               lea_leave_type: leaveType,
               lea_rate: noOfDays,
-              lea_expires_on: expiresOn
+              lea_expires_on: expiresOn || null,
             })
         }
 
