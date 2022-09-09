@@ -1,7 +1,8 @@
 'use strict';
 const {sequelize, Sequelize} = require("../services/db");
 const {
-    Model
+    Model,
+  Op
 } = require('sequelize');
 
 const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
@@ -14,6 +15,7 @@ const pensionModel = require("../models/PensionProvider")(sequelize, Sequelize.D
 const ReportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes);
 const OperationUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes);
 const FunctionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes);
+
 
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 //const travelApplicationModel = require('../models/TravelApplication')(sequelize, Sequelize.DataTypes);
@@ -38,8 +40,15 @@ module.exports = (sequelize, DataTypes) => {
             return await Employee.findOne({where:{emp_location_id:locationId}})
         }
 
+
+
         static async getListOfEmployeesSupervising(empId){
             return await Employee.findAll({where:{emp_supervisor_id:empId}})
+        }
+
+
+        static async getListOfEmployeesByStatus(status){
+            return await Employee.findAll({where:{emp_status:status}})
         }
 
         static async updateEmployeeRelocatableStatus(empId, status){
@@ -50,6 +59,19 @@ module.exports = (sequelize, DataTypes) => {
                 emp_id: empId
               }
             })
+        }
+        static async getEmployeeLeaveAccrual(year){
+          return Employee.findAll({
+            attributes: ["emp_first_name", "emp_id", "emp_last_name", "emp_unique_id"],
+            where:{
+              emp_id:{
+                [Op.in]:sequelize.literal(
+                  `(SELECT la.lea_emp_id, la.lea_rate  FROM leave_accruals la
+                  WHERE la.lea_year = ${year} GROUP BY la.lea_emp_id)`
+                ),
+              },
+            },
+          })
         }
     };
     Employee.init({
@@ -172,8 +194,6 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(FunctionalAreaModel, {as:'functionalArea', foreignKey:'emp_d6'});
     Employee.hasMany(FunctionalAreaModel, {foreignKey: 'fa_id'})
-
-
 
 
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
