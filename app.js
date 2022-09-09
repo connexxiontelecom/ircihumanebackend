@@ -177,16 +177,35 @@
 
     async function updateApprovedLeaveStatus() {
       try {
-        const result = await leaveApplicationService.getApprovedLeaves();
+        const approvedLeaves = await leaveApplicationService.getLeavesByStatus(1);
+        const activeLeaves = await leaveApplicationService.getLeavesByStatus(3);
+        //update approved leaves to the status of active
+        approvedLeaves.map(async (re) => {
+          if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) ) {
+            await leaveApplicationService.updateLeaveAppStatus(re.leapp_id, 3);
+          }
+        })
+        //update active leaves to the status of finished
+        activeLeaves.map(async (act) => {
+          if ((new Date() >= new Date(act.leapp_end_date).getTime()) && (act.leapp_status === 3) ) {
+            await leaveApplicationService.updateLeaveAppStatus(act.leapp_id, 4);
+          }
+        })
+      } catch (e) {
+      }
+    }
+
+    async function travelDayLeaveAccrual(){
+      try {
         const travelDayLeave = await leaveTypeService.getLeaveTypeByName('Travel Day');
         const cDate = new Date();
         const currentDay = cDate.getDate();
         const currentMonth = new Date().getMonth()+1;
         const currentYear = new Date().getFullYear();
         const currentDate = `${currentDay}-${currentMonth}-${currentYear}`;
-        const reverseCurrentDate = `${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay}`;
+        //const reverseCurrentDate = `${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay}`;
 
-        let travelAccrualDays = [`18-8-${currentYear}`, `1-1-${currentYear}`,`1-4-${currentYear}`, `1-7-${currentYear}`];
+        let travelAccrualDays = [`9-9-${currentYear}`, `1-1-${currentYear}`,`1-4-${currentYear}`, `1-7-${currentYear}`];
         let travelAccrualExpires = [`${currentYear+1}-1-14`, `${currentYear}-4-14`,`${currentYear}-7-14`, `${currentYear}-9-14`];
         if(!(_.isEmpty(travelDayLeave)) || !(_.isNull(travelDayLeave))){
           const nonRelocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(0);
@@ -221,23 +240,15 @@
 
             })
           }
-            const leaveAccruals = await leaveAccrualService.getLeaveAccruals();
-            leaveAccruals.map(async (leaveAccr) => {
-              if(reverseCurrentDate === leaveAccr.lea_expires_on){
-                const inst = await leaveAccrualService.archiveAccrual(leaveAccr.lea_id);
-              }
-            })
-
+          const leaveAccruals = await leaveAccrualService.getLeaveAccruals();
+          leaveAccruals.map(async (leaveAccr) => {
+            if((new Date()  >= new Date(leaveAccr.lea_expires_on)) && leaveAccr.lea_archives === 0){
+              const inst = await leaveAccrualService.archiveAccrual(leaveAccr.lea_id);
+            }
+          })
         }
-
-        result.map(async (re) => {
-          if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) ) {
-            await leaveApplicationService.updateLeaveAppStatus(re.leapp_id, 3);
-          }
-
-        })
       } catch (e) {
-        //return res.status(400).json('Whoops!');
+
       }
     }
 
@@ -280,9 +291,11 @@
       }
     }
 
-    const job = nodeCron.schedule("0 0 * * *", updateApprovedLeaveStatus);
+    const updateLeaveJob = nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus);
+    const travelDayLeaveAccrualJob = nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual);
     const monthlyRoutine = nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType);
-    job.start();
+    updateLeaveJob.start();
+    travelDayLeaveAccrualJob.start();
     monthlyRoutine.start();
 
     /* Error handler middleware */
