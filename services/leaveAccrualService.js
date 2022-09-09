@@ -142,7 +142,7 @@ async function getTotalTakenLeaveAccrualByYearEmployeeLeaveType(year, employee_i
 }
 
 async function getTotalAccruedLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_type) {
-    return sequelize.query('SELECT SUM(lea_rate) AS totalAccrued FROM leave_accruals WHERE lea_emp_id = :employee_id AND lea_year = :year AND lea_leave_type = :leave_type AND lea_rate > 0',
+    return sequelize.query('SELECT SUM(lea_rate) AS totalAccrued FROM leave_accruals WHERE lea_emp_id = :employee_id AND lea_fy = :year AND lea_leave_type = :leave_type AND lea_rate > 0',
         {
             replacements: { employee_id: employee_id, year: year, leave_type: leave_type },
             type: QueryTypes.SELECT
