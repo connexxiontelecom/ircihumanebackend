@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         static async addLeaveAccrual(empId, month, year, leaveType, noOfDays, expiresOn){
+          const calendarYear = month >= 1 || month <= 9 ? `FY${year}` : `FY${year+1}`;
           leaveAccrual.create({
               lea_emp_id: empId,
               lea_month: month,
@@ -28,30 +29,18 @@ module.exports = (sequelize, DataTypes) => {
               lea_leave_type: leaveType,
               lea_rate: noOfDays,
               lea_expires_on: expiresOn || null,
+              lea_fy: calendarYear
             })
         }
 
         static async getAllLeaveAccruals(year) {
             return await leaveAccrual.findAll({
-                attributes:['lea_id', 'lea_emp_id',
-                  'lea_month', 'lea_year', 'lea_leave_type', 'lea_rate', 'lea_archives',
-                  [sequelize.fn('sum', sequelize.col('lea_rate')), 'total']
-                ],
-                group:['lea_emp_id'],
-              include: [
-                {
-                  model: employeeModel, as: 'employee',
-                  include: [
-                    {model: locationModel, as: 'location'},
-                    {model: jobRoleModel},
-                    {model: departmentModel, as: 'sector'}
-                  ]
-                },
-                {model: leaveTypeModel, as: 'leave_type'},
+              attributes:['lea_id', 'lea_emp_id',
+                'lea_month', 'lea_year', 'lea_leave_type', 'lea_rate', 'lea_archives', 'lea_fy',
+                [sequelize.fn('sum', sequelize.col('lea_rate')), 'total']
               ],
-                where: {lea_archives: 0},
-
-
+              where:{lea_fy:year},
+              group:['lea_emp_id'],
             })
         }
         static async getAllLeaveAccrualsByYear(year) {
@@ -72,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
                 },
                 {model: leaveTypeModel, as: 'leave_type'},
               ],
-                where: {lea_archives: 0, lea_year: year, lea_rate: { [Op.gt] : 0 } },
+                where: {lea_archives: 0, lea_fy: year, lea_rate: { [Op.gt] : 0 } },
 
 
             })
@@ -115,7 +104,7 @@ module.exports = (sequelize, DataTypes) => {
           include: [
             {model: leaveTypeModel, as: 'leave_type'},
           ],
-          where: {lea_year: year, lea_emp_id: empId}
+          where: {lea_fy: year, lea_emp_id: empId}
 
         })
       }
@@ -141,7 +130,7 @@ module.exports = (sequelize, DataTypes) => {
           include: [
             {model: leaveTypeModel, as: 'leave_type'},
           ],
-          where: {lea_archives: 1, lea_year: year, lea_emp_id: empId}
+          where: {lea_archives: 1, lea_fy: year, lea_emp_id: empId}
 
         })
       }
@@ -152,7 +141,7 @@ module.exports = (sequelize, DataTypes) => {
             [sequelize.fn('sum', sequelize.col('lea_rate')), 'total']
           ],
           group:['lea_emp_id', 'lea_leave_type'],
-          where: {lea_archives: 0, lea_year: year, lea_emp_id: empId, lea_rate: { [Op.lt] : 0 } },
+          where: {lea_archives: 0, lea_fy: year, lea_emp_id: empId, lea_rate: { [Op.lt] : 0 } },
         })
       }
       static async getEmployeeLeftLeaveAccrualsByYearEmpId(year, empId) {
@@ -162,7 +151,7 @@ module.exports = (sequelize, DataTypes) => {
             [sequelize.fn('sum', sequelize.col('lea_rate')), 'total']
           ],
           group:['lea_emp_id', 'lea_leave_type'],
-          where: {lea_archives: 0, lea_year: year, lea_emp_id: empId, lea_rate: { [Op.gt] : 0 } },
+          where: {lea_archives: 0, lea_fy: year, lea_emp_id: empId, lea_rate: { [Op.gt] : 0 } },
         })
       }
       static async getEmployeeArchivedLeaveAccrualsByYearEmpId(year, empId) {
@@ -213,6 +202,7 @@ module.exports = (sequelize, DataTypes) => {
         lea_rate: DataTypes.DECIMAL,
         lea_expires_on: DataTypes.DATEONLY,
         lea_archives: DataTypes.INTEGER,
+        lea_fy: DataTypes.STRING,
 
     }, {
         sequelize,

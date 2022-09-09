@@ -13,6 +13,7 @@ const logs = require("../services/logService");
 
 const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize.DataTypes);
 const leaveTypeModel = require("../models/LeaveType")(sequelize, Sequelize.DataTypes);
+const employeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
 
 async function addLeaveAccrual(data) {
     const schema = Joi.object({
@@ -150,23 +151,61 @@ router.get('/employee-leave-accruals', auth(), async (req, res)=>{
 });
 router.post('/year', auth(), async (req, res)=>{
   try{
-    const year = parseInt(req.body.year);
-    const accruals = await leaveAccrualModel.getAllLeaveAccrualsByYear(year);
-    const leave_types = await leaveTypeModel.getAllLeaveTypes();
-    const data = {
-      accruals,
-      leave_types
-    }
+    const year = req.body.year;
+    const employees = await employee.getActiveEmployees();
+    const accruals = await leaveAccrualModel.getAllLeaveAccruals(year);
+    const empAccruedIds = [];
+    accruals.map((accruedIds)=>{
+      empAccruedIds.push(accruedIds.lea_emp_id);
+    })
+    const notAccruedEmployees = await employee.getExcludedActiveEmployeesByIds(empAccruedIds);
+    const leaveAccruals = [];
+    employees.map((emp)=>{
+      accruals.map((accrual)=>{
+        if(emp.emp_id === accrual.lea_emp_id){
+          let empAccruals = {
+            emp_first_name: emp.emp_first_name,
+            emp_last_name: emp.emp_last_name,
+            emp_id: emp.emp_id,
+            emp_unique_id: emp.emp_unique_id,
+            t6:emp.location?.location_name,
+            t7: emp.emp_unique_id,
+            t3: emp.sector?.department_name,
+            total: accrual.get('total') ,
+            lea_year:year, //accrual.lea_fy,
+            lea_emp_id:accrual.lea_emp_id
+          }
+          leaveAccruals.push(empAccruals)
+        }
 
-    return res.status(200).json(data);
+      })
+    });
+    notAccruedEmployees.map((nAcc)=>{
+            let empAccruals = {
+              emp_first_name: nAcc.emp_first_name,
+              emp_last_name: nAcc.emp_last_name,
+              emp_id: nAcc.emp_id,
+              emp_unique_id: nAcc.emp_unique_id,
+              t6:nAcc.location?.location_name,
+              t7: nAcc.emp_unique_id,
+              t3: nAcc.sector?.department_name,
+              total:   0,
+              lea_year:year,
+              lea_emp_id:nAcc.emp_id
+            }
+        leaveAccruals.push(empAccruals)
+      })
+
+    //return res.status(200).json(leaveAccruals);
+    return res.status(200).json(leaveAccruals);
   }catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json("Something went wrong."+e.message);
   }
 });
 
 router.get('/:year/:empId', auth(), async (req, res)=>{
   try{
-    const year = parseInt(req.params.year);
+    const year = req.params.year;
     const empId = parseInt(req.params.empId);
     const total = await leaveAccrualModel.getTotalAccruedAllLeaveAccrualsByYearEmpId(year, empId);
       const leave_types = await leaveType.getAllLeaves();

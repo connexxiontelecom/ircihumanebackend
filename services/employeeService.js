@@ -232,7 +232,13 @@ async function getEmployees() {
           'functionalArea', 'reportingEntity', 'operationUnit', 'pension', 'lga', 'state']
     })
 }
-
+async function getActiveEmployees(status) {
+  return await employee.findAll({
+    where:{emp_status:status},
+    include: ['supervisor', 'location', 'bank', 'jobrole', 'sector',
+      'functionalArea', 'reportingEntity', 'operationUnit', 'pension', 'lga', 'state']
+  })
+}
 async function getEmployeeByRelocatableStatus(status) {
     return await employee.findAll({
         where:{emp_relocatable:status}
@@ -427,6 +433,16 @@ async function getActiveEmployees() {
     return await employee.findAll({
         where: {
             emp_status: 1
+        },
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector','lga','state',
+            'functionalArea', 'reportingEntity', 'operationUnit']
+    })
+}
+async function getExcludedActiveEmployeesByIds(ids) {
+    return await employee.findAll({
+        where: {
+            emp_status: 1,
+            emp_id: {[Op.not]:ids}
         },
         include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector','lga','state',
             'functionalArea', 'reportingEntity', 'operationUnit']
@@ -666,7 +682,8 @@ module.exports = {
     unSuspendEmployee,
     getAllEmployeesByLocation,
     getEmployeesByPfaLocation,
-  getEmployeeByRelocatableStatus
+  getEmployeeByRelocatableStatus,
+  getExcludedActiveEmployeesByIds
     //updateDepartment,
     //setNewDepartment,
 }
