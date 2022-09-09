@@ -174,6 +174,8 @@ module.exports = (sequelize, DataTypes) => {
     Employee.hasMany(FunctionalAreaModel, {foreignKey: 'fa_id'})
 
 
+
+
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});
     //Employee.belongsTo(travelApplicationModel, { foreignKey:'emp_id', as: 'applicant' });
 
