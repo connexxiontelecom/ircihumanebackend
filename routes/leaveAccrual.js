@@ -260,6 +260,7 @@ router.post('/add-accruals', auth(), async (req, res)=>{
       empId: Joi.number().required(),
       leaveType: Joi.number().required(),
       expiresOn: Joi.string().allow(null, ''),
+
     })
 
     const accrualRequest = req.body
