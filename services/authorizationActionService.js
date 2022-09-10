@@ -199,47 +199,49 @@ const updateAuthorizationStatus = async (req, res) => {
 
                         let leaveDate = new Date(leaveApplicationData.leapp_start_date)
 
-                        const leaveAccrual = {
-                            lea_emp_id: leaveApplicationData.leapp_empid,
-                            lea_year: leaveDate.getFullYear(),
-                            lea_month: leaveDate.getMonth() + 1,
-                            lea_leave_type: leaveApplicationData.leapp_leave_type,
-                            lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days),
-                            lea_leaveapp_id: leaveApplicationData.leapp_id,
-                            lea_archives:0,
-                        }
-                        //return res.status(200).json(leaveAccrual);
-
-                        const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
-                            return data;
-                        })
-
-
-                        //update timesheet
-                      const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);
-                      if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){
-                        let startDate = new Date(leaveApp.leapp_start_date);
-                        let endDate = new Date(leaveApp.leapp_end_date);
-                        let numDays
-                        if(startDate.getDay() === 6 || startDate.getDay() === 0){
-                          numDays = await differenceInBusinessDays(endDate, startDate) + 2;
-                        }else{
-                          numDays = await differenceInBusinessDays(endDate, startDate) + 1;
-                        }
-                        let i = 0;
-                        if(numDays > 0){
-                          for(i=0; i<= numDays; i++){
-                            const loopPeriod = {
-                              emp_id:leaveApp.leapp_empid,
-                              day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
-                              month: startDate.getUTCMonth() + 1,
-                              year: startDate.getUTCFullYear()
+                        if(status === 1){
+                            const leaveAccrual = {
+                                lea_emp_id: leaveApplicationData.leapp_empid,
+                                lea_year: leaveDate.getFullYear(),
+                                lea_month: leaveDate.getMonth() + 1,
+                                lea_leave_type: leaveApplicationData.leapp_leave_type,
+                                lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days),
+                                lea_leaveapp_id: leaveApplicationData.leapp_id,
+                                lea_archives:0,
                             }
-                            await timeSheetService.updateTimesheetByDateRange(loopPeriod);
-                          }
+                            //return res.status(200).json(leaveAccrual);
+
+                            const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                                return data;
+                            })
+
+                            //update timesheet
+                            const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);
+                            if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){
+                                let startDate = new Date(leaveApp.leapp_start_date);
+                                let endDate = new Date(leaveApp.leapp_end_date);
+                                let numDays
+                                if(startDate.getDay() === 6 || startDate.getDay() === 0){
+                                    numDays = await differenceInBusinessDays(endDate, startDate) + 2;
+                                }else{
+                                    numDays = await differenceInBusinessDays(endDate, startDate) + 1;
+                                }
+                                let i = 0;
+                                if(numDays > 0){
+                                    for(i=0; i<= numDays; i++){
+                                        const loopPeriod = {
+                                            emp_id:leaveApp.leapp_empid,
+                                            day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
+                                            month: startDate.getUTCMonth() + 1,
+                                            year: startDate.getUTCFullYear()
+                                        }
+                                        await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+                                    }
+                                }
+
+                            }
                         }
 
-                      }
                         break;
                     case 2: //time sheet
 
