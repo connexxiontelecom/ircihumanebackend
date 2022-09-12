@@ -111,7 +111,7 @@ async function getAllLeaves() {
 
 async function getAllEmployeeLeavesTypesByRelocatableStatus(status) {
     return await leaveType.findAll({
-      where:{ lt_rr: status, }
+      where:{ lt_rr: [status,0], }
     })
 }
 
