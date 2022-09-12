@@ -32,8 +32,9 @@ module.exports = (sequelize, DataTypes) => {
         leave_duration: DataTypes.INTEGER,
         lt_mode: DataTypes.INTEGER,
         lt_rate: DataTypes.DOUBLE,
+        lt_rr: DataTypes.INTEGER,
         lt_accrue: DataTypes.INTEGER,
-      lt_attachment_required: {
+        lt_attachment_required: {
         type: DataTypes.INTEGER,
         defaultValue:0,
       },

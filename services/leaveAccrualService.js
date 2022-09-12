@@ -4,8 +4,6 @@ const LeaveAccrual = require("../models/leaveaccrual")(sequelize, Sequelize.Data
 
 
 async function addLeaveAccrual(accrualData) {
-
-
     return await LeaveAccrual.create({
         lea_emp_id: accrualData.lea_emp_id,
         lea_month: accrualData.lea_month,
@@ -15,6 +13,7 @@ async function addLeaveAccrual(accrualData) {
         lea_archives: 0,
         lea_leaveapp_id: 0,
         lea_expires_on: accrualData.lea_expires_on,
+        lea_fy: accrualData.lea_fy
     });
 }
 
