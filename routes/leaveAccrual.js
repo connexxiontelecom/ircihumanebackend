@@ -78,10 +78,9 @@ router.get('/get-leave-acrruals/:emp_id', auth(), async function (req, res, next
         if (!_.isEmpty(employeeData) || !_.isNull(employeeData)) {
 
 
-            const leaves = await leaveType.getAllLeaves().then((data) => {
+            const leaves = await leaveType.getAllEmployeeLeavesTypesByRelocatableStatus(parseInt(employeeData.emp_relocatable)).then((data) => {
                 return data
             })
-
 
             if (_.isEmpty(leaves) || _.isNull(leaves)) {
                 return res.status(400).json(`No leave set up`)

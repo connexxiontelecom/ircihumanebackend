@@ -112,7 +112,7 @@ const updateAuthorizationStatus = async (req, res) => {
               similarPendingRequest.map(async (pend) => {
                 await authorizationModel.update({
                   auth_status: req.body.status,
-                  auth_comment: `This request was approved by ${authEmployee.emp_first_name} ${authEmployee.emp_last_name} (${authEmployee.emp_unique_id}) on your behalf. `,
+                  auth_comment: `This request was ${req.body.status === 1 ? 'approved' : ' declined' } by ${authEmployee.emp_first_name} ${authEmployee.emp_last_name} (${authEmployee.emp_unique_id}) on your behalf. `,
                   auth_role_id: role,
                 }, {
                   where: {
