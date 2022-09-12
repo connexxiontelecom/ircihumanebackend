@@ -4,8 +4,6 @@ const LeaveAccrual = require("../models/leaveaccrual")(sequelize, Sequelize.Data
 
 
 async function addLeaveAccrual(accrualData) {
-
-
     return await LeaveAccrual.create({
         lea_emp_id: accrualData.lea_emp_id,
         lea_month: accrualData.lea_month,
@@ -86,12 +84,15 @@ async function findLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_
 }
 
 async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_type) {
+    const currentMonth = new Date().getMonth()+1;
+    const currentYear = new Date().getFullYear();
+    const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
     return await LeaveAccrual.sum('lea_rate', {
         where: {
             lea_emp_id: employee_id,
             lea_year: year,
             lea_leave_type: leave_type,
-            lea_archives: 0
+            lea_fy: calendarYear
         }
     })
 }

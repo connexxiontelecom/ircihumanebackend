@@ -25,6 +25,8 @@ async function addLeaveAccrual(data) {
         lea_leaveapp_id : Joi.number().required(),
         lea_archives: Joi.number().required(),
         lea_fy: Joi.string().required(),
+        lea_expires_on: Joi.date().required(),
+
     })
 
     const validationResult = schema.validate(data)
@@ -92,13 +94,13 @@ router.get('/get-leave-acrruals/:emp_id', auth(), async function (req, res, next
                     if (parseInt(leave.lt_accrue) === 1) {
                         let usedLeaveValue = 0
 
-                        let usedLeavesData = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((sumLeave) => {
-                            return sumLeave
-                        })
-
-                        if (!(_.isNull(usedLeavesData) || parseInt(usedLeavesData) === 0)) {
-                            usedLeaveValue = usedLeavesData
-                        }
+                        // let usedLeavesData = await leaveApplication.sumLeaveUsedByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((sumLeave) => {
+                        //     return sumLeave
+                        // })
+                        //
+                        // if (!(_.isNull(usedLeavesData) || parseInt(usedLeavesData) === 0)) {
+                        //     usedLeaveValue = usedLeavesData
+                        // }
                         let leaveSumAccruals = await leaveAccrual.sumLeaveAccrualByYearEmployeeLeaveType(year, empId, leave.leave_type_id).then((data) => {
                             return data
                         })
@@ -109,7 +111,7 @@ router.get('/get-leave-acrruals/:emp_id', auth(), async function (req, res, next
                         }
                         finalLeaveAccrualObject = {
                             leave: leave,
-                            accrual: accrualValue - usedLeaveValue
+                            accrual: accrualValue
                         }
                     } else {
                         finalLeaveAccrualObject = {

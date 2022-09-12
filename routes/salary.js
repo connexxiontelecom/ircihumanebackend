@@ -1448,40 +1448,6 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
                                 }
 
-                                const leaveTypesData = await leaveTypeService.getAccruableLeaves().then((data) => {
-                                    return data
-                                })
-
-                                if (_.isNull(leaveTypesData) || _.isEmpty(leaveTypesData)) {
-                                    await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
-                                        return res.status(400).json(`An error Occurred while Processing No Leave type to accrue for Employees `)
-
-                                    })
-                                }
-
-                                for (const leaveType of leaveTypesData) {
-                                    const leaveAccrual = {
-                                        lea_emp_id: emp.emp_id,
-                                        lea_month: payrollMonth,
-                                        lea_year: payrollYear,
-                                        lea_leave_type: leaveType.leave_type_id,
-                                        lea_rate: parseFloat(leaveType.lt_rate),
-                                        lea_leaveapp_id: 0,
-                                        lea_archives: 0
-                                    }
-
-                                    const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
-                                        return data
-                                    })
-
-                                    if (_.isEmpty(addAccrualResponse) || _.isNull(addAccrualResponse)) {
-                                        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId).then((data) => {
-                                            return res.status(400).json(`An error Occurred while Processing Leave Accruing Error `)
-
-                                        })
-                                    }
-                                }
-
                                 // let grossObject = {
                                 //     empGross, empAdjustedGross
                                 // }
