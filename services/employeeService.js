@@ -432,7 +432,7 @@ async function getSupervisorEmployee(supervisorId) {
 async function getActiveEmployees() {
     return await employee.findAll({
         where: {
-            emp_status: 1
+            emp_status: [1, 2]
         },
         include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector','lga','state',
             'functionalArea', 'reportingEntity', 'operationUnit']

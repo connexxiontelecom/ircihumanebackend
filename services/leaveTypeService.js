@@ -123,6 +123,15 @@ async function getAccruableLeaves() {
     })
 }
 
+async function getLeavesWithOptions(accruable, relocatable) {
+    return await leaveType.findAll({
+        where: {
+            lt_accrue: accruable,
+            lt_rr: relocatable
+        }
+    })
+}
+
 async function getLeaveType(leaveTypeId) {
     return await leaveType.findOne({
         where: {
@@ -148,5 +157,6 @@ module.exports = {
     getAccruableLeaves,
     getLeaveType,
     getLeaveTypeByName,
-  getAllEmployeeLeavesTypesByRelocatableStatus
+  getAllEmployeeLeavesTypesByRelocatableStatus,
+    getLeavesWithOptions
 }

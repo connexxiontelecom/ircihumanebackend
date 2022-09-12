@@ -169,6 +169,10 @@
 
     const payrollJournalRouter = require('./routes/payroll-journal')
     const nodeCron = require("node-cron");
+    const {addLeaveAccrual} = require("./routes/leaveAccrual");
+    const salary = require("./services/salaryService");
+    const employee = require("./services/employeeService");
+    const Joi = require("joi");
     app.use('/payroll-journal', payrollJournalRouter);
 
     app.get('/',  async function(req, res) {
@@ -294,12 +298,51 @@
       }
     }
 
+    async function runGeneralLeaveRoutine(){
+        console.log('i am running')
+        const leaveTypesData = await leaveTypeService.getLeavesWithOptions(1, 0 ).then((data) => {
+            return data
+        })
+        const employees = await employee.getActiveEmployees().then((data) => {
+            return data
+        })
+
+        const currentMonth = new Date().getMonth()+1;
+        const currentYear = new Date().getFullYear();
+
+        const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
+        const leaveYear = currentMonth >= 1 || currentMonth <= 9 ? currentYear : currentYear+1;
+        const expiresOn = `${leaveYear}-09-30`
+        for (const emp of employees){
+            for (const leaveType of leaveTypesData) {
+                const leaveAccrual = {
+                    lea_emp_id: emp.emp_id,
+                    lea_month: currentMonth,
+                    lea_year: currentYear,
+                    lea_leave_type: leaveType.leave_type_id,
+                    lea_rate: parseFloat(leaveType.lt_rate),
+                    lea_leaveapp_id: 0,
+                    lea_archives: 0,
+                    lea_expires_on: expiresOn,
+                    lea_fy: calendarYear
+                }
+                const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                    return data
+                })
+
+            }
+        }
+
+    }
+
     const updateLeaveJob = nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus);
     const travelDayLeaveAccrualJob = nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual);
     const monthlyRoutine = nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType);
+    nodeCron.schedule("0 0 1 * *", runGeneralLeaveRoutine).start();
     updateLeaveJob.start();
     travelDayLeaveAccrualJob.start();
     monthlyRoutine.start();
+
 
     /* Error handler middleware */
     app.use((err, req, res, next) => {
