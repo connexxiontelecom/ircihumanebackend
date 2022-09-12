@@ -99,7 +99,7 @@ module.exports = (sequelize, DataTypes) => {
         return await leaveAccrual.findAll({
           attributes:[
             //[sequelize.fn('SUM', sequelize.col('lea_rate')),'totalAccrued'],
-            'lea_emp_id','lea_rate'],
+            'lea_emp_id','lea_rate', 'lea_expires_on'],
           //group:['lea_leave_type'],
           include: [
             {model: leaveTypeModel, as: 'leave_type'},

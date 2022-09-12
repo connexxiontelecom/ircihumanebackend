@@ -109,6 +109,12 @@ async function getAllLeaves() {
     return await leaveType.findAll()
 }
 
+async function getAllEmployeeLeavesTypesByRelocatableStatus(status) {
+    return await leaveType.findAll({
+      where:{ lt_rr: status, }
+    })
+}
+
 async function getAccruableLeaves() {
     return await leaveType.findAll({
         where: {
@@ -141,5 +147,6 @@ module.exports = {
     getAllLeaves,
     getAccruableLeaves,
     getLeaveType,
-    getLeaveTypeByName
+    getLeaveTypeByName,
+  getAllEmployeeLeavesTypesByRelocatableStatus
 }
