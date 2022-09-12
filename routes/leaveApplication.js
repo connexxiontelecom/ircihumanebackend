@@ -423,14 +423,16 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
       });
 
       let leaveDate = new Date(leave.leapp_start_date)
-
+    const currentDate = new Date();
+    const calendarYear = currentDate.getMonth()+1 >= 1 || currentDate.getMonth()+1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear()+1}`;
       const leaveAccrual = {
           lea_emp_id: leave.leapp_empid,
           lea_month: leaveDate.getFullYear(),
           lea_year: leaveDate.getMonth() + 1,
           lea_leave_type: leave.leapp_leave_type,
           lea_rate: 0 - parseFloat(leave.leapp_total_days),
-          lea_archives: 0
+          lea_archives: 0,
+          lea_fy: calendarYear,
       }
       const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
           return data

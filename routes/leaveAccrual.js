@@ -23,7 +23,8 @@ async function addLeaveAccrual(data) {
         lea_leave_type: Joi.number().required(),
         lea_rate: Joi.number().precision(2).required(),
         lea_leaveapp_id : Joi.number().required(),
-        lea_archives: Joi.number().required()
+        lea_archives: Joi.number().required(),
+        lea_fy: Joi.string().required(),
     })
 
     const validationResult = schema.validate(data)
