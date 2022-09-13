@@ -123,11 +123,12 @@ async function getAccruableLeaves() {
     })
 }
 
-async function getLeavesWithOptions(accruable, relocatable) {
+async function getLeavesWithOptions(accruable, relocatable, mode) {
     return await leaveType.findAll({
         where: {
             lt_accrue: accruable,
-            lt_rr: relocatable
+            lt_rr: relocatable,
+            lt_mode: type
         }
     })
 }

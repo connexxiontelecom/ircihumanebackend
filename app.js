@@ -298,9 +298,8 @@
       }
     }
 
-    async function runGeneralLeaveRoutine(){
-        console.log('i am running')
-        const leaveTypesData = await leaveTypeService.getLeavesWithOptions(1, 0 ).then((data) => {
+    async function runGeneralMonthlyLeaveRoutine(){
+        const leaveTypesData = await leaveTypeService.getLeavesWithOptions(1, 0, 1 ).then((data) => {
             return data
         })
         const employees = await employee.getActiveEmployees().then((data) => {
@@ -335,13 +334,48 @@
 
     }
 
-    const updateLeaveJob = nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus);
-    const travelDayLeaveAccrualJob = nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual);
-    const monthlyRoutine = nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType);
-    nodeCron.schedule("0 0 1 * *", runGeneralLeaveRoutine).start();
-    updateLeaveJob.start();
-    travelDayLeaveAccrualJob.start();
-    monthlyRoutine.start();
+    async function runGeneralYearlyLeaveRoutine(){
+        const leaveTypesData = await leaveTypeService.getLeavesWithOptions(1, 0, 2 ).then((data) => {
+            return data
+        })
+        const employees = await employee.getActiveEmployees().then((data) => {
+            return data
+        })
+
+        const currentMonth = new Date().getMonth()+1;
+        const currentYear = new Date().getFullYear();
+
+        const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
+        const leaveYear = currentMonth >= 1 || currentMonth <= 9 ? currentYear : currentYear+1;
+        const expiresOn = `${leaveYear}-09-30`
+        for (const emp of employees){
+            for (const leaveType of leaveTypesData) {
+                const leaveAccrual = {
+                    lea_emp_id: emp.emp_id,
+                    lea_month: currentMonth,
+                    lea_year: currentYear,
+                    lea_leave_type: leaveType.leave_type_id,
+                    lea_rate: parseFloat(leaveType.lt_rate),
+                    lea_leaveapp_id: 0,
+                    lea_archives: 0,
+                    lea_expires_on: expiresOn,
+                    lea_fy: calendarYear
+                }
+                const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                    return data
+                })
+
+            }
+        }
+
+    }
+
+    nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus).start();
+    nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual).start();
+    nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType).start();
+    nodeCron.schedule("0 0 1 * *", runGeneralMonthlyLeaveRoutine).start();
+    nodeCron.schedule("0 0 0 1 OCT * *", runGeneralYearlyLeaveRoutine).start();
+
 
 
     /* Error handler middleware */
