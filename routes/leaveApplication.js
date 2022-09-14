@@ -432,6 +432,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
           lea_leave_type: leave.leapp_leave_type,
           lea_rate: 0 - parseFloat(leave.leapp_total_days),
           lea_archives: 0,
+          lea_expires_on: '1900-01-01',
           lea_fy: calendarYear,
       }
       const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
