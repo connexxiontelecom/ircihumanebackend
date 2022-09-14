@@ -200,7 +200,7 @@ const updateAuthorizationStatus = async (req, res) => {
                         let leaveDate = new Date(leaveApplicationData.leapp_start_date)
                       const currentDate = new Date();
                       const calendarYear = currentDate.getMonth()+1 >= 1 || currentDate.getMonth()+1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear()+1}`;
-                        if(status === 1){
+                        if(parseInt(status) === 1){
                             const leaveAccrual = {
                                 lea_emp_id: leaveApplicationData.leapp_empid,
                                 lea_year: leaveDate.getFullYear(),
@@ -209,6 +209,7 @@ const updateAuthorizationStatus = async (req, res) => {
                                 lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days),
                                 lea_leaveapp_id: leaveApplicationData.leapp_id,
                                 lea_archives:0,
+                                lea_expires_on:'1900-1-1',
                                 lea_fy: calendarYear,
                             }
                             //return res.status(200).json(leaveAccrual);
@@ -216,7 +217,7 @@ const updateAuthorizationStatus = async (req, res) => {
                             const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
                                 return data;
                             })
-
+                          return res.status(200).json(addAccrualResponse)
                             //update timesheet
                             const leaveApp = await leaveApplicationModel.getLeaveApplicationById(appId);
                             if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){

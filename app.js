@@ -185,13 +185,13 @@
         const activeLeaves = await leaveApplicationService.getLeavesByStatus(3);
         //update approved leaves to the status of active
         approvedLeaves.map(async (re) => {
-          if ((new Date() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) ) {
+          if ((new Date().getTime() >= new Date(re.leapp_start_date).getTime()) && (re.leapp_status === 1) ) {
             await leaveApplicationService.updateLeaveAppStatus(re.leapp_id, 3);
           }
         })
         //update active leaves to the status of finished
         activeLeaves.map(async (act) => {
-          if ((new Date() >= new Date(act.leapp_end_date).getTime()) && (act.leapp_status === 3) ) {
+          if ((new Date().getTime() >= new Date(act.leapp_end_date).getTime()) && (act.leapp_status === 3) ) {
             await leaveApplicationService.updateLeaveAppStatus(act.leapp_id, 4);
           }
         })
@@ -241,6 +241,7 @@
                   lea_fy: calendarYear
                 }
                 await leaveAccrualService.addLeaveAccrual(data);
+
               }
 
             })
