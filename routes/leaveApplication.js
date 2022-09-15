@@ -315,15 +315,31 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
         const officers = await authorizationAction.getAuthorizationLog(ids, 1).then((off) => {
             return off
         });
-
+        const currentDesk = [];
+        officers.map((officer)=>{
+          if(officer.auth_status === 0){
+            let details = {
+              emp_first_name: officer.officers.emp_first_name,
+              emp_last_name: officer.officers.emp_last_name,
+              emp_other_name: officer.officers.emp_other_name,
+              emp_phone_no: officer.officers.emp_phone_no,
+              emp_unique_id: officer.officers.emp_unique_id,
+              auth_travelapp_id: officer.auth_travelapp_id,
+              auth_status: officer.auth_status
+            }
+            currentDesk.push(details);
+          }
+        })
+      //return res.status(200).json(currentDesk)
         leaveObj = {
             data,
-            officers
+            officers,
+          currentDesk
         }
 
         return res.status(200).json(leaveObj)
     } catch (e) {
-        return res.status(400).json("Something went wrong. Try again.");
+        return res.status(400).json("Something went wrong. Try again."+e.message);
     }
 });
 
