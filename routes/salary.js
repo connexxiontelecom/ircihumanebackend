@@ -1759,12 +1759,12 @@ router.get('/undo-salary-routine', auth(), async function (req, res, next) {
             return data
         })
 
-        const leaveAccrualData = {
-            lea_month: payrollMonth, lea_year: payrollYear,
-        }
-        const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data) => {
-            return data
-        })
+        // const leaveAccrualData = {
+        //     lea_month: payrollMonth, lea_year: payrollYear,
+        // }
+        // const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data) => {
+        //     return data
+        // })
 
         const reverseVariationalPayments = await variationalPayment.undoVariationalPaymentMonthYear(payrollMonth, payrollYear).then((data) => {
             return data

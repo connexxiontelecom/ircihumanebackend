@@ -390,7 +390,7 @@ async function getAuthorizationByTypeOfficerId(type, supervisorId){
 
 async function getAuthorizationLog(authId, type) {
     return await authorizationModel.findAll({
-        order:[['updated_at', 'DESC']],
+        order:[['updated_at', 'ASC']],
         where: {auth_travelapp_id: authId, auth_type: type},
         include: ['officers', 'role']
     });
