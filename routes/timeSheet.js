@@ -405,7 +405,7 @@ router.get(
         }
         //Update timesheet
         const leaveApps =
-          await leaveApplicationModel.getAllEmployeeApprovedLeaveApplications(
+          await leaveApplicationModel.getAllEmployeeValidLeaveApplications(
             empId
           );
         if (!_.isNull(leaveApps) || !_.isEmpty(leaveApps)) {
