@@ -709,7 +709,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_d_c = "D"
                 journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employerPension
                 journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t2 = salaryMappingDetail.smd_benefit_expense_t2b
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
@@ -739,7 +739,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_d_c = "D"
                 journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employeeNsitf
                 journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t2 = salaryMappingDetail.smd_benefit_expense_t2b
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
