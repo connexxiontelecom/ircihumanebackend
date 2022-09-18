@@ -49,7 +49,8 @@ module.exports = (sequelize, DataTypes) => {
     salary_bank_id: DataTypes.TEXT,
     salary_account_number: DataTypes.TEXT,
     salary_sort_code: DataTypes.TEXT,
-    salary_pfa: DataTypes.TEXT
+    salary_pfa: DataTypes.TEXT,
+    salary_d7: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'salary',

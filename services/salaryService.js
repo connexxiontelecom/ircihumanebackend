@@ -27,7 +27,8 @@ async function addSalary(salary) {
         salary_bank_id: salary.salary_bank_id,
         salary_account_number: salary.salary_account_number,
         salary_sort_code: salary.salary_sort_code,
-        salary_pfa: salary.salary_pfa
+        salary_pfa: salary.salary_pfa,
+        salary_d7: salary.salary_d7
     });
 }
 
