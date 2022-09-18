@@ -578,6 +578,12 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
             })
+
+            if(_.isEmpty(salaryDetails) || _.isNull(salaryDetails)) {
+                salaryDetails = await salaryService.getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+                    return data
+                });
+            }
             let empName = 'N/A'
             let empJobRole = 'N/A'
             let empLocation = 'N/A'
@@ -816,6 +822,11 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 let salaryDetails = await salaryService.getEmployeeSalaryByUniqueIdAndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
                     return data
                 })
+                if(_.isEmpty(salaryDetails) || _.isNull(salaryDetails)){
+                    salaryDetails = await salaryService.getEmployeeSalaryByD7AndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
+                      return data
+                    })
+                }
 
                 if(!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)){
 
