@@ -526,15 +526,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         for (const salaryMappingDetail of details) {
 
 
-            let empData = await employeeService.getEmployeeById(salaryMappingDetail.smd_employee_t7).then((data) => {
+            let empData =  await employeeService.getEmployeeByD7(salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
             })
-
-            if(_.isEmpty(empData) || _.isNull(empData)){
-                empData = await employeeService.getEmployeeByD7(salaryMappingDetail.smd_employee_t7).then((data) => {
-                    return data
-                })
-            }
 
             if(_.isEmpty(empData) || _.isNull(empData)) {
                 await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
@@ -575,15 +569,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             }
 
 
-            let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+            let salaryDetails = await salaryService.getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
-            })
+            });
 
-            if(_.isEmpty(salaryDetails) || _.isNull(salaryDetails)) {
-                salaryDetails = await salaryService.getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
-                    return data
-                });
-            }
             let empName = 'N/A'
             let empJobRole = 'N/A'
             let empLocation = 'N/A'
@@ -779,7 +768,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                     return res.status(400).json('An error occurred while creating journal entry')
                 }
                 let empObject = {
-                    employeeT7: salaryMappingDetail.smd_employee_t7,
+                    employeeD7: salaryMappingDetail.smd_employee_t7,
                     employeeTax: employeeTax,
                     netSalary: fullGross - mainDeductions,
                     employeeNhf: employeeNHF,
@@ -801,7 +790,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             totalNetSalary = totalNetSalary + emp.netSalary
             totalEmployeeNhf = totalEmployeeNhf + emp.employeeNhf
             totalEmployeeNsitf  = totalEmployeeNsitf + emp.employeeNsitf
-            empIdArray.push(emp.employeeT7)
+            empIdArray.push(emp.employeeD7)
         }
 
         const payrollJournalPayments = await paymentDefinitionService.getPayrollJournalPayments().then((data)=>{
@@ -819,14 +808,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             paymentName = payment.pd_payment_name
             paymentName = paymentName.replace(/\s+/g, '-').toLowerCase();
             for (const emp of empIdArray){
-                let salaryDetails = await salaryService.getEmployeeSalaryByUniqueIdAndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
+                let salaryDetails = await salaryService.getEmployeeSalaryByD7AndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
                     return data
                 })
-                if(_.isEmpty(salaryDetails) || _.isNull(salaryDetails)){
-                    salaryDetails = await salaryService.getEmployeeSalaryByD7AndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
-                      return data
-                    })
-                }
 
                 if(!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)){
 
