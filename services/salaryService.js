@@ -27,7 +27,8 @@ async function addSalary(salary) {
         salary_bank_id: salary.salary_bank_id,
         salary_account_number: salary.salary_account_number,
         salary_sort_code: salary.salary_sort_code,
-        salary_pfa: salary.salary_pfa
+        salary_pfa: salary.salary_pfa,
+        salary_d7: salary.salary_d7
     });
 }
 
@@ -121,6 +122,16 @@ async function getEmployeeSalaryByUniqueId(month, year, empId) {
             salary_payyear: year,
             salary_emp_unique_id: empId
         }, include: ['employee', 'payment', 'bank']
+    })
+}
+
+async function getEmployeeSalaryByD7(month, year, d7) {
+    return await Salary.findAll({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_d7: d7
+        }, include: ['employee', 'payment']
     })
 }
 
@@ -229,5 +240,6 @@ module.exports = {
     getDistinctEmployeesApprovedMonthYear,
     getEmployeeSalaryByUniqueId,
     getEmployeesByPfaLocation,
-    getEmployeeSalaryByUniqueIdAndMonthYear
+    getEmployeeSalaryByUniqueIdAndMonthYear,
+    getEmployeeSalaryByD7
 }

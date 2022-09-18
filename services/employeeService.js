@@ -382,6 +382,13 @@ async function getEmployeeById(employeeId) {
     })
 }
 
+async function getEmployeeByD7(d7) {
+    return await employee.findOne({
+        where: {emp_d7: d7},
+        include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'functionalArea', 'reportingEntity', 'operationUnit']
+    })
+}
+
 async function getEmployeeByIdOnly(employeeId) {
     return await employee.findOne({
         where: {emp_id: employeeId},
@@ -683,7 +690,8 @@ module.exports = {
     getAllEmployeesByLocation,
     getEmployeesByPfaLocation,
   getEmployeeByRelocatableStatus,
-  getExcludedActiveEmployeesByIds
+  getExcludedActiveEmployeesByIds,
+    getEmployeeByD7
     //updateDepartment,
     //setNewDepartment,
 }

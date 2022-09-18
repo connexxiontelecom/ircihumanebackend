@@ -267,7 +267,7 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         for (const row of rows) {
             let status = 1
 
-            let employeeData = await employeeService.getEmployeeById(row.t7).then((data) => {
+            let employeeData = await employeeService.getEmployeeById(row.d7).then((data) => {
                 return data
             })
 
@@ -277,8 +277,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             let rowObject = {
                 smd_master_id: masterId,
                 smd_ref_code: salaryMasterData.smm_ref_code,
-                smd_employee_t7: row.t7,
-                smd_donor_t1: row.t1,
+                smd_employee_t7: row.d7,
+                smd_donor_t1: row.d1,
                 smd_salary_expense_t2s: row.t2s,
                 smd_benefit_expense_t2b: row.t2b,
                 smd_allocation: row.allocation,
@@ -355,6 +355,12 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
             let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
             })
+
+            if(_.isEmpty(salaryDetails) || _.isNull(salaryDetails)){
+                salaryDetails = await salaryService.getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+                    return data
+                })
+            }
             let empName = 'N/A'
             let empJobRole = 'N/A'
             let empLocation = 'N/A'
@@ -523,6 +529,12 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             let empData = await employeeService.getEmployeeById(salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
             })
+
+            if(_.isEmpty(empData) || _.isNull(empData)){
+                empData = await employeeService.getEmployeeByD7(salaryMappingDetail.smd_employee_t7).then((data) => {
+                    return data
+                })
+            }
 
             if(_.isEmpty(empData) || _.isNull(empData)) {
                 await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
@@ -709,7 +721,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_d_c = "D"
                 journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employerPension
                 journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t2 = salaryMappingDetail.smd_benefit_expense_t2b
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
@@ -739,7 +751,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_d_c = "D"
                 journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employeeNsitf
                 journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t2 = salaryMappingDetail.smd_benefit_expense_t2b
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
