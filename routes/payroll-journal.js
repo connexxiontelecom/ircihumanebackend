@@ -796,7 +796,6 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         const payrollJournalPayments = await paymentDefinitionService.getPayrollJournalPayments().then((data)=>{
           return data
         })
-
         let paymentName = ''
         for(const payment of payrollJournalPayments){
             let empName = ''
@@ -811,7 +810,6 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 let salaryDetails = await salaryService.getEmployeeSalaryByD7AndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
                     return data
                 })
-
                 if(!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)){
 
                     empName = salaryDetails.salary_emp_name
