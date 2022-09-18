@@ -27,7 +27,8 @@ async function addSalary(salary) {
         salary_bank_id: salary.salary_bank_id,
         salary_account_number: salary.salary_account_number,
         salary_sort_code: salary.salary_sort_code,
-        salary_pfa: salary.salary_pfa
+        salary_pfa: salary.salary_pfa,
+        salary_d7: salary.salary_d7
     });
 }
 
@@ -124,10 +125,31 @@ async function getEmployeeSalaryByUniqueId(month, year, empId) {
     })
 }
 
+async function getEmployeeSalaryByD7(month, year, d7) {
+    return await Salary.findAll({
+        where: {
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_d7: d7
+        }, include: ['employee', 'payment']
+    })
+}
+
 async function getEmployeeSalaryByUniqueIdAndMonthYear(uniqueId, month, year, pd) {
     return await Salary.findOne({
         where: {
             salary_emp_unique_id: uniqueId,
+            salary_paymonth: month,
+            salary_payyear: year,
+            salary_pd: pd
+        }, include: ['employee', 'payment']
+    })
+}
+
+async function getEmployeeSalaryByD7AndMonthYear(d7, month, year, pd) {
+    return await Salary.findOne({
+        where: {
+            salary_emp_d7: d7,
             salary_paymonth: month,
             salary_payyear: year,
             salary_pd: pd
@@ -229,5 +251,7 @@ module.exports = {
     getDistinctEmployeesApprovedMonthYear,
     getEmployeeSalaryByUniqueId,
     getEmployeesByPfaLocation,
-    getEmployeeSalaryByUniqueIdAndMonthYear
+    getEmployeeSalaryByUniqueIdAndMonthYear,
+    getEmployeeSalaryByD7,
+    getEmployeeSalaryByD7AndMonthYear
 }
