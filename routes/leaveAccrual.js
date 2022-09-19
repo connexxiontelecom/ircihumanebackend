@@ -157,6 +157,7 @@ router.post('/year', auth(), async (req, res)=>{
     const year = req.body.year;
     const employees = await employee.getActiveEmployees();
     const accruals = await leaveAccrualModel.getAllLeaveAccruals(year);
+    return res.status(200).json(accruals);
     const empAccruedIds = [];
     accruals.map((accruedIds)=>{
       empAccruedIds.push(accruedIds.lea_emp_id);
