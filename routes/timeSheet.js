@@ -423,7 +423,7 @@ router.get(
             let i = 0;
             if (numDays > 0) {
               for (i = 0; i < numDays; i++) {
-                if (startDate.getDay() === 6 || startDate.getDay() === 0) {
+                if (startDate.getDay() + i === 6 || startDate.getDay() + i === 0) {
                   numDays += 1;
                 } else {
                   const loopPeriod = {
