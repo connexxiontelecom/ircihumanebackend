@@ -80,8 +80,9 @@ router.get('/get-leave-acrruals/:emp_id', auth(), async function (req, res, next
 
         if (!_.isEmpty(employeeData) || !_.isNull(employeeData)) {
 
+          const emp_rr_status = parseInt(employeeData.emp_relocatable) === 0 ? 2 : 1;
 
-            const leaves = await leaveType.getAllEmployeeLeavesTypesByRelocatableStatus(parseInt(employeeData.emp_relocatable)).then((data) => {
+            const leaves = await leaveType.getAllEmployeeLeavesTypesByRelocatableStatus(emp_rr_status).then((data) => {
                 return data
             })
 
