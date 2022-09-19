@@ -422,17 +422,21 @@ router.get(
             }
             let i = 0;
             if (numDays > 0) {
-              for (i = 0; i <= numDays; i++) {
-                const loopPeriod = {
-                  emp_id: leaf.leapp_empid,
-                  day:
-                    i === 0
-                      ? startDate.getUTCDate()
-                      : startDate.getUTCDate() + i,
-                  month: startDate.getUTCMonth() + 1,
-                  year: startDate.getUTCFullYear(),
-                };
-                await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+              for (i = 0; i < numDays; i++) {
+                if (startDate.getDay() === 6 || startDate.getDay() === 0) {
+                  numDays += 1;
+                } else {
+                  const loopPeriod = {
+                    emp_id: leaf.leapp_empid,
+                    day:
+                      i === 0
+                        ? startDate.getUTCDate()
+                        : startDate.getUTCDate() + i,
+                    month: startDate.getUTCMonth() + 1,
+                    year: startDate.getUTCFullYear(),
+                  };
+                  await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+                }
               }
             }
           }
