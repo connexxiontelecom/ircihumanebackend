@@ -39,8 +39,9 @@ module.exports = (sequelize, DataTypes) => {
                 'lea_month', 'lea_year', 'lea_leave_type', 'lea_rate', 'lea_archives', 'lea_fy',
                 [sequelize.fn('sum', sequelize.col('lea_rate')), 'total']
               ],
-              where:{lea_fy:year},
+              where:{lea_fy:year, lea_rate: {[Op.gt]: 0} },
               group:['lea_emp_id'],
+              //having: {lea_rate: {[Op.gt]: 0} }//sequelize.literal(`lea_rate > 0`),
             })
         }
         static async getAllLeaveAccrualsByYear(year) {
