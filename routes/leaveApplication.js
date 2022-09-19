@@ -224,10 +224,10 @@ router.get('/approved-applications', async (req, res) => {
         await leaveApplication.findAllActiveLeaveApplications().then((data) => {
             data.map(async (app) => {
               appId.push(app.leapp_id);
-              if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 3) {
+             /* if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 3) {
               } else {
                 await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
-              }
+              }*/
             });
             authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                 leaveObj = {
@@ -256,9 +256,9 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                 leaveApplication.findEmployeeLeaveApplication(empId).then((data) => {
                     data.map(async (app) => {
                       appId.push(app.leapp_id);
-                     if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
+                    /* if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
                        await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
-                      }
+                      }*/
                     });
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                       let office = "";
