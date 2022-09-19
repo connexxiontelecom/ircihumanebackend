@@ -423,17 +423,22 @@ router.get(
             let i = 0;
             if (numDays > 0) {
               for (i = 0; i < numDays; i++) {
-                if (startDate.getDay() + i === 6 || startDate.getDay() + i === 0) {
+                const day = i === 0
+                ? startDate.getDate()
+                : startDate.getDate() + i
+                const month = startDate.getUTCMonth() + 1
+                const year = startDate.getUTCFullYear()
+
+                const currentDay = new Date(`${year}-${month}-${day}`)
+
+                if (currentDay.getDay() === 6 || currentDay.getDay() === 0) {
                   numDays += 1;
                 } else {
                   const loopPeriod = {
                     emp_id: leaf.leapp_empid,
-                    day:
-                      i === 0
-                        ? startDate.getDate()
-                        : startDate.getDate() + i,
-                    month: startDate.getUTCMonth() + 1,
-                    year: startDate.getUTCFullYear(),
+                    day,
+                    month,
+                    year,
                   };
                   await timeSheetService.updateTimesheetByDateRange(loopPeriod);
                 }
