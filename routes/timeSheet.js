@@ -430,8 +430,8 @@ router.get(
                     emp_id: leaf.leapp_empid,
                     day:
                       i === 0
-                        ? startDate.getUTCDate()
-                        : startDate.getUTCDate() + i,
+                        ? startDate.getDate()
+                        : startDate.getDate() + i,
                     month: startDate.getUTCMonth() + 1,
                     year: startDate.getUTCFullYear(),
                   };
