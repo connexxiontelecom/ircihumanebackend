@@ -50,11 +50,12 @@ async function updateTimeSheet(ts_id, timeSheetData) {
 }
 
 async function clearTimeSheetData(empId, month, year) {
-  return await TimeSheet.findAll({
+  return await TimeSheet.destroy({
     where: {
       ts_month: month,
       ts_year: year,
       ts_emp_id: empId,
+      ts_status: null,
     },
   });
 }
