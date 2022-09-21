@@ -241,9 +241,11 @@ router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, re
             return data
         })
 
+        const timeAllocationDeclined = await timeAllocation
+
         const responseData = {
-            timeAllocationSum: timeAllocationSum,
-            timeAllocationBreakDown: timeAllocationBreakDown,
+          timeAllocationSum: timeAllocationSum,
+          timeAllocationBreakDown: timeAllocationBreakDown,
           timeAllocationStatus
         }
 
@@ -253,6 +255,19 @@ router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, re
         next(err);
     }
 });
+
+router.get('/view-time-allocation/:ref_no', auth(), async function (req, res, next) {
+  try {
+    let refNo = req.params.ref_no
+
+    const timeAllocation = await timeAllocation.findTimeAllocationsByRefNo(refNo).then((data) => data)
+
+    return res.status(200).json(timeAllocation)
+  } catch (err) {
+    return res.status(400).json(`Error while fetching time allocation ${err.message}`);
+    next(err);
+  }
+})
 
 
 router.get('/get-employee-time-allocation/:emp_id', auth(), async function (req, res, next) {
