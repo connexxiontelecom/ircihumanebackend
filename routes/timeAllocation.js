@@ -240,9 +240,6 @@ router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, re
         const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsDetail(empId, month, year).then((data) => {
             return data
         })
-
-        const timeAllocationDeclined = await timeAllocation
-
         const responseData = {
           timeAllocationSum: timeAllocationSum,
           timeAllocationBreakDown: timeAllocationBreakDown,
