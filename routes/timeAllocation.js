@@ -257,7 +257,9 @@ router.get('/view-time-allocation/:ref_no', auth(), async function (req, res, ne
   try {
     let refNo = req.params.ref_no
 
-    const timeAllocation = await timeAllocation.findTimeAllocationsByRefNo(refNo).then((data) => data)
+    const timeAllocation = await timeAllocation.findTimeAllocationsByRefNo(refNo).then((data) => {
+      return data
+    })
 
     return res.status(200).json(timeAllocation)
   } catch (err) {
