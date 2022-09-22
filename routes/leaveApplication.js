@@ -164,15 +164,17 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
                 return data
             });
 
+            if(parseInt(req.body.leapp_leave_type) !== 1 || parseInt(req.body.req.body.leapp_leave_type) !== 2){
+                if (_.isNull(accruedDays) || accruedDays === 0) {
+                  return res.status(400).json('No Leave Accrued for Selected Leave')
+                }
 
-            if (_.isNull(accruedDays) || accruedDays === 0) {
-                return res.status(400).json('No Leave Accrued for Selected Leave')
+
+                if (parseInt(daysRequested) > parseInt(accruedDays)) {
+                  return res.status(400).json("Days Requested Greater than Accrued Days")
+                }
             }
 
-
-            if (parseInt(daysRequested) > parseInt(accruedDays)) {
-                return res.status(400).json("Days Requested Greater than Accrued Days")
-            }
         }
 
         leaveApplicationRequest['leapp_year'] = startYear
