@@ -39,7 +39,7 @@ dotenv.config();
 
 const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: 465,
+    port: process.env.SMTP_PORT,//465,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
@@ -165,10 +165,39 @@ async function resetPasswordSendMail(from, to, subject, templateParams){
 
 }
 
+
+async function sendAnnouncementNotification(from, to, subject, templateParams){
+  try{
+
+    const message = {
+      from: from, // TODO: email sender
+      to: to, // TODO: email receiver
+      subject: subject,
+      text: 'Wooohooo it works!!',
+      template: 'notificationByEmail',
+      context: {
+        firstName: templateParams.firstName,
+        title: templateParams.title,
+      }
+    };
+    return   await transport.sendMail(message, function(err, res){
+      if (err) {
+        return err
+      }
+      else {
+        return res
+      }
+    })
+  }catch (e) {
+
+  }
+
+}
 //sendMail('trendingnow@gmail.com', 'you@me.com', 'Subject goes here...', 'Here goes the content..')
 
 module.exports = {
   sendMail,
     paySlipSendMail,
-    resetPasswordSendMail
+    resetPasswordSendMail,
+  sendAnnouncementNotification
 }
