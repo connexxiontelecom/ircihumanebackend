@@ -405,11 +405,11 @@ router.get('/salary-mapping-master/:month/:year/:locationId', auth(), async func
   }
 });
 
-router.get('/salary-mapping-details/:masterId', auth(), async function (req, res, next){
+router.get('/salary-mapping-details/:masterId/:t7', auth(), async function (req, res, next){
   try {
-    const { masterId } = req.params;
+    const { masterId, t7 } = req.params;
     
-    const salaryMappingDetailsData = await salaryMappingDetailsService. getSalaryMappingDetails(masterId).then(data => {
+    const salaryMappingDetailsData = await salaryMappingDetailsService.getSalaryMappingDetailsByMasterEmployee(masterId, t7).then(data => {
       return data;
     })
 
