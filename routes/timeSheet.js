@@ -412,38 +412,67 @@ router.get(
           for (const leaf of leaveApps) {
             let startDate = new Date(leaf.leapp_start_date);
             let endDate = new Date(leaf.leapp_end_date);
-            let numDays;
-            if (startDate.getDay() === 6 || startDate.getDay() === 0) {
-              numDays =
-                (await differenceInBusinessDays(endDate, startDate)) + 2;
-            } else {
-              numDays =
-                (await differenceInBusinessDays(endDate, startDate)) + 1;
+
+            Date.prototype.addDays = function (days) {
+              let date = new Date(this.valueOf)
+              date.setDate(date.getDate() + days)
+              return date;
             }
-            let i = 0;
-            if (numDays > 0) {
-              for (i = 0; i < numDays; i++) {
-                const day = i === 0
-                ? startDate.getDate()
-                : startDate.getDate() + i
-                const month = startDate.getUTCMonth() + 1
-                const year = startDate.getUTCFullYear()
 
-                const currentDay = new Date(`${year}-${month}-${day}`)
+            let datesArray = new Array()
+            let currentDate = startDate
+            while (currentDate <= endDate) {
+              datesArray.push(currentDate)
+              currentDate = currentDate.addDays(1);
+            }
 
-                if (currentDay.getDay() === 6 || currentDay.getDay() === 0) {
-                  numDays += 1;
-                } else {
-                  const loopPeriod = {
-                    emp_id: leaf.leapp_empid,
-                    day,
-                    month,
-                    year,
-                  };
-                  await timeSheetService.updateTimesheetByDateRange(loopPeriod);
-                }
+            for (let i = 0; i < datesArray.length; i++) {
+              const day = datesArray[i].getDate()
+              const month = datesArray[i].getUTCMonth() + 1
+              const year = datesArray[i].getUTCFullYear()
+
+              const leaveData = {
+                emp_id: leaf.leapp_empid,
+                day,
+                month,
+                year,
               }
+              await timeSheetService.updateTimesheetByDateRange(leaveData);
+              
             }
+
+            // let numDays;
+            // if (startDate.getDay() === 6 || startDate.getDay() === 0) {
+            //   numDays =
+            //     (await differenceInBusinessDays(endDate, startDate)) + 2;
+            // } else {
+            //   numDays =
+            //     (await differenceInBusinessDays(endDate, startDate)) + 1;
+            // }
+            // let i = 0;
+            // if (numDays > 0) {
+            //   for (i = 0; i < numDays; i++) {
+            //     const day = i === 0
+            //     ? startDate.getDate()
+            //     : startDate.getDate() + i
+            //     const month = startDate.getUTCMonth() + 1
+            //     const year = startDate.getUTCFullYear()
+
+            //     const currentDay = new Date(`${year}-${month}-${day}`)
+
+            //     if (currentDay.getDay() === 6 || currentDay.getDay() === 0) {
+            //       numDays += 1;
+            //     } else {
+            //       const loopPeriod = {
+            //         emp_id: leaf.leapp_empid,
+            //         day,
+            //         month,
+            //         year,
+            //       };
+            //       await timeSheetService.updateTimesheetByDateRange(loopPeriod);
+            //     }
+            //   }
+            // }
           }
         }
         /* const subject = "Timesheet submission";
