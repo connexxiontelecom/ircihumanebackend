@@ -86,6 +86,7 @@ module.exports = (sequelize, DataTypes) => {
     static async getAllEmployeeValidLeaveApplications(empId) {
       return await leaveApplication.findAll({
         where: {
+          leapp_empid: empId,
           leapp_status: [1,3,4]
         }
       })
