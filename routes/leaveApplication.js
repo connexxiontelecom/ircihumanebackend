@@ -85,10 +85,12 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
 
         let endDate = new Date(leaveApplicationRequest.leapp_end_date);
         let endYear = endDate.getFullYear();
-
+      if(parseInt(req.body.leapp_leave_type) !== 2){
         if (isBefore(startDate, new Date())) {
-            return res.status(400).json('Leave start date cannot be before today or today')
+          return res.status(400).json('Leave start date cannot be before today or today')
         }
+      }
+
 
         // if (String(startYear) !== String(endYear)) {
         //     return res.status(400).json('Leave period must be within the same year')
