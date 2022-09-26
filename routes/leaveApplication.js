@@ -164,7 +164,7 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
                 return data
             });
 
-            if(parseInt(req.body.leapp_leave_type) !== 1 /*|| parseInt(req.body.leapp_leave_type) !== 2*/){ //leapp_leave_type
+            if(parseInt(req.body.leapp_leave_type) !== 1 &&  parseInt(req.body.leapp_leave_type) !== 2){ //leapp_leave_type
                 if (_.isNull(accruedDays) || accruedDays === 0) {
                   return res.status(400).json('No Leave Accrued for Selected Leave')
                 }
