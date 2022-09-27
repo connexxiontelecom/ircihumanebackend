@@ -417,8 +417,8 @@ router.get(
             let currentDate = startDate
 
             while (currentDate <= endDate) {
-              currentDate = new Date(currentDate)
               datesArray.push(currentDate)
+              currentDate = new Date(currentDate)
               currentDate.setDate(currentDate.getDate() + 1);
             }
 
