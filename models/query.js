@@ -56,6 +56,13 @@ module.exports = (sequelize, DataTypes) => {
         ]})
     }
 
+    static async updateQueryAttachmentUrl(id, url){
+      return await Query.update({
+          q_attachment:url,
+        },
+        {where:{q_id:id},})
+    }
+
   };
   Query.init({
     q_id: {
