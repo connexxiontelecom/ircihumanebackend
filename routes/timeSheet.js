@@ -413,32 +413,28 @@ router.get(
             let startDate = new Date(leaf.leapp_start_date);
             let endDate = new Date(leaf.leapp_end_date);
 
-            Date.prototype.addDays = function (days) {
-              let date = new Date(this.valueOf)
-              date.setDate(date.getDate() + days)
-              return date;
-            }
-
-            let datesArray = new Array()
+            let datesArray = []
             let currentDate = startDate
+
             while (currentDate <= endDate) {
+              currentDate = new Date(currentDate)
               datesArray.push(currentDate)
-              currentDate = currentDate.addDays(1);
+              currentDate.setDate(currentDate.getDate() + 1);
             }
 
-            for (let i = 0; i < datesArray.length; i++) {
-              const day = datesArray[i].getDate()
-              const month = datesArray[i].getUTCMonth() + 1
-              const year = datesArray[i].getUTCFullYear()
-
+            for (const date of datesArray) {
+              const day = date.getUTCDate()
+              const month = date.getUTCMonth() + 1
+              const year = date.getUTCFullYear()
+            
               const leaveData = {
                 emp_id: leaf.leapp_empid,
                 day,
                 month,
                 year,
               }
+
               await timeSheetService.updateTimesheetByDateRange(leaveData);
-              
             }
 
             // let numDays;
