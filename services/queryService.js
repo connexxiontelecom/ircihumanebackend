@@ -8,6 +8,7 @@ const _ = require('lodash');
 
 const helper  =require('../helper');
 const mailer = require("./IRCMailer");
+const path = require("path");
 const errHandler = (err) =>{
   console.log("Error: ", err);
 }
@@ -28,6 +29,7 @@ const queryEmployee = async (req, res)=>  {
       return res.status(400).json(validationResult.error.details[0].message)
     }
     const employees = req.body.employee;
+    let query = null;
     employees.map(async (employee) => {
       let data = {
         q_queried: parseInt(employee.value),
@@ -36,7 +38,7 @@ const queryEmployee = async (req, res)=>  {
         q_body: req.body.body,
         q_subject: req.body.subject,
       }
-      let query = await queryModel.addQuery(data);
+      query = await queryModel.addQuery(data);
       if (!(_.isEmpty(query)) || !(_.isNull(query))) {
 
         const empUser = await employeeModel.getEmployeeById(employee.value);
@@ -68,12 +70,48 @@ const queryEmployee = async (req, res)=>  {
         })
       }
     });
-    return res.status(200).json(`Query recorded.`);
+    return res.status(200).json(query);
 
   }catch (e) {
-    return res.status(400).json(`Something went wrong`);
+    return res.status(400).json(`Something went wrong`+e.message);
 
   }
+}
+
+const uploadQueryFiles = async (req, res)=>{
+    try{
+      const queryId = req.params.queryId;
+      const query = await queryModel.getQueryById(queryId);
+      if(_.isNull(query) || _.isEmpty(query)){
+        return res.status(400).json("Record does not exist");
+      }
+      let docs = req.files.documents;
+      if (Array.isArray(docs)) {
+
+        let success = [];
+
+        for (const doc of docs) {
+          const uploadResponse = await uploadFile(doc).then((response) => {
+            return response
+          })
+          await queryModel.updateQueryAttachmentUrl(queryId, doc.name);
+        }
+
+        return res.status(200).json(`Action Successful`)
+      }
+      else {
+        const uploadResponse = await uploadFile(docs).then((response) => {
+          return response
+        }).catch(err => {
+          return res.status(400).json(err)
+        })
+
+        await queryModel.updateQueryAttachmentUrl(queryId, uploadResponse);
+        return res.status(200).json('Action Successful')
+      }
+    }catch (e) {
+      return res.status(400).json("Something went wrong.");
+    }
 }
 const getAllEmployeeQueries = async (req, res) =>{
   const empId  = req.params.id;
@@ -112,9 +150,35 @@ const getQuery = async (req, res) =>{
   }
 }
 
+const uploadFile = (fileRequest) => {
+  return new Promise(async (resolve, reject) => {
+    let s3Res;
+    const fileExt = path.extname(fileRequest.name)
+    const timeStamp = new Date().getTime()
+    const fileContent = Buffer.from(fileRequest.data, 'binary');
+    const fileName = `${timeStamp}${fileExt}`;
+    const params = {
+      Bucket: 'irc-ihumane', // pass your bucket name
+      Key: fileName, // file will be saved as testBucket/contacts.csv
+      Body: fileContent
+    };
+    console.log({s3})
+    await s3.upload(params, function (s3Err, data) {
+      console.log({s3Err})
+      if (s3Err) {
+        reject(s3Err)
+      }
+      s3Res = data.Location
+      resolve(s3Res)
+    });
+  })
+
+}
+
 module.exports = {
   queryEmployee,
   getAllEmployeeQueries,
   getAllQueries,
-  getQuery
+  getQuery,
+  uploadQueryFiles
 }
