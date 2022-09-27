@@ -423,7 +423,7 @@ router.get(
             }
 
             for (const date of datesArray) {
-              const day = date.getUTCDate()
+              const day = date.getDate()
               const month = date.getUTCMonth() + 1
               const year = date.getUTCFullYear()
             
