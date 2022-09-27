@@ -19,6 +19,7 @@ const queryEmployee = async (req, res)=>  {
       body: Joi.string().required(),
       query_type: Joi.number().required(),
       queried_by: Joi.number().required(),
+      viewUrl: Joi.string().required(),
     })
     const queryRequest = req.body
     const validationResult = schema.validate(queryRequest)
@@ -54,7 +55,7 @@ const queryEmployee = async (req, res)=>  {
           req.body.body.replace(/(<([^>]+)>)/ig, '').substring(0, 46),
           employee.value,
           query.q_id,
-          "url-goes-here"
+          req.body.viewUrl, //"url-goes-here"
         )
         //Log
         const logData = {
@@ -70,7 +71,7 @@ const queryEmployee = async (req, res)=>  {
     return res.status(200).json(`Query recorded.`);
 
   }catch (e) {
-    return res.status(400).json(`Something went wrong. ${e.message}`);
+    return res.status(400).json(`Something went wrong`);
 
   }
 }

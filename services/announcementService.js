@@ -22,6 +22,7 @@ const publishAnnouncement = async (req, res, next)=>  {
       target: Joi.number().required().valid(1,2,3,4),
       persons: Joi.alternatives().conditional('target',{is: [2,3,4], then: Joi.array().required()}),
       attachment: Joi.allow("", null),
+      viewUrl: Joi.string().required(),
     })
     const announcementRequest = req.body
     const validationResult = schema.validate(announcementRequest)
@@ -41,7 +42,7 @@ const publishAnnouncement = async (req, res, next)=>  {
     if(!(_.isEmpty(announce)) || !(_.isNull(announce))){
       const subject = "New announcement";
       const body = "You have new announcement.";
-      const url = req.headers.referer;
+      const url = req.body.viewUrl; //req.headers.referer;
           switch (parseInt(req.body.target)){
             case 2:
               const persons = req.body.persons;
