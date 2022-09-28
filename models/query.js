@@ -4,6 +4,7 @@ const {
 } = require('sequelize');
 const { sequelize, Sequelize } = require('../services/db');
 const employeeModel = require('./Employee')(sequelize, Sequelize)
+const queryReplyModel = require('./queryreply')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class Query extends Model {
     /**
@@ -24,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
         order:[['q_id', 'DESC']],
         include:[
           {model: employeeModel, as: 'issuer' },
-          {model:employeeModel, as:'offender'}
+          {model:employeeModel, as:'offender'},
+          {model:queryReplyModel, as:'replies'},
         ]
       })
     }
@@ -84,5 +86,6 @@ module.exports = (sequelize, DataTypes) => {
   });
   Query.belongsTo(employeeModel, {as:'issuer', foreignKey:'q_queried_by'})
   Query.belongsTo(employeeModel, {as:'offender', foreignKey:'q_queried'})
+  Query.hasMany(queryReplyModel, {as: 'replies', foreignKey: 'qr_query_id'})
   return Query;
 };
