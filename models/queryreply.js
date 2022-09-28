@@ -4,6 +4,7 @@ const {
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
 const employeeModel = require('./Employee')(sequelize, Sequelize)
+//const queryModel = require('./query')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class QueryReply extends Model {
     /**
