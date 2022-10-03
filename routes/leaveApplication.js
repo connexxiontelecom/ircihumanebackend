@@ -193,13 +193,19 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         hrpoints.map(async (hrp) => {
           const subject = "New leave application";
           const body = "Kindly attend to this leave application.";
+          const templateParams = {
+            firstName: `${hrp.focal_person.emp_first_name}`,
+            title: `New Leave Application - Authorization Request`,
+          };
           //emp
           const authorizationResponse = authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
             return data
           });
           const url = "leave-authorization";
           const notifySupervisor = await notificationModel.registerNotification(subject, body, hrp.hfp_emp_id, 0, url);
-          //await IRCMailerService.sendMail('no-reply@irc.com',emp.emp_office_email,subject, body);
+          const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', hrp.focal_person.emp_office_email, subject, templateParams).then((data)=>{
+            return data
+          })
         })
       const sub = "New leave application";
       const content = "Your new leave application was submitted successfully.";
@@ -215,6 +221,7 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
       const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', emp.emp_office_email, subject, templateParams).then((data)=>{
         return data
       })
+
 
         /* if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
              return res.status(400).json('An Error Occurred')
