@@ -128,7 +128,7 @@ async function getLeavesWithOptions(accruable, relocatable, mode) {
         where: {
             lt_accrue: accruable,
             lt_rr: relocatable,
-            lt_mode: type
+            lt_mode: mode
         }
     })
 }
