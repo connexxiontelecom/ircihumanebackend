@@ -217,7 +217,7 @@
           if(travelAccrualDays.includes(currentDate)){
             nonRelocatableEmployees.map(async (reEmp) => {
               const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(reEmp.emp_id, currentMonth, currentYear, travelDayLeave.leave_type_id);
-              const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
+              const calendarYear = currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
               if(_.isEmpty(existing) || _.isNull(existing)){
                 let expiresOn = null;
                 if(currentDate === travelAccrualDays[0]){
@@ -275,7 +275,7 @@
               const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(reEmp.emp_id, currentMonth, currentYear, rNrLeaveType.leave_type_id);
               if(_.isEmpty(existing) || _.isNull(existing)){
                 let expiresOn = `${currentYear}-${currentMonth === 12 ? 1 : currentMonth+1}-15`;
-                const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
+                const calendarYear = currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
                 const data = {
                   lea_emp_id: reEmp.emp_id,
                   lea_month: currentMonth,
