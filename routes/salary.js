@@ -863,8 +863,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                     salary_bank_id: emp.emp_bank_id,
                                     salary_account_number: accountNumber,
                                     salary_sort_code: emp.bank.bank_code,
-                                    salary_pfa: emp.emp_pension_id
-
+                                    salary_pfa: emp.emp_pension_id,
+                                    salary_d7: emp.emp_d7,
                                 }
 
                                 let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -938,8 +938,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                         salary_bank_id: emp.emp_bank_id,
                                         salary_account_number: accountNumber,
                                         salary_sort_code: emp.bank.bank_code,
-                                        salary_pfa: emp.emp_pension_id
-
+                                        salary_pfa: emp.emp_pension_id,
+                                        salary_d7: emp.emp_d7,
                                     }
 
 
@@ -986,8 +986,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_bank_id: emp.emp_bank_id,
                                             salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code,
-                                            salary_pfa: emp.emp_pension_id
-
+                                            salary_pfa: emp.emp_pension_id,
+                                            salary_d7: emp.emp_d7,
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1087,8 +1087,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_bank_id: emp.emp_bank_id,
                                             salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code,
-                                            salary_pfa: emp.emp_pension_id
-
+                                            salary_pfa: emp.emp_pension_id,
+                                            salary_d7: emp.emp_d7,
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1128,8 +1128,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_bank_id: emp.emp_bank_id,
                                             salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code,
-                                            salary_pfa: emp.emp_pension_id
-
+                                            salary_pfa: emp.emp_pension_id,
+                                            salary_d7: emp.emp_d7,
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1172,8 +1172,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_bank_id: emp.emp_bank_id,
                                             salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code,
-                                            salary_pfa: emp.emp_pension_id
-
+                                            salary_pfa: emp.emp_pension_id,
+                                            salary_d7: emp.emp_d7,
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1215,8 +1215,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_bank_id: emp.emp_bank_id,
                                             salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code,
-                                            salary_pfa: emp.emp_pension_id
-
+                                            salary_pfa: emp.emp_pension_id,
+                                            salary_d7: emp.emp_d7,
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1257,7 +1257,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                             salary_bank_id: emp.emp_bank_id,
                                             salary_account_number: accountNumber,
                                             salary_sort_code: emp.bank.bank_code,
-                                            salary_pfa: emp.emp_pension_id
+                                            salary_pfa: emp.emp_pension_id,
+                                            salary_d7: emp.emp_d7,
                                         }
 
                                         let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1432,8 +1433,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                                     salary_bank_id: emp.emp_bank_id,
                                     salary_account_number: accountNumber,
                                     salary_sort_code: emp.bank.bank_code,
-                                    salary_pfa: emp.emp_pension_id
-
+                                    salary_pfa: emp.emp_pension_id,
+                                    salary_d7: emp.emp_d7,
                                 }
 
                                 let salaryAddResponse = await salary.addSalary(salaryObject).then((data) => {
@@ -1759,12 +1760,12 @@ router.get('/undo-salary-routine', auth(), async function (req, res, next) {
             return data
         })
 
-        const leaveAccrualData = {
-            lea_month: payrollMonth, lea_year: payrollYear,
-        }
-        const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data) => {
-            return data
-        })
+        // const leaveAccrualData = {
+        //     lea_month: payrollMonth, lea_year: payrollYear,
+        // }
+        // const leaveAccrualsUndo = await removeLeaveAccrual(leaveAccrualData).then((data) => {
+        //     return data
+        // })
 
         const reverseVariationalPayments = await variationalPayment.undoVariationalPaymentMonthYear(payrollMonth, payrollYear).then((data) => {
             return data
@@ -1887,12 +1888,12 @@ router.post('/undo-salary-routine', auth(), async function (req, res, next) {
             return data
         })
 
-        const leaveAccrualData = {
-            lea_month: payrollMonth, lea_year: payrollYear, lea_emp_id: employeeIdsLocation
-        }
-        const leaveAccrualsUndo = await removeLeaveAccrualEmployees(leaveAccrualData).then((data) => {
-            return data
-        })
+        // const leaveAccrualData = {
+        //     lea_month: payrollMonth, lea_year: payrollYear, lea_emp_id: employeeIdsLocation
+        // }
+        // const leaveAccrualsUndo = await removeLeaveAccrualEmployees(leaveAccrualData).then((data) => {
+        //     return data
+        // })
 
         const reverseVariationalPayments = await variationalPayment.undoVariationalPaymentMonthYearEmployee(payrollMonth, payrollYear, employeeIdsLocation).then((data) => {
             return data

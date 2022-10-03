@@ -15,6 +15,8 @@ const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const timeAllocationModel = require('../models/timeallocation')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
+const salaryMappingMasterService = require("../services/salaryMappingMasterService");
 
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -240,10 +242,9 @@ router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, re
         const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsDetail(empId, month, year).then((data) => {
             return data
         })
-
         const responseData = {
-            timeAllocationSum: timeAllocationSum,
-            timeAllocationBreakDown: timeAllocationBreakDown,
+          timeAllocationSum: timeAllocationSum,
+          timeAllocationBreakDown: timeAllocationBreakDown,
           timeAllocationStatus
         }
 
@@ -253,6 +254,21 @@ router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, re
         next(err);
     }
 });
+
+router.get('/view-time-allocation/:ref_no', auth(), async function (req, res, next) {
+  try {
+    let refNo = req.params.ref_no
+
+    const timeAllocationData = await timeAllocation.findTimeAllocationsByRefNo(refNo).then((data) => {
+      return data
+    })
+
+    return res.status(200).json(timeAllocationData)
+  } catch (err) {
+    return res.status(400).json(`Error while fetching time allocation ${err.message}`);
+    next(err);
+  }
+})
 
 
 router.get('/get-employee-time-allocation/:emp_id', auth(), async function (req, res, next) {
@@ -370,5 +386,38 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     return res.status(400).json("Something went wrong. Try again."+e.message);
   }
 });
+
+router.get('/salary-mapping-master/:month/:year/:locationId', auth(), async function (req, res, next) {
+  try {
+    let { month, year, locationId } = req.params;
+    month = parseInt(month);
+    year = parseInt(year);
+    locationId = parseInt(locationId);
+
+    const salaryMappingMasterData = await salaryMappingMasterService.getSalaryMappingMasterByMonthYearLocation(month, year, locationId).then(data => {
+      return data;
+    })
+
+    return res.status(200).json(salaryMappingMasterData);
+
+  } catch (e) {
+    return res.status(400).json(`An error occurred ${e.message}`)
+  }
+});
+
+router.get('/salary-mapping-details/:masterId/:t7', auth(), async function (req, res, next){
+  try {
+    const { masterId, t7 } = req.params;
+    
+    const salaryMappingDetailsData = await salaryMappingDetailsService.getSalaryMappingDetailsByMasterEmployee(masterId, t7).then(data => {
+      return data;
+    })
+
+    return res.status(200).json(salaryMappingDetailsData)
+
+  } catch (e) {
+    return res.status(400).json(`An error occurred ${e.message}`)
+  }
+})
 
 module.exports = router;

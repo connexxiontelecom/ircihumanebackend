@@ -267,7 +267,7 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         for (const row of rows) {
             let status = 1
 
-            let employeeData = await employeeService.getEmployeeById(row.t7).then((data) => {
+            let employeeData = await employeeService.getEmployeeById(row.d7).then((data) => {
                 return data
             })
 
@@ -277,8 +277,8 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             let rowObject = {
                 smd_master_id: masterId,
                 smd_ref_code: salaryMasterData.smm_ref_code,
-                smd_employee_t7: row.t7,
-                smd_donor_t1: row.t1,
+                smd_employee_t7: row.d7,
+                smd_donor_t1: row.d1,
                 smd_salary_expense_t2s: row.t2s,
                 smd_benefit_expense_t2b: row.t2b,
                 smd_allocation: row.allocation,
@@ -355,6 +355,12 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
             let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
             })
+
+            if(_.isEmpty(salaryDetails) || _.isNull(salaryDetails)){
+                salaryDetails = await salaryService.getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+                    return data
+                })
+            }
             let empName = 'N/A'
             let empJobRole = 'N/A'
             let empLocation = 'N/A'
@@ -520,7 +526,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         for (const salaryMappingDetail of details) {
 
 
-            let empData = await employeeService.getEmployeeById(salaryMappingDetail.smd_employee_t7).then((data) => {
+            let empData =  await employeeService.getEmployeeByD7(salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
             })
 
@@ -563,9 +569,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             }
 
 
-            let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
+            let salaryDetails = await salaryService.getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7).then((data) => {
                 return data
-            })
+            });
+
             let empName = 'N/A'
             let empJobRole = 'N/A'
             let empLocation = 'N/A'
@@ -709,7 +716,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_d_c = "D"
                 journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employerPension
                 journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t2 = salaryMappingDetail.smd_benefit_expense_t2b
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
@@ -739,7 +746,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_d_c = "D"
                 journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation)/100) * employeeNsitf
                 journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1
-                journalDetail.j_t2 = salaryMappingDetail.smd_salary_expense_t2b
+                journalDetail.j_t2 = salaryMappingDetail.smd_benefit_expense_t2b
                 journalDetail.j_t3 = empSectorCode
                 journalDetail.j_t4 = '2NG'
                 journalDetail.j_t5 = '2NGA'
@@ -761,7 +768,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                     return res.status(400).json('An error occurred while creating journal entry')
                 }
                 let empObject = {
-                    employeeT7: salaryMappingDetail.smd_employee_t7,
+                    employeeD7: salaryMappingDetail.smd_employee_t7,
                     employeeTax: employeeTax,
                     netSalary: fullGross - mainDeductions,
                     employeeNhf: employeeNHF,
@@ -783,13 +790,12 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             totalNetSalary = totalNetSalary + emp.netSalary
             totalEmployeeNhf = totalEmployeeNhf + emp.employeeNhf
             totalEmployeeNsitf  = totalEmployeeNsitf + emp.employeeNsitf
-            empIdArray.push(emp.employeeT7)
+            empIdArray.push(emp.employeeD7)
         }
 
         const payrollJournalPayments = await paymentDefinitionService.getPayrollJournalPayments().then((data)=>{
           return data
         })
-
         let paymentName = ''
         for(const payment of payrollJournalPayments){
             let empName = ''
@@ -801,10 +807,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             paymentName = payment.pd_payment_name
             paymentName = paymentName.replace(/\s+/g, '-').toLowerCase();
             for (const emp of empIdArray){
-                let salaryDetails = await salaryService.getEmployeeSalaryByUniqueIdAndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
+                let salaryDetails = await salaryService.getEmployeeSalaryByD7AndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id).then((data) => {
                     return data
                 })
-
                 if(!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)){
 
                     empName = salaryDetails.salary_emp_name

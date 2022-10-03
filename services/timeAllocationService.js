@@ -135,7 +135,7 @@ async function findOneTimeAllocationByRefNo(ref_no) {
 
 async function timeAllocationStatus(empId, month, year) {
   return await TimeAllocation.findAll({
-    where: {ta_emp_id: empId, ta_month: month, ta_year: year},
+    where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: 1},
     include: [{model:Employee, as:'employee'}]
   })
 }
