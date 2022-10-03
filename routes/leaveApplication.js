@@ -14,7 +14,7 @@ const leaveAccrualService = require("../services/leaveAccrualService");
 const authorizationAction = require('../services/authorizationActionService');
 const supervisorAssignmentService = require('../services/supervisorAssignmentService');
 const leaveTypeService = require('../services/leaveTypeService');
-const IRCMailerService = require('../services/IRCMailer');
+const mailer = require('../services/IRCMailer')
 const hrFocalPointModel = require("../models/hrfocalpoint")(sequelize, Sequelize.DataTypes);
 const leaveAppModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const publicHolidayModel = require("../models/PublicHoliday")(sequelize, Sequelize.DataTypes);
@@ -193,20 +193,35 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         hrpoints.map(async (hrp) => {
           const subject = "New leave application";
           const body = "Kindly attend to this leave application.";
+          const templateParams = {
+            firstName: `${hrp.focal_person.emp_first_name}`,
+            title: `New Leave Application - Authorization Request`,
+          };
           //emp
           const authorizationResponse = authorizationAction.registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, "Leave application initiated").then((data) => {
             return data
           });
-          const url = req.headers.referer;
-          //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
+          const url = "leave-authorization";
           const notifySupervisor = await notificationModel.registerNotification(subject, body, hrp.hfp_emp_id, 0, url);
-
+          const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', hrp.focal_person.emp_office_email, subject, templateParams).then((data)=>{
+            return data
+          })
         })
-
+      const sub = "New leave application";
+      const content = "Your new leave application was submitted successfully.";
+      const url = "leave-application";
+      const notifyEmployee = await notificationModel.registerNotification(sub, content, req.body.leapp_empid, 0, url);
       //send mail
       const subject = 'Leave application';
-      const body = "Your leave application was received. ";
-      await IRCMailerService.sendMail('no-reply@irc.com',emp.emp_office_email,subject, body);
+      //const body = "Your leave application was received. ";
+      const templateParams = {
+        firstName: `${emp.emp_first_name}`,
+        title: `New Leave Application`,
+      };
+      const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', emp.emp_office_email, subject, templateParams).then((data)=>{
+        return data
+      })
+
 
         /* if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
              return res.status(400).json('An Error Occurred')

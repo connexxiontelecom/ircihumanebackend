@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         static async addLeaveAccrual(empId, month, year, leaveType, noOfDays, expiresOn){
-          const calendarYear = month >= 1 || month <= 9 ? `FY${year}` : `FY${year+1}`;
+          const calendarYear = month <= 9 ? `FY${year}` : `FY${year+1}`;
           leaveAccrual.create({
               lea_emp_id: empId,
               lea_month: month,
