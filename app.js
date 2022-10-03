@@ -310,8 +310,8 @@
         const currentMonth = new Date().getMonth()+1;
         const currentYear = new Date().getFullYear();
 
-        const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
-        const leaveYear = currentMonth >= 1 || currentMonth <= 9 ? currentYear : currentYear+1;
+        const calendarYear =  currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
+        const leaveYear =  currentMonth <= 9 ? currentYear : currentYear+1;
         const expiresOn = `${leaveYear}-09-30`
         for (const emp of employees){
             for (const leaveType of leaveTypesData) {
@@ -346,8 +346,8 @@
         const currentMonth = new Date().getMonth()+1;
         const currentYear = new Date().getFullYear();
 
-        const calendarYear = currentMonth >= 1 || currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
-        const leaveYear = currentMonth >= 1 || currentMonth <= 9 ? currentYear : currentYear+1;
+        const calendarYear =  currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear+1}`;
+        const leaveYear =  currentMonth <= 9 ? currentYear : currentYear+1;
         const expiresOn = `${leaveYear}-09-30`
         for (const emp of employees){
             for (const leaveType of leaveTypesData) {
@@ -375,7 +375,7 @@
     nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual).start();
     nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType).start();
     nodeCron.schedule("0 0 1 * *", runGeneralMonthlyLeaveRoutine).start();
-    nodeCron.schedule("0 0 0 1 OCT * *", runGeneralYearlyLeaveRoutine).start();
+    nodeCron.schedule("0 0 1 10 *", runGeneralYearlyLeaveRoutine).start();
 
 
 
