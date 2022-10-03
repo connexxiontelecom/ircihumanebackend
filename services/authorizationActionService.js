@@ -199,7 +199,7 @@ const updateAuthorizationStatus = async (req, res) => {
 
                         let leaveDate = new Date(leaveApplicationData.leapp_start_date)
                       const currentDate = new Date();
-                      const calendarYear = currentDate.getMonth()+1 >= 1 || currentDate.getMonth()+1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear()+1}`;
+                      const calendarYear =  currentDate.getMonth()+1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear()+1}`;
                         if(parseInt(status) === 1){
                             const leaveAccrual = {
                                 lea_emp_id: leaveApplicationData.leapp_empid,
