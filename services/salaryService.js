@@ -149,7 +149,7 @@ async function getEmployeeSalaryByUniqueIdAndMonthYear(uniqueId, month, year, pd
 async function getEmployeeSalaryByD7AndMonthYear(d7, month, year, pd) {
     return await Salary.findOne({
         where: {
-            salary_emp_d7: d7,
+            salary_d7: d7,
             salary_paymonth: month,
             salary_payyear: year,
             salary_pd: pd
