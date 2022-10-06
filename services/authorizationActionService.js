@@ -151,13 +151,13 @@ const updateAuthorizationStatus = async (req, res) => {
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
-                  }/*else{
+                  }else{
                     await authorizationModel.create({
                       auth_officer_id: nextOfficer,
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
-                  }*/
+                  }
                 break;
               }
 
