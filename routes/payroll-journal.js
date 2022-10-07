@@ -1018,7 +1018,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             for(const emp of pfaEmployees){
                 let tempEmp = {
                     emp_unique_id: emp.salary_emp_unique_id,
-                    emp_id: emp.salary_empid
+                    emp_id: emp.salary_empid,
+                    emp_d7: emp.salary_d7
                 }
                 tempPfaEmployees.push(tempEmp)
             }
@@ -1029,11 +1030,11 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
             let totalPension = 0
             for (const emp of employees) {
 
-                if(empIdArray.includes(emp.emp_unique_id)){
+                if(empIdArray.includes(emp.salary_d7)){
                     for (const pensionPayment of pensionPayments) {
                         let amount = 0
 
-                        let checkSalary = await salary.getEmployeeSalaryMonthYearPd(salaryMasterData.smm_month, salaryMasterData.smm_year, emp.emp_id, pensionPayment.pd_id).then((data) => {
+                        let checkSalary = await salary.getEmployeeSalaryByD7AndMonthYear(emp.salary_d7, salaryMasterData.smm_month, salaryMasterData.smm_year, pensionPayment.pd_id).then((data) => {
                             return data
                         })
                         if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
