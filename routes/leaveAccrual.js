@@ -37,7 +37,6 @@ async function addLeaveAccrual(data) {
     }
 }
 
-
 async function removeLeaveAccrual(data) {
     return await leaveAccrual.removeLeaveAccrual(data)
 
