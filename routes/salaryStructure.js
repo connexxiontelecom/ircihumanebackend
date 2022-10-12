@@ -14,15 +14,10 @@ const logs = require('../services/logService')
 /* Get all Salary Structure */
 router.get('/', auth(), async function (req, res, next) {
     try {
-
-        salaryStructure.findSalaryStructures().then((data) => {
-            return res.status(200).json(data)
-        })
-
+        const structure =  await salaryStructure.findSalaryStructures();
+        return res.status(200).json(structure);
     } catch (err) {
-
-      return res.status(400).json(err.message);
-
+        return res.status(400).json(err.message);
         next(err);
     }
 });
