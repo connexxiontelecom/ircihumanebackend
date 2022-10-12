@@ -25,6 +25,7 @@ const leaveApplicationService = require('../services/leaveApplicationService');
 const helper = require('../helper');
 const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
 const {addLeaveAccrual} = require("../routes/leaveAccrual");
+const mailer = require("./IRCMailer");
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
@@ -125,14 +126,16 @@ const updateAuthorizationStatus = async (req, res) => {
             }
 
             if (markAsFinal === 0) {
+
               switch (type){
                 case 1:
+                  let subject = "Leave application forwarded";
+                  let body = "Leave application forwarded for further action.";
                   const leaveData = await leaveApplicationService.getLeaveApplicationWithId(appId).then((ldata)=>{
                     return ldata
                   })
-                  const emp = await employeeService.getEmployeeByIdOnly(leaveData.leapp_empid).then((e)=>{
-                    return e;
-                  });
+                  const emp = await EmployeeModel.getEmployeeById(leaveData.leapp_empid);
+                  await handleInAppEmailNotifications(emp.emp_first_name, subject,body, 'leave-application', emp.emp_office_email, emp.emp_id);
                   if(parseInt(req.body.contactGroup) === 1){ //HR Focal point
                     const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
                       return hr;
@@ -143,6 +146,10 @@ const updateAuthorizationStatus = async (req, res) => {
                         auth_type: type,
                         auth_travelapp_id: appId
                       });
+                      const hrFocalDetails = await employeeService.getEmployeeByIdOnly(n.hfp_emp_id).then(r=>{
+                        return r;
+                      })
+                      await handleInAppEmailNotifications(hrFocalDetails.emp_first_name, subject,body, 'leave-authorization', hrFocalDetails.emp_office_email,  hrFocalDetails.emp_id);
                     })
 
                   }else if(parseInt(req.body.contactGroup) === 2){
@@ -151,25 +158,23 @@ const updateAuthorizationStatus = async (req, res) => {
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
+                    const contactGroupDetails = await employeeService.getEmployeeByIdOnly(emp.emp_supervisor_id).then(su=>{
+                      return su;
+                    })
+                    await handleInAppEmailNotifications(contactGroupDetails.emp_first_name, subject,body, 'leave-authorization', contactGroupDetails.emp_office_email, contactGroupDetails.emp_id);
                   }else{
                     await authorizationModel.create({
                       auth_officer_id: nextOfficer,
                       auth_type: type,
                       auth_travelapp_id: appId
                     });
+                    const nextOff = await employeeService.getEmployeeByIdOnly(nextOfficer).then(off=>{
+                      return off;
+                    })
+                    await handleInAppEmailNotifications(nextOff.emp_first_name, subject,body, 'leave-authorization', nextOff.office_email, nextOfficer);
                   }
                 break;
               }
-
-              const subject = "Self-service update!";
-              const body = "An event recently occurred on one of your self-service areas.";
-              //emp
-              const url = req.headers.referer;
-              //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
-              const notifyOfficer = await notificationModel.registerNotification(subject, "Your action was recorded.", officer, 0, url);
-              const notifyNextOfficer = await notificationModel.registerNotification(subject, "You've been chosen to act on a task.", nextOfficer, 0, url);
-
-
               //Log
                 const logData = {
                     "log_user_id": req.user.username.user_id,
@@ -396,6 +401,21 @@ async function getAuthorizationLog(authId, type) {
     });
 }
 
+async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
+  try {
+    const templateParams = {
+      firstName: firstName,
+      title: title,
+    }
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data
+    })
+    const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
+  } catch (e) {
+
+  }
+}
+
 
 module.exports = {
     registerNewAction,
@@ -405,6 +425,7 @@ module.exports = {
     getAuthorizationLog,
     getOneAuthorizationByRefNo,
   getAuthorizationByTypeOfficerId,
-  registerTimeAllocationAction
+  registerTimeAllocationAction,
+  handleInAppEmailNotifications
 
 }
