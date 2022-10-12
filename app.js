@@ -354,20 +354,24 @@
         const expiresOn = `${leaveYear}-09-30`
         for (const emp of employees){
             for (const leaveType of leaveTypesData) {
-                const leaveAccrual = {
-                    lea_emp_id: emp.emp_id,
-                    lea_month: currentMonth,
-                    lea_year: currentYear,
-                    lea_leave_type: leaveType.leave_type_id,
-                    lea_rate: parseFloat(leaveType.lt_rate),
-                    lea_leaveapp_id: 0,
-                    lea_archives: 0,
-                    lea_expires_on: expiresOn,
-                    lea_fy: calendarYear
+                const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypeFYyearPositive(emp.emp_id, currentMonth, currentYear, calendarYear, leaveType.leave_type_id)
+                if(_.isEmpty(existingLeaveAccruals) || _.isNull(existingLeaveAccruals)) {
+
+                    const leaveAccrual = {
+                        lea_emp_id: emp.emp_id,
+                        lea_month: currentMonth,
+                        lea_year: currentYear,
+                        lea_leave_type: leaveType.leave_type_id,
+                        lea_rate: parseFloat(leaveType.lt_rate),
+                        lea_leaveapp_id: 0,
+                        lea_archives: 0,
+                        lea_expires_on: expiresOn,
+                        lea_fy: calendarYear
+                    }
+                    const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                        return data
+                    })
                 }
-                const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
-                    return data
-                })
 
             }
         }
@@ -378,7 +382,7 @@
     nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual).start();
     nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType).start();
     nodeCron.schedule("0 12 * * *", runGeneralMonthlyLeaveRoutine).start();
-    nodeCron.schedule("0 0 1 10 *", runGeneralYearlyLeaveRoutine).start();
+    nodeCron.schedule("0 12 * * *", runGeneralYearlyLeaveRoutine).start();
 
 
 
