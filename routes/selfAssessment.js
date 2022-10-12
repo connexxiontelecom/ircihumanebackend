@@ -12,6 +12,7 @@ const logs = require('../services/logService')
 const goalSettingYear = require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 const {sequelize, Sequelize} = require('../services/db');
+const mailer = require('../services/IRCMailer')
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
@@ -129,10 +130,27 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, 
                 const subject = "Self-assessment (Beginning of year)";
                 const body = "A new self-assessment request was submitted";
                 //emp
-                const notify = await notificationModel.registerNotification(subject, body, empId, 11, 'url-here');
+                const notify = await notificationModel.registerNotification(subject, body, empId, 11, 'self-assessment');
                 const url = req.headers.referer;
-                const notifySupervisor = await notificationModel.registerNotification(subject, body, employeeData.emp_supervisor_id, 0, url);
+                const notifySupervisor = await notificationModel.registerNotification(subject, body, employeeData.emp_supervisor_id, 0, 'assess-employees');
 
+                const supervisorData = await employees.getEmployeeByIdOnly(employeeData.emp_supervisor_id)
+                const templateParams = {
+                  firstName: `${employeeData.emp_first_name}`,
+                  title: `Self-assessment submission`,
+                }
+
+                const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', employeeData.emp_office_email, 'Self-assessment submission', templateParams).then((data)=>{
+                  return data
+                })
+
+              const superTemplateParams = {
+                firstName: `${supervisorData.emp_first_name}`,
+                title: `Assess employee`,
+              }
+              const superMailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', supervisorData.emp_office_email, 'Assess employee', superTemplateParams).then((data)=>{
+                return data
+              })
                 if (i > 0) {
                     return res.status(400).json(`An error Occurred while adding`)
                 } else {
