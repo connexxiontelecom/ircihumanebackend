@@ -26,7 +26,6 @@ const authorizationModel = require('../models/AuthorizationAction')(sequelize, S
 const {businessDaysDifference} = require("../services/dateService");
 const isWeekend = require("date-fns/isWeekend");
 
-
 /* Get leave application */
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -542,12 +541,16 @@ router.patch('/re-assign-leave/:leaveId', auth(), async function(req, res){
     const reAssignment = await authorizationModel.addNewAuthOfficer(data);
 
     const subject = "Leave application re-assignment";
-    //const body = "Kindly attend to this leave application.";
-    const url = req.headers.referer;
-    const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
-    const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
-    const notifyEmployee = await notificationModel.registerNotification(subject, comment, leave.leapp_empid, 0, url);
+    const body = "Leave application re-assignment";
+    const url = 'leave-authorization';
+    //const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, 'leave-authorization');
+    //const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, 'leave-authorization');
 
+    const notifyEmployee = await notificationModel.registerNotification(subject, comment, leave.leapp_empid, 0, 'leave-application');
+    const assignedNotify = await handleInAppEmailNotifications(assignedOfficer.emp_first_name, subject,body, url, assignedOfficer.emp_office_email, assignedOfficer.emp_id)
+    const notifySupervisor = await handleInAppEmailNotifications(reAssignedOfficer.emp_first_name, subject,body, url, reAssignedOfficer.emp_office_email, reAssignedOfficer.emp_id)
+
+    //const notifyEmployee = await handleInAppEmailNotifications(reAssignedOfficer.emp_first_name, subject,body, url, reAssignedOfficer.emp_office_email, leave.leapp_empid)
     return res.status(200).json("Leave application re-assigned successfully.");
   }catch (e) {
     return res.status(400).json("Something went wrong. Try again.");
@@ -569,6 +572,21 @@ router.get('/schedule/cron', auth(), async function(req, res){
   }
 });
 
+
+async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
+  try {
+    const templateParams = {
+      firstName: firstName,
+      title: title,
+    }
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data
+    })
+    const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
+  } catch (e) {
+
+  }
+}
 
 
 module.exports = router;

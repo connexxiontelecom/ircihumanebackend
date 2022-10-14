@@ -17,6 +17,7 @@ const timeAllocationService = require('../services/timeAllocationService');
 const employeeService = require('../services/employeeService');
 const Op = Sequelize.Op;
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const mailer = require("./IRCMailer");
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const leaveApplicationService = require('../services/leaveApplicationService');
@@ -25,7 +26,7 @@ const leaveApplicationService = require('../services/leaveApplicationService');
 const helper = require('../helper');
 const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
 const {addLeaveAccrual} = require("../routes/leaveAccrual");
-const mailer = require("./IRCMailer");
+
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
