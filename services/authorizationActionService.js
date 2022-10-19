@@ -253,7 +253,6 @@ const updateAuthorizationStatus = async (req, res) => {
 
                         break;
                     case 2: //time sheet
-
                         const taData = await timeAllocationModel.update({
                             ta_status: status,
                             ta_comment: comment,
@@ -264,7 +263,6 @@ const updateAuthorizationStatus = async (req, res) => {
                                 ta_ref_no: appId
                             }
                         });
-
                         const tsData = await timeSheetModel.update({
                             ts_status: status,
                         }, {
@@ -272,8 +270,6 @@ const updateAuthorizationStatus = async (req, res) => {
                                 ts_ref_no: appId
                             }
                         });
-
-
                         const timealloc = await timeAllocationService.findOneTimeAllocationByRefNo(appId).then((val) => {
                             return val;
                         });
@@ -286,7 +282,6 @@ const updateAuthorizationStatus = async (req, res) => {
                             const employee = await employeeService.getEmployeeByIdOnly(timealloc.ta_emp_id).then((data) => {
                                 return data;
                             });
-
                             const daysAbsent = await timeSheetService.getAttendanceStatus(0, timealloc.ta_emp_id, parseInt(timealloc.ta_month), parseInt(timealloc.ta_year)).then((res) => {
                                 return res.length;
                             });
@@ -310,6 +305,7 @@ const updateAuthorizationStatus = async (req, res) => {
 
                                 })
                             }
+                          await handleInAppEmailNotifications(employee.emp_first_name, 'Timesheet Update',"An action was taken on the timesheet you submitted", 'timesheets', employee.office_email, employee.emp_id);
                         }
 
                         break;
@@ -326,12 +322,12 @@ const updateAuthorizationStatus = async (req, res) => {
                         });
                         break;
                 }
-              const subject = "Self-service update!";
-              const body = "An event recently occurred on one of your self-service areas.";
+              //const subject = "Self-service update!";
+              //const body = "An event recently occurred on one of your self-service areas.";
               //emp
-              const url = req.headers.referer;
+              //const url = req.headers.referer;
               //const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
-              const notifyOfficer = await notificationModel.registerNotification(subject, "Request finally marked as closed.", officer, 0, url);
+              //const notifyOfficer = await notificationModel.registerNotification(subject, "Request finally marked as closed.", officer, 0, url);
               //const notifyNextOfficer = await notificationModel.registerNotification(subject, "You've been chosen to act on a task.", nextOfficer, 0, url);
 
               //Log
