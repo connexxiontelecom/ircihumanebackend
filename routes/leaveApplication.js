@@ -573,6 +573,34 @@ router.get('/schedule/cron', auth(), async function(req, res){
 });
 
 
+router.get('/restate-leave-application/:leaveId/:status/:empId', auth(), async function(req, res){
+  try{
+    const leaveId = parseInt(req.params.leaveId);
+    const status = parseInt(req.params.status);
+    const empId = parseInt(req.params.empId);
+    const leaveApp = await  leaveApplication.getLeaveApplicationsById(leaveId);
+    if(_.isEmpty(leaveApp) || _.isNull(leaveApp)){
+      return res.status(400).json("Whoops! Record not found.");
+    }
+    const empData = await employees.getEmployeeByIdOnly(empId);
+    if(_.isEmpty(empData) || _.isNull(empData)){
+      return res.status(400).json("Employee record not found.");
+    }
+    const updateLeaveApp = await leaveApplication.updateLeaveAppStatus(leaveId, status);
+    const authorizationResponse = authorizationAction.registerNewAction(1, leaveId, empId, 0, "Leave application re-stated").then((data) => {
+      return data
+    });
+
+    await handleInAppEmailNotifications(empData.emp_first_name, 'Leave application re-stated','Leave application restated', 'leave-authorizations', empData.emp_office_email, empData.emp_id)
+
+    return res.status(200).json('Leave application re-stated!');
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+
+
 async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
   try {
     const templateParams = {
