@@ -173,6 +173,7 @@
     const salary = require("./services/salaryService");
     const employee = require("./services/employeeService");
     const Joi = require("joi");
+    const user = require("./services/userService");
     app.use('/payroll-journal', payrollJournalRouter);
 
     app.get('/',  async function(req, res) {
@@ -378,11 +379,38 @@
 
     }
 
+    async function endEmployeeContract(){
+        try {
+            const employees = await employee.getActiveEmployees();
+            for(const emp of employees){
+                let contractEndDate = new Date(emp.emp_contract_end_date)
+                let contractEndYear = contractEndDate.getFullYear()
+                let contractEndMonth = contractEndDate.getMonth() + 1
+                let contractEndDay = contractEndDate.getDate()
+                if (contractEndDay < 10) contractEndDay = '0' + contractEndDay;
+                if (contractEndMonth < 10) contractEndMonth = '0' + contractEndMonth;
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                let mm = today.getMonth() + 1; // Months start at 0!
+                let dd = today.getDate();
+                if (dd < 10) dd = '0' + dd;
+                if (mm < 10) mm = '0' + mm;
+                const currentDateFormatted = `${yyyy}-${mm}-${dd}`
+                const contractEndDateFormatted = `${contractEndYear}-${contractEndMonth}-${contractEndDay}`
+                if(currentDateFormatted === contractEndDateFormatted){
+                    await user.suspendUser(emp.emp_unique_id)
+                }
+            }
+        } catch (e) {
+        }
+    }
+
     nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus).start();
     nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual).start();
     nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType).start();
     nodeCron.schedule("0 12 * * *", runGeneralMonthlyLeaveRoutine).start();
     nodeCron.schedule("0 12 * * *", runGeneralYearlyLeaveRoutine).start();
+    nodeCron.schedule("* 6 * * *", endEmployeeContract).start();
 
 
 
