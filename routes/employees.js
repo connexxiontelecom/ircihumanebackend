@@ -16,6 +16,7 @@ const dotenv = require('dotenv');
 const path = require('path')
 const user = require("../services/userService");
 const {sequelize, Sequelize} = require("../services/db");
+const {isAfter} = require("date-fns");
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
@@ -88,40 +89,27 @@ router.patch('/update-employee/:emp_id', auth(), async function (req, res, next)
 router.patch('/update-employee-backoffice/:emp_id', auth(), async function (req, res, next) {
     try {
         let empId = req.params['emp_id']
-        await employees.getEmployee(empId).then(async (data) => {
-            if (_.isEmpty(data)) {
-                return res.status(400).json(`Employee Doesn't Exist`)
-            } else {
-                const employeeData = req.body
+       const checkEmployee =  await employees.getEmployee(empId);
+        if (_.isEmpty(checkEmployee)) {
+            return res.status(400).json(`Employee Doesn't Exist`)
+        }
+            const employeeData = req.body
+            const employeeContractEndDate = new Date(employeeData.emp_contract_end_date)
 
-                const employeeHireDate = new Date(employeeData.emp_hire_date)
-
-                const employeeContractEndDate = new Date(employeeData.emp_contract_end_date)
-
-                // const checkEmployeeHireDateWeekend = await isWeekend(employeeHireDate)
-                //
-                // const checkEmployeeContractEndDateWeekend = await isWeekend(employeeContractEndDate)
-                //
-                // if(checkEmployeeContractEndDateWeekend || checkEmployeeHireDateWeekend){
-                //     return res.status(400).json('Hire date or contract end date cannot be a weekend')
-                // }
-              //return res.status(200).json(employeeData.emp_paye_no);
-
-                employees.updateEmployeeFromBackoffice(empId, employeeData).then((data) => {
-                    const logData = {
-                        "log_user_id": req.user.username.user_id,
-                        "log_description": "Updated Employee Details",
-                        "log_date": new Date()
-                    }
-                    logs.addLog(logData).then((logRes) => {
-
-                        return res.status(200).json('Action Successful')
-                    })
-                })
-
+            // const checkEmployeeHireDateWeekend = await isWeekend(employeeHireDate)
+            //
+            // const checkEmployeeContractEndDateWeekend = await isWeekend(employeeContractEndDate)
+            //
+            // if(checkEmployeeContractEndDateWeekend || checkEmployeeHireDateWeekend){
+            //     return res.status(400).json('Hire date or contract end date cannot be a weekend')
+            // }
+            await employees.updateEmployeeFromBackoffice(empId, employeeData)
+            const result = isAfter(employeeContractEndDate, new Date())
+            if(result){
+                await employees.unSuspendEmployee(empId);
+                await user.suspendUser(checkEmployee.emp_unique_id)
             }
-        })
-
+            return res.status(200).json('employee updated');
     } catch (err) {
         console.error(`An error occurred while updating Employee `, err.message);
         next(err);
