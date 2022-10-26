@@ -808,9 +808,9 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                             return data
                         })
 
-                        let suspendUser = await user.suspendUser(emp.emp_unique_id).then((data) => {
-                            return data
-                        })
+                        // let suspendUser = await user.suspendUser(emp.emp_unique_id).then((data) => {
+                        //     return data
+                        // })
 
                         const contractEndDateDD = String(contractEndDate.getDate()).padStart(2, '0')
                         const contractEndDateMM = String(contractEndDate.getMonth() + 1).padStart(2, '0') //January is 0!
