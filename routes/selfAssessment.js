@@ -12,12 +12,13 @@ const logs = require('../services/logService')
 const goalSettingYear = require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 const {sequelize, Sequelize} = require('../services/db');
-const mailer = require('../services/IRCMailer')
+const leaveApplication = require("../services/leaveApplicationService");
+const authorizationAction = require("../services/authorizationActionService");
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
-
+const mailer = require("../services/IRCMailer");
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     let saData;
@@ -1131,6 +1132,35 @@ router.get('/get-all-self-assessments', auth(), async function(req, res){
   }
 });
 
+router.get('/restate-self-assessment/:gsId/:status/:empId/:year/:reAssignTo', auth(), async function(req, res){
+  try{
+    const gsId = parseInt(req.params.gsId);
+    const status = parseInt(req.params.status);
+    const empId = parseInt(req.params.empId);
+    const reAssignTo = parseInt(req.params.reAssignTo);
+    const year = req.params.year;
+    const selfAssess = await  selfAssessmentMasterModel.getSelfAssessmentMasterByGsIdEmpIdYear(gsId, empId, year);
+    if(_.isEmpty(selfAssess) || _.isNull(selfAssess)){
+      return res.status(400).json("Whoops! Record not found.");
+    }
+    const empData = await employees.getEmployeeByIdOnly(empId);
+    if(_.isEmpty(empData) || _.isNull(empData)){
+      return res.status(400).json("Employee record not found.");
+    }
+    const updateSelfAssess = await selfAssessmentMasterModel.updateSelfAssessmentMasterStatusByGsIdEmpIdYear(gsId, empId, year, status);
+    const authorizationResponse = authorizationAction.registerNewAction(1, gsId, reAssignTo, 0, "Self-assessment re-stated").then((data) => {
+      return data
+    });
+
+    await handleInAppEmailNotifications(empData.emp_first_name, 'Self-assessment re-stated','Self-assessment restated', 'self-assessment', empData.emp_office_email, empData.emp_id);
+    await handleInAppEmailNotifications(empData.emp_first_name, 'Self-assessment re-stated','Self-assessment restated', 'self-assessment', empData.emp_office_email, empData.emp_id);
+
+    return res.status(200).json('Self-assessment re-stated!');
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
 router.get('/get-all-emp-self-assessments/:empId/:year', auth(), async function(req, res){
   try{
     const year = req.params.year;
@@ -1154,4 +1184,18 @@ router.get('/get-self-assessments-status/:status', auth(), async function(req, r
   }
 });
 
+async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
+  try {
+    const templateParams = {
+      firstName: firstName,
+      title: title,
+    }
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data
+    })
+    const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
+  } catch (e) {
+
+  }
+}
 module.exports = router;
