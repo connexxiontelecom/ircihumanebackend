@@ -50,6 +50,19 @@ module.exports = (sequelize, DataTypes) => {
         where:{sam_emp_id:empIds}, order:[['sam_id', 'DESC']]
       })
     }
+  static async getSelfAssessmentMasterByGsIdEmpIdYear(gsId, empId, year){
+      return await selfassessmentmaster.findOne({
+        include:[{model:EmployeeModel, as:'employee'}, {model:goalSettingModel, as:'goal'}],
+        where:{sam_emp_id:empId, sam_gs_id: gsId, sam_year:year},
+      })
+    }
+
+    static async updateSelfAssessmentMasterStatusByGsIdEmpIdYear(gsId, empId, year, status){
+      return await selfassessmentmaster.update(
+      {sam_status:status},
+        {where:{sam_emp_id:empId, sam_gs_id: gsId, sam_year:year},}
+      )
+    }
 
     static async getAllSelfAssessments(){
       return await selfassessmentmaster.findAll({
