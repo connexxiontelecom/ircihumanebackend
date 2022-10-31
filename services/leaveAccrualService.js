@@ -78,6 +78,31 @@ async function findLeaveAccrualByLeaveApplication(empId, month, year, type) {
     })
 }
 
+async function findLeaveAccrualByLeaveTypePositive(empId, month, year, type) {
+    return await LeaveAccrual.findOne({
+      where: {
+          lea_emp_id: empId,
+          lea_month: month,
+          lea_year: year,
+          lea_leave_type: type,
+          lea_rate: {[Op.gt]: 0}
+      }
+    })
+}
+
+async function findLeaveAccrualByLeaveTypeFYyearPositive(empId, month, year, fyYear, type) {
+    return await LeaveAccrual.findOne({
+      where: {
+          lea_emp_id: empId,
+          lea_month: month,
+          lea_year: year,
+          lea_leave_type: type,
+          lea_fy: fyYear,
+          lea_rate: {[Op.gt]: 0}
+      }
+    })
+}
+
 
 async function findLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_type) {
     return await LeaveAccrual.findAll({where: {lea_emp_id: employee_id, lea_year: year, lea_leave_type: leave_type}})
@@ -184,6 +209,8 @@ module.exports = {
   archiveLeaveAccrualByLeaveApplication,
   findLeaveAccrualByLeaveApplication,
   getLeaveAccruals,
-  archiveAccrual
+  archiveAccrual,
+    findLeaveAccrualByLeaveTypePositive,
+    findLeaveAccrualByLeaveTypeFYyearPositive
 
 }

@@ -173,6 +173,7 @@
     const salary = require("./services/salaryService");
     const employee = require("./services/employeeService");
     const Joi = require("joi");
+    const user = require("./services/userService");
     app.use('/payroll-journal', payrollJournalRouter);
 
     app.get('/',  async function(req, res) {
@@ -315,21 +316,24 @@
         const expiresOn = `${leaveYear}-09-30`
         for (const emp of employees){
             for (const leaveType of leaveTypesData) {
-                const leaveAccrual = {
-                    lea_emp_id: emp.emp_id,
-                    lea_month: currentMonth,
-                    lea_year: currentYear,
-                    lea_leave_type: leaveType.leave_type_id,
-                    lea_rate: parseFloat(leaveType.lt_rate),
-                    lea_leaveapp_id: 0,
-                    lea_archives: 0,
-                    lea_expires_on: expiresOn,
-                    lea_fy: calendarYear
-                }
-                const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
-                    return data
-                })
 
+                const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypePositive(emp.emp_id, currentMonth, currentYear, leaveType.leave_type_id)
+                if(_.isEmpty(existingLeaveAccruals) || _.isNull(existingLeaveAccruals)){
+                    const leaveAccrual = {
+                        lea_emp_id: emp.emp_id,
+                        lea_month: currentMonth,
+                        lea_year: currentYear,
+                        lea_leave_type: leaveType.leave_type_id,
+                        lea_rate: parseFloat(leaveType.lt_rate),
+                        lea_leaveapp_id: 0,
+                        lea_archives: 0,
+                        lea_expires_on: expiresOn,
+                        lea_fy: calendarYear
+                    }
+                    const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                        return data
+                    })
+                }
             }
         }
 
@@ -351,31 +355,62 @@
         const expiresOn = `${leaveYear}-09-30`
         for (const emp of employees){
             for (const leaveType of leaveTypesData) {
-                const leaveAccrual = {
-                    lea_emp_id: emp.emp_id,
-                    lea_month: currentMonth,
-                    lea_year: currentYear,
-                    lea_leave_type: leaveType.leave_type_id,
-                    lea_rate: parseFloat(leaveType.lt_rate),
-                    lea_leaveapp_id: 0,
-                    lea_archives: 0,
-                    lea_expires_on: expiresOn,
-                    lea_fy: calendarYear
+                const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypeFYyearPositive(emp.emp_id, currentMonth, currentYear, calendarYear, leaveType.leave_type_id)
+                if(_.isEmpty(existingLeaveAccruals) || _.isNull(existingLeaveAccruals)) {
+
+                    const leaveAccrual = {
+                        lea_emp_id: emp.emp_id,
+                        lea_month: currentMonth,
+                        lea_year: currentYear,
+                        lea_leave_type: leaveType.leave_type_id,
+                        lea_rate: parseFloat(leaveType.lt_rate),
+                        lea_leaveapp_id: 0,
+                        lea_archives: 0,
+                        lea_expires_on: expiresOn,
+                        lea_fy: calendarYear
+                    }
+                    const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
+                        return data
+                    })
                 }
-                const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
-                    return data
-                })
 
             }
         }
 
     }
 
+    async function endEmployeeContract(){
+        try {
+            const employees = await employee.getActiveEmployees();
+            for(const emp of employees){
+                let contractEndDate = new Date(emp.emp_contract_end_date)
+                let contractEndYear = contractEndDate.getFullYear()
+                let contractEndMonth = contractEndDate.getMonth() + 1
+                let contractEndDay = contractEndDate.getDate()
+                if (contractEndDay < 10) contractEndDay = '0' + contractEndDay;
+                if (contractEndMonth < 10) contractEndMonth = '0' + contractEndMonth;
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                let mm = today.getMonth() + 1; // Months start at 0!
+                let dd = today.getDate();
+                if (dd < 10) dd = '0' + dd;
+                if (mm < 10) mm = '0' + mm;
+                const currentDateFormatted = `${yyyy}-${mm}-${dd}`
+                const contractEndDateFormatted = `${contractEndYear}-${contractEndMonth}-${contractEndDay}`
+                if(currentDateFormatted === contractEndDateFormatted){
+                    await user.suspendUser(emp.emp_unique_id)
+                }
+            }
+        } catch (e) {
+        }
+    }
+
     nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus).start();
     nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual).start();
     nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType).start();
-    nodeCron.schedule("0 0 1 * *", runGeneralMonthlyLeaveRoutine).start();
-    nodeCron.schedule("0 0 1 10 *", runGeneralYearlyLeaveRoutine).start();
+    nodeCron.schedule("0 12 * * *", runGeneralMonthlyLeaveRoutine).start();
+    nodeCron.schedule("0 12 * * *", runGeneralYearlyLeaveRoutine).start();
+    nodeCron.schedule("* 6 * * *", endEmployeeContract).start();
 
 
 
