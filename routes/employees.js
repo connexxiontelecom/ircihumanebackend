@@ -107,7 +107,7 @@ router.patch('/update-employee-backoffice/:emp_id', auth(), async function (req,
             const result = isAfter(employeeContractEndDate, new Date())
             if(result){
                 await employees.unSuspendEmployee(empId);
-                await user.suspendUser(checkEmployee.emp_unique_id)
+                await user.unSuspendUser(checkEmployee.emp_unique_id)
             }
             return res.status(200).json('employee updated');
     } catch (err) {
