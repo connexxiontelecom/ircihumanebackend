@@ -204,6 +204,7 @@ module.exports = (sequelize, DataTypes) => {
         lea_expires_on: DataTypes.DATEONLY,
         lea_archives: DataTypes.INTEGER,
         lea_fy: DataTypes.STRING,
+        leave_narration: DataTypes.STRING,
 
     }, {
         sequelize,

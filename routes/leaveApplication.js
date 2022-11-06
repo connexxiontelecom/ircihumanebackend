@@ -26,6 +26,7 @@ const authorizationModel = require('../models/AuthorizationAction')(sequelize, S
 const {businessDaysDifference} = require("../services/dateService");
 const isWeekend = require("date-fns/isWeekend");
 
+
 /* Get leave application */
 router.get('/', auth(), async function (req, res, next) {
     try {
