@@ -14,6 +14,7 @@ async function addLeaveAccrual(accrualData) {
         lea_leaveapp_id: 0,
         lea_expires_on: accrualData.lea_expires_on,
         lea_fy: accrualData.lea_fy,
+        leave_narration: accrualData.leave_narration,
     });
 }
 
