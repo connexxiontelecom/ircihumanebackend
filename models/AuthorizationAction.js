@@ -55,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
-        auth_travelapp_id: DataTypes.INTEGER,
+        auth_travelapp_id: DataTypes.STRING,
         auth_officer_id: {
             type:DataTypes.INTEGER,
             unique:true
