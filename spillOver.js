@@ -58,7 +58,7 @@ async function runLeaveSpillOver() {
           lea_archives: 0,
           lea_leaveapp_id: 0,
           lea_expires_on: '1990-01-01',
-          lea_fy: 'FY23',
+          lea_fy: 'FY2023',
           leave_narration:'Leave legacy'
         };
         const accrualLeave = await leaveAccrualService.addLeaveAccrual(accrualData);
