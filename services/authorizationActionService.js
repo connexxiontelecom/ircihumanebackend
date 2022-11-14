@@ -282,6 +282,9 @@ const updateAuthorizationStatus = async (req, res) => {
                             const employee = await employeeService.getEmployeeByIdOnly(timealloc.ta_emp_id).then((data) => {
                                 return data;
                             });
+                            const supervisor = await employeeService.getEmployeeByIdOnly(officer).then((dt) => {
+                                return dt;
+                            });
                             const daysAbsent = await timeSheetService.getAttendanceStatus(0, timealloc.ta_emp_id, parseInt(timealloc.ta_month), parseInt(timealloc.ta_year)).then((res) => {
                                 return res.length;
                             });
@@ -305,7 +308,8 @@ const updateAuthorizationStatus = async (req, res) => {
 
                                 })
                             }
-                          await handleInAppEmailNotifications(employee.emp_first_name, 'Timesheet Update',"An action was taken on the timesheet you submitted", 'timesheets', employee.office_email, employee.emp_id);
+                          await handleInAppEmailNotifications(employee.emp_first_name, 'Timesheet Update',"An action was taken on the timesheet you submitted", 'timesheets', employee.emp_office_email, employee.emp_id);
+                          await handleInAppEmailNotifications(supervisor.emp_first_name, 'Timesheet Update',"Your action was taken into account.", 'time-sheet-authorization', supervisor.emp_office_email, supervisor.emp_id);
                         }
 
                         break;
