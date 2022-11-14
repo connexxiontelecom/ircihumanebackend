@@ -357,6 +357,8 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
             officers,
           currentDesk
         }
+        //mark notifications as read
+      const notif = await notificationModel.markAsRead(parseInt(supervisorId),'leave-authorization');
 
         return res.status(200).json(leaveObj)
     } catch (e) {

@@ -15,9 +15,11 @@ const bcrypt = require('bcryptjs');
 const logs = require('../services/logService')
 const users = require('../services/userService')
 const IRCMailerService = require('../services/IRCMailer');
+//const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const uuid = require("uuid");
 
 const helper = require('../helper');
+const mailer = require("./IRCMailer");
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
@@ -612,6 +614,28 @@ async function getEmployeesByPfaLocation(pfaId, locationId) {
     })
 }
 
+/*async function emp(id){
+  const ep = await getEmployeeByIdOnly(id).then(y=>{
+    return y;
+  });
+  await handleInAppEmailNotifications(ep.emp_first_name, 'Timesheet Update',"Your action was taken into account.", 'time-sheet-authorization', ep.emp_office_email, ep.emp_id);
+  console.log(`Employee Email name is: ${ep.emp_office_email}`)
+}
+async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
+  try {
+    const templateParams = {
+      firstName: firstName,
+      title: title,
+    }
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data
+    })
+    console.log(`Mailer Data: ${mailerRes}: First Name: ${firstName}; Email Address: ${email}`)
+   // const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
+  } catch (e) {
+
+  }
+}*/
 
 // const getEmployeeById = async (req, res) =>{
 //     const department_id  = req.params.id;
@@ -691,7 +715,8 @@ module.exports = {
     getEmployeesByPfaLocation,
   getEmployeeByRelocatableStatus,
   getExcludedActiveEmployeesByIds,
-    getEmployeeByD7
+    getEmployeeByD7,
+  //emp
     //updateDepartment,
     //setNewDepartment,
 }
