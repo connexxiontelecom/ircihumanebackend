@@ -17,6 +17,7 @@ const timeAllocationModel = require('../models/timeallocation')(sequelize, Seque
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
 const salaryMappingMasterService = require("../services/salaryMappingMasterService");
+const mailer = require("../services/IRCMailer");
 
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -91,10 +92,12 @@ router.post('/add-time-allocation', auth(), async function (req, res, next) {
                           const subject = "Timesheet submission";
                           const body = "Your timesheet was submitted";
                           //emp
-                          const url = req.headers.referer;
-                          const notify = await notificationModel.registerNotification(subject, body, employeeData.emp_id, 11, url);
-                          const notifySupervisor = await notificationModel.registerNotification(subject, "There's a timesheet submission waiting for your assessment. Kindly attend to it.", employeeData.emp_supervisor_id, 0, url);
-
+                          const url = 'timesheets';
+                          const notifyEmployee = await handleInAppEmailNotifications(employeeData.emp_first_name, subject,body, url, employeeData.emp_office_email, employeeData.emp_id);
+                          const supervisor = await employee.getEmployee(employeeData.emp_supervisor_id).then(res=>{
+                            return res;
+                          })
+                          const notifySupervisor = await handleInAppEmailNotifications(supervisor.emp_first_name, "There's a new timesheet for you to assess","There's a new timesheet for you to assess", url, supervisor.emp_office_email, supervisor.emp_id);
                           logs.addLog(logData).then((logRes) => {
                             return res.status(200).json('Action Successful')
                           })
@@ -319,10 +322,10 @@ router.get('/authorization/:super_id', auth(), async function (req, res, next) {
 router.get('/get-timesheet-submission/:status', auth(), async function(req, res){
   try{
     const status = req.params.status;
-    const allocations = await timeAllocationModel.getTimesheetSubmissionByStatus(status);
+    const allocations = await timeAllocationModel.getTimesheetSubmissionByStatus(parseInt(status));
     return res.status(200).json(allocations);
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again later."+e.message)
+    return res.status(400).json("Something went wrong. Try again later.")
   }
 });
 
@@ -420,4 +423,19 @@ router.get('/salary-mapping-details/:masterId/:t7', auth(), async function (req,
   }
 })
 
+
+async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
+  try {
+    const templateParams = {
+      firstName: firstName,
+      title: title,
+    }
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data
+    })
+    const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
+  } catch (e) {
+
+  }
+}
 module.exports = router;
