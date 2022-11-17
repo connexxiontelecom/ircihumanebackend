@@ -48,6 +48,29 @@ module.exports = (sequelize, DataTypes) => {
         order:[['ta_id', 'DESC']]
       })
     }
+    static async getOneTimesheetSubmissionByRefNo(ref_no){
+      return await timeallocation.findOne({
+        where:{ta_ref_no:ref_no},
+        include:[
+          {model:Employee, as:'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+              {model:SectorModel, as: 'sector'},
+            ]},
+          {model:AuthorizationModel, as:'timesheet_authorizer',
+            include:[{model: Employee, as: 'officers'}]
+          },
+        ],
+        order:[['ta_id', 'DESC']]
+      })
+    }
+
+static async updateTimesheetStatus (refNo, status){
+      return await timeallocation.update({
+          ta_status:status},
+        {where:{ta_ref_no: refNo}
+        });
+    }
 
   };
   timeallocation.init(      {
