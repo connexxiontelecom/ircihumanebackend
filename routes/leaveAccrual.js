@@ -291,11 +291,40 @@ router.post('/add-accruals', auth(), async (req, res)=>{
     return res.status(400).json("Something went wrong. Try again later.");
   }
 });
+async function totalTaken(year, empId){
+  const total = await leaveAccrualModel.getTotalAccruedAllLeaveAccrualsByYearEmpId(year, empId);
+  const leave_types = await leaveType.getAllLeaves();
+  const employeeLeaveData = [ ]
+  for(const leaveType of leave_types){
+    const leaveTypeId = leaveType.leave_type_id;
+    const totalAccrued = await leaveAccrual.getTotalAccruedLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
+    const totalTaken = await leaveAccrual.getTotalTakenLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
+    const totalArchived = await leaveAccrual.getArchivedLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
+    const employeeLeaveObject = {
+      leaveType: leaveType.leave_name,
+      totalTaken: totalTaken[0].totalTaken,
+      totalAccrued: totalAccrued[0].totalAccrued,
+      totalArchived : totalArchived.length,
+    }
+    employeeLeaveData.push(employeeLeaveObject);
+  }
+  const emp = await employee.getEmployeeByIdOnly(empId);
+  const leaveTypes = await leaveTypeModel.getAllLeaveTypesByStatus() //0
+  const leaveEmp = {
+    employee:emp,
+    employeeLeaveData,
+    leaveTypes
+  }
+
+  //const totalTaken = await leaveAccrual.getTotalTakenLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
+  console.log(leaveEmp);
+}
 module.exports = {
     router,
     addLeaveAccrual,
     computeLeaveAccruals,
     removeLeaveAccrual,
-    removeLeaveAccrualEmployees
+    removeLeaveAccrualEmployees,
+  totalTaken
 
 }

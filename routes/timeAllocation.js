@@ -18,6 +18,7 @@ const authorizationModel = require('../models/AuthorizationAction')(sequelize, S
 const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
 const salaryMappingMasterService = require("../services/salaryMappingMasterService");
 const mailer = require("../services/IRCMailer");
+const leaveApplication = require("../services/leaveApplicationService");
 
 router.get('/', auth(), async function (req, res, next) {
     try {
@@ -30,7 +31,7 @@ router.get('/', auth(), async function (req, res, next) {
 
         return res.status(200).json(timeAllocationBreakDown)
     } catch (err) {
-        return res.status(400).json(`Error while fetching time allocation `+err.message);
+        return res.status(400).json(`Error while fetching time allocation `);
 
     }
 });
@@ -97,7 +98,10 @@ router.post('/add-time-allocation', auth(), async function (req, res, next) {
                           const supervisor = await employee.getEmployee(employeeData.emp_supervisor_id).then(res=>{
                             return res;
                           })
-                          const notifySupervisor = await handleInAppEmailNotifications(supervisor.emp_first_name, "There's a new timesheet for you to assess","There's a new timesheet for you to assess", url, supervisor.emp_office_email, supervisor.emp_id);
+                          if(!(_.isNull(supervisor)) || !(_.isEmpty(supervisor))){
+                            const notifySupervisor = await handleInAppEmailNotifications(supervisor.emp_first_name, "There's a new timesheet for you to assess","There's a new timesheet for you to assess", url, supervisor.emp_office_email, supervisor.emp_id);
+                          }
+
                           logs.addLog(logData).then((logRes) => {
                             return res.status(200).json('Action Successful')
                           })
@@ -337,6 +341,7 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
       ref_no: Joi.string().allow(null, ''),
 
     })
+
     const timesheetReAssignmentRequest = req.body
     const validationResult = schema.validate(timesheetReAssignmentRequest, {abortEarly: false});
     if (validationResult.error) {
@@ -345,6 +350,7 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     if(parseInt(req.body.assignedTo) === parseInt(req.body.reassignTo)){
       return res.status(400).json("You cannot re-assign to the same person.");
     }
+
     const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
     if(!assignedOfficer){
       return res.status(400).json("The assigned officer does not exist.")
@@ -355,9 +361,14 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     }
     const ref_no = req.params.ref_no;
 
-    const timesheet = await timeAllocationModel.getTimesheetSubmissionByRefNo(ref_no);
+    const timesheet = await timeAllocationModel.getOneTimesheetSubmissionByRefNo(ref_no);
     if(!timesheet){
       return res.status(400).json("There's no record for this timesheet submission.");
+    }
+    //return res.status(200).json(timesheet)
+    const employeeData = await employees.getEmployeeByIdOnly(parseInt(timesheet.ta_emp_id));
+    if(!employeeData){
+      return res.status(400).json("Employee does not exist.");
     }
     const officerTimesheet = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(ref_no, req.body.assignedTo, 2)
     if(!officerTimesheet){
@@ -367,6 +378,7 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     if(!markAsReAssign){
       return res.status(400).json("Something went wrong. Try again.");
     }
+
     const comment = `Timesheet that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
     const data = {
       appId:ref_no,
@@ -377,16 +389,20 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     }
     const reAssignment = await authorizationModel.addNewAuthOfficer(data);
 
-    const subject = "Timesheet re-assignment";
+    //const subject = "Timesheet re-assignment";
     //const body = "Kindly attend to this leave application.";
-    const url = req.headers.referer;
-    const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
-    const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
-    const notifyEmployee = await notificationModel.registerNotification(subject, comment, timesheet.ta_emp_id, 0, url);
+    //const url = 'timesheets';
+    //const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, url);
+    //const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
+    //const notifyEmployee = await notificationModel.registerNotification(subject, comment, timesheet.ta_emp_id, 0, url);
+
+    await handleInAppEmailNotifications(assignedOfficer.emp_first_name, "Time sheet re-assignment","There's a  timesheet re-assigned to you for you to assess", 'time-sheet-authorization', assignedOfficer.emp_office_email, assignedOfficer.emp_id);
+    await handleInAppEmailNotifications(reAssignedOfficer.emp_first_name, "Time sheet re-assignment",`Timesheet that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`, 'time-sheet-authorization', reAssignedOfficer.emp_office_email, reAssignedOfficer.emp_id);
+    await handleInAppEmailNotifications(employeeData.emp_first_name, "Your time sheet was re-assigned",`Your time sheet was now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`, 'timesheets', employeeData.emp_office_email, employeeData.emp_id);
 
     return res.status(200).json("Timesheet re-assigned successfully.");
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again."+e.message);
+    return res.status(400).json("Something went wrong. Try again.");
   }
 });
 
@@ -423,6 +439,31 @@ router.get('/salary-mapping-details/:masterId/:t7', auth(), async function (req,
   }
 })
 
+router.get('/restate-timesheet-application/:refNo/:status/:empId', auth(), async function(req, res){
+  try{
+    const refNo = req.params.refNo;
+    const status = parseInt(req.params.status);
+    const empId = parseInt(req.params.empId);
+    const timeAlloc = await  timeAllocationModel.getOneTimesheetSubmissionByRefNo(refNo);
+    if(_.isEmpty(timeAlloc) || _.isNull(timeAlloc)){
+      return res.status(400).json("Whoops! Record not found.");
+    }
+    const empData = await employees.getEmployeeByIdOnly(empId);
+    if(_.isEmpty(empData) || _.isNull(empData)){
+      return res.status(400).json("Employee record not found.");
+    }
+    const updateLeaveApp = await timeAllocationModel.updateTimesheetStatus(refNo, status);
+    const authorizationResponse = authorizationAction.registerNewAction(2, refNo, empId, 0, "Time sheet re-stated").then((data) => {
+      return data
+    });
+
+    await handleInAppEmailNotifications(empData.emp_first_name, 'Time sheet re-stated','Time sheet restated', 'timesheets', empData.emp_office_email, empData.emp_id)
+
+    return res.status(200).json('Time sheet re-stated!');
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
 
 async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
   try {
@@ -438,4 +479,14 @@ async function handleInAppEmailNotifications(firstName, title,body, url, email, 
 
   }
 }
+
+//async function emp(ref_no){
+  //const timesheet = await timeAllocationModel.getOneTimesheetSubmissionByRefNo(ref_no);
+ /* if(!timesheet){
+    return res.status(400).json("There's no record for this timesheet submission.");
+  }*/
+  //return res.status(200).json(timesheet)
+  //const employeeData = await employees.getEmployeeByIdOnly(parseInt(timesheet.ta_emp_id));
+  //console.log(timesheet.ta_emp_id)
+//}
 module.exports = router;
