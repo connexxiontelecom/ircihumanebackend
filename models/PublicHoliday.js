@@ -28,8 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         static async getThisYearsPublicHolidays(){
+          const currentMonth = new Date().getMonth()+1;
+          let currentYear = new Date().getFullYear();
+          const calendarYear = `${currentMonth} <= 9 ? ${currentYear} : ${currentYear+1}`;
           return await PublicHoliday.findAll({
-            where: {ph_year: new Date().getFullYear(), ph_archive:0}
+            where: {ph_year: calendarYear, ph_archive:0}
           })
         }
 
