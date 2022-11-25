@@ -393,7 +393,7 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
 
                 if (!_.isEmpty(empSectorData)) {
                     empSector = empSectorData.department_name
-                    empSectorCode = empSectorData.t3_code
+                    empSectorCode = empSectorData.d_t3_code
                 }
             }
 
@@ -615,7 +615,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
                 if (!_.isEmpty(empSectorData)) {
                     empSector = empSectorData.department_name
-                    empSectorCode = empSectorData.t3_code
+                    empSectorCode = empSectorData.d_t3_code
                 }
 
                 for (const salary of salaryDetails) {
@@ -836,7 +836,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
                     if (!_.isEmpty(empSectorData)) {
                         empSector = empSectorData.department_name
-                        empSectorCode = empSectorData.t3_code
+                        empSectorCode = empSectorData.d_t3_code
                     }
 
                     journalDetail.j_acc_code = payment.pd_payment_code
@@ -881,7 +881,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-NSITF`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalEmployeeNsitf
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -911,7 +911,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-NHF`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalEmployeeNhf
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -941,7 +941,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-PAYE`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalTax
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -970,7 +970,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-NETPAY`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalNetSalary
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -1055,7 +1055,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_desc = `${salaryMasterData.smm_month}-${pfa.provider_name}`
                 journalDetail.j_d_c = "C"
                 journalDetail.j_amount = 0 - totalPension
-                journalDetail.j_t1 = "u100"
+                journalDetail.j_t1 = "u1000"
                 journalDetail.j_t2 = "Null"
                 journalDetail.j_t3 = "Null"
                 journalDetail.j_t4 = '2NG'
