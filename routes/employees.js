@@ -458,7 +458,7 @@ router.get('/get-supervisor-employees/:emp_id', auth(), async function (req, res
            /* await employees.getSupervisorEmployee(empId).then((data) => {
                 return res.status(200).json(data)
             })*/
-        }
+        } //$2a$10$PhxUR8PJO43/RmQplPmrx.hM0RUyyRrlz3WqgHgk/rYobwe4EBTt.
 
     } catch (err) {
         console.error(`An error occurred while fetching`);
