@@ -27,13 +27,13 @@ module.exports = (sequelize, DataTypes) => {
           })
         }
 
-        static async markAsReAssignedApplication(authId, officerId, type){
+        static async markAsReAssignedApplication(authId, type){
           return await AuthorizationAction.update({
             auth_status:3, //reassigned
           },{
             where:{
               auth_travelapp_id:authId,
-              auth_officer_id: officerId,
+              //auth_officer_id: officerId,
               auth_type: type
             }
           });

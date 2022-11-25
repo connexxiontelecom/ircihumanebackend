@@ -337,7 +337,7 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
   try{
     const schema = Joi.object({
       reassignTo: Joi.number().required(),
-      assignedTo: Joi.number().required(),
+      assignedTo: Joi.number().allow(null, ''),
       ref_no: Joi.string().allow(null, ''),
 
     })
@@ -351,10 +351,10 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
       return res.status(400).json("You cannot re-assign to the same person.");
     }
 
-    const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
+    /*const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
     if(!assignedOfficer){
       return res.status(400).json("The assigned officer does not exist.")
-    }
+    }*/
     const reAssignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.reassignTo));
     if(!reAssignedOfficer){
       return res.status(400).json("The re-assign officer does not exist.")
@@ -370,16 +370,16 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     if(!employeeData){
       return res.status(400).json("Employee does not exist.");
     }
-    const officerTimesheet = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(ref_no, req.body.assignedTo, 2)
+    /*const officerTimesheet = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(ref_no, req.body.assignedTo, 2)
     if(!officerTimesheet){
       return res.status(400).json("There's no timesheet assigned to this selected employee.");
-    }
-    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(ref_no, parseInt(req.body.assignedTo), 2);
+    }*/
+    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(ref_no, 2);
     if(!markAsReAssign){
       return res.status(400).json("Something went wrong. Try again.");
     }
 
-    const comment = `Timesheet that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
+    const comment = `Timesheet re-assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
     const data = {
       appId:ref_no,
       officer:req.body.reassignTo,
@@ -396,13 +396,13 @@ router.patch('/re-assign-timesheet/:ref_no', auth(), async function(req, res){
     //const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, url);
     //const notifyEmployee = await notificationModel.registerNotification(subject, comment, timesheet.ta_emp_id, 0, url);
 
-    await handleInAppEmailNotifications(assignedOfficer.emp_first_name, "Time sheet re-assignment","There's a  timesheet re-assigned to you for you to assess", 'time-sheet-authorization', assignedOfficer.emp_office_email, assignedOfficer.emp_id);
-    await handleInAppEmailNotifications(reAssignedOfficer.emp_first_name, "Time sheet re-assignment",`Timesheet that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`, 'time-sheet-authorization', reAssignedOfficer.emp_office_email, reAssignedOfficer.emp_id);
+    //await handleInAppEmailNotifications(assignedOfficer.emp_first_name, "Time sheet re-assignment","There's a  timesheet re-assigned to you for you to assess", 'time-sheet-authorization', assignedOfficer.emp_office_email, assignedOfficer.emp_id);
+    await handleInAppEmailNotifications(reAssignedOfficer.emp_first_name, "Time sheet re-assignment",`Timesheet re-assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`, 'time-sheet-authorization', reAssignedOfficer.emp_office_email, reAssignedOfficer.emp_id);
     await handleInAppEmailNotifications(employeeData.emp_first_name, "Your time sheet was re-assigned",`Your time sheet was now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`, 'timesheets', employeeData.emp_office_email, employeeData.emp_id);
 
     return res.status(200).json("Timesheet re-assigned successfully.");
   }catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
+    return res.status(400).json("Something went wrong. Try again."+e.message);
   }
 });
 
