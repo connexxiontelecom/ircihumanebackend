@@ -31,6 +31,7 @@ const paymentDefinitionService = require("../services/paymentDefinitionService")
 const salary = require("../services/salaryService");
 const paymentDefinition = require("../services/paymentDefinitionService");
 const departmentService = require("../services/departmentService");
+const mailer = require("../services/IRCMailer");
 
 
 
@@ -1089,6 +1090,22 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 return data
             })
             return res.status(400).json('An error occurred while approving salary mapping master')
+        }
+
+        for (const empId of empIdArray) {
+            const employee = await employeeService.getEmployeeByD7(empId);
+            const email = employee.emp_office_email;
+            if(email){
+                const templateParams = {
+                    monthYear: `${salaryMasterData.smm_month} ${salaryMasterData.smm_year}`,
+                    name: `${employee.emp_first_name} ${employee.emp_last_name}`,
+                    monthNumber: parseInt(salaryMasterData.smm_month),
+                    yearNumber: parseInt(salaryMasterData.smm_year),
+                    department: employee.sector.department_name,
+                    jobRole: employee.jobrole.job_role,
+                    employeeId: employee.emp_unique_id,
+                }
+                await mailer.journalProcessedSendMail('noreply@ircng.org', email, 'TimeSheet Approved, Journal Processed', templateParams);   }
         }
 
         return res.status(200).json('Processed Successfully')
