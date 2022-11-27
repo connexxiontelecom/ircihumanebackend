@@ -131,6 +131,40 @@ async function paySlipSendMail(from, to, subject, templateParams){
 
 }
 
+async function journalProcessedSendMail(from, to, subject, templateParams){
+    try{
+
+        const message = {
+            from: from, // TODO: email sender
+            to: to, // TODO: email receiver
+            subject: subject,
+            text: 'Wooohooo it works!!',
+            template: 'journalnotification',
+            context: {
+                monthYear: templateParams.monthYear,
+                name: templateParams.name,
+                monthNumber: templateParams.monthNumber,
+                yearNumber: templateParams.yearNumber,
+
+            }
+        };
+
+
+
+   return   await transport.sendMail(message, function(err, res){
+            if (err) {
+                return err
+            }
+            else {
+                return res
+            }
+        })
+    }catch (e) {
+
+    }
+
+}
+
 async function resetPasswordSendMail(from, to, subject, templateParams){
     try{
 
@@ -199,5 +233,6 @@ module.exports = {
   sendMail,
     paySlipSendMail,
     resetPasswordSendMail,
-  sendAnnouncementNotification
+  sendAnnouncementNotification,
+    journalProcessedSendMail
 }
