@@ -1325,6 +1325,26 @@ router.get('/test-pfa-journals/:masterId', auth(), async function (req, res, nex
     }
 });
 
+router.delete('/delete-salary-mapping/:masterId', auth(), async function (req, res, next) {
+    const masterId = req.params['masterId']
+    try {
+        const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
+        if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
+            return res.status(400).json('No salary mapping master found')
+        }
+
+        await salaryMappingMasterService.removeSalaryMappingMaster(masterId);
+
+        await salaryMappingDetailsService.removeSalaryMappingDetails(masterId);
+
+
+        return res.status(200).json('Salary mapping master deleted successfully')
+    } catch (err) {
+        return res.status(400).json(err.message)
+    }
+
+});
+
 
 
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
