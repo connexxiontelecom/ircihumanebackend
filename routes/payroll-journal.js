@@ -1333,6 +1333,10 @@ router.delete('/delete-salary-mapping/:masterId', auth(), async function (req, r
             return res.status(400).json('No salary mapping master found')
         }
 
+        if (salaryMasterData.smm_posted === 1) {
+            return res.status(400).json('Salary mapping master has been approved and cannot be deleted')
+        }
+
         await salaryMappingMasterService.removeSalaryMappingMaster(masterId);
 
         await salaryMappingDetailsService.removeSalaryMappingDetails(masterId);
