@@ -213,7 +213,7 @@ const updateAuthorizationStatus = async (req, res) => {
                                 lea_month: leaveDate.getMonth() + 1,
                                 lea_leave_type: leaveApplicationData.leapp_leave_type,
                                 lea_rate: 0 - parseFloat(leaveApplicationData.leapp_total_days),
-                                lea_leaveapp_id: leaveApplicationData.leapp_id,
+                                lea_leaveapp_id: appId, //leaveApplicationData.leapp_id,
                                 lea_archives:0,
                                 lea_expires_on:'1900-1-1',
                                 lea_fy: calendarYear,
