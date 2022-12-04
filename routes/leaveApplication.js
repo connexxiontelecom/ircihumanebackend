@@ -24,6 +24,7 @@ const timeSheetService = require("../services/timeSheetService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
 const employeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize.DataTypes);
 const {businessDaysDifference} = require("../services/dateService");
 const isWeekend = require("date-fns/isWeekend");
 const reader = require("xlsx");
@@ -592,6 +593,7 @@ router.get('/restate-leave-application/:leaveId/:status/:empId', auth(), async f
       return res.status(400).json("Employee record not found.");
     }
     const updateLeaveApp = await leaveApplication.updateLeaveAppStatus(leaveId, status);
+    const accrual = await leaveAccrualModel.destroyLeaveAccrualByRateEmpIdLeaveId((0 - leaveApp.leapp_total_days), leaveApp.leapp_empid, leaveId)
     const authorizationResponse = authorizationAction.registerNewAction(1, leaveId, empId, 0, "Leave application re-stated").then((data) => {
       return data
     });
