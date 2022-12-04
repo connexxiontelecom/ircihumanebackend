@@ -166,6 +166,18 @@ module.exports = (sequelize, DataTypes) => {
 
         })
       }
+      static async getLeaveAccrualByRateEmpIdLeaveId(rate, empId, leaveId) {
+        return await leaveAccrual.findOne({
+          where: {lea_rate: rate, lea_leaveapp_id: leaveId, lea_emp_id: empId },
+
+        })
+      }
+      static async destroyLeaveAccrualByRateEmpIdLeaveId(rate, empId, leaveId) {
+        return await leaveAccrual.destroy({
+          where: {lea_rate: rate, lea_leaveapp_id: leaveId, lea_emp_id: empId },
+
+        })
+      }
       static async getAllLeaveAccrualsByEmployeeId(empId, year) {
         return await leaveAccrual.findAll({
           attributes:['lea_id', 'lea_emp_id',
@@ -205,6 +217,7 @@ module.exports = (sequelize, DataTypes) => {
         lea_archives: DataTypes.INTEGER,
         lea_fy: DataTypes.STRING,
         leave_narration: DataTypes.STRING,
+        lea_leaveapp_id: DataTypes.INTEGER,
 
     }, {
         sequelize,
