@@ -38,6 +38,17 @@ module.exports = (sequelize, DataTypes) => {
             }
           });
         }
+        static async markAuthorizationRequestAsReassigned(authId, officerId, type, status){
+          return await AuthorizationAction.update({
+            auth_status:status, //reassigned
+          },{
+            where:{
+              auth_travelapp_id:authId,
+              auth_officer_id: officerId,
+              auth_type: type
+            }
+          });
+        }
 
         static async addNewAuthOfficer(data){
           return AuthorizationAction.create({
