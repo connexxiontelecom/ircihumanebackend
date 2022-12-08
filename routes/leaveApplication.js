@@ -487,12 +487,12 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
 router.get('/get-leave-applications/:status', auth(), async function(req, res){
   try{
     const status = req.params.status;
-    const leaves = await leaveAppModel.getLeaveApplicationsByStatus(status);
-    leaves.map(async (app) => {
+    const leaves = await leaveAppModel.getLeaveApplicationsByStatus(parseInt(status));
+    /*leaves.map(async (app) => {
       if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
         await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
       }
-    })
+    })*/
     return res.status(200).json(leaves);
   }catch (e) {
     return res.status(400).json("Something went wrong. Try again later.")
@@ -528,11 +528,11 @@ router.patch('/re-assign-leave/:leaveId', auth(), async function(req, res){
     if(!leave){
       return res.status(400).json("There's no record for this leave application request.");
     }
-    const officerLeave = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(leave.leapp_id, req.body.assignedTo, 1)
+    const officerLeave = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(leave.leapp_id, parseInt(req.body.assignedTo), 1)
     if(!officerLeave){
       return res.status(400).json("There's no leave assigned to this selected employee.");
     }
-    const markAsReAssign = await authorizationModel.markAsReAssignedApplication(leaveId, parseInt(req.body.assignedTo), 1);
+    const markAsReAssign = await authorizationModel.markAuthorizationRequestAsReassigned(leaveId, parseInt(req.body.assignedTo), 1, 3);
     if(!markAsReAssign){
       return res.status(400).json("Something went wrong. Try again.");
     }
