@@ -32,6 +32,7 @@ const salary = require("../services/salaryService");
 const paymentDefinition = require("../services/paymentDefinitionService");
 const departmentService = require("../services/departmentService");
 const mailer = require("../services/IRCMailer");
+const timeAllocationService = require("../services/timeAllocationService");
 
 
 
@@ -236,6 +237,10 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             return data
         })
 
+        const month = salaryMasterData.smm_month.toString(10).padStart(2, '0')
+
+        const year = salaryMasterData.smm_year
+
         if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
             return res.status(400).json('Salary Mapping Master Does not Exist')
         }
@@ -275,6 +280,33 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
                 status = 0
             }
+
+            const findTimeAllocation = await timeAllocationService.findTimeAllocationDetailByStatus(row.d7, month, year);
+
+            if(!findTimeAllocation){
+                const refCode = findTimeAllocation[0].ta_ref_code;
+                const approvedBy = findTimeAllocation[0].ta_approved_by;
+
+            await timeAllocationService.deleteTimeAllocationByRefNo(refCode);
+
+                const timeAllocationObject ={
+                    ta_ref_code: refCode,
+                    ta_approved_by: approvedBy,
+                    ta_status: 1,
+                    ta_emp_id: row.d7,
+                    ta_month: month,
+                    ta_year: year,
+                    ta_charge: row.allocation,
+                    ta_t0_code: null,
+                    ta_t0_percent: null
+                }
+
+                await timeAllocationService.addTimeAllocation(timeAllocationObject);
+
+
+            }
+
+
             let rowObject = {
                 smd_master_id: masterId,
                 smd_ref_code: salaryMasterData.smm_ref_code,
