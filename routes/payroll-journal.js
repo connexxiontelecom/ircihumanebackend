@@ -281,23 +281,26 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
                 status = 0
             }
 
-            const findTimeAllocation = await timeAllocationService.findTimeAllocationDetailByStatus(row.d7, month, year);
+            const findTimeAllocation = await timeAllocationService.findTimeAllocationDetailByStatus(month, year, row.d7);
 
-            if(!findTimeAllocation){
+            if(findTimeAllocation){
                 const refCode = findTimeAllocation[0].ta_ref_code;
                 const approvedBy = findTimeAllocation[0].ta_approved_by;
+                const approvedDate = findTimeAllocation[0].ta_date_approved;
+                const ta_status = findTimeAllocation[0].ta_status;
 
             await timeAllocationService.deleteTimeAllocationByRefNo(refCode);
 
                 const timeAllocationObject ={
                     ta_ref_code: refCode,
                     ta_approved_by: approvedBy,
-                    ta_status: 1,
+                    ta_status: ta_status,
                     ta_emp_id: row.d7,
                     ta_month: month,
                     ta_year: year,
                     ta_charge: row.allocation,
-                    ta_t0_code: null,
+                    ta_date_approved: approvedDate,
+                    ta_t0_code: row.t2s,
                     ta_t0_percent: null
                 }
 
