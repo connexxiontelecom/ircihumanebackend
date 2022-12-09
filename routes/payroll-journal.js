@@ -298,9 +298,10 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
                     ta_emp_id: row.d7,
                     ta_month: month,
                     ta_year: year,
+                    ta_tcode: row.t2s,
                     ta_charge: row.allocation,
                     ta_date_approved: approvedDate,
-                    ta_t0_code: row.t2s,
+                    ta_t0_code: null,
                     ta_t0_percent: null
                 }
 
