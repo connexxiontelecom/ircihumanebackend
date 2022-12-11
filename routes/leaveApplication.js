@@ -6,7 +6,7 @@ const router = express.Router()
 const auth = require("../middleware/auth");
 const {format} = require('date-fns');
 const differenceInBusinessDays = require('date-fns/differenceInBusinessDays')
-const differenceInDays = require('date-fns/differenceInDays')
+const differenceInMonths = require('date-fns/differenceInMonths')
 const isBefore = require('date-fns/isBefore')
 const leaveApplication = require('../services/leaveApplicationService')
 const {addLeaveAccrual, computeLeaveAccruals} = require("../routes/leaveAccrual");
@@ -28,6 +28,7 @@ const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize
 const {businessDaysDifference} = require("../services/dateService");
 const isWeekend = require("date-fns/isWeekend");
 const reader = require("xlsx");
+const employee = require("../services/employeeService");
 
 
 /* Get leave application */
@@ -606,7 +607,115 @@ router.get('/restate-leave-application/:leaveId/:status/:empId', auth(), async f
   }
 });
 
+router.post('/leave-application-tracking-report', auth(), async function(req, res){
 
+    try{
+        const schema = Joi.object({
+            location: Joi.number().default(0).required(),
+            month: Joi.number().required(),
+            year: Joi.number().required(),
+
+        })
+
+        const validationResult = schema.validate(req.body, {abortEarly: false});
+
+        if (validationResult.error) {
+            return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const month = req.body.month;
+        const year = req.body.year;
+        let fyYear = `FY${year}`;
+        const location = req.body.location;
+
+        if(month > 9){
+           fyYear = `FY${year + 1}`;
+        }
+
+        let lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0)
+        const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
+        const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
+        const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
+
+        const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
+
+        let employees = [];
+
+        if(location === 0){
+            employees = await employee.getEmployees();
+        }else{
+            employees = await employee.getAllEmployeesByLocation(location);
+        }
+
+        const responseArray = [];
+
+        for(emp of employees){
+            const contractHireDate = new Date(emp.emp_contract_hire_date);
+            const formatLastDayOfMonthDate = new Date(formatLastDayOfMonth);
+            const monthDiff = await differenceInMonths(formatLastDayOfMonthDate, contractHireDate);
+
+            let typeOfHire = null;
+
+            if(monthDiff <= 6){
+                typeOfHire = 'Short term';
+            }
+
+            if(monthDiff > 6 && monthDiff < 36){
+                typeOfHire = 'Limited';
+            }
+
+            if(monthDiff >= 36){
+                typeOfHire = 'Regular';
+            }
+
+            const annualLeaveDetails = await leaveTypeService.getLeaveTypeByName('Annual Leave');
+
+
+            const sickLeaveDetails = await leaveTypeService.getLeaveTypeByName('Sick Leave');
+
+            const annualLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
+
+            const annualLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
+
+            const annualLeaveBalance = annualLeaveAccrued - annualLeaveUsed;
+
+            const sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
+
+            const sickLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
+
+            const sickLeaveBalance = sickLeaveAccrued - sickLeaveUsed;
+
+            responseArray.push({
+                d7: emp.emp_d7,
+                t7: emp.emp_unique_id,
+                jobTitle: emp.jobrole.job_role,
+                t3: emp.sector.d_t3_code,
+                t6: emp.location.l_t6_code,
+                contractType: typeOfHire,
+                contractHireDate: contractHireDate,
+                annualLeaveRate: annualLeaveDetails.lt_rate,
+                sickLeaveRate: sickLeaveDetails.lt_rate,
+                annualLeaveAccrued: annualLeaveAccrued,
+                annualLeaveUsed: annualLeaveUsed,
+                annualLeaveBalance: annualLeaveBalance,
+                percentageAnnualLeaveUsed: (annualLeaveUsed / annualLeaveAccrued) * 100,
+                sickLeaveAccrued: sickLeaveAccrued,
+                sickLeaveUsed: sickLeaveUsed,
+                sickLeaveBalance: sickLeaveBalance,
+                percentageSickLeaveUsed: (sickLeaveUsed / sickLeaveAccrued) * 100,
+
+            })
+
+
+        }
+
+        return res.status(200).json(responseArray);
+
+    }catch (e) {
+        return res.status(400).json(e.message);
+    }
+
+})
 
 async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
   try {
