@@ -200,6 +200,27 @@ async function getTotalAccruedLeaveAccrualByYearEmployeeLeaveType(year, employee
     // })
 }
 
+async function getEmployeeLeaveAccrualDetails(year, employee_id) {
+  return await LeaveAccrual.findAll({
+    where:{lea_emp_id: employee_id, lea_fy: year}
+  });
+
+}
+/*
+async function getEmployeeMonthsAccrual(year, month, employee_id, leave_type) {
+  return sequelize.query('SELECT SUM(lea_rate) AS totalAccrued FROM leave_accruals WHERE lea_emp_id = :employee_id AND lea_fy = :year AND lea_leave_type = :leave_type AND lea_month = :month',
+    {
+      replacements: { employee_id: employee_id, year: year, leave_type: leave_type, month:month },
+      type: QueryTypes.SELECT
+    })
+}
+async function getEmployeeMonthsUsed(year, month, employee_id, leave_type) {
+  return sequelize.query('SELECT SUM(lea_rate) AS totalAccrued FROM leave_accruals WHERE lea_emp_id = :employee_id AND lea_fy = :year AND lea_leave_type = :leave_type AND lea_month = :month AND lea_rate < 0',
+    {
+      replacements: { employee_id: employee_id, year: year, leave_type: leave_type, month:month },
+      type: QueryTypes.SELECT
+    })
+}*/
 async function getLeaveAccruals(){
   return await LeaveAccrual.findAll();
 }
@@ -225,6 +246,9 @@ module.exports = {
   archiveAccrual,
     findLeaveAccrualByLeaveTypePositive,
     findLeaveAccrualByLeaveTypeFYyearPositive,
-    findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth
+    findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth,
+    getEmployeeLeaveAccrualDetails,
+    //getEmployeeMonthsAccrual,
+    //getEmployeeMonthsUsed,
 
 }
