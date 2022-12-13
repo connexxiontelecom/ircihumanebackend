@@ -408,8 +408,8 @@
     nodeCron.schedule("0 6 * * *", updateApprovedLeaveStatus).start();
     nodeCron.schedule("0 6 * * *", travelDayLeaveAccrual).start();
     nodeCron.schedule("0 0 1 * *", runCronJobForRnRLeaveType).start();
-    nodeCron.schedule("0 12 * * *", runGeneralMonthlyLeaveRoutine).start();
-    nodeCron.schedule("0 12 * * *", runGeneralYearlyLeaveRoutine).start();
+    nodeCron.schedule("0 5 * * *", runGeneralMonthlyLeaveRoutine).start();
+    nodeCron.schedule("0 5 * * *", runGeneralYearlyLeaveRoutine).start();
     nodeCron.schedule("* 6 * * *", endEmployeeContract).start();
 
 

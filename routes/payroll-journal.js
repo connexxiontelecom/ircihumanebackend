@@ -31,6 +31,8 @@ const paymentDefinitionService = require("../services/paymentDefinitionService")
 const salary = require("../services/salaryService");
 const paymentDefinition = require("../services/paymentDefinitionService");
 const departmentService = require("../services/departmentService");
+const mailer = require("../services/IRCMailer");
+const timeAllocationService = require("../services/timeAllocationService");
 
 
 
@@ -235,6 +237,10 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             return data
         })
 
+        const month = salaryMasterData.smm_month.toString(10).padStart(2, '0')
+
+        const year = salaryMasterData.smm_year
+
         if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
             return res.status(400).json('Salary Mapping Master Does not Exist')
         }
@@ -274,6 +280,37 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
                 status = 0
             }
+
+            const findTimeAllocation = await timeAllocationService.findTimeAllocationDetailByStatus(month, year, row.d7);
+
+            if(findTimeAllocation){
+                const refCode = findTimeAllocation[0].ta_ref_code;
+                const approvedBy = findTimeAllocation[0].ta_approved_by;
+                const approvedDate = findTimeAllocation[0].ta_date_approved;
+                const ta_status = findTimeAllocation[0].ta_status;
+
+            await timeAllocationService.deleteTimeAllocationByRefNo(refCode);
+
+                const timeAllocationObject ={
+                    ta_ref_code: refCode,
+                    ta_approved_by: approvedBy,
+                    ta_status: ta_status,
+                    ta_emp_id: row.d7,
+                    ta_month: month,
+                    ta_year: year,
+                    ta_tcode: row.t2s,
+                    ta_charge: row.allocation,
+                    ta_date_approved: approvedDate,
+                    ta_t0_code: null,
+                    ta_t0_percent: null
+                }
+
+                await timeAllocationService.addTimeAllocation(timeAllocationObject);
+
+
+            }
+
+
             let rowObject = {
                 smd_master_id: masterId,
                 smd_ref_code: salaryMasterData.smm_ref_code,
@@ -393,7 +430,7 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
 
                 if (!_.isEmpty(empSectorData)) {
                     empSector = empSectorData.department_name
-                    empSectorCode = empSectorData.t3_code
+                    empSectorCode = empSectorData.d_t3_code
                 }
             }
 
@@ -615,7 +652,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
                 if (!_.isEmpty(empSectorData)) {
                     empSector = empSectorData.department_name
-                    empSectorCode = empSectorData.t3_code
+                    empSectorCode = empSectorData.d_t3_code
                 }
 
                 for (const salary of salaryDetails) {
@@ -836,7 +873,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
                     if (!_.isEmpty(empSectorData)) {
                         empSector = empSectorData.department_name
-                        empSectorCode = empSectorData.t3_code
+                        empSectorCode = empSectorData.d_t3_code
                     }
 
                     journalDetail.j_acc_code = payment.pd_payment_code
@@ -881,7 +918,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-NSITF`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalEmployeeNsitf
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -911,7 +948,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-NHF`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalEmployeeNhf
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -941,7 +978,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-PAYE`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalTax
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -970,7 +1007,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_desc = `${salaryMasterData.smm_month}-NETPAY`
         journalDetail.j_d_c = "C"
         journalDetail.j_amount = 0 - totalNetSalary
-        journalDetail.j_t1 = "u100"
+        journalDetail.j_t1 = "u1000"
         journalDetail.j_t2 = "Null"
         journalDetail.j_t3 = "Null"
         journalDetail.j_t4 = '2NG'
@@ -1055,7 +1092,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 journalDetail.j_desc = `${salaryMasterData.smm_month}-${pfa.provider_name}`
                 journalDetail.j_d_c = "C"
                 journalDetail.j_amount = 0 - totalPension
-                journalDetail.j_t1 = "u100"
+                journalDetail.j_t1 = "u1000"
                 journalDetail.j_t2 = "Null"
                 journalDetail.j_t3 = "Null"
                 journalDetail.j_t4 = '2NG'
@@ -1089,6 +1126,22 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
                 return data
             })
             return res.status(400).json('An error occurred while approving salary mapping master')
+        }
+
+        for (const empId of empIdArray) {
+            const employee = await employeeService.getEmployeeByD7(empId);
+            const email = employee.emp_office_email;
+            if(email){
+                const templateParams = {
+                    monthYear: `${salaryMasterData.smm_month} ${salaryMasterData.smm_year}`,
+                    name: `${employee.emp_first_name} ${employee.emp_last_name}`,
+                    monthNumber: parseInt(salaryMasterData.smm_month),
+                    yearNumber: parseInt(salaryMasterData.smm_year),
+                    department: employee.sector.department_name,
+                    jobRole: employee.jobrole.job_role,
+                    employeeId: employee.emp_unique_id,
+                }
+                await mailer.journalProcessedSendMail('noreply@ircng.org', email, 'TimeSheet Approved, Journal Processed', templateParams);   }
         }
 
         return res.status(200).json('Processed Successfully')
@@ -1306,6 +1359,30 @@ router.get('/test-pfa-journals/:masterId', auth(), async function (req, res, nex
         // console.error( err.message);
         // next(err);
     }
+});
+
+router.delete('/delete-salary-mapping/:masterId', auth(), async function (req, res, next) {
+    const masterId = req.params['masterId']
+    try {
+        const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
+        if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
+            return res.status(400).json('No salary mapping master found')
+        }
+
+        if (salaryMasterData.smm_posted === 1) {
+            return res.status(400).json('Salary mapping master has been approved and cannot be deleted')
+        }
+
+        await salaryMappingMasterService.removeSalaryMappingMaster(masterId);
+
+        await salaryMappingDetailsService.removeSalaryMappingDetails(masterId);
+
+
+        return res.status(200).json('Salary mapping master deleted successfully')
+    } catch (err) {
+        return res.status(400).json(err.message)
+    }
+
 });
 
 
