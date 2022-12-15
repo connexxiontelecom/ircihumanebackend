@@ -163,6 +163,34 @@ async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
     })
 }
 
+async function getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
+    return await LeaveAccrual.sum('lea_rate', {
+        where: {
+            lea_emp_id: employee_id,
+            lea_fy: year,
+            lea_month: {
+                [Op.lte]: month
+            },
+            lea_leave_type: leave_type,
+            lea_rate: {[Op.gt]: 0}
+        }
+    })
+}
+
+async function getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
+    return await LeaveAccrual.sum('lea_rate', {
+        where: {
+            lea_emp_id: employee_id,
+            lea_fy: year,
+            lea_month: {
+                [Op.lte]: month
+            },
+            lea_leave_type: leave_type,
+            lea_rate: {[Op.lt]: 0}
+        }
+    })
+}
+
 async function sumAllLeaveByEmployeeYear(year, empId, leaveType) {
 
 
@@ -279,6 +307,8 @@ module.exports = {
     sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType,
     findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth,
     getEmployeeLeaveAccrualDetails,
+    getPositiveLeaveAccrualByYearMonthEmployeeLeaveType,
+    getNegativeLeaveAccrualByYearMonthEmployeeLeaveType,
     //getEmployeeMonthsAccrual,
     //getEmployeeMonthsUsed,
 
