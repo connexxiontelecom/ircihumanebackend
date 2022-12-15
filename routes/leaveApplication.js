@@ -677,13 +677,27 @@ router.post('/leave-application-tracking-report', auth(), async function(req, re
 
             const annualLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
 
-            const annualLeaveBalance = annualLeaveAccrued - annualLeaveUsed;
+            const annualLeaveBalance = annualLeaveAccrued + annualLeaveUsed;
+
+            const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
+            const countAnnualTotalAccrued = annualTotalAccrued.length;
+            const remainingAnnualAccrued = 12 - countAnnualTotalAccrued;
+
+            const annualLeaveBalEnding = annualLeaveAccrued +  (remainingAnnualAccrued * annualLeaveDetails.lt_rate ) + annualLeaveUsed;
+
 
             const sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
 
             const sickLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
 
-            const sickLeaveBalance = sickLeaveAccrued - sickLeaveUsed;
+            const sickLeaveBalance = sickLeaveAccrued + sickLeaveUsed;
+
+            const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
+            const countSickTotalAccrued = sickTotalAccrued.length;
+            const remainingSickAccrued = 12 - countSickTotalAccrued;
+
+            const sickLeaveBalEnding = sickLeaveAccrued +  (remainingSickAccrued * sickLeaveDetails.lt_rate ) + sickLeaveUsed;
+
 
             responseArray.push({
                 d7: emp.emp_d7,
@@ -698,10 +712,12 @@ router.post('/leave-application-tracking-report', auth(), async function(req, re
                 annualLeaveAccrued: annualLeaveAccrued,
                 annualLeaveUsed: annualLeaveUsed,
                 annualLeaveBalance: annualLeaveBalance,
+                annualLeaveBalEnding: annualLeaveBalEnding,
                 percentageAnnualLeaveUsed: (annualLeaveUsed / annualLeaveAccrued) * 100,
                 sickLeaveAccrued: sickLeaveAccrued,
                 sickLeaveUsed: sickLeaveUsed,
                 sickLeaveBalance: sickLeaveBalance,
+                sickLeaveBalEnding: sickLeaveBalEnding,
                 percentageSickLeaveUsed: (sickLeaveUsed / sickLeaveAccrued) * 100,
 
             })
