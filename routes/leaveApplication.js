@@ -607,7 +607,7 @@ router.get('/restate-leave-application/:leaveId/:status/:empId', auth(), async f
   }
 });
 
-router.post('/leave-application-tracking-report', auth(), async function(req, res){
+router.post('/leave-application-tracking-report', async function(req, res){
 
     try{
         const schema = Joi.object({
@@ -680,7 +680,12 @@ router.post('/leave-application-tracking-report', auth(), async function(req, re
             const annualLeaveBalance = annualLeaveAccrued + annualLeaveUsed;
 
             const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
-            const countAnnualTotalAccrued = annualTotalAccrued.length;
+            let countAnnualTotalAccrued = 0;
+
+            if(annualTotalAccrued){
+                countAnnualTotalAccrued = annualTotalAccrued.length;
+            }
+
             const remainingAnnualAccrued = 12 - countAnnualTotalAccrued;
 
             const annualLeaveBalEnding = annualLeaveAccrued +  (remainingAnnualAccrued * annualLeaveDetails.lt_rate ) + annualLeaveUsed;
@@ -693,7 +698,13 @@ router.post('/leave-application-tracking-report', auth(), async function(req, re
             const sickLeaveBalance = sickLeaveAccrued + sickLeaveUsed;
 
             const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
-            const countSickTotalAccrued = sickTotalAccrued.length;
+
+            let countSickTotalAccrued = 0;
+            if(sickTotalAccrued){
+                countSickTotalAccrued = sickTotalAccrued.length;
+            }
+
+
             const remainingSickAccrued = 12 - countSickTotalAccrued;
 
             const sickLeaveBalEnding = sickLeaveAccrued +  (remainingSickAccrued * sickLeaveDetails.lt_rate ) + sickLeaveUsed;
