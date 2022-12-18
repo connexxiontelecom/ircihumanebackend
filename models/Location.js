@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         static async addLocation(data){
           return await Location.create(data);
         }
+
+        static async getLocationById(locationId){
+          return await Location.findOne({where:{location_id: locationId}})
+        }
     };
     Location.init({
         location_id: {
