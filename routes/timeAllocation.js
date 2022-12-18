@@ -15,6 +15,7 @@ const employees = require("../services/employeeService");
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const timeAllocationModel = require('../models/timeallocation')(sequelize, Sequelize.DataTypes);
 const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+const locationModel = require('../models/Location')(sequelize, Sequelize.DataTypes);
 const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
 const salaryMappingMasterService = require("../services/salaryMappingMasterService");
 const mailer = require("../services/IRCMailer");
@@ -460,6 +461,47 @@ router.get('/restate-timesheet-application/:refNo/:status/:empId', auth(), async
     await handleInAppEmailNotifications(empData.emp_first_name, 'Time sheet re-stated','Time sheet restated', 'timesheets', empData.emp_office_email, empData.emp_id)
 
     return res.status(200).json('Time sheet re-stated!');
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+router.post('/timesheet-application-tracking-report', auth(), async function(req, res){
+
+  try{
+        const schema = Joi.object({
+          location: Joi.number().default(0).required(),
+          month: Joi.number().required(),
+          year: Joi.number().required(),
+
+        })
+
+        const validationResult = schema.validate(req.body, {abortEarly: false});
+
+        if (validationResult.error) {
+          return res.status(400).json(validationResult.error.details[0].message)
+        }
+
+        const month = req.body.month;
+        const year = req.body.year;
+        //let fyYear = `${year}`;
+        //let fyYear = `FY${year}`;
+        const location = req.body.location;
+        let employees = [];
+        const empIds = [];
+        if(location === 0){
+          employees = await employee.getEmployees();
+        }else{
+          employees = await employee.getAllEmployeesByLocation(parseInt(location));
+        }
+        const loc = await locationModel.getLocationById(location);
+
+        employees.map((emp)=>{
+          empIds.push(emp.emp_id);
+        });
+
+      const allocations = await timeAllocationModel.getTimesheetSubmissionByMonthYearEmpds(parseInt(month), parseInt(year), empIds);
+    return res.status(200).json({allocations,loc});
   }catch (e) {
     return res.status(400).json('Whoops!');
   }

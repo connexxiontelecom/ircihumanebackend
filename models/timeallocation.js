@@ -6,6 +6,7 @@ const {sequelize, Sequelize} = require("../services/db");
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const LocationModel = require("../models/Location")(sequelize, Sequelize.DataTypes)
 const SectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes)
+const JobroleModel = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 const AuthorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class timeallocation extends Model {
@@ -40,6 +41,39 @@ module.exports = (sequelize, DataTypes) => {
             include:[
               {model:LocationModel, as: 'location'},
               {model:SectorModel, as: 'sector'},
+            ]},
+          {model:AuthorizationModel, as:'timesheet_authorizer',
+            include:[{model: Employee, as: 'officers'}]
+          },
+        ],
+        order:[['ta_id', 'DESC']]
+      })
+    }
+    static async getTimesheetSubmissionByMonthYear(month, year){
+      return await timeallocation.findAll({
+        where:{ta_month:month, ta_year: year},
+        include:[
+          {model:Employee, as:'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+              {model:SectorModel, as: 'sector'},
+            ]},
+          {model:AuthorizationModel, as:'timesheet_authorizer',
+            include:[{model: Employee, as: 'officers'}]
+          },
+        ],
+        order:[['ta_id', 'DESC']]
+      })
+    }
+    static async getTimesheetSubmissionByMonthYearEmpds(month, year, empIds){
+      return await timeallocation.findAll({
+        where:{ta_month:month, ta_year: year, ta_emp_id:empIds},
+        include:[
+          {model:Employee, as:'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+              {model:SectorModel, as: 'sector'},
+              {model:JobroleModel, as: 'jobrole'},
             ]},
           {model:AuthorizationModel, as:'timesheet_authorizer',
             include:[{model: Employee, as: 'officers'}]
