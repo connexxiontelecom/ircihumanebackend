@@ -157,7 +157,7 @@ async function timeAllocationStatus(empId, month, year) {
 
 async function sumTimeAllocation(empId, month, year) {
     return await TimeAllocation.sum('ta_charge', {
-        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status:null},
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: [null, 0]},
         include: [{model:Employee, as:'employee'}]
     })
 }
