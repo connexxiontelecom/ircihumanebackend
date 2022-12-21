@@ -284,7 +284,7 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
             const findTimeAllocation = await timeAllocationService.findTimeAllocationDetailByStatus(month, year, row.d7);
 
             if(findTimeAllocation){
-                const refCode = findTimeAllocation[0].ta_ref_code;
+                const refCode = findTimeAllocation[0].ta_ref_no;
                 const approvedBy = findTimeAllocation[0].ta_approved_by;
                 const approvedDate = findTimeAllocation[0].ta_date_approved;
                 const ta_status = findTimeAllocation[0].ta_status;
