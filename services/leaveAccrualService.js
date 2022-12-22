@@ -128,7 +128,7 @@ async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_t
     return await LeaveAccrual.sum('lea_rate', {
         where: {
             lea_emp_id: employee_id,
-            lea_year: year,
+            //lea_fy: calendarYear,
             lea_leave_type: leave_type,
             lea_fy: calendarYear
         }
