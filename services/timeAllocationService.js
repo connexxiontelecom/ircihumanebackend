@@ -83,8 +83,10 @@ async function findTimeAllocationDetail(month, year, empId) {
 }
 
 async function findTimeAllocationDetailByStatus(month, year, empId) {
-    return await TimeAllocation.findOne({
+    return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: [1, 0]},
+        order: [['ta_id', 'DESC']],
+        include: [{model:Employee, as:'employee'}]
     })
 }
 async function findTimeAllocationDetailByRefNo(ref_no) {
