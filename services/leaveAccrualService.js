@@ -104,11 +104,10 @@ async function findLeaveAccrualByLeaveTypeFYyearPositive(empId, month, year, fyY
     })
 }
 
-async function findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth(empId, year, fyYear, type) {
+async function findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth(empId, fyYear, type) {
     return await LeaveAccrual.findOne({
         where: {
             lea_emp_id: empId,
-            lea_year: year,
             lea_leave_type: type,
             lea_fy: fyYear,
             lea_rate: {[Op.gt]: 0}
@@ -305,7 +304,6 @@ module.exports = {
     findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth,
     sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType,
     sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType,
-    findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth,
     getEmployeeLeaveAccrualDetails,
     getPositiveLeaveAccrualByYearMonthEmployeeLeaveType,
     getNegativeLeaveAccrualByYearMonthEmployeeLeaveType,
