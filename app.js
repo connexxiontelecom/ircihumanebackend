@@ -355,7 +355,7 @@
         const expiresOn = `${leaveYear}-09-30`
         for (const emp of employees){
             for (const leaveType of leaveTypesData) {
-                const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth(emp.emp_id, currentYear, calendarYear, leaveType.leave_type_id)
+                const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth(emp.emp_id, calendarYear, leaveType.leave_type_id)
                 if(_.isEmpty(existingLeaveAccruals) || _.isNull(existingLeaveAccruals)) {
 
                     const leaveAccrual = {
