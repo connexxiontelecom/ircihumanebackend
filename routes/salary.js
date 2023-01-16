@@ -3060,13 +3060,15 @@ router.post('/pull-salary-routine', auth(), async function (req, res, next) {
                     netSalary = grossSalary - totalDeduction
 
                     let empJobRole = 'N/A'
-                    if (parseInt(emp.emp_job_role_id) > 0) {
-                        empJobRole = emp.jobrole.job_role
+                    if (parseInt(empSalary[0].salary_jobrole_id) > 0) {
+                        const jobRole = await jobRoleService.findJobRoleById(empSalary[0].salary_jobrole_id);
+                        empJobRole = jobRole.job_role
                     }
 
                     let sectorName = 'N/A'
-                    if (parseInt(emp.emp_department_id) > 0) {
-                        sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+                    if (parseInt(empSalary[0].salary_department_id) > 0) {
+                        const sector = await departmentService.findDepartmentById(empSalary[0].salary_department_id);
+                        sectorName = `${sector.department_name} - ${sector.d_t3_code}`
                     }
 
                     let salaryObject = {
