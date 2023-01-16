@@ -22,6 +22,10 @@ module.exports = {
         type: Sequelize.DOUBLE,
         defaultValue:0,
       },
+      sga_new_salary: {
+        type: Sequelize.DOUBLE,
+        defaultValue:0,
+      },
       sga_reason: {
         type: Sequelize.STRING
       },

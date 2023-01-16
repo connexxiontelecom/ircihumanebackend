@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DOUBLE,
       defaultValue:0,
     },
+    sga_new_salary: {
+      type: DataTypes.DOUBLE,
+      defaultValue:0,
+    },
     sga_reason: DataTypes.TEXT,
     sga_attachment: DataTypes.TEXT,
   }, {

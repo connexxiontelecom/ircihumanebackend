@@ -460,7 +460,7 @@ router.get('/salary-gross-archives', auth(), async function(req, res){
       const data = {
         name: `${sal.employee.emp_first_name} ${sal.employee.emp_last_name} - ${sal.employee.emp_unique_id}`,
         sn:index+1,
-        new_gross:`${sal.employee.emp_gross.toLocaleString(undefined, {
+        new_gross:`${sal.sga_new_salary.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         })} `,
