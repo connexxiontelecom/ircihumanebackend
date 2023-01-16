@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model
+  Model, where
 } = require('sequelize');
 const {sequelize, Sequelize} = require("../services/db");
 const PaymentDefinition = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
@@ -17,6 +17,25 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getEmployeeSalaryStructure(empId){
+      return await salaryStructure.findAll({
+        where:{ss_empid:empId},
+        include:{model:PaymentDefinition, as:'payment'}
+      })
+    }
+
+    static async updateSalaryStructureAmount(empId, amount, paymentDefId){
+      return await salaryStructure.update({
+        ss_amount : amount,
+      },{
+        where:{
+          ss_empid:empId,
+          ss_pd:paymentDefId
+        }
+      })
+    }
+
   };
   salaryStructure.init({
     ss_id: {
@@ -36,6 +55,8 @@ module.exports = (sequelize, DataTypes) => {
 
   salaryStructure.belongsTo(PaymentDefinition, {as: 'payment', foreignKey: 'ss_pd'})
   salaryStructure.hasMany(PaymentDefinition, { foreignKey: 'pd_id' })
+
+  //salaryStructure.hasMany(PaymentDefinition, { foreignKey: 'pd_id', as: 'payments'})
 
   salaryStructure.belongsTo(Employee, {as: 'employee', foreignKey: 'ss_empid'})
   salaryStructure.hasMany(Employee, { foreignKey: 'emp_id' })

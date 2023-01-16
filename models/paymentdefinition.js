@@ -12,6 +12,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getPaymentDefinition(pdId){
+      return await PaymentDefinition.findOne({
+        where:{pd_id:pdId},
+      })
+    }
+
   };
   PaymentDefinition.init({
     pd_id: {
