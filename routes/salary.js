@@ -3691,13 +3691,13 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
 
                 let empJobRole = 'N/A'
                 if (parseInt(employeeSalaries[0].salary_jobrole_id) > 0) {
-                    const jobRole = await jobRoleService.findJobRoleById(empSalary[0].salary_jobrole_id);
+                    const jobRole = await jobRoleService.findJobRoleById(employeeSalaries[0].salary_jobrole_id);
                     empJobRole = jobRole.job_role
                 }
 
                 let sectorName = 'N/A'
                 if (parseInt(employeeSalaries[0].salary_department_id) > 0) {
-                    const sector = await departmentService.findDepartmentById(empSalary[0].salary_department_id);
+                    const sector = await departmentService.findDepartmentById(employeeSalaries[0].salary_department_id);
                     sectorName = `${sector.department_name} - ${sector.d_t3_code}`
                 }
 
@@ -3900,13 +3900,13 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
 
                 let empJobRole = 'N/A'
                 if (parseInt(employeeSalaries[0].salary_jobrole_id) > 0) {
-                    const jobRole = await jobRoleService.findJobRoleById(empSalary[0].salary_jobrole_id);
+                    const jobRole = await jobRoleService.findJobRoleById(employeeSalaries[0].salary_jobrole_id);
                     empJobRole = jobRole.job_role
                 }
 
                 let sectorName = 'N/A'
                 if (parseInt(employeeSalaries[0].salary_department_id) > 0) {
-                    const sector = await departmentService.findDepartmentById(empSalary[0].salary_department_id);
+                    const sector = await departmentService.findDepartmentById(employeeSalaries[0].salary_department_id);
                     sectorName = `${sector.department_name} - ${sector.d_t3_code}`
                 }
 
