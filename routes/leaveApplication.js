@@ -690,7 +690,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
                 countAnnualTotalAccrued = annualTotalAccrued.length;
             }
 
-            const annualLeaveBalEnding = annualTotalAccrued - annualLeaveUsed;
+            const annualLeaveBalEnding = annualLeaveAccrued - annualLeaveUsed;
 
             const remainingAnnualAccrued = 12 - countAnnualTotalAccrued;
 
@@ -705,7 +705,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
 
             const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
 
-            const sickLeaveBalEnding = sickTotalAccrued - sickLeaveUsed;
+            const sickLeaveBalEnding = sickLeaveAccrued - sickLeaveUsed;
             let countSickTotalAccrued = 0;
             if(sickTotalAccrued){
                 countSickTotalAccrued = sickTotalAccrued.length;
