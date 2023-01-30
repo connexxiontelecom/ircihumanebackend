@@ -685,13 +685,16 @@ router.post('/leave-application-tracking-report', async function(req, res){
             const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
             let countAnnualTotalAccrued = 0;
 
+
             if(annualTotalAccrued){
                 countAnnualTotalAccrued = annualTotalAccrued.length;
             }
 
+            const annualLeaveBalEnding = annualTotalAccrued - annualLeaveUsed;
+
             const remainingAnnualAccrued = 12 - countAnnualTotalAccrued;
 
-            const annualLeaveBalEnding = annualLeaveAccrued +  (remainingAnnualAccrued * annualLeaveDetails.lt_rate ) + annualLeaveUsed;
+            const annualLeaveBalEndingFy = annualLeaveAccrued +  (remainingAnnualAccrued * annualLeaveDetails.lt_rate ) + annualLeaveUsed;
 
 
             const sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
@@ -702,6 +705,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
 
             const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
 
+            const sickLeaveBalEnding = sickTotalAccrued - sickLeaveUsed;
             let countSickTotalAccrued = 0;
             if(sickTotalAccrued){
                 countSickTotalAccrued = sickTotalAccrued.length;
@@ -710,7 +714,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
 
             const remainingSickAccrued = 12 - countSickTotalAccrued;
 
-            const sickLeaveBalEnding = sickLeaveAccrued +  (remainingSickAccrued * sickLeaveDetails.lt_rate ) + sickLeaveUsed;
+            const sickLeaveBalEndingFy = sickLeaveAccrued +  (remainingSickAccrued * sickLeaveDetails.lt_rate ) + sickLeaveUsed;
 
 
             responseArray.push({
@@ -729,11 +733,13 @@ router.post('/leave-application-tracking-report', async function(req, res){
                 annualLeaveAccrued: annualLeaveAccrued,
                 annualLeaveUsed: annualLeaveUsed,
                 annualLeaveBalance: annualLeaveBalance,
+                annualLeaveBalEndingFy: annualLeaveBalEndingFy,
                 annualLeaveBalEnding: annualLeaveBalEnding,
                 percentageAnnualLeaveUsed: (annualLeaveUsed / annualLeaveAccrued) * 100,
                 sickLeaveAccrued: sickLeaveAccrued,
                 sickLeaveUsed: sickLeaveUsed,
                 sickLeaveBalance: sickLeaveBalance,
+                sickLeaveBalEndingFy: sickLeaveBalEndingFy,
                 sickLeaveBalEnding: sickLeaveBalEnding,
                 percentageSickLeaveUsed: (sickLeaveUsed / sickLeaveAccrued) * 100,
 
