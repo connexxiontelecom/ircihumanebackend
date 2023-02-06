@@ -135,27 +135,101 @@ async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_t
 }
 
 async function sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
+    let filter= {};
+    if(month > 9){
+        filter = {
+            [Op.gt]: 9,
+            [Op.lte]: month
+        }
+    }
+    if(month < 9){
+        filter = {
+            [Op.and]:[
+                {
+                    [Op.gt]: 9,
+                    [Op.lte]: month
+                },
+                {
+                    [Op.gt]: 0,
+                    [Op.lte]: month
+                }
+            ]
+
+        }
+    }
     return await LeaveAccrual.sum('lea_rate', {
         where: {
             lea_emp_id: employee_id,
             lea_fy: year,
-            lea_month: {
-                [Op.lte]: month
-            },
+            lea_month: filter,
             lea_leave_type: leave_type,
             lea_rate: {[Op.gt]: 0}
         }
     })
 }
 
-async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
+async function sumLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
+    let filter= {};
+    if(month > 9){
+        filter = {
+            [Op.gt]: 9,
+            [Op.lte]: month
+        }
+    }
+    if(month < 9){
+        filter = {
+            [Op.and]:[
+                {
+                    [Op.gt]: 9,
+                    [Op.lte]: month
+                },
+                {
+                    [Op.gt]: 0,
+                    [Op.lte]: month
+                }
+            ]
+
+        }
+    }
     return await LeaveAccrual.sum('lea_rate', {
         where: {
             lea_emp_id: employee_id,
             lea_fy: year,
-            lea_month: {
-                [Op.lte]: month
-            },
+            lea_month: filter,
+            lea_leave_type: leave_type,
+        }
+    })
+}
+
+async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
+    let filter= {};
+    if(month > 9){
+        filter = {
+            [Op.gt]: 9,
+            [Op.lte]: month
+        }
+    }
+    if(month < 9){
+        filter = {
+            [Op.and]:[
+                {
+                    [Op.gt]: 9,
+                    [Op.lte]: month
+                },
+                {
+                    [Op.gt]: 0,
+                    [Op.lte]: month
+                }
+            ]
+
+        }
+    }
+    console.log('filter', filter);
+    return await LeaveAccrual.sum('lea_rate', {
+        where: {
+            lea_emp_id: employee_id,
+            lea_fy: year,
+            lea_month: filter,
             lea_leave_type: leave_type,
             lea_rate: {[Op.lt]: 0}
         }
@@ -163,13 +237,33 @@ async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
 }
 
 async function getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    return await LeaveAccrual.sum('lea_rate', {
+    let filter= {};
+    if(month > 9){
+        filter = {
+            [Op.gt]: 9,
+            [Op.lte]: month
+        }
+    }
+    if(month < 9){
+        filter = {
+            [Op.and]:[
+                {
+                    [Op.gt]: 9,
+                    [Op.lte]: month
+                },
+                {
+                    [Op.gt]: 0,
+                    [Op.lte]: month
+                }
+            ]
+
+        }
+    }
+    return await LeaveAccrual.findAll( {
         where: {
             lea_emp_id: employee_id,
             lea_fy: year,
-            lea_month: {
-                [Op.lte]: month
-            },
+            lea_month: filter,
             lea_leave_type: leave_type,
             lea_rate: {[Op.gt]: 0}
         }
@@ -177,13 +271,33 @@ async function getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
 }
 
 async function getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    return await LeaveAccrual.sum('lea_rate', {
+    let filter= {};
+    if(month > 9){
+        filter = {
+            [Op.gt]: 9,
+            [Op.lte]: month
+        }
+    }
+    if(month < 9){
+        filter = {
+            [Op.and]:[
+                {
+                    [Op.gt]: 9,
+                    [Op.lte]: month
+                },
+                {
+                    [Op.gt]: 0,
+                    [Op.lte]: month
+                }
+            ]
+
+        }
+    }
+    return await LeaveAccrual.findAll( {
         where: {
             lea_emp_id: employee_id,
             lea_fy: year,
-            lea_month: {
-                [Op.lte]: month
-            },
+            lea_month: filter,
             lea_leave_type: leave_type,
             lea_rate: {[Op.lt]: 0}
         }
@@ -307,6 +421,7 @@ module.exports = {
     getEmployeeLeaveAccrualDetails,
     getPositiveLeaveAccrualByYearMonthEmployeeLeaveType,
     getNegativeLeaveAccrualByYearMonthEmployeeLeaveType,
+    sumLeaveAccrualByYearMonthEmployeeLeaveType
     //getEmployeeMonthsAccrual,
     //getEmployeeMonthsUsed,
 
