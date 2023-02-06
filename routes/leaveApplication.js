@@ -627,13 +627,30 @@ router.post('/leave-application-tracking-report', async function(req, res){
         }
 
         const month = req.body.month;
-        const year = req.body.year;
+        const year = parseInt(req.body.year);
         let fyYear = `FY${year}`;
         const location = req.body.location;
 
         if(month > 9){
-           fyYear = `FY${year + 1}`;
+            const newYear = year + 1;
+           fyYear = `FY${newYear}`;
         }
+
+        const yearObject = {
+            10: 1,
+            11: 2,
+            12: 3,
+            1: 4,
+            2: 5,
+            3: 6,
+            4: 7,
+            5: 8,
+            6: 9,
+            7: 10,
+            8: 11,
+            9: 12,
+        }
+
 
         let lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0)
         const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
@@ -671,48 +688,78 @@ router.post('/leave-application-tracking-report', async function(req, res){
                 typeOfHire = 'Regular';
             }
 
-            const annualLeaveDetails = await leaveTypeService.getLeaveTypeByName('Annual Leave');
+            const annualLeaveDetails = await leaveTypeService.getLeaveTypeByName('Annual Leave')
 
 
-            const sickLeaveDetails = await leaveTypeService.getLeaveTypeByName('Sick Leave');
+            const sickLeaveDetails = await leaveTypeService.getLeaveTypeByName('Sick Leave')
 
-            const annualLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
+            //let annualLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
 
-            const annualLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
+            let annualLeaveAccrued = 0;
 
-            const annualLeaveBalance = annualLeaveAccrued + annualLeaveUsed;
+           // let annualLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
 
-            const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id);
+            let annualLeaveUsed = 0;
+
+
+
+            const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
             let countAnnualTotalAccrued = 0;
 
 
             if(annualTotalAccrued){
                 countAnnualTotalAccrued = annualTotalAccrued.length;
             }
+            for(const accrued of annualTotalAccrued){
+                annualLeaveAccrued = annualLeaveAccrued + accrued.lea_rate;
+            }
 
-            const annualLeaveBalEnding = annualLeaveAccrued - annualLeaveUsed;
+            const annualTotalUsed= await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
 
-            const remainingAnnualAccrued = 12 - countAnnualTotalAccrued;
+            for(const used of annualTotalUsed){
+                annualLeaveUsed += used.lea_rate;
+            }
+
+
+            const annualLeaveBalance = annualLeaveAccrued + annualLeaveUsed;
+
+            const annualLeaveBalEnding = await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
+
+            const remainingAnnualAccrued = 12 - yearObject[month];
 
             const annualLeaveBalEndingFy = annualLeaveAccrued +  (remainingAnnualAccrued * annualLeaveDetails.lt_rate ) + annualLeaveUsed;
 
 
-            const sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
+            // let sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
+            //
+            // let sickLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
 
-            const sickLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
+
+            let sickLeaveAccrued = 0;
+            let sickLeaveUsed = 0;
+            const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
+
+            for(const accrued of sickTotalAccrued){
+                sickLeaveAccrued = sickLeaveAccrued + accrued.lea_rate;
+            }
+
+            const sickTotalUsed = await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
+
+            for(const used of sickTotalUsed){
+                sickLeaveUsed = sickLeaveUsed + used.lea_rate;
+            }
 
             const sickLeaveBalance = sickLeaveAccrued + sickLeaveUsed;
 
-            const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id);
 
-            const sickLeaveBalEnding = sickLeaveAccrued - sickLeaveUsed;
+            const sickLeaveBalEnding = await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
             let countSickTotalAccrued = 0;
             if(sickTotalAccrued){
                 countSickTotalAccrued = sickTotalAccrued.length;
             }
 
 
-            const remainingSickAccrued = 12 - countSickTotalAccrued;
+            const remainingSickAccrued = 12 - yearObject[month];
 
             const sickLeaveBalEndingFy = sickLeaveAccrued +  (remainingSickAccrued * sickLeaveDetails.lt_rate ) + sickLeaveUsed;
 
@@ -735,13 +782,16 @@ router.post('/leave-application-tracking-report', async function(req, res){
                 annualLeaveBalance: annualLeaveBalance,
                 annualLeaveBalEndingFy: annualLeaveBalEndingFy,
                 annualLeaveBalEnding: annualLeaveBalEnding,
-                percentageAnnualLeaveUsed: (annualLeaveUsed / annualLeaveAccrued) * 100,
+                percentageAnnualLeaveUsed: Math.abs((annualLeaveUsed / annualLeaveAccrued) * 100),
                 sickLeaveAccrued: sickLeaveAccrued,
                 sickLeaveUsed: sickLeaveUsed,
                 sickLeaveBalance: sickLeaveBalance,
                 sickLeaveBalEndingFy: sickLeaveBalEndingFy,
                 sickLeaveBalEnding: sickLeaveBalEnding,
-                percentageSickLeaveUsed: (sickLeaveUsed / sickLeaveAccrued) * 100,
+                percentageSickLeaveUsed: Math.abs((sickLeaveUsed / sickLeaveAccrued) * 100),
+                fyYear: fyYear,
+                month: month,
+                year: year,
 
             })
 
