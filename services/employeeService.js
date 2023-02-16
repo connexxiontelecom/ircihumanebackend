@@ -444,7 +444,7 @@ async function getActiveEmployees() {
             emp_status: [1, 2]
         },
         include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector','lga','state',
-            'functionalArea', 'reportingEntity', 'operationUnit']
+            'functionalArea', 'reportingEntity', 'operationUnit', 'salaryGrade']
     })
 }
 async function getExcludedActiveEmployeesByIds(ids) {
@@ -600,7 +600,7 @@ async function getInactiveEmployees() {
                     }
                 },
             include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'lga','state',
-              'functionalArea', 'reportingEntity', 'operationUnit']
+              'functionalArea', 'reportingEntity', 'operationUnit', 'salaryGrade']
 
         }
     )
