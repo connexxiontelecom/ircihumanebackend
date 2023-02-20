@@ -3701,6 +3701,13 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
                     sectorName = `${sector.department_name} - ${sector.d_t3_code}`
                 }
 
+                let locationName = 'N/A'
+                const locationId = employeeSalaries[0].salary_location_id
+                if (parseInt(employeeSalaries[0].salary_location_id) > 0) {
+                    const location = await locationService.findLocationById(employeeSalaries[0].salary_location_id);
+                    locationName = `${location.location_name} - ${location.l_t6_code}`
+                }
+
                 for (const pensionPayment of pensionPayments) {
                     let amount = 0
 
@@ -3737,7 +3744,8 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                     employeeUniqueId: emp.emp_unique_id,
-                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    location: locationName,
+                    locationId: locationId,
                     jobRole: empJobRole,
                     sector: sectorName,
                     grossSalary: grossSalary,
@@ -3910,6 +3918,13 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
                     sectorName = `${sector.department_name} - ${sector.d_t3_code}`
                 }
 
+                let locationName = 'N/A'
+                const locationId = employeeSalaries[0].salary_location_id
+                if (parseInt(employeeSalaries[0].salary_location_id) > 0) {
+                    const location = await locationService.findLocationById(employeeSalaries[0].salary_location_id);
+                    locationName = `${location.location_name} - ${location.l_t6_code}`
+                }
+
                 for (const pensionPayment of pensionPayments) {
                     let amount = 0
 
@@ -3946,7 +3961,8 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
                     employeeId: emp.emp_id,
                     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
                     employeeUniqueId: emp.emp_unique_id,
-                    location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+                    location: locationName,
+                    locationId: locationId,
                     jobRole: empJobRole,
                     sector: sectorName,
                     grossSalary: grossSalary,
