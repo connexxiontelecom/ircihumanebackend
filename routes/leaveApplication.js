@@ -437,8 +437,12 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     }else{
       daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
     }
-
-
+    const holidays = await publicHolidayModel.getThisYearsPublicHolidays()
+    const holidaysArray = [];
+    holidays.map((pub) => {
+      holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+    });
+    daysRequested = dateDiff(statusRequest.start_date, statusRequest.end_date, holidaysArray)
     //return res.status(200).json(daysRequested)
     const empId = req.user.username.user_id;
     if (parseInt(daysRequested) <= 0) {
@@ -450,6 +454,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     let leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
         return data
     });
+
     if(_.isNull(leave) || _.isEmpty(leave)){
       return res.status(400).json("Leave application does not exist.");
     }
@@ -462,23 +467,25 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
         return data
     })
 
-       leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+     /*  leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
           return data
-      });
+      });*/
 
       let leaveDate = new Date(leave.leapp_start_date)
     const currentDate = new Date();
     const calendarYear = currentDate.getMonth()+1 >= 1 || currentDate.getMonth()+1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear()+1}`;
       const leaveAccrual = {
           lea_emp_id: leave.leapp_empid,
-          lea_month: leaveDate.getFullYear(),
-          lea_year: leaveDate.getMonth() + 1,
+          lea_year: leaveDate.getFullYear(),
+          lea_month: leaveDate.getMonth() + 1,
           lea_leave_type: leave.leapp_leave_type,
-          lea_rate: 0 - parseFloat(leave.leapp_total_days),
+          lea_rate: 0 - daysRequested,//parseFloat(leave.leapp_total_days),
           lea_archives: 0,
+          lea_leaveapp_id: leaveId,
           lea_expires_on: '1900-01-01',
           lea_fy: calendarYear,
       }
+
       const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
           return data
       })
@@ -863,6 +870,37 @@ function ExcelDateToJSDate(serial) {
   let hours = Math.floor(total_seconds / (60 * 60));
   let minutes = Math.floor(total_seconds / 60) % 60;
   return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
+}
+
+function dateDiff(start, end, holidays){
+  //const holidays = await PublicHoliday.getThisYearsPublicHolidays()
+  const startDate = new Date(start);
+  const endDate = new Date(end)
+  const diffTime = Math.abs(endDate - startDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))+1;
+  const pubHolidays = [];
+  //let n = 0;
+  let publicHolidays = 0;
+  let weekends = 0;
+  const steps = 1;
+  let currentDate = new Date(startDate);
+  while (currentDate <= new Date(endDate)) {
+    if(isWeekend(currentDate)){
+      weekends++;
+      pubHolidays.push(currentDate);
+    }
+    let setDate = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() + 1}-${(currentDate.getUTCDate() )}`
+    if(holidays.includes(setDate)){
+      if(!isWeekend(new Date(setDate))){
+        pubHolidays.push(currentDate);
+      }
+      publicHolidays++;
+
+    }
+    currentDate.setUTCDate(currentDate.getUTCDate() + steps);
+  }
+  return diffDays - parseInt(pubHolidays.length);
+
 }
 
 //runLeaveSpillOver();
