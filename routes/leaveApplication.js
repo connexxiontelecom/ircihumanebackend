@@ -29,6 +29,8 @@ const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize
 
 const {businessDaysDifference} = require("../services/dateService");
 const isWeekend = require("date-fns/isWeekend");
+const eachDayOfInterval = require("date-fns/eachDayOfInterval");
+const getDaysInMonth = require("date-fns/getDaysInMonth");
 const reader = require("xlsx");
 const employee = require("../services/employeeService");
 const fs = require('fs');
@@ -105,30 +107,10 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
 
 
         let daysRequested = leaveApplicationRequest.leaveDuration;
-       /* daysRequested =  differenceInBusinessDays(endDate, startDate) + 1; //differenceInBusinessDays starts counting from the next day
-        const diffTime = Math.abs(endDate - startDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        const empId = req.user.username.user_id;
-        let n = 0;
-        const holidays = [];
-        const yearPublicHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
-        if(!(_.isEmpty(yearPublicHolidays)) || !(_.isNull(yearPublicHolidays) ) ) {
-          yearPublicHolidays.map((hols) => {
-            holidays.push(`${hols.ph_year}-${hols.ph_month}-${hols.ph_day}`);
-          })
-          for (n = 0; n < diffDays; n++) {
-            let setDate = `${startDate.getUTCFullYear()}-${startDate.getUTCMonth() + 1}-${(startDate.getUTCDate() + n)}`
-            if(holidays.includes(setDate)){
-              daysRequested = daysRequested - 1;
-            }
-          }
-        }*/
         if (parseInt(daysRequested) <= 0) {
             return res.status(400).json('Leave duration must be greater or equal to 1')
         }
 
-      //return res.status(200).json(daysRequested);
-      //return res.status(200).json(holidays);
         const emp = await employees.getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid)).then((ed) => {
             return ed;
         });
@@ -415,41 +397,100 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     }
 
     let startDate = new Date(statusRequest.start_date);
-    let startYear = startDate.getFullYear();
-    //let date = new Date(statusRequest.start_date)
-    //let day = startDate.getDay();
-    //return res.status(200).json(day);
-
     let endDate = new Date(statusRequest.end_date);
-    let endYear = endDate.getFullYear();
-
-    // if (isBefore(startDate, new Date())) {
-    //   return res.status(400).json('Leave start date cannot be before today or today')
-    // }
-    //
-    // if (String(startYear) !== String(endYear)) {
-    //   return res.status(400).json('Leave period must be within the same year')
-    // }
-
+    const leaveId = req.params.leaveId;
+    let leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
+      return data
+    });
     let daysRequested
-    if(startDate.getDay() === 6 || startDate.getDay() === 0){
-      daysRequested = await differenceInBusinessDays(endDate, startDate) + 2;
-    }else{
-      daysRequested = await differenceInBusinessDays(endDate, startDate) + 1;
-    }
+    const holidays = await publicHolidayModel.getThisYearsPublicHolidays()
+    const holidaysArray = [];
+    holidays.map((pub) => {
+      holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+    });
+    let validLeaveDates = [];
+    const datesWithin = getDatesInRange(startDate, endDate);
+    let one = 0, oneDate,
+      two = 0, twoDate,
+      three = 0, threeDate,
+      four = 0, fourDate,
+      five = 0, fiveDate,
+      six = 0, sixDate,
+      seven = 0, sevenDate,
+      eight = 0, eightDate,
+      nine = 0, nineDate,
+      ten = 0, tenDate,
+      eleven = 0, elevenDate,
+      twelve = 0, twelveDate;
+    datesWithin.map((dw)=>{
+      //remove public holidays and weekends from the list  of days
+      if(!(holidaysArray.includes(dw)) && !(isWeekend(new Date(dw))) ){
+        validLeaveDates.push(dw);
+      }
+    });
+    validLeaveDates.map(async (vd) => {
+      let validDate = new Date(vd);
+      let validMonth = validDate.getMonth() + 1;
+      switch (parseInt(validMonth)) {
+        case 1:
+          oneDate = new Date(vd);
+          one++;
+          break;
+        case 2:
+          twoDate = new Date(vd);
+          two++;
+          break;
+        case 3:
+          threeDate = new Date(vd);
+          three++;
+          break;
+        case 4:
+          fourDate = new Date(vd);
+          four++;
+          break;
+        case 5:
+          fiveDate = new Date(vd);
+          five++;
+          break;
+        case 6:
+          sixDate = new Date(vd);
+          six++;
+          break;
+        case 7:
+          sevenDate = new Date(vd);
+          seven++;
+          break;
+        case 8:
+          eightDate = new Date(vd);
+          eight++;
+          break;
+        case 9:
+          nineDate = new Date(vd);
+          nine++;
+          break;
+        case 1:
+          tenDate = new Date(vd);
+          ten++;
+          break;
+        case 11:
+          elevenDate = new Date(vd);
+          eleven++;
+          break;
+        case 12:
+          twelveDate = new Date(vd);
+          twelve++;
 
-
-    //return res.status(200).json(daysRequested)
+      }
+    });
+    holidays.map((pub) => {
+      holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+    });
+    daysRequested = dateDiff(statusRequest.start_date, statusRequest.end_date, holidaysArray)
     const empId = req.user.username.user_id;
     if (parseInt(daysRequested) <= 0) {
       return res.status(400).json('Leave duration must be greater or equal to 1')
     }
 
-
-    const leaveId = req.params.leaveId;
-    let leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
-        return data
-    });
     if(_.isNull(leave) || _.isEmpty(leave)){
       return res.status(400).json("Leave application does not exist.");
     }
@@ -461,30 +502,62 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res)=>{
     const removeAccruals = await leaveAccrualService.removeLeaveAccrualByLeaveApplication(parseInt(leaveId)).then((data)=>{
         return data
     })
-
-       leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data)=>{
-          return data
-      });
-
-      let leaveDate = new Date(leave.leapp_start_date)
-    const currentDate = new Date();
-    const calendarYear = currentDate.getMonth()+1 >= 1 || currentDate.getMonth()+1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear()+1}`;
-      const leaveAccrual = {
-          lea_emp_id: leave.leapp_empid,
-          lea_month: leaveDate.getFullYear(),
-          lea_year: leaveDate.getMonth() + 1,
-          lea_leave_type: leave.leapp_leave_type,
-          lea_rate: 0 - parseFloat(leave.leapp_total_days),
-          lea_archives: 0,
-          lea_expires_on: '1900-01-01',
-          lea_fy: calendarYear,
+    //Insert individually
+    for(let m = 1; m<= 12; m++){
+      let number = parseInt(m);
+      if (number === 1) {
+        if (one > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, oneDate.getFullYear(), oneDate.getMonth() + 1, leave.leapp_leave_type, one, leave.leapp_id);
+        }
+      }else if (number === 2) {
+        if (two > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, twoDate.getFullYear(), twoDate.getMonth() + 1, leave.leapp_leave_type, two, leave.leapp_id);
+        }
+      }else if (number === 3) {
+        if (three > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, threeDate.getFullYear(), threeDate.getMonth() + 1, leave.leapp_leave_type, three, leave.leapp_id);
+        }
+      }else if (number === 4) {
+        if (four > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, fourDate.getFullYear(), fourDate.getMonth() + 1, leave.leapp_leave_type, four, leave.leapp_id);
+        }
+      }else if (number === 5) {
+        if (five > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, fiveDate.getFullYear(), fiveDate.getMonth() + 1, leave.leapp_leave_type, five, leave.leapp_id);
+        }
+      }else if (number === 6) {
+        if (six > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, sixDate.getFullYear(), sixDate.getMonth() + 1, leave.leapp_leave_type, six, leave.leapp_id);
+        }
+      }else if (number === 7) {
+        if (seven > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, sevenDate.getFullYear(), sevenDate.getMonth() + 1, leave.leapp_leave_type, seven, leave.leapp_id);
+        }
+      }else if (number === 8) {
+        if (eight > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, eightDate.getFullYear(), eightDate.getMonth() + 1, leave.leapp_leave_type, eight, leave.leapp_id);
+        }
+      }else if (number === 9) {
+        if (nine > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, nineDate.getFullYear(), nineDate.getMonth() + 1, leave.leapp_leave_type, nine, leave.leapp_id);
+        }
+      }else if (number === 10) {
+        if (ten > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, tenDate.getFullYear(), tenDate.getMonth() + 1, leave.leapp_leave_type, ten, leave.leapp_id);
+        }
+      } else if (number === 11) {
+        if (eleven > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, elevenDate.getFullYear(), elevenDate.getMonth() + 1, leave.leapp_leave_type, eleven, leave.leapp_id);
+        }
+      } else if (number === 12) {
+        if (twelve > 0) {
+          await addToLeaveAccrual(leave.leapp_empid, twelveDate.getFullYear(), twelveDate.getMonth() + 1, leave.leapp_leave_type, twelve, leave.leapp_id);
+        }
       }
-      const addAccrualResponse = await addLeaveAccrual(leaveAccrual).then((data) => {
-          return data
-      })
+    }
     return res.status(200).json("Leave period updated");
   }catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json("Something went wrong."+e);
   }
 });
 
@@ -949,6 +1022,80 @@ function ExcelDateToJSDate(serial) {
   let hours = Math.floor(total_seconds / (60 * 60));
   let minutes = Math.floor(total_seconds / 60) % 60;
   return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
+}
+
+function dateDiff(start, end, holidays){
+  //const holidays = await PublicHoliday.getThisYearsPublicHolidays()
+  const startDate = new Date(start);
+  const endDate = new Date(end)
+  const diffTime = Math.abs(endDate - startDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))+1;
+  const pubHolidays = [];
+  //let n = 0;
+  let publicHolidays = 0;
+  let weekends = 0;
+  const steps = 1;
+  let currentDate = new Date(startDate);
+  while (currentDate <= new Date(endDate)) {
+    if(isWeekend(currentDate)){
+      weekends++;
+      pubHolidays.push(currentDate);
+    }
+    let setDate = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() + 1}-${(currentDate.getUTCDate() )}`
+    if(holidays.includes(setDate)){
+      if(!isWeekend(new Date(setDate))){
+        pubHolidays.push(currentDate);
+      }
+      publicHolidays++;
+
+    }
+    currentDate.setUTCDate(currentDate.getUTCDate() + steps);
+  }
+  return diffDays - parseInt(pubHolidays.length);
+
+}
+function getDatesInRange(startDate, endDate) {
+  const date = new Date(startDate.getTime());
+  const dates = [];
+
+  while (date <= endDate) {
+    if(isWeekend(date)){
+    }
+    let newDate = new Date(date);
+    let formattedNewDate = `${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()}`;
+    dates.push(formattedNewDate);
+    date.setDate(date.getDate() + 1);
+  }
+  return dates;
+}
+
+function getDatesInMonth(month, year) {
+  const numberOfDays = getDaysInMonth(new Date(year, month));
+  const dates = [];
+  for(let i = 1; i<= numberOfDays; i++){
+    let setDate = `${year}-${month}-${i}`
+    dates.push(setDate);
+  }
+  return dates;
+}
+
+async function addToLeaveAccrual(empId, year, month, leaveType, noDays, leaveId) {
+  const currentDate = new Date();
+  const calendarYear = currentDate.getMonth() + 1 >= 1 || currentDate.getMonth() + 1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear() + 1}`;
+  const val = {
+    lea_emp_id: empId,
+    lea_year: year,
+    lea_month: month,
+    lea_leave_type: leaveType,
+    lea_rate: 0 - noDays,
+    lea_archives: 0,
+    lea_leaveapp_id: leaveId,
+    lea_expires_on: '1900-01-01',
+    lea_fy: calendarYear,
+  }
+  const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
+    return data
+  })
 }
 
 //runLeaveSpillOver();
