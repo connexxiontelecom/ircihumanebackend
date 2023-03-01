@@ -135,27 +135,21 @@ async function sumLeaveAccrualByYearEmployeeLeaveType(year, employee_id, leave_t
 }
 
 async function sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    let filter= {};
+    let filter;
     if(month > 9){
         filter = {
             [Op.gt]: 9,
-            [Op.lte]: month
+            [Op.lt]: month + 1
         }
     }
     if(month < 9){
-        filter = {
-            [Op.and]:[
-                {
-                    [Op.gt]: 9,
-                    [Op.lte]: month
-                },
-                {
-                    [Op.gt]: 0,
-                    [Op.lte]: month
-                }
-            ]
+        const arr = [10, 11, 12];
 
+        for (let i = 1; i <= parseInt(month); i++) {
+            arr.push(i);
         }
+
+        filter = arr
     }
     return await LeaveAccrual.sum('lea_rate', {
         where: {
@@ -169,27 +163,21 @@ async function sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
 }
 
 async function sumLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    let filter= {};
+    let filter;
     if(month > 9){
         filter = {
             [Op.gt]: 9,
-            [Op.lte]: month
+            [Op.lt]: month + 1
         }
     }
     if(month < 9){
-        filter = {
-            [Op.and]:[
-                {
-                    [Op.gt]: 9,
-                    [Op.lte]: month
-                },
-                {
-                    [Op.gt]: 0,
-                    [Op.lte]: month
-                }
-            ]
+        const arr = [10, 11, 12];
 
+        for (let i = 1; i <= parseInt(month); i++) {
+            arr.push(i);
         }
+
+        filter = arr
     }
     return await LeaveAccrual.sum('lea_rate', {
         where: {
@@ -202,27 +190,21 @@ async function sumLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee
 }
 
 async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    let filter= {};
+    let filter;
     if(month > 9){
         filter = {
             [Op.gt]: 9,
-            [Op.lte]: month
+            [Op.lt]: month + 1
         }
     }
     if(month < 9){
-        filter = {
-            [Op.and]:[
-                {
-                    [Op.gt]: 9,
-                    [Op.lte]: month
-                },
-                {
-                    [Op.gt]: 0,
-                    [Op.lte]: month
-                }
-            ]
+        const arr = [10, 11, 12];
 
+        for (let i = 1; i <= parseInt(month); i++) {
+            arr.push(i);
         }
+
+        filter = arr
     }
     console.log('filter', filter);
     return await LeaveAccrual.sum('lea_rate', {
@@ -237,27 +219,21 @@ async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
 }
 
 async function getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    let filter= {};
+    let filter;
     if(month > 9){
         filter = {
             [Op.gt]: 9,
-            [Op.lte]: month
+            [Op.lt]: month + 1
         }
     }
     if(month < 9){
-        filter = {
-            [Op.and]:[
-                {
-                    [Op.gt]: 9,
-                    [Op.lte]: month
-                },
-                {
-                    [Op.gt]: 0,
-                    [Op.lte]: month
-                }
-            ]
+        const arr = [10, 11, 12];
 
+        for (let i = 1; i <= parseInt(month); i++) {
+            arr.push(i);
         }
+
+        filter = arr
     }
     return await LeaveAccrual.findAll( {
         where: {
@@ -271,27 +247,21 @@ async function getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
 }
 
 async function getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
-    let filter= {};
+    let filter;
     if(month > 9){
         filter = {
             [Op.gt]: 9,
-            [Op.lte]: month
+            [Op.lt]: month + 1
         }
     }
     if(month < 9){
-        filter = {
-            [Op.and]:[
-                {
-                    [Op.gt]: 9,
-                    [Op.lte]: month
-                },
-                {
-                    [Op.gt]: 0,
-                    [Op.lte]: month
-                }
-            ]
+        const arr = [10, 11, 12];
 
+        for (let i = 1; i <= parseInt(month); i++) {
+            arr.push(i);
         }
+
+        filter = arr
     }
     return await LeaveAccrual.findAll( {
         where: {
