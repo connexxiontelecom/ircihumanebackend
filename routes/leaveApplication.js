@@ -94,7 +94,7 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
 
         let endDate = new Date(leaveApplicationRequest.leapp_end_date);
         let endYear = endDate.getFullYear();
-        const leaveTypeIds = [2,12,13];
+        const leaveTypeIds = [2,11,13];
         if(!leaveTypeIds.includes(parseInt(req.body.leapp_leave_type))){
           if (isBefore(startDate, new Date())) {
             return res.status(400).json('Leave start date cannot be before today or today')
