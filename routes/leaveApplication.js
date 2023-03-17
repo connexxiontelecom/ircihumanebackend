@@ -743,9 +743,9 @@ router.post('/leave-application-tracking-report', async function(req, res){
         let employees = [];
 
         if(location === 0){
-            employees = await employee.getEmployees();
+            employees = await employee.getActiveEmployees();
         }else{
-            employees = await employee.getAllEmployeesByLocation(location);
+            employees = await employee.getActiveEmployeesByLocation(location);
         }
 
         const responseArray = [];
