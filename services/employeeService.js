@@ -481,6 +481,17 @@ async function updateProfilePicture(employeeId, employeeData) {
 
 }
 
+async function updateContractDate(employeeId, employeeData) {
+    return await employee.update({
+        emp_contract_end_date : employeeData.emp_contract_end_date
+    }, {
+        where: {
+            emp_id: employeeId
+        }
+    })
+
+}
+
 async function suspendEmployee(employeeId, suspensionReason) {
     return await employee.update({
         emp_status: 0,
@@ -728,7 +739,8 @@ module.exports = {
   getEmployeeByRelocatableStatus,
   getExcludedActiveEmployeesByIds,
     getEmployeeByD7,
-    updateGrossSalaryWithGrade
+    updateGrossSalaryWithGrade,
+    updateContractDate
   //emp
     //updateDepartment,
     //setNewDepartment,
