@@ -751,7 +751,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
         const responseArray = [];
 
         for(emp of employees){
-            const contractHireDate = new Date(emp.emp_contract_hire_date);
+            const contractHireDate = new Date(emp.emp_employment_date);
             const formatLastDayOfMonthDate = new Date(formatLastDayOfMonth);
             const monthDiff = await differenceInMonths(formatLastDayOfMonthDate, contractHireDate);
 
