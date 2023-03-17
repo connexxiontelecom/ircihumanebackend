@@ -47,7 +47,7 @@ const setNewPublicHoliday = async (req, res) => {
             public_name: Joi.string().required(),
             public_date: Joi.date().required(),
             public_date_to: Joi.date().required(),
-            public_location: Joi.number().required(),
+            public_location: Joi.number().default(0),
         })
         const publicRequest = req.body
         const validationResult = schema.validate(publicRequest)
