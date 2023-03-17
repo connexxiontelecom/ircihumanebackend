@@ -377,6 +377,18 @@ async function updateGrossSalary(employeeId, employeeGross) {
 
 }
 
+async function updateGrossSalaryWithGrade(employeeId, employeeGross, grade) {
+    return await employee.update({
+        emp_gross: employeeGross,
+        emp_grade_id: grade
+    }, {
+        where: {
+            emp_id: employeeId
+        }
+    })
+
+}
+
 async function getEmployeeById(employeeId) {
     return await employee.findOne({
         where: {emp_unique_id: employeeId},
@@ -461,6 +473,17 @@ async function getExcludedActiveEmployeesByIds(ids) {
 async function updateProfilePicture(employeeId, employeeData) {
     return await employee.update({
         emp_passport: employeeData.emp_passport
+    }, {
+        where: {
+            emp_id: employeeId
+        }
+    })
+
+}
+
+async function updateContractDate(employeeId, employeeData) {
+    return await employee.update({
+        emp_contract_end_date : employeeData.emp_contract_end_date
     }, {
         where: {
             emp_id: employeeId
@@ -716,6 +739,8 @@ module.exports = {
   getEmployeeByRelocatableStatus,
   getExcludedActiveEmployeesByIds,
     getEmployeeByD7,
+    updateGrossSalaryWithGrade,
+    updateContractDate
   //emp
     //updateDepartment,
     //setNewDepartment,
