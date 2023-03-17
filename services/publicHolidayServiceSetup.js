@@ -47,6 +47,7 @@ const setNewPublicHoliday = async (req, res) => {
             public_name: Joi.string().required(),
             public_date: Joi.date().required(),
             public_date_to: Joi.date().required(),
+            public_location: Joi.number().required(),
         })
         const publicRequest = req.body
         const validationResult = schema.validate(publicRequest)
@@ -54,7 +55,7 @@ const setNewPublicHoliday = async (req, res) => {
         if (validationResult.error) {
             return res.status(400).json(validationResult.error.details[0].message)
         }
-        const {public_name, public_date, public_date_to} = req.body;
+        const {public_name, public_date, public_date_to, public_location } = req.body;
         const date = new Date(public_date);
         const day = date.getUTCDate();
         const month = date.getUTCMonth() + 1;
@@ -87,7 +88,7 @@ const setNewPublicHoliday = async (req, res) => {
             ph_month: month,
             ph_year: year,
             ph_date: public_date,
-
+            ph_location: public_location,
             ph_to_date: public_date_to,
             ph_to_day: to_day,
             ph_to_month: to_month,
@@ -108,6 +109,7 @@ const setNewPublicHoliday = async (req, res) => {
                 ph_to_year: to_year,
                 ph_year: year,
                 ph_group: group,
+                ph_location: public_location,
               }
               await PublicHoliday.create(loopPub)
                 .catch(errHandler);
