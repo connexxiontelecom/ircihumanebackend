@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         ph_month: DataTypes.STRING,
         ph_year: DataTypes.STRING,
         ph_date: DataTypes.DATE,
-        ph_location: DataTypes.INTEGER,
+        //ph_location: DataTypes.INTEGER,
         ph_to_date: DataTypes.DATE,
         ph_to_day: DataTypes.STRING,
         ph_to_month: DataTypes.STRING,
