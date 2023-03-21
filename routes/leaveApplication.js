@@ -856,6 +856,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
                 t6: emp.location?.l_t6_code,
                 contractType: typeOfHire,
                 contractHireDate: contractHireDate,
+                contractEndDate: emp?.emp_contract_end_date,
                 annualLeaveRate: annualLeaveDetails.lt_rate,
                 sickLeaveRate: sickLeaveDetails.lt_rate,
                 annualLeaveAccrued: annualLeaveAccrued,
