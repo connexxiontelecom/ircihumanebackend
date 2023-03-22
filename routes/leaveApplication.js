@@ -33,6 +33,7 @@ const eachDayOfInterval = require("date-fns/eachDayOfInterval");
 const getDaysInMonth = require("date-fns/getDaysInMonth");
 const reader = require("xlsx");
 const employee = require("../services/employeeService");
+const salaryService = require('../services/salaryService')
 const fs = require('fs');
 const path = require('path');
 
@@ -743,14 +744,21 @@ router.post('/leave-application-tracking-report', async function(req, res){
         let employees = [];
 
         if(location === 0){
-            employees = await employee.getActiveEmployees();
+            employees = await employee.getEmployees();
         }else{
-            employees = await employee.getActiveEmployeesByLocation(location);
+            employees = await employee.getAllEmployeesByLocation(location);
         }
 
         const responseArray = [];
 
         for(emp of employees){
+
+           const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
+
+           if(_.isEmpty(salaryCheck) || _.isNull(salaryCheck)){
+               continue;
+           }
+
             const contractHireDate = new Date(emp.emp_employment_date);
             const formatLastDayOfMonthDate = new Date(formatLastDayOfMonth);
             const monthDiff = await differenceInMonths(formatLastDayOfMonthDate, contractHireDate);
