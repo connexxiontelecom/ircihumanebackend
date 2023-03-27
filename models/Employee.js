@@ -68,6 +68,8 @@ module.exports = (sequelize, DataTypes) => {
 
 
 
+
+
         static async getListOfEmployeesSupervising(empId){
             return await Employee.findAll({where:{emp_supervisor_id:empId}})
         }
@@ -222,6 +224,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(FunctionalAreaModel, {as:'functionalArea', foreignKey:'emp_d6'});
     Employee.hasMany(FunctionalAreaModel, {foreignKey: 'fa_id'})
+
+    //Employee.belongsTo(FunctionalAreaModel, {as:'functionalArea', foreignKey:'emp_d6'});
 
 
     //Employee.hasMany(authorizationModel, {foreignKey:'auth_officer_id',  as: 'officers'});

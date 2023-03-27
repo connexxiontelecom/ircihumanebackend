@@ -82,6 +82,20 @@ module.exports = (sequelize, DataTypes) => {
         order:[['ta_id', 'DESC']]
       })
     }
+    static async getAllTimesheetSubmissionByMonthYearEmpds(month, year, empIds){
+      return await timeallocation.findAll({
+        where:{ta_month:month, ta_year: year, ta_emp_id:empIds},
+        include:[
+          {model:Employee, as:'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+              {model:SectorModel, as: 'sector'},
+              {model:JobroleModel, as: 'jobrole'},
+            ]},
+        ],
+        order:[['ta_id', 'DESC']]
+      })
+    }
     static async getOneTimesheetSubmissionByRefNo(ref_no){
       return await timeallocation.findOne({
         where:{ta_ref_no:ref_no},

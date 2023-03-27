@@ -484,24 +484,35 @@ router.post('/timesheet-application-tracking-report', auth(), async function(req
 
         const month = req.body.month;
         const year = req.body.year;
-        //let fyYear = `${year}`;
-        //let fyYear = `FY${year}`;
         const location = req.body.location;
-        let employees = [];
+        let employees;
         const empIds = [];
+        const timesheetEmpIds = [];
         if(location === 0){
           employees = await employee.getEmployees();
         }else{
           employees = await employee.getAllEmployeesByLocation(parseInt(location));
         }
         const loc = await locationModel.getLocationById(location);
-
         employees.map((emp)=>{
           empIds.push(emp.emp_id);
         });
-
-      const allocations = await timeAllocationModel.getTimesheetSubmissionByMonthYearEmpds(parseInt(month), parseInt(year), empIds);
-    return res.status(200).json({allocations,loc});
+      const allocations = await timeAllocationModel.getAllTimesheetSubmissionByMonthYearEmpds(parseInt(month), parseInt(year), empIds);
+        allocations.map((alloc)=>{
+          timesheetEmpIds.push({
+            empId: alloc.ta_emp_id,
+            status: alloc.ta_status,
+            ref: alloc.ta_ref_no,
+            month:alloc.ta_month,
+            year:alloc.ta_year
+          })
+        });
+        const obj = {
+          employees,
+          timesheetEmpIds,
+          loc
+        }
+    return res.status(200).json(obj);
   }catch (e) {
     return res.status(400).json('Whoops!');
   }
