@@ -33,6 +33,7 @@ const eachDayOfInterval = require("date-fns/eachDayOfInterval");
 const getDaysInMonth = require("date-fns/getDaysInMonth");
 const reader = require("xlsx");
 const employee = require("../services/employeeService");
+const salaryService = require('../services/salaryService')
 const fs = require('fs');
 const path = require('path');
 
@@ -276,8 +277,10 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
                     });
                     authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
                       let office = "";
+                      console.log(officers)
                       officers.map((off)=>{
-                        office += `${off.officers.emp_first_name} (${off.officers.emp_unique_id}), `;
+                        if (off?.officers)
+                          office += `${off?.officers?.emp_first_name} (${off?.officers?.emp_unique_id}), `;
                       })
                         leaveObj = {
                             data,
@@ -749,7 +752,14 @@ router.post('/leave-application-tracking-report', async function(req, res){
         const responseArray = [];
 
         for(emp of employees){
-            const contractHireDate = new Date(emp.emp_contract_hire_date);
+
+           const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
+
+           if(_.isEmpty(salaryCheck) || _.isNull(salaryCheck)){
+               continue;
+           }
+
+            const contractHireDate = new Date(emp.emp_employment_date);
             const formatLastDayOfMonthDate = new Date(formatLastDayOfMonth);
             const monthDiff = await differenceInMonths(formatLastDayOfMonthDate, contractHireDate);
 
@@ -854,6 +864,7 @@ router.post('/leave-application-tracking-report', async function(req, res){
                 t6: emp.location?.l_t6_code,
                 contractType: typeOfHire,
                 contractHireDate: contractHireDate,
+                contractEndDate: emp?.emp_contract_end_date,
                 annualLeaveRate: annualLeaveDetails.lt_rate,
                 sickLeaveRate: sickLeaveDetails.lt_rate,
                 annualLeaveAccrued: annualLeaveAccrued,

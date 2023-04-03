@@ -297,7 +297,7 @@ router.patch('/update-salary-structure/:emp_id', auth(), async function (req, re
                                 })
 
                             }
-                            await employee.updateGrossSalary(empId, gross).then((updateData) => {
+                            await employee.updateGrossSalaryWithGrade(empId, gross, salaryStructureRequest.ss_grade ).then((updateData) => {
                                 if (!(_.isEmpty(updateData) || _.isNull(updateData))) {
                                     const logData = {
                                         "log_user_id": req.user.username.user_id,

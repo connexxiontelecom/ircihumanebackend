@@ -17,6 +17,12 @@ const path = require('path')
 const user = require("../services/userService");
 const {sequelize, Sequelize} = require("../services/db");
 const {isAfter} = require("date-fns");
+const salaryMappingMasterService = require("../services/salaryMappingMasterService");
+const https = require("https");
+const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
+const reader = require("xlsx");
+const employeeService = require("../services/employeeService");
+const timeAllocationService = require("../services/timeAllocationService");
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
@@ -571,6 +577,81 @@ router.get('/get-d-codes/:type', async function(req, res){
     return res.status(400).json("Something went wrong. Try again.");
   }
 });
+
+router.post('/upload-contract-end-date', auth(), async function (req, res, next) {
+    try {
+        const file = await fs.createWriteStream("contract_end_date.xlsx")
+        let fileExt = path.extname(req.files.contract_end.name)
+        fileExt = fileExt.toLowerCase()
+        if (fileExt === '.csv' || fileExt === '.xlsx' || fileExt === '.xls') {
+            let uploadResponse = await uploadFile(req.files.contract_end).then((response) => {
+                return response
+            }).catch(err => {
+                return res.status(400).json(err)
+            })
+            uploadResponse = String(uploadResponse)
+            await https.get(uploadResponse, async function (response) {
+                await response.pipe(file);
+            });
+            return res.status(200).json('Uploaded Successfully')
+        }
+
+        if (fs.existsSync('./contract_end_date.xlsx')) {
+            await fs.unlinkSync('./contract_end_date.xlsx')
+        }
+        return res.status(400).json('Invalid file Type')
+    } catch (err) {
+        if (fs.existsSync('./contract_end_date.xlsx')) {
+            await fs.unlinkSync('./contract_end_date.xlsx')
+        }
+        return res.status(400).json(err.message)
+
+    }
+});
+
+router.get('/process-contract-end-date', auth(), async function (req, res, next) {
+    try {
+
+        await sleep(60000);
+
+        if (!fs.existsSync('./contract_end_date.xlsx')) {
+            return res.status(400).json('File has not been uploaded')
+        }
+        const files = await reader.readFile('./contract_end_date.xlsx')
+        let rows = []
+        const sheets = files.SheetNames
+
+        for (let i = 0; i < sheets.length; i++) {
+            const temp = reader.utils.sheet_to_json(files.Sheets[files.SheetNames[i]])
+            for (const res1 of temp) {
+                rows.push(res1)
+            }
+        }
+
+        if (_.isEmpty(rows) || _.isNull(rows)) {
+            return res.status(400).json('File has not been uploaded')
+        }
+
+        for (const row of rows) {
+            const { d7, date } = row;
+
+            if (d7 && date) {
+                const employeeData = await employees.getEmployeeByD7(d7);
+
+                if (!_.isEmpty(employeeData) && !_.isNull(employeeData)) {
+                    await employees.updateContractDate(employeeData.emp_id, { emp_contract_end_date: date });
+                }
+            }
+        }
+        await fs.unlinkSync('./contract_end_date.xlsx')
+        return res.status(200).json('Contract EndDate uploaded successfully')
+    } catch (err) {
+        console.error(err.message);
+        next(err);
+    }
+});
+
+
 const uploadFile = (fileRequest) => {//const fileRequest = req.files.test
     return new Promise(async (resolve, reject) => {
         let s3Res;
@@ -619,4 +700,9 @@ router.post('/swap-relocatable-status', async function(req, res){
   }
 });
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 module.exports = router;

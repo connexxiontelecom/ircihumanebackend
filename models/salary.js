@@ -6,7 +6,10 @@ const {
 
 const Pd = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes)
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
+const Location = require("../models/Location")(sequelize, Sequelize.DataTypes)
+const Jobrole = require("../models/JobRole")(sequelize, Sequelize.DataTypes)
 const Bank = require("../models/Bank")(sequelize, Sequelize.DataTypes)
+const Sector = require("../models/Department")(sequelize, Sequelize.DataTypes)
 module.exports = (sequelize, DataTypes) => {
   class salary extends Model {
     /**
@@ -17,6 +20,37 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async generateEmployeesTimesheetReportByLocation(empIds, locationId, month, year){
+      return await salary.findAll({
+        group:['salary_empid'],
+        include:[{model:Employee, as:'employee'},{model:Location, as:'location'}, {model:Jobrole, as:'jobrole'}],
+        where:{
+          salary_empid:empIds,
+          salary_location_id:locationId,
+          salary_paymonth: month,
+          salary_payyear: year,
+        }})
+    }
+
+    static async generateAllEmployeesTimesheetReport(empIds, month, year){
+      return await salary.findAll({
+        group:['salary_empid'],
+        include:[
+          {
+          model:Employee, as:'employee',
+            include:[{model:Sector, as: 'sector'}]
+          },
+          {model:Location, as:'location'},
+          {model:Jobrole, as:'jobrole'}],
+        where:{
+          salary_empid:empIds,
+          salary_paymonth: month,
+          salary_payyear: year,
+        }})
+    }
+
+
   };
   salary.init({
     salary_id: {
@@ -57,11 +91,17 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'salary'
   });
 
+
+
   salary.belongsTo(Pd, { as:'payment', foreignKey: 'salary_pd' })
   salary.hasMany(Pd, { foreignKey: 'pd_id' })
 
   salary.belongsTo(Employee, {as: 'employee', foreignKey: 'salary_empid'})
   salary.hasMany(Employee, { foreignKey: 'emp_id' })
+
+  salary.belongsTo(Location, {as: 'location', foreignKey: 'salary_location_id'})
+
+  salary.belongsTo(Jobrole, {as: 'jobrole', foreignKey: 'salary_jobrole_id'})
 
   salary.belongsTo(Bank, {as: 'bank', foreignKey: 'salary_bank_id'})
   salary.hasMany(Bank, { foreignKey: 'bank_id' })

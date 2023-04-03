@@ -19,6 +19,7 @@ const locationModel = require('../models/Location')(sequelize, Sequelize.DataTyp
 const salaryMappingDetailsService = require("../services/salaryMappingDetailService");
 const salaryMappingMasterService = require("../services/salaryMappingMasterService");
 const mailer = require("../services/IRCMailer");
+const salaryModel = require('../models/salary')(sequelize, Sequelize.DataTypes);
 const leaveApplication = require("../services/leaveApplicationService");
 
 router.get('/', auth(), async function (req, res, next) {
@@ -497,6 +498,8 @@ router.post('/timesheet-application-tracking-report', auth(), async function(req
         employees.map((emp)=>{
           empIds.push(emp.emp_id);
         });
+        //Salary table
+      const salaryEmployees = location === 0 ? await salaryModel.generateAllEmployeesTimesheetReport(empIds, month, year) : await salaryModel.generateEmployeesTimesheetReportByLocation(empIds, location, month, year);
       const allocations = await timeAllocationModel.getAllTimesheetSubmissionByMonthYearEmpds(parseInt(month), parseInt(year), empIds);
         allocations.map((alloc)=>{
           timesheetEmpIds.push({
@@ -507,11 +510,13 @@ router.post('/timesheet-application-tracking-report', auth(), async function(req
             year:alloc.ta_year
           })
         });
+       // return res.status(200).json(timesheetEmpIds);
         const obj = {
-          employees,
+          salaryEmployees,
           timesheetEmpIds,
           loc
         }
+        return res.status(200).json(obj);
     return res.status(200).json(obj);
   }catch (e) {
     return res.status(400).json('Whoops!');
