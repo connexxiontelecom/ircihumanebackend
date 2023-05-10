@@ -636,10 +636,15 @@ router.get('/process-contract-end-date', auth(), async function (req, res, next)
             const { d7, date } = row;
 
             if (d7 && date) {
+                const newDate = new Date(date);
+                const newYear = newDate.getFullYear()
+                const newMonth = newDate.getMonth() + 1
+                const newDay = newDate.getDate()
+                const newDate1 = `${newYear}-${newMonth}-${newDay}`
                 const employeeData = await employees.getEmployeeByD7(d7);
 
                 if (!_.isEmpty(employeeData) && !_.isNull(employeeData)) {
-                    await employees.updateContractDate(employeeData.emp_id, { emp_contract_end_date: date });
+                    await employees.updateContractDate(employeeData.emp_id, { emp_contract_end_date: newDate1 });
                 }
             }
         }
