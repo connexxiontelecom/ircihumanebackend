@@ -645,6 +645,8 @@ router.get('/process-contract-end-date', auth(), async function (req, res, next)
 
                 if (!_.isEmpty(employeeData) && !_.isNull(employeeData)) {
                     await employees.updateContractDate(employeeData.emp_id, { emp_contract_end_date: newDate1 });
+                    await employees.unSuspendEmployee(employeeData.emp_id);
+                    await user.unSuspendUser(employeeData.emp_unique_id);
                 }
             }
         }
