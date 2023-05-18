@@ -21,7 +21,7 @@ const departmentService = require('../services/departmentService')
 const jobRoleService = require('../services/jobRoleService')
 const mailer = require('../services/IRCMailer')
 const ROLES = require('../roles')
-const pensionService = require('../services/pensionProviderService')
+const pensionService = require('../services/pensionProivderService')
 const {
     addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees
 } = require("../routes/leaveAccrual");
