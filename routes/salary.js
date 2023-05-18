@@ -21,6 +21,7 @@ const departmentService = require('../services/departmentService')
 const jobRoleService = require('../services/jobRoleService')
 const mailer = require('../services/IRCMailer')
 const ROLES = require('../roles')
+const pensionService = require('../services/pensionProviderService')
 const {
     addLeaveAccrual, computeLeaveAccruals, removeLeaveAccrual, removeLeaveAccrualEmployees
 } = require("../routes/leaveAccrual");
@@ -4987,9 +4988,7 @@ router.post('/pension-report', auth(), async function (req, res, next) {
 
             let pensionArray = [];
 
-            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
-                return data
-            })
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id)
 
             if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
 
@@ -5000,9 +4999,7 @@ router.post('/pension-report', auth(), async function (req, res, next) {
                 let empAdjustedGross = 0
 
 
-                let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
-                    return data
-                })
+                let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id)
 
 
                 for (const salary of fullSalaryData) {
@@ -5042,9 +5039,7 @@ router.post('/pension-report', auth(), async function (req, res, next) {
                 for (const pensionPayment of pensionPayments) {
                     let amount = 0
 
-                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id).then((data) => {
-                        return data
-                    })
+                    let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id)
                     if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
                         amount = parseFloat(checkSalary.salary_amount)
                     }
@@ -5059,8 +5054,11 @@ router.post('/pension-report', auth(), async function (req, res, next) {
 
 
                 let pfa = 'N/A'
-                if ((!_.isNull(emp.emp_pension_id) || parseInt(emp.emp_pension_id) > 0)) {
-                    pfa = emp.pension.provider_name
+                if ((!_.isNull(employeeSalaries[0].salary_pfa) || parseInt(employeeSalaries[0].salary_pfa) > 0)) {
+                    const pensionProvider = await pensionService.getPensionServiceById(employeeSalaries[0].salary_pfa)
+                    if (!_.isEmpty(pensionProvider)) {
+                        pfa = pensionProvider.provider_name
+                    }
                 }
 
                 let empJobRole = 'N/A'
