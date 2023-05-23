@@ -2846,12 +2846,11 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
 
             let employees = []
             if (pmylLocationId === 0) {
-                employees = await employee.getEmployees().then((data) => {
-                    return data
-                })
+                employees = await employee.getEmployees();
             } else {
-                employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId).then((data) => {
-                    return data
+                employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId);
+                employees = employees.map((emp) => {
+                    return{ emp_id: emp.salary_empid}
                 })
             }
 
@@ -2869,7 +2868,7 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
                 let deductions = []
                 let incomes = []
 
-                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid).then((data) => {
+                let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id).then((data) => {
                     return data
                 })
 
@@ -2878,7 +2877,7 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
                     let empAdjustedGrossII = 0
                     let mainDeductions = 0
                     let empSalaryStructureName = 'N/A'
-                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.salary_empid).then((data) => {
+                    let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id).then((data) => {
                         return data
                     })
 
@@ -4033,8 +4032,9 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
                     return data
                 })
             } else {
-                employees = await employee.getAllEmployeesByLocation(pmylLocationId).then((data) => {
-                    return data
+                employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId);
+                employees = employees.map((emp) => {
+                    return{ emp_id: emp.salary_empid}
                 })
             }
 
