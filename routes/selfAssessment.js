@@ -176,6 +176,8 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, 
 
 
     } catch (err) {
+      res.status(400).json(err.message);
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -395,6 +397,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async functi
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -454,6 +457,7 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth(), async function (req, r
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -493,6 +497,7 @@ router.post('/approve-assessment/', auth(), async function (req, res, next) {
         })
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -617,6 +622,7 @@ router.patch('/respond-self-assessment/:emp_id/', auth(), async function (req, r
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -665,6 +671,7 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth(), async function (req, r
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -838,6 +845,7 @@ router.patch('/update-assessment/:emp_id/:gs_id/:masterId', auth(), async functi
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -959,6 +967,7 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth(), async function (req, res
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -1038,15 +1047,13 @@ router.get('/get-self-assessment-by-master/:masterId', auth(), async function (r
   try {
 
     const masterId = req.params.masterId;
-
     const master = await selfAssessment.getOneSelfAssessmentByMasterId(parseInt(masterId)).then(r=>{
       return r;
     });
-
     const gsData = await goalSetting.getGoalSetting(parseInt(master.sa_gs_id)).then((data) => {
       return data
     })
-
+    //return res.status(400).json(gsData)
     if(_.isEmpty(master) || _.isNull(master)){
       return res.status(400).json("Something went wrong. Try again.");
     } else {
@@ -1116,7 +1123,8 @@ router.get('/get-self-assessment-by-master/:masterId', auth(), async function (r
 
 
   } catch (err) {
-    return res.status(400).json(`Error while Responding to Goals `);
+    //Error while Responding to Goals Cannot read properties of null (reading 'sa_gs_id')
+    return res.status(400).json(`Error while Responding to Goals ${err.message}`);
     next(err);
   }
 });

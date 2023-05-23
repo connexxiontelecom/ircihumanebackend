@@ -16,6 +16,7 @@ const ReportingEntityModel = require("../models/reportingentity")(sequelize, Seq
 const OperationUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes);
 const FunctionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes);
 const SalaryGradeModel = require("../models/salarygrade")(sequelize, Sequelize.DataTypes);
+//const SalaryStructureModel = require("../models/salarystructure")(sequelize, Sequelize.DataTypes);
 
 
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
@@ -190,6 +191,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
   Employee.belongsTo(SalaryGradeModel, {as: 'salaryGrade', foreignKey: 'emp_grade_id'})
+  //Employee.belongsTo(SalaryStructureModel, {as: 'salary_structure', foreignKey: 'ss_empid'})
   Employee.belongsTo(Employee, {as: 'supervisor', foreignKey: 'emp_supervisor_id'})
     Employee.hasMany(Employee, { foreignKey: 'emp_id' })
 
@@ -216,6 +218,9 @@ module.exports = (sequelize, DataTypes) => {
 
     Employee.belongsTo(pensionModel, {as:'pension', foreignKey:'emp_pension_id'});
     Employee.hasMany(pensionModel, {foreignKey: 'pension_provider_id'})
+
+
+
 
     Employee.belongsTo(OperationUnitModel, {as:'operationUnit', foreignKey:'emp_d4'});
     Employee.hasMany(OperationUnitModel, {foreignKey: 'ou_id'})
