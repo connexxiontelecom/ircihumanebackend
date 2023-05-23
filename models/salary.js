@@ -108,5 +108,7 @@ module.exports = (sequelize, DataTypes) => {
 
 
 
+
+
   return salary;
 };
