@@ -9,6 +9,7 @@ const locationModel = require("../models/Location")(sequelize, Sequelize.DataTyp
 const operationalUnitModel = require("../models/operationunit")(sequelize, Sequelize.DataTypes)
 const reportingEntityModel = require("../models/reportingentity")(sequelize, Sequelize.DataTypes)
 const functionalAreaModel = require("../models/functionalarea")(sequelize, Sequelize.DataTypes)
+const salaryStructureModel = require("../models/salarystructure")(sequelize, Sequelize.DataTypes)
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -456,7 +457,7 @@ async function getActiveEmployees() {
             emp_status: [1, 2]
         },
         include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector','lga','state',
-            'functionalArea', 'reportingEntity', 'operationUnit', 'salaryGrade']
+            'functionalArea', 'reportingEntity', 'operationUnit', 'salaryGrade', 'salary_structure']
     })
 }
 async function getExcludedActiveEmployeesByIds(ids) {
