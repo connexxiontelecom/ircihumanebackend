@@ -4806,15 +4806,15 @@ router.post('/pay-order', auth(), async function (req, res, next) {
         const payrollMonth = payrollRequest.pym_month
         const payrollYear = payrollRequest.pym_year
         const location = payrollRequest.pym_location
-        let employees
+        let employees = [];
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
-                return data
-            })
+            const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
+            for(const emp of employeesFromSalary){
+                const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
+                employees.push(tempEmp);
+            }
         } else {
-            employees = await employee.getEmployees().then((data) => {
-                return data
-            })
+            employees = await employee.getEmployees()
         }
         //check if payroll routine has been run
         let employeeSalary = []
@@ -5362,15 +5362,15 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
         const payrollMonth = payrollRequest.pym_month
         const payrollYear = payrollRequest.pym_year
         const location = payrollRequest.pym_location
-        let employees
+        let employees = [];
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
-                return data
-            })
+            const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
+            for(const emp of employeesFromSalary){
+                const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
+                employees.push(tempEmp);
+            }
         } else {
-            employees = await employee.getEmployees().then((data) => {
-                return data
-            })
+            employees = await employee.getEmployees()
         }
         //check if payroll routine has been run
         let employeeSalary = []
