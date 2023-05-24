@@ -232,7 +232,7 @@ async function getEmployee(employeeId) {
 async function getEmployees() {
     return await employee.findAll({
         include: ['supervisor', 'location', 'bank', 'jobrole', 'sector',
-          'functionalArea', 'reportingEntity', 'operationUnit', 'pension', 'lga', 'state']
+          'functionalArea', 'reportingEntity', 'operationUnit', 'salaryGrade', 'pension', 'lga', 'state']
     })
 }
 async function getActiveEmployees(status) {
