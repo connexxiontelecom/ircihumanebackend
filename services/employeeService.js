@@ -626,7 +626,9 @@ async function getInactiveEmployees() {
                     }
                 },
             include: ['supervisor', 'location', 'pension', 'bank', 'jobrole', 'sector', 'lga','state',
-              'functionalArea', 'reportingEntity', 'operationUnit', 'salaryGrade']
+              'functionalArea', 'reportingEntity', 'operationUnit','salaryGrade',
+              //{include: [{ model: salaryStructureModel, as: 'salary_grade'}]}
+            ]
 
         }
     )
