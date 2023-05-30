@@ -549,7 +549,7 @@ router.post('/get-employee-report', auth(), async function (req, res, next) {
         return res.status(200).json(employeesArray)
 
     } catch (err) {
-        return res.status(200).json(`An error occurred while fetching Employee `);
+        return res.status(200).json(`An error occurred while fetching Employee `+err);
         next(err);
     }
 })
