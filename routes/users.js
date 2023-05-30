@@ -14,7 +14,7 @@ const ROLES = require('../roles')
 const _ = require('lodash')
 const mailer = require("../services/IRCMailer");
 const employee = require("../services/employeeService");
-
+const User = require("../models/user")(sequelize, Sequelize.DataTypes)
 
 /* Get All Users */
 router.get('/', auth(), async function (req, res, next) {
@@ -722,7 +722,37 @@ function generateAccessToken(username) {
 }
 
 
-router.post('/change-password', auth, users.changePassword);
+router.post('/change-password', auth(), users.changePassword);
+
+router.post('/default-password',auth(), async function(req, res){
+  try{
+    let userId = req.body.userId;
+    let user = await User.findOne({where: {user_id: req.body.userId}});
+    if(user){
+      const hashedPassword = bcrypt.hashSync('password1234', 10);
+      await User.update({
+        user_password: hashedPassword,
+      }, {
+        where: {
+          user_id: userId
+        }
+      });
+      //Log
+      const logData = {
+        "log_user_id": req.user.username.user_id,
+        "log_description": `Log on user: Password change`,
+        "log_date": new Date()
+      }
+      logs.addLog(logData).then((logRes) => {
+        return res.status(200).json(`Password reset to default!`);
+      });
+    }else{
+      return res.status(400).json(`Password reset failed!`);
+    }
+  }catch (e){
+    return res.status(400).json('Password reset failed'+e);
+  }
+});
 
 /* Login User */
 router.post('/forgot-password', async function (req, res, next) {
