@@ -380,6 +380,17 @@ async function updateGrossSalary(employeeId, employeeGross) {
 
 }
 
+async function updateSalaryGrade(employeeId, grade) {
+    return await employee.update({
+        emp_grade_id: grade
+    }, {
+        where: {
+            emp_id: employeeId
+        }
+    })
+
+}
+
 async function updateGrossSalaryWithGrade(employeeId, employeeGross, grade) {
     return await employee.update({
         emp_gross: employeeGross,
@@ -745,7 +756,8 @@ module.exports = {
   getExcludedActiveEmployeesByIds,
     getEmployeeByD7,
     updateGrossSalaryWithGrade,
-    updateContractDate
+    updateContractDate,
+  updateSalaryGrade
   //emp
     //updateDepartment,
     //setNewDepartment,

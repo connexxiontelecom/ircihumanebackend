@@ -92,6 +92,8 @@ router.post('/add-salary-structure', auth(), async function (req, res, next) {
                             await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
                             await employee.updateGrossSalary(empId, 0).then()
 
+                            await employee.updateSalaryGrade(empId, salaryStructureRequest.ss_grade).then();
+
                             let salaryObject = {}
                             let amount
                             let percent
@@ -273,6 +275,7 @@ router.patch('/update-salary-structure/:emp_id', auth(), async function (req, re
                             await salaryStructure.deleteSalaryStructuresEmployee(empId).then()
 
                             await employee.updateGrossSalary(empId, 0).then()
+                            await employee.updateSalaryGrade(empId, salaryStructureRequest.ss_grade).then();
                             let salaryObject = {}
                             let amount
                             let percent
