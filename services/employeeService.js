@@ -333,6 +333,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
         emp_next_of_kin_phone_no: employeeData.emp_next_of_kin_phone_no,
         emp_ailments: employeeData.emp_ailments,
         emp_blood_group: employeeData.emp_blood_group,
+        emp_contact_address: employeeData.emp_contact_address,
         emp_genotype: employeeData.emp_genotype,
         emp_emergency_name: employeeData.emp_emergency_name,
         emp_emergency_contact: employeeData.emp_emergency_contact,
