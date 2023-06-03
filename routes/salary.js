@@ -4015,9 +4015,7 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
         const payrollYear = payrollRequest.pym_year
         //check if payroll routine has been run
         let employeeSalary = []
-        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear).then((data) => {
-            return data
-        })
+        const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear)
 
         if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
 
@@ -4034,7 +4032,7 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
             } else {
                 employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId);
                 employees = employees.map((emp) => {
-                    return{ emp_id: emp.salary_empid}
+                    return{ emp_id: emp.salary_empid }
                 })
             }
 
@@ -4152,7 +4150,7 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
 
                     let salaryObject = {
                         employeeId: emp.emp_id,
-                        employeeD7: emp.emp_d7,
+                        employeeD7: employeeSalaries[0].salary_d7,
                         /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
                         employeeD5: emp.reportingEntity.re_name,*/
@@ -4219,10 +4217,7 @@ router.post('/deduction-report', auth(), async function (req, res, next) {
 
         } else {
 
-            const employees = await employee.getActiveEmployees().then((data) => {
-                return data
-            })
-
+            const employees = await employee.getActiveEmployees();
             for (const emp of employees) {
 
 
@@ -4292,7 +4287,7 @@ router.post('/deduction-report', auth(), async function (req, res, next) {
                     let salaryObject = {
                         employeeId: emp.emp_id,
 
-                        employeeD7: emp.emp_d7,
+                        employeeD7: employeeSalaries[0].salary_d7,
                         /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
                         employeeD5: emp.reportingEntity.re_name,*/
@@ -5107,7 +5102,7 @@ router.post('/pension-report', auth(), async function (req, res, next) {
                 let salaryObject = {
                     employeeId: emp.emp_id,
 
-                    employeeD7: emp.emp_d7,
+                    employeeD7: employeeSalaries[0].salary_d7,
                     /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
                     employeeD5: emp.reportingEntity.re_name,*/
@@ -5161,15 +5156,15 @@ router.post('/nhf-report', auth(), async function (req, res, next) {
         const payrollMonth = payrollRequest.pym_month
         const payrollYear = payrollRequest.pym_year
         const location = payrollRequest.pym_location
-        let employees
+        let employees = [];
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
-                return data
-            })
+            const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
+            for(const emp of employeesFromSalary){
+                const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
+                employees.push(tempEmp);
+            }
         } else {
-            employees = await employee.getEmployees().then((data) => {
-                return data
-            })
+            employees = await employee.getEmployees();
         }
         //check if payroll routine has been run
         let employeeSalary = []
@@ -5491,7 +5486,7 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
                 let salaryObject = {
                     employeeId: emp.emp_id,
 
-                    employeeD7: emp.emp_d7,
+                    employeeD7: employeeSalaries[0].salary_d7,
                     /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
                     employeeD5: emp.reportingEntity.re_name,*/
@@ -5539,15 +5534,15 @@ router.post('/tax-report', auth(), async function (req, res, next) {
         const payrollMonth = payrollRequest.pym_month
         const payrollYear = payrollRequest.pym_year
         const location = payrollRequest.pym_location
-        let employees
+        let employees = []
         if (parseInt(location) > 0) {
-            employees = await employee.getAllEmployeesByLocation(location).then((data) => {
-                return data
-            })
+            const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
+            for(const emp of employeesFromSalary){
+                const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
+                employees.push(tempEmp);
+            }
         } else {
-            employees = await employee.getEmployees().then((data) => {
-                return data
-            })
+            employees = await employee.getEmployees();
         }
         //check if payroll routine has been run
         let employeeSalary = []
