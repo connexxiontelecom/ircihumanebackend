@@ -1,11 +1,12 @@
-const {QueryTypes} = require('sequelize')
+const {QueryTypes, Op} = require('sequelize')
 const Joi = require('joi')
 const _ = require('lodash');
 const isBefore = require('date-fns/isBefore')
 const {sequelize, Sequelize} = require('./db');
 const PublicHoliday = require("../models/PublicHoliday")(sequelize, Sequelize.DataTypes);
 const logs = require('../services/logService')
-
+const leaveApplicationModel = require("../models/leaveapplication")(sequelize, Sequelize.DataTypes);
+const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize.DataTypes);
 
 const helper = require('../helper');
 const errHandler = (err) => {
@@ -117,6 +118,25 @@ const setNewPublicHoliday = async (req, res) => {
           }else{
             await PublicHoliday.create(pubData)
               .catch(errHandler);
+          }
+
+          //Check existing leave applications within the newly added public holiday period
+        const appliedLeaves = await leaveApplicationModel.findAll({
+          where:{leapp_start_date: {[Op.lte]:public_date}  },
+          where:{leapp_end_date: {[Op.gte]:public_date_to}  },
+        });
+          if(!(_.isNull(appliedLeaves)) || !(_.isEmpty(appliedLeaves))){
+
+             appliedLeaves.map(async appLeave => {
+               let newDuration = parseInt(appLeave.leapp_total_days) - numDays;
+                await leaveApplicationModel.updateLeaveAppDuration(appLeave.leapp_id, newDuration);
+                //check if it exist on leave accrual table
+               const leaveExistAccrual = await leaveAccrualModel.getLeaveAccrualByLeaveId(appLeave.leapp_id);
+               if(!(_.isNull(leaveExistAccrual)) || !(_.isEmpty(leaveExistAccrual))){
+                 //update lea_rate
+                 await leaveAccrualModel.updateLeaveAccrualDuration(appLeave.leapp_id, newDuration);
+               }
+             });
           }
         //Log
         const logData = {

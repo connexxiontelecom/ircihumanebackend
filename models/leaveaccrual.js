@@ -201,6 +201,20 @@ module.exports = (sequelize, DataTypes) => {
 
         })
       }
+
+      static async getLeaveAccrualByLeaveId(leaveId){
+        return await leaveAccrual.findOne(
+          {where:{lea_leaveapp_id:leaveId}
+          });
+      }
+      static async updateLeaveAccrualDuration(leaveId, duration){
+        return await leaveAccrual.update({
+            lea_rate: 0 - duration},
+          {where:{lea_leaveapp_id:leaveId}
+          });
+      }
+
+
     };
     leaveAccrual.init({
         lea_id: {
