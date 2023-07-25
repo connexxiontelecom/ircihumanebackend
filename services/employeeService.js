@@ -654,6 +654,18 @@ async function getEmployeesByPfaLocation(pfaId, locationId) {
     })
 }
 
+async function updateContractStartDate(employeeId, newDate) {
+    return await employee.update({
+        emp_employment_date: newDate,
+        emp_hire_date: newDate
+    }, {
+        where: {
+            emp_id: employeeId
+        }
+    })
+
+}
+
 /*async function emp(id){
   const ep = await getEmployeeByIdOnly(id).then(y=>{
     return y;
@@ -758,7 +770,8 @@ module.exports = {
     getEmployeeByD7,
     updateGrossSalaryWithGrade,
     updateContractDate,
-  updateSalaryGrade
+  updateSalaryGrade,
+    updateContractStartDate
   //emp
     //updateDepartment,
     //setNewDepartment,
