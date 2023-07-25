@@ -1464,6 +1464,7 @@ router.get('/undo-salary-routine', auth(), async function (req, res, next) {
     return res.status(200).json('Action Successful');
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -1553,6 +1554,7 @@ router.post('/undo-salary-routine', auth(), async function (req, res, next) {
     return res.status(200).json('Action Successful');
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -2164,6 +2166,7 @@ router.post('/pull-approved-salary-routine-locations', auth(), async function (r
     return res.status(200).json(locationSalaryArray);
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -2447,6 +2450,7 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
     }
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -2524,6 +2528,7 @@ router.post('/pull-salary-routine', auth(), async function (req, res, next) {
     }
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -2560,6 +2565,7 @@ router.get('/approve-salary-routine', auth(), async function (req, res, next) {
     }
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -3091,6 +3097,7 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
     }
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
@@ -3276,6 +3283,7 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
     }
   } catch (err) {
     console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
     next(err);
   }
 });
