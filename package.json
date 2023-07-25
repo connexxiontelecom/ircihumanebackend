@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "jest": "^27.4.5",
+    "prettier": "^3.0.0",
     "sequelize-cli": "^6.3.0",
     "supertest": "^6.1.6"
   }

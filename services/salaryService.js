@@ -4,6 +4,7 @@ const Salary = require("../models/salary")(sequelize, Sequelize.DataTypes);
 const PaymentDefinition = require("../models/paymentdefinition")(sequelize, Sequelize.DataTypes);
 const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes)
 const VariationalPayment = require("../models/VariationalPayment")(sequelize, Sequelize.DataTypes)
+const SeverancePay = require("../models/severancePay")(sequelize, Sequelize.DataTypes)
 const Joi = require('joi');
 
 async function addSalary(salary) {
@@ -52,6 +53,13 @@ async function undoSalaryMonthYear(month, year, employees) {
 }
 
 async function undoSalaryMonthYearLocation(month, year, locationId) {
+    await SeverancePay.destroy({
+        where: {
+            sp_month: month,
+            sp_year: year,
+            sp_location_id: locationId
+        }
+    });
     return await Salary.destroy({
         where: {
             salary_paymonth: month,
