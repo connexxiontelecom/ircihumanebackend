@@ -838,7 +838,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                   //adjusted gross computation
                   if (parseInt(computationalPayment.pd_amount) === 1) {
                     // TODO: update this to use correct Id
-                    if (parseInt(computationalPayment.pd_id) === 1 && diffenceInMonthsFromHireDateToToday >= 12) {
+                    if (parseInt(computationalPayment.pd_id) === 39 && diffenceInMonthsFromHireDateToToday >= 12) {
+                      console.log('hiredays differen', diffenceInMonthsFromHireDateToToday);
                       amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empAdjustedGross;
 
                       salaryObject = {
@@ -884,40 +885,41 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                         await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId);
                         return res.status(400).json(`An error Occurred while severance pay computation `);
                       }
-
-                      continue;
                     }
-                    amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empAdjustedGross;
 
-                    salaryObject = {
-                      salary_empid: emp.emp_id,
-                      salary_paymonth: payrollMonth,
-                      salary_payyear: payrollYear,
-                      salary_pd: computationalPayment.pd_id,
-                      salary_amount: amount,
-                      salary_share: 0,
-                      salary_tax: 0,
-                      salary_location_id: emp.emp_location_id,
-                      salary_jobrole_id: empJobRoleId,
-                      salary_department_id: empDepartmentId,
-                      salary_grade: empSalaryStructureName,
-                      salary_gross: emp.emp_gross,
-                      salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
-                      salary_emp_unique_id: emp.emp_unique_id,
-                      salary_emp_start_date: emp.emp_hire_date,
-                      salary_emp_end_date: emp.emp_contract_end_date,
-                      salary_bank_id: emp.emp_bank_id,
-                      salary_account_number: accountNumber,
-                      salary_sort_code: emp.bank.bank_code,
-                      salary_pfa: emp.emp_pension_id,
-                      salary_d7: emp.emp_d7
-                    };
+                    if (parseInt(computationalPayment.pd_id) !== 39) {
+                      amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empAdjustedGross;
 
-                    let salaryAddResponse = await salary.addSalary(salaryObject);
+                      salaryObject = {
+                        salary_empid: emp.emp_id,
+                        salary_paymonth: payrollMonth,
+                        salary_payyear: payrollYear,
+                        salary_pd: computationalPayment.pd_id,
+                        salary_amount: amount,
+                        salary_share: 0,
+                        salary_tax: 0,
+                        salary_location_id: emp.emp_location_id,
+                        salary_jobrole_id: empJobRoleId,
+                        salary_department_id: empDepartmentId,
+                        salary_grade: empSalaryStructureName,
+                        salary_gross: emp.emp_gross,
+                        salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
+                        salary_emp_unique_id: emp.emp_unique_id,
+                        salary_emp_start_date: emp.emp_hire_date,
+                        salary_emp_end_date: emp.emp_contract_end_date,
+                        salary_bank_id: emp.emp_bank_id,
+                        salary_account_number: accountNumber,
+                        salary_sort_code: emp.bank.bank_code,
+                        salary_pfa: emp.emp_pension_id,
+                        salary_d7: emp.emp_d7
+                      };
 
-                    if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
-                      await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId);
-                      return res.status(400).json(`An error Occurred while Processing Routine gross computation `);
+                      let salaryAddResponse = await salary.addSalary(salaryObject);
+
+                      if (_.isEmpty(salaryAddResponse) || _.isNull(salaryAddResponse)) {
+                        await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId);
+                        return res.status(400).json(`An error Occurred while Processing Routine gross computation `);
+                      }
                     }
                   }
 
