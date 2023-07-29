@@ -4555,6 +4555,155 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
   }
 });
 
+router.post('/severance-report', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      pym_month: Joi.number().required(),
+      pym_year: Joi.number().required(),
+      pym_location: Joi.number().required()
+    });
+
+    const payrollRequest = req.body;
+    const validationResult = schema.validate(payrollRequest);
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+    const payrollMonth = payrollRequest.pym_month;
+    const payrollYear = payrollRequest.pym_year;
+    const location = payrollRequest.pym_location;
+    let employees = [];
+    if (parseInt(location) > 0) {
+      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
+      for (const emp of employeesFromSalary) {
+        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
+        employees.push(tempEmp);
+      }
+    } else {
+      employees = await employee.getEmployees();
+    }
+    //check if payroll routine has been run
+    let employeeSalary = [];
+    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+
+    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+      return res.status(400).json(`Payroll Routine has not been run`);
+    }
+
+    let severancePayments = await paymentDefinition.getSeverancePayments();
+    if (_.isNull(severancePayments) || _.isEmpty(severancePayments)) {
+      return res.status(400).json(`No payments marked as nsift`);
+    }
+
+    for (const emp of employees) {
+      let severanceArray = [];
+
+      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
+
+      if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+        let totalSeverance = 0;
+
+        let empAdjustedGrossII = 0;
+        let fullGross = 0;
+        let empAdjustedGross = 0;
+
+        for (const salary of employeeSalaries) {
+          if (parseInt(salary.payment.pd_payment_type) === 1) {
+            fullGross = parseFloat(salary.salary_amount) + fullGross;
+          }
+
+          if (parseInt(salary.payment.pd_total_gross) === 1) {
+            if (parseInt(salary.payment.pd_payment_type) === 1) {
+              empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount);
+            }
+
+            if (parseInt(salary.payment.pd_payment_type) === 2) {
+              empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount);
+            }
+          }
+
+          if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
+            if (parseInt(salary.payment.pd_payment_type) === 1) {
+              empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount);
+            }
+
+            if (parseInt(salary.payment.pd_payment_type) === 2) {
+              empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount);
+            }
+          }
+        }
+
+        for (const severancePayment of severancePayments) {
+          let amount = 0;
+
+          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, severancePayment.pd_id);
+          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
+            amount = parseFloat(checkSalary.salary_amount);
+          }
+          let empSeveranceObject = {
+            'Payment Name': severancePayment.pd_payment_name,
+            Amount: amount
+          };
+          totalSeverance = totalSeverance + amount;
+          severanceArray.push(empSeveranceObject);
+        }
+        let empJobRole = 'N/A';
+        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
+        if (empJobRoleId > 0) {
+          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
+          if (!_.isEmpty(jobRoleData)) {
+            empJobRole = jobRoleData.job_role;
+          }
+        }
+
+        let sectorName = 'N/A';
+        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
+        if (sectorId > 0) {
+          let sectorData = await departmentService.findDepartmentById(sectorId);
+          if (!_.isEmpty(sectorData)) {
+            sectorName = sectorData.department_name;
+          }
+        }
+        let locationName = 'N/A';
+        let locationId = parseInt(employeeSalaries[0].salary_location_id);
+        if (locationId > 0) {
+          let locationData = await locationService.findLocationById(locationId);
+          if (!_.isEmpty(locationData)) {
+            locationName = `${locationData.l_t6_code}`;
+          }
+        }
+
+        let salaryObject = {
+          employeeId: emp.emp_id,
+
+          employeeD7: employeeSalaries[0].salary_d7,
+          /*employeeD4: emp.operationUnit.ou_name,
+                    employeeD6: emp.functionalArea.fa_name,
+                    employeeD5: emp.reportingEntity.re_name,*/
+
+          employeeName: employeeSalaries[0].salary_emp_name,
+          employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
+          location: locationName,
+          jobRole: empJobRole,
+          sector: sectorName,
+          totalSeverance: totalSeverance,
+          severanceArray: severanceArray,
+          month: payrollMonth,
+          year: payrollYear,
+          adjustedGrossII: empAdjustedGrossII,
+          adjustedGross: empAdjustedGross
+        };
+        employeeSalary.push(salaryObject);
+      }
+    }
+    return res.status(200).json(employeeSalary);
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+    next(err);
+  }
+});
+
 router.post('/tax-report', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
