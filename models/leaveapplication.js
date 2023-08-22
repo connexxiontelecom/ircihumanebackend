@@ -66,6 +66,10 @@ module.exports = (sequelize, DataTypes) => {
         {where:{leapp_id:leaveId}
       });
     }
+
+    static async deleteLeaveApplication(leaveId){
+      return await leaveApplication.destroy({where:{ leapp_id: leaveId }})
+    }
     static async updateLeaveAppDuration(leaveId, duration){
       return await leaveApplication.update({
       leapp_total_days:duration},
@@ -122,7 +126,9 @@ module.exports = (sequelize, DataTypes) => {
     leapp_status: DataTypes.INTEGER,
     leapp_year: DataTypes.INTEGER,
     leapp_alt_email: DataTypes.STRING,
-    leapp_alt_phone: DataTypes.STRING
+    leapp_alt_phone: DataTypes.STRING,
+    leapp_locations: DataTypes.STRING,
+    leapp_holidays: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'leaveApplication',

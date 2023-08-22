@@ -1,6 +1,6 @@
 'use strict';
 const {
-    Model
+    Model, Op
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class PublicHoliday extends Model {
@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
 
+        static async getOnePublicHolidayByGroup(groupId){
+          return PublicHoliday.findOne({where: {'ph_group': groupId}});
+        }
         static async getPublicHolidayByGroup(groupId){
           return PublicHoliday.findAll({where: {'ph_group': groupId}});
         }
@@ -26,6 +29,13 @@ module.exports = (sequelize, DataTypes) => {
             {where: {'ph_group': groupId}}
           );
         }
+
+        static async getThisYearsPublicHolidaysByLocation(locationId){
+          return await PublicHoliday.findAll({
+            where:{ph_location: {[Op.in]:locationId}, ph_archive:0  },
+          })
+        }
+
 
         static async getThisYearsPublicHolidays(){
           //const currentMonth = new Date().getMonth()+1;
@@ -56,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
         ph_to_year: DataTypes.STRING,
         ph_group: DataTypes.STRING,
         ph_archive: DataTypes.INTEGER,
+        ph_location: DataTypes.STRING,
         createdAt: {
             field: 'created_at',
             type: DataTypes.DATE,

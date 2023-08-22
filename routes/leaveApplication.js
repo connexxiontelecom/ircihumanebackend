@@ -69,6 +69,8 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
             leapp_end_date: Joi.string().required(),
             leapp_alt_email: Joi.string(),
             leapp_alt_phone: Joi.string(),
+            holiday_ids: Joi.array().required(),
+            locations: Joi.array().required(),
             leaveDuration: Joi.number().allow('', null),
             // leapp_verify_by: Joi.number().required(),
             // leapp_verify_date: Joi.string().required(),
@@ -178,6 +180,19 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         leaveApplicationRequest['leapp_year'] = startYear
         leaveApplicationRequest['leapp_total_days'] = daysRequested
         leaveApplicationRequest['leapp_status'] = 0;
+        let holidays = leaveApplicationRequest.holiday_ids;
+        const holidaysArray = [];
+        holidays.map((hol)=>{
+          holidaysArray.push(hol);
+          });
+        let chosenLocations = leaveApplicationRequest.locations;
+        const chosenLocationsArray = [];
+        chosenLocations.map((loc)=>{
+          chosenLocationsArray.push(loc);
+        });
+        leaveApplicationRequest['leapp_locations'] = chosenLocationsArray
+        leaveApplicationRequest['leapp_holidays'] = holidaysArray
+
 
 
         const leaveApplicationResponse = await leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
