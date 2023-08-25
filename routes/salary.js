@@ -4692,7 +4692,9 @@ router.post('/severance-report', auth(), async function (req, res, next) {
           month: payrollMonth,
           year: payrollYear,
           adjustedGrossII: empAdjustedGrossII,
-          adjustedGross: empAdjustedGross
+          adjustedGross: empAdjustedGross,
+          gross: emp.empGross,
+          fullGross: fullGross
         };
         employeeSalary.push(salaryObject);
       }
