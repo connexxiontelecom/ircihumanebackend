@@ -4693,7 +4693,7 @@ router.post('/severance-report', auth(), async function (req, res, next) {
           year: payrollYear,
           adjustedGrossII: empAdjustedGrossII,
           adjustedGross: empAdjustedGross,
-          gross: emp.empGross,
+          gross: employeeSalaries[0].salary_gross,
           fullGross: fullGross
         };
         employeeSalary.push(salaryObject);
