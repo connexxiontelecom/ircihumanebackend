@@ -67,6 +67,26 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static async deleteLeaveApplication(leaveId){
+      return await leaveApplication.destroy({where:{ leapp_id: leaveId }})
+    }
+    static async updateLeaveAppDuration(leaveId, duration){
+      return await leaveApplication.update({
+      leapp_total_days:duration},
+        {where:{leapp_id:leaveId}
+      });
+    }
+   static async updateLeaveAppDurationLocationHoliday(leaveId, duration, location, holiday){
+      return await leaveApplication.update({
+      leapp_total_days:duration,
+      leapp_locations:location,
+      leapp_holidays:holiday,
+
+        },
+        {where:{leapp_id:leaveId}
+      });
+    }
+
     static async updateLeaveAppPeriod(leaveId, start, end, length){
       return await leaveApplication.update({
           leapp_start_date:start,
@@ -116,7 +136,9 @@ module.exports = (sequelize, DataTypes) => {
     leapp_status: DataTypes.INTEGER,
     leapp_year: DataTypes.INTEGER,
     leapp_alt_email: DataTypes.STRING,
-    leapp_alt_phone: DataTypes.STRING
+    leapp_alt_phone: DataTypes.STRING,
+    leapp_locations: DataTypes.STRING,
+    leapp_holidays: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'leaveApplication',

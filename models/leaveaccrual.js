@@ -178,6 +178,13 @@ module.exports = (sequelize, DataTypes) => {
 
         })
       }
+
+      static async deleteLeaveAccrualEntryByLeaveId(leaveId) {
+        return await leaveAccrual.destroy({
+          where: {lea_leaveapp_id: leaveId },
+
+        })
+      }
       static async getAllLeaveAccrualsByEmployeeId(empId, year) {
         return await leaveAccrual.findAll({
           attributes:['lea_id', 'lea_emp_id',
@@ -201,6 +208,20 @@ module.exports = (sequelize, DataTypes) => {
 
         })
       }
+
+      static async getLeaveAccrualByLeaveId(leaveId){
+        return await leaveAccrual.findOne(
+          {where:{lea_leaveapp_id:leaveId}
+          });
+      }
+      static async updateLeaveAccrualDuration(leaveId, duration){
+        return await leaveAccrual.update({
+            lea_rate: 0 - duration},
+          {where:{lea_leaveapp_id:leaveId}
+          });
+      }
+
+
     };
     leaveAccrual.init({
         lea_id: {
