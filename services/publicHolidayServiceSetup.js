@@ -9,6 +9,7 @@ const leaveApplicationModel = require("../models/leaveapplication")(sequelize, S
 const leaveAccrualModel = require("../models/leaveaccrual")(sequelize, Sequelize.DataTypes);
 
 const helper = require('../helper');
+const {getEmployeeByIdOnly} = require("./employeeService");
 const errHandler = (err) => {
     console.log("Error: ", err);
 }
@@ -116,7 +117,7 @@ const setNewPublicHoliday = async (req, res) => {
         const to_month = to_date.getUTCMonth() + 1;
         const to_year = to_date.getUTCFullYear();
 
-        const numDays = (to_date.getTime() - date.getTime())/(1000*60*60*24);
+        const numDays = dateRange(date, to_date).length; // (to_date.getTime() - date.getTime())/(1000*60*60*24);
         //return res.status(400).json(`${day+1}`);
 
 
@@ -147,6 +148,7 @@ const setNewPublicHoliday = async (req, res) => {
             ph_group: group,
         };
         let i = 0;
+        const holidayArray = [];
           if(numDays > 0) {
             let startDateFormat = `${month}/${day}/${year}`;
             let endDateFormat = `${to_month}/${to_day}/${to_year}`;
@@ -171,44 +173,53 @@ const setNewPublicHoliday = async (req, res) => {
               ph_group: group,
               ph_location: locationArray.toString(),
             }
-            await PublicHoliday.create(loopPub)
-              .catch(errHandler);
+            let pub = await PublicHoliday.create(loopPub)
+              holidayArray.push(pub.ph_id)
+              //.catch(errHandler);
           }
             //}
           }else{
-            await PublicHoliday.create(pubData)
-              .catch(errHandler);
+            let sPub = await PublicHoliday.create(pubData)
+             // .catch(errHandler);
+            holidayArray.push(sPub.ph_id)
           }
 
           //Check existing leave applications within the newly added public holiday period
         const appliedLeaves = await leaveApplicationModel.findAll({
           where:{
-            leapp_start_date: {
+          /*  leapp_start_date: {
               [Op.between]:[public_date,public_date_to]
             },
             leapp_end_date: {
               [Op.between]:[public_date,public_date_to]
-            },
-            //leapp_end_date: {[Op.gte]:public_date_to}
-            //leapp_end_date: {[Op.gte]:public_date_to}
+            },*/
+            leapp_end_date: {[Op.lte]:public_date_to},
+            leapp_end_date: {[Op.gte]:public_date_to}
           },
         });
+          //console.log(appliedLeaves)
           /*console.log('Start: '+public_date);
           console.log('End: '+public_date_to);
           console.log('updating leave...');
           console.log(appliedLeaves);*/
           if(!(_.isNull(appliedLeaves)) || !(_.isEmpty(appliedLeaves))){
             appliedLeaves.map(async appLeave => {
-              let locationId = 13;
-              if(!(_.isNull(appLeave.leapp_locations)) || !(_.isEmpty(appLeave.leapp_locations))){
-                let locationsString = appLeave.leapp_locations.split(",");
-                let locations = Array.from(locationsString, Number);
-                if(locations.includes(locationId) || locations.includes(0) ){
+              let emp = await getEmployeeByIdOnly(appLeave.leapp_empid);
+              if(_.isNull(emp) || _.isEmpty(emp)){
+                return res.status(400).json("Leave application process aborted!");
+              }
+              let locationId = emp.emp_location_id;
+              if(_.isNull(locationId) || _.isEmpty(locationId)){
+                return res.status(400).json("Employee location not found!");
+              }
+             // if(!(_.isNull(appLeave.leapp_locations)) || !(_.isEmpty(appLeave.leapp_locations))){
+
+                if(locationArray.includes(parseInt(locationId)) || locationArray.includes(0) ){
                   let newDuration = parseInt(appLeave.leapp_total_days) - numDays;
                   if(newDuration <= 0){
                     await leaveApplicationModel.deleteLeaveApplication(appLeave.leapp_id);
                   }else{
-                    await leaveApplicationModel.updateLeaveAppDuration(appLeave.leapp_id, newDuration);
+                    await leaveApplicationModel.updateLeaveAppDurationLocationHoliday(appLeave.leapp_id, newDuration, emp.location_id, /*locationArray.toString()*/ holidayArray.toString());
                   }
                   //check if it exist in leave accrual table
                   const leaveExistAccrual = await leaveAccrualModel.getLeaveAccrualByLeaveId(appLeave.leapp_id);
@@ -221,7 +232,7 @@ const setNewPublicHoliday = async (req, res) => {
                     }
                   }
                 }
-              }
+              //}
 
 
             });
@@ -412,6 +423,19 @@ async function fetchPublicHolidayByMonthYear(month, year) {
     })
 }
 
+
+function dateRange(startDate, endDate, steps = 1) {
+  const dateArray = [];
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= new Date(endDate)) {
+    dateArray.push(new Date(currentDate));
+    // Use UTC date to prevent problems with time zones and DST
+    currentDate.setUTCDate(currentDate.getUTCDate() + steps);
+  }
+  return dateArray;
+}
+
 const  deletePublicHolidayByGroup = async (req, res) =>{
   try{
     const groupId = req.params.id;
@@ -428,7 +452,8 @@ const  deletePublicHolidayByGroup = async (req, res) =>{
     let numOfDays = pubHols.length;
     const endDate = singlePh.ph_to_date;
     const startDate = new Date(new Date().setDate(endDate.getDate() - numOfDays));
-    const appliedLeaves = await getAppliedLeaves(startDate, endDate);
+    const appliedLeaves = await getAllAppliedLeaves();
+    //const appliedLeaves = await getAppliedLeaves(startDate, endDate);
     //let total_period = 0;
     appliedLeaves.map(async leave => {
       if(!(_.isNull(leave.leapp_holidays)) || !(_.isEmpty(leave.leapp_holidays))){
@@ -502,6 +527,15 @@ async function getAppliedLeaves(start, end) {
       },
     },
   });
+}
+async function getAllAppliedLeaves() {
+  return await leaveApplicationModel.findAll();
+}
+
+
+function removeDuplicates(arr) {
+  return arr.filter((item,
+                     index) => arr.indexOf(item) === index);
 }
 
 module.exports = {

@@ -190,8 +190,8 @@ router.post('/add-leave-application', auth(), async function (req, res, next) {
         chosenLocations.map((loc)=>{
           chosenLocationsArray.push(loc);
         });
-        leaveApplicationRequest['leapp_locations'] = chosenLocationsArray
-        leaveApplicationRequest['leapp_holidays'] = holidaysArray
+        leaveApplicationRequest['leapp_locations'] = emp.emp_location_id; //removeDuplicates(chosenLocationsArray) ;
+        leaveApplicationRequest['leapp_holidays'] = removeDuplicates(holidaysArray);
 
 
 
@@ -1128,6 +1128,11 @@ async function addToLeaveAccrual(empId, year, month, leaveType, noDays, leaveId)
   const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
     return data
   })
+}
+
+function removeDuplicates(arr) {
+  return arr.filter((item,
+                     index) => arr.indexOf(item) === index);
 }
 
 //runLeaveSpillOver();

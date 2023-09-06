@@ -76,6 +76,16 @@ module.exports = (sequelize, DataTypes) => {
         {where:{leapp_id:leaveId}
       });
     }
+   static async updateLeaveAppDurationLocationHoliday(leaveId, duration, location, holiday){
+      return await leaveApplication.update({
+      leapp_total_days:duration,
+      leapp_locations:location,
+      leapp_holidays:holiday,
+
+        },
+        {where:{leapp_id:leaveId}
+      });
+    }
 
     static async updateLeaveAppPeriod(leaveId, start, end, length){
       return await leaveApplication.update({
