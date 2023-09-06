@@ -27,6 +27,10 @@ module.exports = {
       ph_year: {
         type: Sequelize.STRING
       },
+      ph_location: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       created_at: {
         allowNull: true,
         type: Sequelize.DATE
