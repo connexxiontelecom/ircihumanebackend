@@ -29,7 +29,8 @@ async function addSalary(salary) {
     salary_account_number: salary.salary_account_number,
     salary_sort_code: salary.salary_sort_code,
     salary_pfa: salary.salary_pfa,
-    salary_d7: salary.salary_d7
+    salary_d7: salary.salary_d7,
+    salary_emp_vendor_account: parseFloat(salary.salary_emp_vendor_account)
   });
 }
 

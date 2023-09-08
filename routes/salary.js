@@ -577,6 +577,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           await employee.updateContractStartDate(emp.emp_id, emp.emp_hire_date);
 
           let accountNumber = emp.emp_account_no;
+          let employeeVendorAccount = emp.emp_vendor_account;
           let letter = accountNumber.charAt(1);
           if (letter !== "'") {
             accountNumber = `'${accountNumber}`;
@@ -693,7 +694,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                   salary_account_number: accountNumber,
                   salary_sort_code: emp.bank.bank_code,
                   salary_pfa: emp.emp_pension_id,
-                  salary_d7: emp.emp_d7
+                  salary_d7: emp.emp_d7,
+                  salary_emp_vendor_account: employeeVendorAccount
                 };
 
                 let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -749,7 +751,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                     salary_account_number: accountNumber,
                     salary_sort_code: emp.bank.bank_code,
                     salary_pfa: emp.emp_pension_id,
-                    salary_d7: emp.emp_d7
+                    salary_d7: emp.emp_d7,
+                    salary_emp_vendor_account: employeeVendorAccount
                   };
 
                   let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -785,7 +788,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                       salary_account_number: accountNumber,
                       salary_sort_code: emp.bank.bank_code,
                       salary_pfa: emp.emp_pension_id,
-                      salary_d7: emp.emp_d7
+                      salary_d7: emp.emp_d7,
+                      salary_emp_vendor_account: employeeVendorAccount
                     };
 
                     let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -864,7 +868,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                         salary_account_number: accountNumber,
                         salary_sort_code: emp.bank.bank_code,
                         salary_pfa: emp.emp_pension_id,
-                        salary_d7: emp.emp_d7
+                        salary_d7: emp.emp_d7,
+                        salary_emp_vendor_account: employeeVendorAccount
                       };
 
                       let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -900,7 +905,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                         salary_account_number: accountNumber,
                         salary_sort_code: emp.bank.bank_code,
                         salary_pfa: emp.emp_pension_id,
-                        salary_d7: emp.emp_d7
+                        salary_d7: emp.emp_d7,
+                        salary_emp_vendor_account: employeeVendorAccount
                       };
 
                       let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -936,7 +942,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                         salary_account_number: accountNumber,
                         salary_sort_code: emp.bank.bank_code,
                         salary_pfa: emp.emp_pension_id,
-                        salary_d7: emp.emp_d7
+                        salary_d7: emp.emp_d7,
+                        salary_emp_vendor_account: employeeVendorAccount
                       };
 
                       let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -972,7 +979,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                         salary_account_number: accountNumber,
                         salary_sort_code: emp.bank.bank_code,
                         salary_pfa: emp.emp_pension_id,
-                        salary_d7: emp.emp_d7
+                        salary_d7: emp.emp_d7,
+                        salary_emp_vendor_account: employeeVendorAccount
                       };
 
                       let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -1008,7 +1016,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                         salary_account_number: accountNumber,
                         salary_sort_code: emp.bank.bank_code,
                         salary_pfa: emp.emp_pension_id,
-                        salary_d7: emp.emp_d7
+                        salary_d7: emp.emp_d7,
+                        salary_emp_vendor_account: employeeVendorAccount
                       };
 
                       let salaryAddResponse = await salary.addSalary(salaryObject);
@@ -1044,7 +1053,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                       salary_account_number: accountNumber,
                       salary_sort_code: emp.bank.bank_code,
                       salary_pfa: emp.emp_pension_id,
-                      salary_d7: emp.emp_d7
+                      salary_d7: emp.emp_d7,
+                      salary_emp_vendor_account: employeeVendorAccount
                     };
                     let salaryAddResponse = await salary.addSalary(salaryObject);
 
@@ -1208,7 +1218,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                   salary_account_number: accountNumber,
                   salary_sort_code: emp.bank.bank_code,
                   salary_pfa: emp.emp_pension_id,
-                  salary_d7: emp.emp_d7
+                  salary_d7: emp.emp_d7,
+                  salary_emp_vendor_account: employeeVendorAccount
                 };
 
                 let salaryAddResponse = await salary.addSalary(salaryObject);
