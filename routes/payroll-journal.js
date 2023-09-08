@@ -36,9 +36,8 @@ const timeAllocationService = require('../services/timeAllocationService');
 
 router.get('/', auth(), async function (req, res, next) {
   try {
-    await payrollJournalService.getAllPayrollJournal().then((data) => {
-      return res.status(200).json(data);
-    });
+    const data = await payrollJournalService.getAllPayrollJournal();
+    return res.status(200).json(data);
   } catch (err) {
     return res.status(400).json(`Error while Payroll Journals ${err.message}`);
   }
@@ -63,9 +62,7 @@ router.post('/', auth(), async function (req, res, next) {
       pj_location: req.body.pj_location,
       pj_setup_by: req.user.username.user_id
     };
-    const payrollJournalAddResponse = await payrollJournalService.addPayrollJournal(payrollJournalObject).then((data) => {
-      return data;
-    });
+    const payrollJournalAddResponse = await payrollJournalService.addPayrollJournal(payrollJournalObject);
 
     if (_.isEmpty(payrollJournalAddResponse) || _.isNull(payrollJournalAddResponse)) {
       return res.status(400).json('An Error Occurred While adding Payroll');
@@ -98,16 +95,12 @@ router.patch('/', auth(), async function (req, res, next) {
       pj_setup_by: req.user.username.user_id
     };
 
-    const checkPayrollJournal = await payrollJournalService.getAllPayrollJournal(payrollJournalObject.pj_id).then((data) => {
-      return data;
-    });
+    const checkPayrollJournal = await payrollJournalService.getAllPayrollJournal(payrollJournalObject.pj_id);
 
     if (_.isEmpty(checkPayrollJournal) || _.isNull(checkPayrollJournal)) {
       return res.status(400).json('Journal code does not exist');
     }
-    const payrollJournalAddResponse = await payrollJournalService.updatePayrollJournal(payrollJournalObject).then((data) => {
-      return data;
-    });
+    const payrollJournalAddResponse = await payrollJournalService.updatePayrollJournal(payrollJournalObject);
 
     if (_.isEmpty(payrollJournalAddResponse) || _.isNull(payrollJournalAddResponse)) {
       return res.status(400).json('An Error Occurred While adding Payroll');
@@ -134,27 +127,24 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
 
     const locationId = req.body.smm_location;
 
-    const locationResponse = await locationService.findLocationById(locationId).then((data) => {
-      return data;
-    });
+    const locationResponse = await locationService.findLocationById(locationId);
 
     if (_.isEmpty(locationResponse) || _.isNull(locationResponse)) {
       return res.status(400).json('Location Does Not Exist');
     }
 
-    const checkSalaryRoutineLocation = await payrollMonthYearLocationService
-      .findApprovedPayrollByMonthYearLocation(req.body.smm_month, req.body.smm_year, locationId)
-      .then((data) => {
-        return data;
-      });
+    const checkSalaryRoutineLocation = await payrollMonthYearLocationService.findApprovedPayrollByMonthYearLocation(
+      req.body.smm_month,
+      req.body.smm_year,
+      locationId
+    );
+
     if (_.isEmpty(checkSalaryRoutineLocation) || _.isNull(checkSalaryRoutineLocation)) {
       return res.status(400).json('Salary routine for location has not been process for selected month and year');
     }
     const refCode = `${req.body.smm_month}-${req.body.smm_year}-${locationResponse.l_t6_code}`;
 
-    const checkExistingRefCode = await salaryMappingMasterService.getSalaryMappingMasterByRefCode(refCode).then((data) => {
-      return data;
-    });
+    const checkExistingRefCode = await salaryMappingMasterService.getSalaryMappingMasterByRefCode(refCode);
 
     if (!_.isEmpty(checkExistingRefCode) && !_.isNull(checkExistingRefCode)) {
       return res.status(400).json('RefCode already exists');
@@ -167,9 +157,7 @@ router.post('/salary-mapping-master', auth(), async function (req, res, next) {
       smm_ref_code: refCode
     };
 
-    const addSalaryMappingMaster = await salaryMappingMasterService.addSalaryMappingMaster(smmObject).then((data) => {
-      return data;
-    });
+    const addSalaryMappingMaster = await salaryMappingMasterService.addSalaryMappingMaster(smmObject);
     if (_.isEmpty(addSalaryMappingMaster) || _.isNull(addSalaryMappingMaster)) {
       return res.status(400).json('An error occurred while adding salary master ');
     }
@@ -184,9 +172,7 @@ router.post('/upload-mapping-detail/:masterId', auth(), async function (req, res
   try {
     const masterId = req.params['masterId'];
 
-    const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
-      return data;
-    });
+    const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
 
     if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
       return res.status(400).json('Salary Mapping Master Does not Exist');
@@ -229,9 +215,7 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
   try {
     const masterId = req.params['masterId'];
 
-    const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
-      return data;
-    });
+    const salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
 
     const month = salaryMasterData.smm_month.toString(10).padStart(2, '0');
 
@@ -268,9 +252,7 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
     for (const row of rows) {
       let status = 1;
 
-      let employeeData = await employeeService.getEmployeeById(row.d7).then((data) => {
-        return data;
-      });
+      let employeeData = await employeeService.getEmployeeById(row.d7);
 
       if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
         status = 0;
@@ -314,9 +296,7 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
         smd_status: status
       };
 
-      let checkDetailResponse = await salaryMappingDetailsService.addSalaryMappingDetail(rowObject).then((data) => {
-        return data;
-      });
+      let checkDetailResponse = await salaryMappingDetailsService.addSalaryMappingDetail(rowObject);
       if (_.isEmpty(checkDetailResponse) || _.isNull(checkDetailResponse)) {
         await salaryMappingDetailsService.removeSalaryMappingDetails(masterId);
         await salaryMappingMasterService.removeSalaryMappingMaster(masterId);
@@ -334,17 +314,11 @@ router.get('/salary-mapping-detail/:masterId', auth(), async function (req, res,
 
 router.get('/salary-mappings', auth(), async function (req, res, next) {
   try {
-    const mappingsMaster = await salaryMappingMasterService.getSalaryMappingsMaster().then((data) => {
-      return data;
-    });
+    const mappingsMaster = await salaryMappingMasterService.getSalaryMappingsMaster();
     let finalMapping = [];
     for (const mapping of mappingsMaster) {
-      let locationData = await locationService.findLocationById(mapping.smm_location).then((data) => {
-        return data;
-      });
-      let details = await salaryMappingDetailsService.getSalaryMappingDetails(mapping.smm_id).then((data) => {
-        return data;
-      });
+      let locationData = await locationService.findLocationById(mapping.smm_location);
+      let details = await salaryMappingDetailsService.getSalaryMappingDetails(mapping.smm_id);
       let newMapping = JSON.parse(JSON.stringify(mapping));
       newMapping.smm_total = details.length;
       newMapping.location = locationData;
@@ -362,35 +336,31 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
   try {
     const masterId = req.params['masterId'];
 
-    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
-      return data;
-    });
+    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
 
     if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
       return res.status(400).json('Salary Mapping Master Does not Exist');
     }
 
-    let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
-      return data;
-    });
+    let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId);
     salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
     salaryMasterData.smm_total = details.length;
 
     let salaryDetailData = [];
 
     for (const salaryMappingDetail of details) {
-      let salaryDetails = await salaryService
-        .getEmployeeSalaryByUniqueId(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7)
-        .then((data) => {
-          return data;
-        });
+      let salaryDetails = await salaryService.getEmployeeSalaryByUniqueId(
+        salaryMasterData.smm_month,
+        salaryMasterData.smm_year,
+        salaryMappingDetail.smd_employee_t7
+      );
 
       if (_.isEmpty(salaryDetails) || _.isNull(salaryDetails)) {
-        salaryDetails = await salaryService
-          .getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7)
-          .then((data) => {
-            return data;
-          });
+        salaryDetails = await salaryService.getEmployeeSalaryByD7(
+          salaryMasterData.smm_month,
+          salaryMasterData.smm_year,
+          salaryMappingDetail.smd_employee_t7
+        );
       }
       let empName = 'N/A';
       let empJobRole = 'N/A';
@@ -401,26 +371,20 @@ router.get('/get-salary-mapping-detail/:masterId', auth(), async function (req, 
 
       if (!_.isEmpty(salaryDetails)) {
         empName = salaryDetails[0].salary_emp_name;
-        let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails[0].salary_jobrole_id).then((data) => {
-          return data;
-        });
+        let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails[0].salary_jobrole_id);
 
         if (!_.isEmpty(empJobRoleData)) {
           empJobRole = empJobRoleData.job_role;
         }
 
-        let empLocationData = await locationService.findLocationById(salaryDetails[0].salary_location_id).then((data) => {
-          return data;
-        });
+        let empLocationData = await locationService.findLocationById(salaryDetails[0].salary_location_id);
 
         if (!_.isEmpty(empLocationData)) {
           empLocation = empLocationData.location_name;
           empLocationCode = empLocationData.l_t6_code;
         }
 
-        let empSectorData = await sectorService.findDepartmentById(salaryDetails[0].salary_department_id).then((data) => {
-          return data;
-        });
+        let empSectorData = await sectorService.findDepartmentById(salaryDetails[0].salary_department_id);
 
         if (!_.isEmpty(empSectorData)) {
           empSector = empSectorData.department_name;
@@ -457,9 +421,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
   try {
     const masterId = req.params['masterId'];
 
-    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
-      return data;
-    });
+    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
 
     if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
       return res.status(400).json('Salary Mapping Master Does not Exist');
@@ -469,22 +431,16 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       return res.status(400).json('Salary Mapping Already Posted');
     }
 
-    let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
-      return data;
-    });
+    let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId);
 
     if (_.isEmpty(details) || _.isNull(details)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('Details Does not Exist');
     }
     salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
     salaryMasterData.smm_total = details.length;
 
-    let mappingLocationData = await locationService.findLocationById(salaryMasterData.smm_location).then((data) => {
-      return data;
-    });
+    let mappingLocationData = await locationService.findLocationById(salaryMasterData.smm_location);
 
     let empArray = [];
     let empIdArray = [];
@@ -498,84 +454,55 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
     const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
 
-    const grossPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('GROSS').then((data) => {
-      return data;
-    });
+    const grossPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('GROSS');
 
     if (_.isEmpty(grossPayrollCode) || _.isNull(grossPayrollCode)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('Gross Payroll Code Does not Exist');
     }
 
-    const netPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('NET').then((data) => {
-      return data;
-    });
+    const netPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('NET');
     if (_.isEmpty(netPayrollCode) || _.isNull(netPayrollCode)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('Net Payroll Code Does not Exist');
     }
 
-    const nsitfPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('NSITF').then((data) => {
-      return data;
-    });
+    const nsitfPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('NSITF');
 
     if (_.isEmpty(nsitfPayrollCode) || _.isNull(nsitfPayrollCode)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('NSITF Payroll Code Does not Exist');
     }
 
-    const nhfPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('NHF').then((data) => {
-      return data;
-    });
+    const nhfPayrollCode = await payrollJournalService.getPayrollJournalByJournalItem('NHF');
 
     if (_.isEmpty(nhfPayrollCode) || _.isNull(nhfPayrollCode)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('NHF Payroll Code Does not Exist');
     }
 
-    const payePayrollCode = await payrollJournalService.getPayrollJournalByJournalItemLocation('PAYE', salaryMasterData.smm_location).then((data) => {
-      return data;
-    });
+    const payePayrollCode = await payrollJournalService.getPayrollJournalByJournalItemLocation('PAYE', salaryMasterData.smm_location);
 
     if (_.isEmpty(payePayrollCode) || _.isNull(payePayrollCode)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('PAYE Payroll Code Does not Exist');
     }
 
     for (const salaryMappingDetail of details) {
-      let empData = await employeeService.getEmployeeByD7(salaryMappingDetail.smd_employee_t7).then((data) => {
-        return data;
-      });
+      let empData = await employeeService.getEmployeeByD7(salaryMappingDetail.smd_employee_t7);
 
       if (_.isEmpty(empData) || _.isNull(empData)) {
-        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-          return data;
-        });
-        await salaryMappingDetailsService.removeSalaryMappingDetails(salaryMappingDetail.smd_id).then((data) => {
-          return data;
-        });
+        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
+        await salaryMappingDetailsService.removeSalaryMappingDetails(salaryMappingDetail.smd_id);
 
-        await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id).then((data) => {
-          return data;
-        });
+        await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id);
         return res.status(400).json('One or More Employees Does not Exist');
       }
 
-      let salaryMappingAllocation = await salaryMappingDetailsService
-        .getSalaryMappingDetailsByMasterEmployee(salaryMasterData.smm_id, salaryMappingDetail.smd_employee_t7)
-        .then((data) => {
-          return data;
-        });
+      let salaryMappingAllocation = await salaryMappingDetailsService.getSalaryMappingDetailsByMasterEmployee(
+        salaryMasterData.smm_id,
+        salaryMappingDetail.smd_employee_t7
+      );
 
       let totalAllocation = 0;
       for (const allocation of salaryMappingAllocation) {
@@ -583,24 +510,18 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       }
 
       if (totalAllocation > 100 || totalAllocation < 100) {
-        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-          return data;
-        });
-        await salaryMappingDetailsService.removeSalaryMappingDetails(salaryMappingDetail.smd_id).then((data) => {
-          return data;
-        });
+        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
+        await salaryMappingDetailsService.removeSalaryMappingDetails(salaryMappingDetail.smd_id);
 
-        await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id).then((data) => {
-          return data;
-        });
+        await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id);
         return res.status(400).json('Allocation of one or more employee does not equal 100');
       }
 
-      let salaryDetails = await salaryService
-        .getEmployeeSalaryByD7(salaryMasterData.smm_month, salaryMasterData.smm_year, salaryMappingDetail.smd_employee_t7)
-        .then((data) => {
-          return data;
-        });
+      let salaryDetails = await salaryService.getEmployeeSalaryByD7(
+        salaryMasterData.smm_month,
+        salaryMasterData.smm_year,
+        salaryMappingDetail.smd_employee_t7
+      );
 
       let empName = 'N/A';
       let empJobRole = 'N/A';
@@ -620,29 +541,25 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       let employeeTax = 0;
       let employeeSeverance = 0;
       let employeeSeveranceCode = 'N/A';
+      let employeeVendorAccount = 'N/A';
 
       if (!_.isEmpty(salaryDetails)) {
         empName = salaryDetails[0].salary_emp_name;
-        let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails[0].salary_jobrole_id).then((data) => {
-          return data;
-        });
+        employeeVendorAccount = salaryDetails[0].salary_emp_vendor_account;
+        let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails[0].salary_jobrole_id);
 
         if (!_.isEmpty(empJobRoleData)) {
           empJobRole = empJobRoleData.job_role;
         }
 
-        let empLocationData = await locationService.findLocationById(salaryDetails[0].salary_location_id).then((data) => {
-          return data;
-        });
+        let empLocationData = await locationService.findLocationById(salaryDetails[0].salary_location_id);
 
         if (!_.isEmpty(empLocationData)) {
           empLocation = empLocationData.location_name;
           empLocationCode = empLocationData.l_t6_code;
         }
 
-        let empSectorData = await sectorService.findDepartmentById(salaryDetails[0].salary_department_id).then((data) => {
-          return data;
-        });
+        let empSectorData = await sectorService.findDepartmentById(salaryDetails[0].salary_department_id);
 
         if (!_.isEmpty(empSectorData)) {
           empSector = empSectorData.department_name;
@@ -729,14 +646,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
 
-        addJournal = await journalService.addJournal(journalDetail).then((data) => {
-          return data;
-        });
+        addJournal = await journalService.addJournal(journalDetail);
 
         if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-            return data;
-          });
+          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
           return res.status(400).json('An error occurred while creating journal entry');
         }
@@ -759,14 +672,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
 
-        addJournal = await journalService.addJournal(journalDetail).then((data) => {
-          return data;
-        });
+        addJournal = await journalService.addJournal(journalDetail);
 
         if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-            return data;
-          });
+          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
           return res.status(400).json('An error occurred while creating journal entry');
         }
@@ -789,14 +698,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
 
-        addJournal = await journalService.addJournal(journalDetail).then((data) => {
-          return data;
-        });
+        addJournal = await journalService.addJournal(journalDetail);
 
         if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-            return data;
-          });
+          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
           return res.status(400).json('An error occurred while creating journal entry');
         }
@@ -819,14 +724,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
 
-        addJournal = await journalService.addJournal(journalDetail).then((data) => {
-          return data;
-        });
+        addJournal = await journalService.addJournal(journalDetail);
 
         if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-            return data;
-          });
+          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
           return res.status(400).json('An error occurred while creating journal entry');
         }
@@ -836,7 +737,8 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
           netSalary: fullGross - mainDeductions,
           employeeNhf: employeeNHF,
           employeeNsitf: employeeNsitf,
-          employeeSeverance: employeeSeverance
+          employeeSeverance: employeeSeverance,
+          employeeVendorAccount: employeeVendorAccount
         };
         empArray.push(empObject);
       }
@@ -855,12 +757,35 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       totalEmployeeNhf = totalEmployeeNhf + emp.employeeNhf;
       totalEmployeeNsitf = totalEmployeeNsitf + emp.employeeNsitf;
       totalEmployeeSeverance = totalEmployeeSeverance + emp.employeeSeverance;
+
+      journalDetail = {};
+      journalDetail.j_acc_code = '23300';
+      journalDetail.j_date = formatLastDayOfMonth;
+      journalDetail.j_ref_code = salaryMasterData.smm_ref_code;
+      journalDetail.j_desc = `${salaryMasterData.smm_month}-SEVERANCE PAY-${emp.employeeD7}`;
+      journalDetail.j_d_c = 'C';
+      journalDetail.j_amount = parseFloat(emp.employeeVendorAccount);
+      journalDetail.j_t1 = 'u1000';
+      journalDetail.j_t2 = 'Null';
+      journalDetail.j_t3 = 'Null';
+      journalDetail.j_t4 = '2NG';
+      journalDetail.j_t5 = '2NGA';
+      journalDetail.j_month = salaryMasterData.smm_month;
+      journalDetail.j_year = salaryMasterData.smm_year;
+      journalDetail.j_t6 = mappingLocationData.l_t6_code;
+      journalDetail.j_t7 = 'null';
+      journalDetail.j_name = 'null';
+
+      addJournal = await journalService.addJournal(journalDetail);
+      if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
+        await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
+        return res.status(400).json('An error occurred while creating journal entry');
+      }
+
       empIdArray.push(emp.employeeD7);
     }
 
-    const payrollJournalPayments = await paymentDefinitionService.getPayrollJournalPayments().then((data) => {
-      return data;
-    });
+    const payrollJournalPayments = await paymentDefinitionService.getPayrollJournalPayments();
     let paymentName = '';
     for (const payment of payrollJournalPayments) {
       let empName = '';
@@ -872,33 +797,29 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       paymentName = payment.pd_payment_name;
       paymentName = paymentName.replace(/\s+/g, '-').toLowerCase();
       for (const emp of empIdArray) {
-        let salaryDetails = await salaryService
-          .getEmployeeSalaryByD7AndMonthYear(emp, salaryMasterData.smm_month, salaryMasterData.smm_year, payment.pd_id)
-          .then((data) => {
-            return data;
-          });
+        let salaryDetails = await salaryService.getEmployeeSalaryByD7AndMonthYear(
+          emp,
+          salaryMasterData.smm_month,
+          salaryMasterData.smm_year,
+          payment.pd_id
+        );
+
         if (!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)) {
           empName = salaryDetails.salary_emp_name;
-          let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails.salary_jobrole_id).then((data) => {
-            return data;
-          });
+          let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails.salary_jobrole_id);
 
           if (!_.isEmpty(empJobRoleData)) {
             empJobRole = empJobRoleData.job_role;
           }
 
-          let empLocationData = await locationService.findLocationById(salaryDetails.salary_location_id).then((data) => {
-            return data;
-          });
+          let empLocationData = await locationService.findLocationById(salaryDetails.salary_location_id);
 
           if (!_.isEmpty(empLocationData)) {
             empLocation = empLocationData.location_name;
             empLocationCode = empLocationData.l_t6_code;
           }
 
-          let empSectorData = await sectorService.findDepartmentById(salaryDetails.salary_department_id).then((data) => {
-            return data;
-          });
+          let empSectorData = await sectorService.findDepartmentById(salaryDetails.salary_department_id);
 
           if (!_.isEmpty(empSectorData)) {
             empSector = empSectorData.department_name;
@@ -922,14 +843,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
           journalDetail.j_t7 = emp;
           journalDetail.j_name = empName;
 
-          addJournal = await journalService.addJournal(journalDetail).then((data) => {
-            return data;
-          });
+          addJournal = await journalService.addJournal(journalDetail);
 
           if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-            await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-              return data;
-            });
+            await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
             return res.status(400).json('An error occurred while creating journal entry');
           }
@@ -955,13 +872,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     journalDetail.j_t7 = 'null';
     journalDetail.j_name = 'null';
 
-    addJournal = await journalService.addJournal(journalDetail).then((data) => {
-      return data;
-    });
+    addJournal = await journalService.addJournal(journalDetail);
     if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
       return res.status(400).json('An error occurred while creating journal entry');
     }
@@ -984,13 +897,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     journalDetail.j_t7 = 'null';
     journalDetail.j_name = 'null';
 
-    addJournal = await journalService.addJournal(journalDetail).then((data) => {
-      return data;
-    });
+    addJournal = await journalService.addJournal(journalDetail);
     if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
       return res.status(400).json('An error occurred while creating journal entry');
     }
@@ -1013,13 +922,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     journalDetail.j_t7 = 'null';
     journalDetail.j_name = 'null';
 
-    addJournal = await journalService.addJournal(journalDetail).then((data) => {
-      return data;
-    });
+    addJournal = await journalService.addJournal(journalDetail);
     if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
       return res.status(400).json('An error occurred while creating journal entry');
     }
@@ -1042,14 +947,10 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     journalDetail.j_t7 = 'null';
     journalDetail.j_name = 'null';
 
-    addJournal = await journalService.addJournal(journalDetail).then((data) => {
-      return data;
-    });
+    addJournal = await journalService.addJournal(journalDetail);
 
     if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
       return res.status(400).json('An error occurred while creating journal entry');
     }
@@ -1072,38 +973,29 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     journalDetail.j_t7 = 'null';
     journalDetail.j_name = 'null';
 
-    addJournal = await journalService.addJournal(journalDetail).then((data) => {
-      return data;
-    });
+    addJournal = await journalService.addJournal(journalDetail);
 
     if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
 
       return res.status(400).json('An error occurred while creating journal entry');
     }
 
-    let pfas = await pensionProviderService.getAllPensionProviders().then((data) => {
-      return data;
-    });
+    let pfas = await pensionProviderService.getAllPensionProviders();
 
-    let pensionPayments = await paymentDefinitionService.getPensionPayments().then((data) => {
-      return data;
-    });
+    let pensionPayments = await paymentDefinitionService.getPensionPayments();
     if (_.isNull(pensionPayments) || _.isEmpty(pensionPayments)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json(`No payments marked as pension`);
     }
 
     for (const pfa of pfas) {
-      let pfaEmployees = await salaryService
-        .getEmployeesByPfaLocation(pfa.pension_provider_id, salaryMasterData.smm_location, salaryMasterData.smm_month, salaryMasterData.smm_year)
-        .then((data) => {
-          return data;
-        });
+      let pfaEmployees = await salaryService.getEmployeesByPfaLocation(
+        pfa.pension_provider_id,
+        salaryMasterData.smm_location,
+        salaryMasterData.smm_month,
+        salaryMasterData.smm_year
+      );
 
       let tempPfaEmployees = [];
       for (const emp of pfaEmployees) {
@@ -1123,11 +1015,13 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
           for (const pensionPayment of pensionPayments) {
             let amount = 0;
 
-            let checkSalary = await salary
-              .getEmployeeSalaryByD7AndMonthYear(emp.emp_d7, salaryMasterData.smm_month, salaryMasterData.smm_year, pensionPayment.pd_id)
-              .then((data) => {
-                return data;
-              });
+            let checkSalary = await salary.getEmployeeSalaryByD7AndMonthYear(
+              emp.emp_d7,
+              salaryMasterData.smm_month,
+              salaryMasterData.smm_year,
+              pensionPayment.pd_id
+            );
+
             if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
               amount = parseFloat(checkSalary.salary_amount);
             }
@@ -1156,26 +1050,18 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t7 = 'null';
         journalDetail.j_name = 'null';
 
-        addJournal = await journalService.addJournal(journalDetail).then((data) => {
-          return data;
-        });
+        addJournal = await journalService.addJournal(journalDetail);
         if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-            return data;
-          });
+          await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
           return res.status(400).json('An error occurred while creating journal entry');
         }
       }
     }
 
-    const approveMaster = await salaryMappingMasterService.approveSalaryMappingMaster(salaryMasterData.smm_id).then((data) => {
-      return data;
-    });
+    const approveMaster = await salaryMappingMasterService.approveSalaryMappingMaster(salaryMasterData.smm_id);
 
     if (_.isEmpty(approveMaster) || _.isNull(approveMaster)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-        return data;
-      });
+      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
       return res.status(400).json('An error occurred while approving salary mapping master');
     }
 
@@ -1208,24 +1094,16 @@ router.get('/undo-salary-mapping/:masterId', auth(), async function (req, res, n
   try {
     const masterId = req.params['masterId'];
 
-    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
-      return data;
-    });
+    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
 
     if (_.isEmpty(salaryMasterData) || _.isNull(salaryMasterData)) {
       return res.status(400).json('Salary Mapping Master Does not Exist');
     }
 
-    await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code).then((data) => {
-      return data;
-    });
-    await salaryMappingDetailsService.removeSalaryMappingDetails(salaryMasterData.smm_id).then((data) => {
-      return data;
-    });
+    await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
+    await salaryMappingDetailsService.removeSalaryMappingDetails(salaryMasterData.smm_id);
 
-    await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id).then((data) => {
-      return data;
-    });
+    await salaryMappingMasterService.removeSalaryMappingMaster(salaryMasterData.smm_id);
 
     return res.status(200).json('Salary Mapping Undone Successfully');
   } catch (err) {
@@ -1249,17 +1127,13 @@ router.post('/get-Journal', auth(), async function (req, res, next) {
       return res.status(400).json(validationResult.error.details[0].message);
     }
 
-    let salaryMappingMaster = await salaryMappingMasterService.getSalaryMappingMasterByMonthYearLocation(j_month, j_year, j_location).then((data) => {
-      return data;
-    });
+    let salaryMappingMaster = await salaryMappingMasterService.getSalaryMappingMasterByMonthYearLocation(j_month, j_year, j_location);
 
     if (_.isEmpty(salaryMappingMaster) || _.isNull(salaryMappingMaster)) {
       return res.status(400).json('No salary mapping master found');
     }
 
-    let journals = await journalService.getJournalByRefCode(salaryMappingMaster.smm_ref_code).then((data) => {
-      return data;
-    });
+    let journals = await journalService.getJournalByRefCode(salaryMappingMaster.smm_ref_code);
 
     if (_.isEmpty(journals) || _.isNull(journals)) {
       return res.status(400).json('No journals found');
@@ -1298,13 +1172,9 @@ router.get('/test-pfa-journals/:masterId', auth(), async function (req, res, nex
   try {
     const masterId = req.params['masterId'];
 
-    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId).then((data) => {
-      return data;
-    });
+    let salaryMasterData = await salaryMappingMasterService.getSalaryMappingMaster(masterId);
 
-    let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId).then((data) => {
-      return data;
-    });
+    let details = await salaryMappingDetailsService.getSalaryMappingDetails(masterId);
     salaryMasterData = JSON.parse(JSON.stringify(salaryMasterData));
     salaryMasterData.smm_total = details.length;
 
@@ -1336,21 +1206,15 @@ router.get('/test-pfa-journals/:masterId', auth(), async function (req, res, nex
       empIdArray.push(emp.employeeT7);
     }
 
-    let pfas = await pensionProviderService.getAllPensionProviders().then((data) => {
-      return data;
-    });
+    let pfas = await pensionProviderService.getAllPensionProviders();
 
-    let pensionPayments = await paymentDefinitionService.getPensionPayments().then((data) => {
-      return data;
-    });
+    let pensionPayments = await paymentDefinitionService.getPensionPayments();
 
     let pensionArrays = [];
     let employeePenArrays = [];
 
     for (const pfa of pfas) {
-      let employees = await employeeService.getEmployeesByPfaLocation(pfa.pension_provider_id, 1).then((data) => {
-        return data;
-      });
+      let employees = await employeeService.getEmployeesByPfaLocation(pfa.pension_provider_id, 1);
       let totalPension = 0;
       for (const emp of employees) {
         let amount = 0;
@@ -1358,11 +1222,13 @@ router.get('/test-pfa-journals/:masterId', auth(), async function (req, res, nex
 
         if (empIdArray.includes(emp.emp_unique_id)) {
           for (const pensionPayment of pensionPayments) {
-            let checkSalary = await salary
-              .getEmployeeSalaryMonthYearPd(salaryMasterData.smm_month, salaryMasterData.smm_year, emp.emp_id, pensionPayment.pd_id)
-              .then((data) => {
-                return data;
-              });
+            let checkSalary = await salary.getEmployeeSalaryMonthYearPd(
+              salaryMasterData.smm_month,
+              salaryMasterData.smm_year,
+              emp.emp_id,
+              pensionPayment.pd_id
+            );
+
             if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
               amount = amount + parseFloat(checkSalary.salary_amount);
             }
