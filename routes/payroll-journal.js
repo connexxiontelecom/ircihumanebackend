@@ -764,7 +764,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       journalDetail.j_ref_code = salaryMasterData.smm_ref_code;
       journalDetail.j_desc = `${salaryMasterData.smm_month}-SEVERANCE PAY-${emp.employeeD7}`;
       journalDetail.j_d_c = 'C';
-      journalDetail.j_amount = parseFloat(emp.employeeVendorAccount);
+      journalDetail.j_amount = parseFloat(emp.employeeSeverance);
       journalDetail.j_t1 = 'u1000';
       journalDetail.j_t2 = 'Null';
       journalDetail.j_t3 = 'Null';
