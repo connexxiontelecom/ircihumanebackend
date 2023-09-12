@@ -940,32 +940,6 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
     }
 
     journalDetail = {};
-    journalDetail.j_acc_code = '23300';
-    journalDetail.j_date = formatLastDayOfMonth;
-    journalDetail.j_ref_code = salaryMasterData.smm_ref_code;
-    journalDetail.j_desc = `${salaryMasterData.smm_month}-SEVERANCE-PAY`;
-    journalDetail.j_d_c = 'C';
-    journalDetail.j_amount = 0 - totalEmployeeSeverance;
-    journalDetail.j_t1 = 'u1000';
-    journalDetail.j_t2 = 'Null';
-    journalDetail.j_t3 = 'Null';
-    journalDetail.j_t4 = '2NG';
-    journalDetail.j_t5 = '2NGA';
-    journalDetail.j_month = salaryMasterData.smm_month;
-    journalDetail.j_year = salaryMasterData.smm_year;
-    journalDetail.j_t6 = mappingLocationData.l_t6_code;
-    journalDetail.j_t7 = 'null';
-    journalDetail.j_name = 'null';
-
-    addJournal = await journalService.addJournal(journalDetail);
-
-    if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
-      await journalService.removeJournalByRefCode(salaryMasterData.smm_ref_code);
-
-      return res.status(400).json('An error occurred while creating journal entry');
-    }
-
-    journalDetail = {};
     journalDetail.j_acc_code = netPayrollCode.pj_code;
     journalDetail.j_date = formatLastDayOfMonth;
     journalDetail.j_ref_code = salaryMasterData.smm_ref_code;
