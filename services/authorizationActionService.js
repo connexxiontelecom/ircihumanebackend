@@ -88,7 +88,7 @@ const updateAuthorizationStatus = async (req, res) => {
 
         const application = await authorizationModel.findOne(
             {
-                where: {auth_travelapp_id: appId, auth_type: type, auth_status: 0, auth_officer_id: officer},
+                where: {auth_travelapp_id: appId, auth_type: parseInt(type), auth_status: 0, auth_officer_id: officer},
             });
 
         if (!_.isNull(application) || !_.isEmpty(application)) {
@@ -96,7 +96,7 @@ const updateAuthorizationStatus = async (req, res) => {
               return res.status(400).json("You do not have permission to authorize this request.");
             const authEmployee = await EmployeeModel.getEmployeeById(officer);
 
-            const auth = await changeAuthorizationStatus(req.body.status, comment, role, officer, type, appId);
+            const auth = await changeAuthorizationStatus(req.body.status, comment, role, officer, parseInt(type), appId);
 
             /*await authorizationModel.update({
                 auth_status: req.body.status,
@@ -109,8 +109,8 @@ const updateAuthorizationStatus = async (req, res) => {
             });*/
             const similarPendingRequest = await authorizationModel.findAll({
               where:{
-                auth_status:0,
-                auth_type:type,
+                auth_status:0, //pending
+                auth_type:parseInt(type),
                 auth_travelapp_id: appId
               }
             });
@@ -132,7 +132,9 @@ const updateAuthorizationStatus = async (req, res) => {
                 });
               });
               //mark the application as final
-              await markLeaveApplicationAsFinal(status, comment, officer, appId);
+              if(parseInt(markAsFinal) === 1 && (parseInt(type) === 1)){ //marked as final && type is leave application
+                await markLeaveApplicationAsFinal(status, comment, officer, appId);
+              }
 
 
             }
@@ -398,7 +400,7 @@ const updateAuthorizationStatus = async (req, res) => {
 
                             }
                         }*/
-
+//Something went wrong. Try again.Cannot read properties of null (reading 'leapp_start_date')
                         break;
                     case 2: //time sheet
                         const taData = await timeAllocationModel.update({
