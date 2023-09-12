@@ -645,6 +645,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t6 = empLocationCode;
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
+        journalDetail.j_vendor_account = employeeVendorAccount;
 
         addJournal = await journalService.addJournal(journalDetail);
 
@@ -671,6 +672,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t6 = empLocationCode;
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
+        journalDetail.j_vendor_account = employeeVendorAccount;
 
         addJournal = await journalService.addJournal(journalDetail);
 
@@ -697,6 +699,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t6 = empLocationCode;
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
+        journalDetail.j_vendor_account = employeeVendorAccount;
 
         addJournal = await journalService.addJournal(journalDetail);
 
@@ -710,7 +713,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_acc_code = '71550';
         journalDetail.j_date = formatLastDayOfMonth;
         journalDetail.j_ref_code = salaryMappingDetail.smd_ref_code;
-        journalDetail.j_desc = `${salaryMasterData.smm_month}-severance-pay-${empJobRole}`;
+        journalDetail.j_desc = `${salaryMasterData.smm_month}-${salaryMasterData.smm_year}-severance-pay-${empJobRole}-${empName}`;
         journalDetail.j_d_c = 'D';
         journalDetail.j_amount = (parseFloat(salaryMappingDetail.smd_allocation) / 100) * employeeSeverance;
         journalDetail.j_t1 = salaryMappingDetail.smd_donor_t1;
@@ -723,6 +726,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
         journalDetail.j_t6 = empLocationCode;
         journalDetail.j_t7 = salaryMappingDetail.smd_employee_t7;
         journalDetail.j_name = empName;
+        journalDetail.j_vendor_account = employeeVendorAccount;
 
         addJournal = await journalService.addJournal(journalDetail);
 
@@ -738,7 +742,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
           employeeNhf: employeeNHF,
           employeeNsitf: employeeNsitf,
           employeeSeverance: employeeSeverance,
-          employeeVendorAccount: employeeVendorAccount
+          employeeVendorAccount: employeeVendorAccount,
+          empName: empName,
+          empJobRole: empJobRole
         };
         empArray.push(empObject);
       }
@@ -762,9 +768,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       journalDetail.j_acc_code = '23300';
       journalDetail.j_date = formatLastDayOfMonth;
       journalDetail.j_ref_code = salaryMasterData.smm_ref_code;
-      journalDetail.j_desc = `${salaryMasterData.smm_month}-SEVERANCE PAY-${emp.employeeD7}`;
+      journalDetail.j_desc = `${salaryMasterData.smm_month}-${salaryMasterData.smm_year}-severance-pay-${emp.empJobRole}-${emp.empName}`;
       journalDetail.j_d_c = 'C';
-      journalDetail.j_amount = parseFloat(emp.employeeSeverance);
+      journalDetail.j_amount = 0 - parseFloat(emp.employeeSeverance);
       journalDetail.j_t1 = 'u1000';
       journalDetail.j_t2 = 'Null';
       journalDetail.j_t3 = 'Null';
@@ -773,8 +779,9 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       journalDetail.j_month = salaryMasterData.smm_month;
       journalDetail.j_year = salaryMasterData.smm_year;
       journalDetail.j_t6 = mappingLocationData.l_t6_code;
-      journalDetail.j_t7 = 'null';
-      journalDetail.j_name = 'null';
+      journalDetail.j_t7 = emp.employeeD7;
+      journalDetail.j_name = emp.empName;
+      journalDetail.j_vendor_account = emp.employeeVendorAccount;
 
       addJournal = await journalService.addJournal(journalDetail);
       if (_.isEmpty(addJournal) || _.isNull(addJournal)) {
@@ -794,6 +801,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
       let empLocationCode = '';
       let empLocation = '';
       let empSector = '';
+      let employeeVendorAccount = null;
       paymentName = payment.pd_payment_name;
       paymentName = paymentName.replace(/\s+/g, '-').toLowerCase();
       for (const emp of empIdArray) {
@@ -806,6 +814,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
 
         if (!_.isEmpty(salaryDetails) || !_.isNull(salaryDetails)) {
           empName = salaryDetails.salary_emp_name;
+          employeeVendorAccount = salaryDetails.salary_emp_vendor_account;
           let empJobRoleData = await jobRoleService.findJobRoleById(salaryDetails.salary_jobrole_id);
 
           if (!_.isEmpty(empJobRoleData)) {
@@ -842,6 +851,7 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
           journalDetail.j_t6 = empLocationCode;
           journalDetail.j_t7 = emp;
           journalDetail.j_name = empName;
+          journalDetail.j_vendor_account = employeeVendorAccount;
 
           addJournal = await journalService.addJournal(journalDetail);
 
