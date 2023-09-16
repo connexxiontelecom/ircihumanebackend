@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const differenceInBusinessDays = require('date-fns/differenceInBusinessDays');
 const isWeekend = require('date-fns/isWeekend');
 const differenceInMonths = require('date-fns/differenceInMonths');
+const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
 const salaryStructure = require('../services/salaryStructureService');
 const paymentDefinition = require('../services/paymentDefinitionService');
 const employee = require('../services/employeeService');
@@ -609,7 +610,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
           let contractEndDate = new Date(emp.emp_contract_end_date);
 
-          const diffenceInMonthsFromHireDateToToday = differenceInMonths(new Date(), hiredDate);
+          const diffenceInMonthsFromHireDateToToday = differenceInCalendarMonths(new Date(), hiredDate);
 
           const contractEndYear = contractEndDate.getFullYear();
           const contractEndMonth = contractEndDate.getMonth() + 1;
@@ -1029,7 +1030,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                     }
                   }
 
-                  if (parseInt(computationalPayment.pd_id) === 39 && diffenceInMonthsFromHireDateToToday >= 12) {
+                  if (parseInt(computationalPayment.pd_id) === 39 && diffenceInMonthsFromHireDateToToday > 11) {
                     amount = (parseFloat(computationalPayment.pd_percentage) / 100) * immutableEmpGross;
 
                     salaryObject = {
