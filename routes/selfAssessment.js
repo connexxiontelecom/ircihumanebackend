@@ -19,6 +19,7 @@ const notificationModel = require('../models/notification')(sequelize, Sequelize
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
 const mailer = require("../services/IRCMailer");
+const employee = require("../services/employeeService");
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     let saData;
@@ -1191,6 +1192,66 @@ router.get('/get-self-assessments-status/:status', auth(), async function(req, r
     return res.status(400).json("Something went wrong. Try again later."+e.message)
   }
 });
+
+router.post('/self-assessment-tracking-report', auth(), async function(req, res){
+
+  try{
+    const schema = Joi.object({
+      location: Joi.number().default(0).required(),
+      month: Joi.number().required(),
+      year: Joi.number().required(),
+      stage:Joi.number().required()
+
+    })
+
+    const validationResult = schema.validate(req.body, {abortEarly: false});
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const month = req.body.month;
+    const year = req.body.year;
+    const location = req.body.location;
+    const stage = parseInt(req.body.stage);
+    let employees;
+    const empIds = [];
+    const timesheetEmpIds = [];
+    if(location === 0){
+      employees = await employee.getEmployees();
+    }else{
+      employees = await employee.getAllEmployeesByLocation(parseInt(location));
+    }
+    const loc = await locationModel.getLocationById(location);
+    employees.map((emp)=>{
+      empIds.push(emp.emp_id);
+    });
+    //Salary table
+    const salaryEmployees = location === 0 ? await salaryModel.generateAllEmployeesTimesheetReport(empIds, month, year) : await salaryModel.generateEmployeesTimesheetReportByLocation(empIds, location, month, year);
+    const allocations = await timeAllocationModel.getAllTimesheetSubmissionByMonthYearEmpds(parseInt(month), parseInt(year), empIds);
+    allocations.map((alloc)=>{
+      timesheetEmpIds.push({
+        empId: alloc.ta_emp_id,
+        status: alloc.ta_status,
+        ref: alloc.ta_ref_no,
+        month:alloc.ta_month,
+        year:alloc.ta_year
+      })
+    });
+    // return res.status(200).json(timesheetEmpIds);
+    const obj = {
+      salaryEmployees,
+      timesheetEmpIds,
+      loc
+    }
+    return res.status(200).json(obj);
+    return res.status(200).json(obj);
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+
 
 async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
   try {

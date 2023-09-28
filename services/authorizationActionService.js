@@ -98,15 +98,6 @@ const updateAuthorizationStatus = async (req, res) => {
 
             const auth = await changeAuthorizationStatus(req.body.status, comment, role, officer, parseInt(type), appId);
 
-            /*await authorizationModel.update({
-                auth_status: req.body.status,
-                auth_comment: comment,
-                auth_role_id: role,
-            }, {
-                where: {
-                    auth_travelapp_id: appId, auth_type: type, auth_officer_id: officer
-                }
-            });*/
             const similarPendingRequest = await authorizationModel.findAll({
               where:{
                 auth_status:0, //pending
@@ -200,8 +191,8 @@ const updateAuthorizationStatus = async (req, res) => {
                 });
             } else if (markAsFinal === 1) {
                 switch (type) {
-                    case 1: //leave application
-                      await markLeaveApplicationAsFinal(status, comment, officer, appId);
+                    //case 1: //leave application
+                      //await markLeaveApplicationAsFinal(status, comment, officer, appId);
 
                        /* await leaveApplicationModel.update({
                             leapp_status: status,
@@ -401,7 +392,7 @@ const updateAuthorizationStatus = async (req, res) => {
                             }
                         }*/
 //Something went wrong. Try again.Cannot read properties of null (reading 'leapp_start_date')
-                        break;
+                       // break;
                     case 2: //time sheet
                         const taData = await timeAllocationModel.update({
                             ta_status: status,
