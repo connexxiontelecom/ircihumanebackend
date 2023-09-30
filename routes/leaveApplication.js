@@ -977,6 +977,82 @@ router.post('/leave-application-tracking-report', async function (req, res) {
   }
 });
 
+router.post('/leave-accrual-report', async function (req, res) {
+  try {
+    const schema = Joi.object({
+      location: Joi.number().default(0).required(),
+      month: Joi.number().required(),
+      year: Joi.number().required(),
+      leaveType: Joi.number().required()
+    });
+
+    const validationResult = schema.validate(req.body, { abortEarly: false });
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    const month = parseInt(req.body.month);
+    const year = parseInt(req.body.year);
+    let fyYear = `FY${year}`;
+    const location = req.body.location;
+    const leaveType = req.body.leaveType;
+
+    if (month > 9) {
+      const newYear = year + 1;
+      fyYear = `FY${newYear}`;
+    }
+
+    let employees = [];
+
+    if (location === 0) {
+      employees = await employee.getEmployees();
+    } else {
+      employees = await employee.getAllEmployeesByLocation(location);
+    }
+    const leaveTypeDetails = leaveTypeService.getLeaveType(leaveType);
+
+    const responseArray = [];
+
+    for (emp of employees) {
+      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
+
+      if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck)) {
+        continue;
+      }
+
+      let leaveAccrued = 0;
+
+      const leaveTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, leaveType);
+
+      for (const accrued of leaveTotalAccrued) {
+        leaveAccrued = leaveAccrued + accrued.lea_rate;
+      }
+
+      responseArray.push({
+        d7: emp.emp_d7,
+        t7: emp.emp_unique_id,
+        first_name: emp?.emp_first_name,
+        last_name: emp?.emp_last_name,
+        other_name: emp?.emp_other_name,
+        jobTitle: emp.jobrole.job_role,
+        t3: emp.sector?.d_t3_code,
+        t6: emp.location?.l_t6_code,
+        contractEndDate: emp?.emp_contract_end_date,
+        leaveAccrued: leaveAccrued,
+        fyYear: fyYear,
+        month: month,
+        year: year,
+        leaveType: leaveTypeDetails
+      });
+    }
+
+    return res.status(200).json(responseArray);
+  } catch (e) {
+    return res.status(400).json(e.message);
+  }
+});
+
 async function handleInAppEmailNotifications(firstName, title, body, url, email, empId) {
   try {
     const templateParams = {
