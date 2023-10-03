@@ -4,6 +4,13 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const _ = require('lodash');
+const tracer = require('dd-trace').init();
+var StatsD = require('hot-shots');
+var dogstatsd = new StatsD();
+
+// Increment a counter.
+dogstatsd.increment('page.views');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
