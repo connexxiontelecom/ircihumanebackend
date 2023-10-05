@@ -7,7 +7,10 @@ const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTyp
 const goalSettingModel = require("../models/goalsetting")(sequelize, Sequelize.DataTypes);
 const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes);
 const sectorModel = require("../models/Department")(sequelize, Sequelize.DataTypes);
+const selfAssessmentModel = require("../models/selfassessment")(sequelize, Sequelize.DataTypes);
 const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
+const endYearResponseModel = require("../models/endofyearresponse")(sequelize, Sequelize.DataTypes);
+//const endYearSupervisorResponseModel = require("../models/endyearsupervisorresponse")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class selfassessmentmaster extends Model {
     /**
@@ -80,6 +83,45 @@ module.exports = (sequelize, DataTypes) => {
         group: ['sam_year', 'sam_emp_id']
       })
     }
+
+    static async generateEmployeesSelfAssessmentReport(empIds, stage, fy) {
+      return await selfassessmentmaster.findAll({
+        include:[
+          {model:EmployeeModel, as:'employee',
+            include: [
+              {model: locationModel, as: 'location'},
+              {model: sectorModel, as: 'sector'},
+            ]},
+          { model: selfAssessmentModel, as: 'self_assessment' },
+          {model: EmployeeModel, as:'supervisor'}
+        ],
+        where: {
+          sam_emp_id: empIds,
+          sam_gs_id: stage,
+          sam_year: fy,
+        }
+      });
+    }
+    static async generateEmployeesEndOfYearSelfAssessmentReport(empIds, stage, fy) {
+      return await selfassessmentmaster.findAll({
+        include:[
+          {model:EmployeeModel, as:'employee',
+            include: [
+              {model: locationModel, as: 'location'},
+              {model: sectorModel, as: 'sector'},
+            ]},
+          { model: endYearResponseModel, as: 'end_year_response' },
+          {model: EmployeeModel, as:'supervisor'},
+          //{model: endYearSupervisorResponseModel, as:'end_year_supervisor_response'}
+        ],
+        where: {
+          sam_emp_id: empIds,
+          sam_gs_id: stage,
+          sam_year: fy,
+        }
+      });
+    }
+
     static async getAllSelfAssessmentsByStatus(status){
       return await selfassessmentmaster.findAll({
         include:[
@@ -106,6 +148,17 @@ module.exports = (sequelize, DataTypes) => {
         ],
       })
     }
+
+
+
+    static async getAllFYs(){
+      return await selfassessmentmaster.findAll({
+        attributes:['sam_year'],
+        order:[ ['sam_id', 'DESC'] ],
+        group: ['sam_year']
+      })
+    }
+
   };
   selfassessmentmaster.init({
     sam_id:{
@@ -140,6 +193,9 @@ module.exports = (sequelize, DataTypes) => {
   selfassessmentmaster.belongsTo(EmployeeModel,{foreignKey:'sam_supervisor_id', as:'supervisor'});
   selfassessmentmaster.belongsTo(EmployeeModel,{foreignKey:'sam_emp_id', as:'employee'});
   selfassessmentmaster.belongsTo(goalSettingModel,{foreignKey:'sam_gs_id', as:'goal'});
+  selfassessmentmaster.hasMany(selfAssessmentModel,{foreignKey:'sa_master_id', as:'self_assessment'});
+  selfassessmentmaster.hasMany(endYearResponseModel,{foreignKey:'eyr_master_id', as:'end_year_response'});
+  //selfassessmentmaster.hasMany(endYearSupervisorResponseModel,{foreignKey:'eyr_master_id', as:'end_year_supervisor_response'});
   selfassessmentmaster.belongsTo(authorizationModel,
     { foreignKey: 'sam_supervisor_id', as: 'authorizers', sourceKey: 'travelapp_id' });
   return selfassessmentmaster;

@@ -15,9 +15,11 @@ const {sequelize, Sequelize} = require('../services/db');
 const leaveApplication = require("../services/leaveApplicationService");
 const authorizationAction = require("../services/authorizationActionService");
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
+const locationModel = require('../models/Location')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
+const endOfYearSupervisorResponseModel = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
 const mailer = require("../services/IRCMailer");
 const employee = require("../services/employeeService");
 /* Add Self Assessment */
@@ -356,6 +358,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async functi
             await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                 return data
             })
+          console.log('Showing new master ID: '+masterId)
 
             for (const sa of saRequests) {
                 sa.sa_emp_id = empId
@@ -1116,19 +1119,23 @@ router.get('/get-self-assessment-by-master/:masterId', auth(), async function (r
       }
 
     }
-
-
-
-
-
-
-
   } catch (err) {
-    //Error while Responding to Goals Cannot read properties of null (reading 'sa_gs_id')
-    return res.status(400).json(`Error while Responding to Goals ${err.message}`);
+    return res.status(400).json(`Error while Responding to Goals`);
     next(err);
   }
 });
+
+
+router.get('/get-all-fys', auth(), async function (req, res, next) {
+  try {
+    const fys = await selfAssessmentMasterModel.getAllFYs();
+    return res.status(200).json(fys);
+  } catch (err) {
+      return res.status(400).json(`error fetching FYs`);
+    next(err);
+  }
+});
+
 
 router.get('/get-all-self-assessments', auth(), async function(req, res){
   try{
@@ -1198,8 +1205,7 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
   try{
     const schema = Joi.object({
       location: Joi.number().default(0).required(),
-      month: Joi.number().required(),
-      year: Joi.number().required(),
+      fy: Joi.string().required(),
       stage:Joi.number().required()
 
     })
@@ -1210,9 +1216,8 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
       return res.status(400).json(validationResult.error.details[0].message)
     }
 
-    const month = req.body.month;
-    const year = req.body.year;
-    const location = req.body.location;
+    const fy = req.body.fy;
+    const location = parseInt(req.body.location);
     const stage = parseInt(req.body.stage);
     let employees;
     const empIds = [];
@@ -1220,38 +1225,63 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
     if(location === 0){
       employees = await employee.getEmployees();
     }else{
-      employees = await employee.getAllEmployeesByLocation(parseInt(location));
+      employees = await employee.getAllEmployeesByLocation(location);
     }
     const loc = await locationModel.getLocationById(location);
     employees.map((emp)=>{
       empIds.push(emp.emp_id);
     });
-    //Salary table
-    const salaryEmployees = location === 0 ? await salaryModel.generateAllEmployeesTimesheetReport(empIds, month, year) : await salaryModel.generateEmployeesTimesheetReportByLocation(empIds, location, month, year);
-    const allocations = await timeAllocationModel.getAllTimesheetSubmissionByMonthYearEmpds(parseInt(month), parseInt(year), empIds);
-    allocations.map((alloc)=>{
-      timesheetEmpIds.push({
-        empId: alloc.ta_emp_id,
-        status: alloc.ta_status,
-        ref: alloc.ta_ref_no,
-        month:alloc.ta_month,
-        year:alloc.ta_year
-      })
-    });
-    // return res.status(200).json(timesheetEmpIds);
+
+    //self-assessment
+    let assessments;
+
+      if((stage === 1) || (stage === 2)){
+        assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, stage, fy);
+      }else{
+        let selfMasterSubmission = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, stage, fy);
+        const masterIds = [];
+        selfMasterSubmission.map(submit=>{
+          masterIds.push(submit.sam_id)
+        })
+        assessments = await endOfYearSupervisorResponseModel.getSupervisorEndYearResponseByMasterId(masterIds);
+      }
     const obj = {
-      salaryEmployees,
-      timesheetEmpIds,
-      loc
+      assessments,
+      stage: stage,
+      location:loc?.location_id || location,
+      locationName: location === 0 ? 'All Locations ' : loc?.location_name,
+      fy:fy
     }
-    return res.status(200).json(obj);
     return res.status(200).json(obj);
   }catch (e) {
     return res.status(400).json('Whoops!');
   }
 });
 
+/*
+router.get('/get-employee-self-assessment-tracking-report', auth(), async function(req, res){
 
+  try{
+
+    const fy = req.params.fy;
+    //const location = parseInt(req.params.location);
+    const stage = parseInt(req.params.stage);
+    const empId = parseInt(req.params.employee);
+    let employees;
+
+    const assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empId, stage, fy);
+    const obj = {
+      assessments,
+      stage: stage,
+      fy:fy
+    }
+    return res.status(200).json(obj);
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+*/
 
 async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
   try {
