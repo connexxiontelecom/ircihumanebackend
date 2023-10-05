@@ -6,6 +6,9 @@ const {sequelize, Sequelize} = require("../services/db");
 const employeeModel = require('./Employee')(sequelize, Sequelize)
 const ratingModel = require('./rating')(sequelize, Sequelize)
 const selfAssessmentMasterModel = require('./selfassessmentmaster')(sequelize, Sequelize)
+const endOfYearResponseModel = require('./endofyearresponse')(sequelize, Sequelize)
+const locationModel = require('./Location')(sequelize, Sequelize)
+const sectorModel = require('./Department')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class EndYearSupervisorResponse extends Model {
     /**
@@ -35,7 +38,17 @@ module.exports = (sequelize, DataTypes) => {
         include:[
           {model:employeeModel, as:'supervisor'},
           {model:ratingModel, as:'rating'},
-          {model:selfAssessmentMasterModel, as:'selfAssessment'},
+          {model:selfAssessmentMasterModel, as:'selfAssessment',
+            include:[
+              {model:employeeModel, as:'employee',
+                include: [
+                  {model: locationModel, as: 'location'},
+                  {model: sectorModel, as: 'sector'},
+                ]
+              },
+            ]
+          },
+          {model:endOfYearResponseModel, as:'end_of_year_response'},
         ]
       })
     }
@@ -74,5 +87,6 @@ module.exports = (sequelize, DataTypes) => {
   EndYearSupervisorResponse.belongsTo(employeeModel, {as:'supervisor', foreignKey:'eysr_supervisor_id'});
   EndYearSupervisorResponse.belongsTo(ratingModel, {as:'rating', foreignKey:'eysr_rating'});
   EndYearSupervisorResponse.belongsTo(selfAssessmentMasterModel, {as:'selfAssessment', foreignKey:'eysr_master_id'});
+  EndYearSupervisorResponse.belongsTo(endOfYearResponseModel, {as:'end_of_year_response', foreignKey:'eysr_master_id'});
   return EndYearSupervisorResponse;
 };
