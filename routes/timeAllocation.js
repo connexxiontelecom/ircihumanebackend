@@ -519,7 +519,7 @@ router.post('/timesheet-application-tracking-report', auth(), async function(req
         return res.status(200).json(obj);
     return res.status(200).json(obj);
   }catch (e) {
-    return res.status(400).json('Whoops!');
+    return res.status(400).json('Whoops!'+e.message);
   }
 });
 
