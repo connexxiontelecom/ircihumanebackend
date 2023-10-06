@@ -1236,9 +1236,9 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
     let assessments;
 
       if((stage === 1) || (stage === 2)){
-        assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, stage, fy);
+        assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, /*stage,*/ fy);
       }else{
-        let selfMasterSubmission = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, stage, fy);
+        let selfMasterSubmission = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds,/* stage,*/ fy);
         const masterIds = [];
         selfMasterSubmission.map(submit=>{
           masterIds.push(submit.sam_id)
