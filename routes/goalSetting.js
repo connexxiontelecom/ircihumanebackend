@@ -214,4 +214,17 @@ router.patch('/close-goal-setting/:gs_id', auth(), async function (req, res, nex
     }
 });
 
+router.get('/get-goal-setting-by-fy/:fy', auth(), async  function(req, res){
+
+  const fy = req.params.fy;
+  try {
+    const fys = await goalSetting.getGoalSettingYear(fy);
+    const obj = {
+      goalYears:fys
+    }
+    return res.status(200).json(obj);
+  } catch (e) {
+    return res.status(400).json("Something went wrong. Try again later.");
+  }
+});
 module.exports = router;

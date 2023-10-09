@@ -22,6 +22,7 @@ const selfAssessmentModel = require('../models/selfassessment')(sequelize, Seque
 const endOfYearSupervisorResponseModel = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
 const mailer = require("../services/IRCMailer");
 const employee = require("../services/employeeService");
+const goalSettingService = require("../services/goalSettingService");
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     let saData;
@@ -1206,7 +1207,7 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
     const schema = Joi.object({
       location: Joi.number().default(0).required(),
       fy: Joi.string().required(),
-      stage:Joi.number().required()
+      gs_id:Joi.number().required()
 
     })
 
@@ -1218,7 +1219,7 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
 
     const fy = req.body.fy;
     const location = parseInt(req.body.location);
-    const stage = parseInt(req.body.stage);
+    const gs_id = parseInt(req.body.gs_id);
     let employees;
     const empIds = [];
     const timesheetEmpIds = [];
@@ -1232,13 +1233,15 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
       empIds.push(emp.emp_id);
     });
 
+    let goalSetting = await goalSettingService.getGoalSetting(gs_id)
+
     //self-assessment
     let assessments;
 
-      if((stage === 1) || (stage === 2)){
-        assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, /*stage,*/ fy);
+      if(parseInt(goalSetting.gs_activity) === 1 || (parseInt(goalSetting.gs_activity) === 2)){
+        assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, gs_id, fy);
       }else{
-        let selfMasterSubmission = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds,/* stage,*/ fy);
+        let selfMasterSubmission = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds,gs_id, fy);
         const masterIds = [];
         selfMasterSubmission.map(submit=>{
           masterIds.push(submit.sam_id)
@@ -1247,14 +1250,16 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
       }
     const obj = {
       assessments,
-      stage: stage,
+      stage: parseInt(goalSetting.gs_activity),
+      gs_id: gs_id,
       location:loc?.location_id || location,
       locationName: location === 0 ? 'All Locations ' : loc?.location_name,
+      counter:assessments.length,
       fy:fy
     }
     return res.status(200).json(obj);
   }catch (e) {
-    return res.status(400).json('Whoops!');
+    return res.status(400).json('Whoops!'+e.message);
   }
 });
 

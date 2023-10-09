@@ -84,7 +84,7 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
-    static async generateEmployeesSelfAssessmentReport(empIds,/* stage,*/ fy) {
+    static async generateEmployeesSelfAssessmentReport(empIds, gs_id, fy) {
       return await selfassessmentmaster.findAll({
         include:[
           {model:EmployeeModel, as:'employee',
@@ -97,7 +97,7 @@ module.exports = (sequelize, DataTypes) => {
         ],
         where: {
           sam_emp_id: empIds,
-          //sam_gs_id: stage,
+          sam_gs_id: gs_id,
           sam_year: fy,
         }
       });
