@@ -101,8 +101,8 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
     let addResponse;
     try {
 
-        let empId = req.params.emp_id
-        let gsId = req.params.gs_id
+        let empId = parseInt(req.params.emp_id)
+        let gsId = parseInt(req.params.gs_id)
         let eyrRequests = req.body
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
