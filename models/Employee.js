@@ -173,6 +173,7 @@ module.exports = (sequelize, DataTypes) => {
       emp_contract_hire_date: DataTypes.DATE,
       emp_contact_address: DataTypes.STRING,
       emp_vendor_account: DataTypes.STRING,
+      emp_nhf_status: DataTypes.BOOLEAN,
       createdAt: {
         field: 'created_at',
         type: DataTypes.DATE
@@ -186,7 +187,7 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'Employee',
       tableName: 'employees',
-      timestamps: false
+      timestamps: true
     }
   );
 

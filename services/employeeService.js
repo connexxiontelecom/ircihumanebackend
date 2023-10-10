@@ -326,6 +326,19 @@ async function updateEmployee(employeeId, employeeData) {
   );
 }
 
+async function setNhf(employeeId, nhf) {
+  return await employee.update(
+    {
+      emp_nhf_status: nhf
+    },
+    {
+      where: {
+        emp_id: employeeId
+      }
+    }
+  );
+}
+
 async function updateEmployeeFromBackoffice(employeeId, employeeData) {
   let accountNumber = employeeData.emp_account_no;
   let letter = accountNumber.charAt(0);
@@ -801,5 +814,6 @@ module.exports = {
   updateContractDate,
   updateSalaryGrade,
   updateContractStartDate,
-  getAllActiveEmployees
+  getAllActiveEmployees,
+  setNhf
 };
