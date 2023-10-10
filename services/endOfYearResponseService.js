@@ -25,7 +25,7 @@ async function getEndOfYearResponse(eyrGsId, eyrEmpId) {
 }
 
 async function removeResponse(empId, gsId) {
-    return await EndYearResponse.destroy({where: {eyr_gs_id: gsId}, eyr_emp_id: empId})
+    return await EndYearResponse.destroy({where: {eyr_gs_id: gsId, eyr_emp_id: empId} })
 }
 
 async function approveEndYearResponseByMasterId(masterId) {
