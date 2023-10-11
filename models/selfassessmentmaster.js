@@ -10,7 +10,7 @@ const sectorModel = require("../models/Department")(sequelize, Sequelize.DataTyp
 const selfAssessmentModel = require("../models/selfassessment")(sequelize, Sequelize.DataTypes);
 const authorizationModel = require("../models/AuthorizationAction")(sequelize, Sequelize.DataTypes);
 const endYearResponseModel = require("../models/endofyearresponse")(sequelize, Sequelize.DataTypes);
-//const endYearSupervisorResponseModel = require("../models/endyearsupervisorresponse")(sequelize, Sequelize.DataTypes);
+const endYearAssessmentModel = require("../models/endofyearassessment")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class selfassessmentmaster extends Model {
     /**
@@ -195,7 +195,7 @@ module.exports = (sequelize, DataTypes) => {
   selfassessmentmaster.belongsTo(goalSettingModel,{foreignKey:'sam_gs_id', as:'goal'});
   selfassessmentmaster.hasMany(selfAssessmentModel,{foreignKey:'sa_master_id', as:'self_assessment'});
   selfassessmentmaster.hasMany(endYearResponseModel,{foreignKey:'eyr_master_id', as:'end_year_response'});
-  //selfassessmentmaster.hasMany(endYearSupervisorResponseModel,{foreignKey:'eyr_master_id', as:'end_year_supervisor_response'});
+  selfassessmentmaster.hasMany(endYearAssessmentModel,{foreignKey:'eya_gs_id', as:'end_year_assessment'});
   selfassessmentmaster.belongsTo(authorizationModel,
     { foreignKey: 'sam_supervisor_id', as: 'authorizers', sourceKey: 'travelapp_id' });
   return selfassessmentmaster;
