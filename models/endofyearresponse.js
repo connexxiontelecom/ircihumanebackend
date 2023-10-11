@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+const {sequelize, Sequelize} = require("../services/db");
+const endYearAssessmentModel = require('./endofyearassessment')(sequelize, Sequelize)
+
 module.exports = (sequelize, DataTypes) => {
   class endofyearresponse extends Model {
     /**
@@ -34,5 +37,6 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'endofyearresponse',
     tableName: 'end_year_responses'
   });
+  endofyearresponse.hasMany(endYearAssessmentModel, {as:'end_year_assessment', foreignKey:'eya_gs_id'});
   return endofyearresponse;
 };

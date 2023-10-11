@@ -20,6 +20,7 @@ const notificationModel = require('../models/notification')(sequelize, Sequelize
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
 const endOfYearSupervisorResponseModel = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
+const endYearAssessmentModel = require('../models/endofyearassessment')(sequelize, Sequelize.DataTypes);
 const mailer = require("../services/IRCMailer");
 const employee = require("../services/employeeService");
 const goalSettingService = require("../services/goalSettingService");
@@ -1237,6 +1238,7 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
 
     //self-assessment
     let assessments;
+    let checkingQuestions;
 
       if(parseInt(goalSetting.gs_activity) === 1 || (parseInt(goalSetting.gs_activity) === 2)){
         assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, gs_id, fy);
@@ -1246,12 +1248,14 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
         selfMasterSubmission.map(submit=>{
           masterIds.push(submit.sam_id)
         })
+         checkingQuestions = await endYearAssessmentModel.getLeaveAccrualByLeaveId(gs_id);
         assessments = await endOfYearSupervisorResponseModel.getSupervisorEndYearResponseByMasterId(masterIds);
       }
     const obj = {
       assessments,
       stage: parseInt(goalSetting.gs_activity),
       gs_id: gs_id,
+      checkingQuestions: checkingQuestions,
       location:loc?.location_id || location,
       locationName: location === 0 ? 'All Locations ' : loc?.location_name,
       counter:assessments.length,
