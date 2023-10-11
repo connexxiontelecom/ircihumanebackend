@@ -12,6 +12,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getLeaveAccrualByLeaveId(gsId){
+      return await endOfYearAssessment.findAll(
+        {where:{eya_gs_id:gsId}
+        });
+    }
+
   }
   endOfYearAssessment.init({
     eya_id:{
