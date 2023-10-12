@@ -1249,7 +1249,7 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
           masterIds.push(submit.sam_id)
         })
          checkingQuestions = await endYearAssessmentModel.getLeaveAccrualByLeaveId(gs_id);
-        assessments = await endOfYearSupervisorResponseModel.getSupervisorEndYearResponseByMasterId(masterIds);
+        assessments = await endOfYearSupervisorResponseModel.getSupervisorEndYearResponseByMasterIdOnly(masterIds);
       }
     const obj = {
       assessments,

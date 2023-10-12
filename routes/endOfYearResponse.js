@@ -399,7 +399,7 @@ router.post('/supervisor-end-year-response', auth(), async function(req, res){
     }
     let submission;
 
-    const masterRecord = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(master));
+    const masterRecord = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterIdOnly(parseInt(master));
     if(_.isEmpty(masterRecord) || _.isNull(masterRecord)){
        submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
         return res;
@@ -438,7 +438,8 @@ router.get('/supervisor-end-year-response/:masterId', auth(), async function(req
   try{
     const masterId = req.params.masterId;
 
-    const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
+    const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterIdOnly(parseInt(masterId));
+    //const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
     if(_.isEmpty(result) || _.isNull(result)){
       return res.status(200).json("Awaiting supervisor's response.");
     }else{
