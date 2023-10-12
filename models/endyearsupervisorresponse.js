@@ -59,6 +59,16 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async getSupervisorEndYearResponseByMasterIdOnly(masterId){
+      return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
+        include:[
+          {model:employeeModel, as:'supervisor'},
+          {model:ratingModel, as:'rating'},
+          {model:selfAssessmentMasterModel, as:'selfAssessment'},
+        ]
+      })
+    }
+
     static async  updateEndYearSupervisorStatus(eyaId, eyaQuestion) {
 
       return await EndYearSupervisorResponse.update({
