@@ -90,7 +90,7 @@ router.patch('/update-employee/:emp_id', auth(), async function (req, res, next)
 router.patch('/update-employee-nhf/:emp_id', auth(), async function (req, res, next) {
   try {
     let empId = req.params['emp_id'];
-    const existingEmployee = employees.getEmployee(empId);
+    const existingEmployee = await employees.getEmployee(empId);
     if (_.isEmpty(existingEmployee)) {
       return res.status(400).json(`Employee Doesn't Exist`);
     }
