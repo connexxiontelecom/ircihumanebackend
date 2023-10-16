@@ -1,67 +1,43 @@
-const { sequelize, Sequelize } = require("../services/db");
-const Joi = require("joi");
-const _ = require("lodash");
-const express = require("express");
+const { sequelize, Sequelize } = require('../services/db');
+const Joi = require('joi');
+const _ = require('lodash');
+const express = require('express');
 const router = express.Router();
-const auth = require("../middleware/auth");
-const { format } = require("date-fns");
-const differenceInBusinessDays = require("date-fns/differenceInBusinessDays");
-const differenceInMonths = require("date-fns/differenceInMonths");
-const isBefore = require("date-fns/isBefore");
-const leaveApplication = require("../services/leaveApplicationService");
-const {
-  addLeaveAccrual,
-  computeLeaveAccruals,
-} = require("../routes/leaveAccrual");
-const leaveAccrualService = require("../services/leaveAccrualService");
-const authorizationAction = require("../services/authorizationActionService");
-const supervisorAssignmentService = require("../services/supervisorAssignmentService");
-const leaveTypeService = require("../services/leaveTypeService");
-const mailer = require("../services/IRCMailer");
-const hrFocalPointModel = require("../models/hrfocalpoint")(
-  sequelize,
-  Sequelize.DataTypes
-);
-const leaveAppModel = require("../models/leaveapplication")(
-  sequelize,
-  Sequelize.DataTypes
-);
-const publicHolidayModel = require("../models/PublicHoliday")(
-  sequelize,
-  Sequelize.DataTypes
-);
-const logs = require("../services/logService");
-const employees = require("../services/employeeService");
-const timeSheetService = require("../services/timeSheetService");
-const notificationModel = require("../models/notification")(
-  sequelize,
-  Sequelize.DataTypes
-);
-const authorizationModel = require("../models/AuthorizationAction")(
-  sequelize,
-  Sequelize.DataTypes
-);
-const employeeModel = require("../models/Employee")(
-  sequelize,
-  Sequelize.DataTypes
-);
-const leaveAccrualModel = require("../models/leaveaccrual")(
-  sequelize,
-  Sequelize.DataTypes
-);
+const auth = require('../middleware/auth');
+const { format } = require('date-fns');
+const differenceInBusinessDays = require('date-fns/differenceInBusinessDays');
+const differenceInMonths = require('date-fns/differenceInMonths');
+const isBefore = require('date-fns/isBefore');
+const leaveApplication = require('../services/leaveApplicationService');
+const { addLeaveAccrual, computeLeaveAccruals } = require('../routes/leaveAccrual');
+const leaveAccrualService = require('../services/leaveAccrualService');
+const authorizationAction = require('../services/authorizationActionService');
+const supervisorAssignmentService = require('../services/supervisorAssignmentService');
+const leaveTypeService = require('../services/leaveTypeService');
+const mailer = require('../services/IRCMailer');
+const hrFocalPointModel = require('../models/hrfocalpoint')(sequelize, Sequelize.DataTypes);
+const leaveAppModel = require('../models/leaveapplication')(sequelize, Sequelize.DataTypes);
+const publicHolidayModel = require('../models/PublicHoliday')(sequelize, Sequelize.DataTypes);
+const logs = require('../services/logService');
+const employees = require('../services/employeeService');
+const timeSheetService = require('../services/timeSheetService');
+const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
+const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+const employeeModel = require('../models/Employee')(sequelize, Sequelize.DataTypes);
+const leaveAccrualModel = require('../models/leaveaccrual')(sequelize, Sequelize.DataTypes);
 
-const { businessDaysDifference } = require("../services/dateService");
-const isWeekend = require("date-fns/isWeekend");
-const eachDayOfInterval = require("date-fns/eachDayOfInterval");
-const getDaysInMonth = require("date-fns/getDaysInMonth");
-const reader = require("xlsx");
-const employee = require("../services/employeeService");
-const salaryService = require("../services/salaryService");
-const fs = require("fs");
-const path = require("path");
+const { businessDaysDifference } = require('../services/dateService');
+const isWeekend = require('date-fns/isWeekend');
+const eachDayOfInterval = require('date-fns/eachDayOfInterval');
+const getDaysInMonth = require('date-fns/getDaysInMonth');
+const reader = require('xlsx');
+const employee = require('../services/employeeService');
+const salaryService = require('../services/salaryService');
+const fs = require('fs');
+const path = require('path');
 
 /* Get leave application */
-router.get("/", auth(), async function (req, res, next) {
+router.get('/', auth(), async function (req, res, next) {
   try {
     let appId = [];
     let leaveObj = {};
@@ -72,7 +48,7 @@ router.get("/", auth(), async function (req, res, next) {
       authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
         leaveObj = {
           data,
-          officers,
+          officers
         };
         return res.status(200).json(leaveObj);
       });
@@ -83,7 +59,7 @@ router.get("/", auth(), async function (req, res, next) {
 });
 
 /* Add Location Allowance */
-router.post("/add-leave-application", auth(), async function (req, res, next) {
+router.post('/add-leave-application', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
       leapp_empid: Joi.number().required(),
@@ -94,7 +70,7 @@ router.post("/add-leave-application", auth(), async function (req, res, next) {
       leapp_alt_phone: Joi.string(),
       holiday_ids: Joi.array().required(),
       locations: Joi.array().required(),
-      leaveDuration: Joi.number().allow("", null),
+      leaveDuration: Joi.number().allow('', null)
       // leapp_verify_by: Joi.number().required(),
       // leapp_verify_date: Joi.string().required(),
       // leapp_verify_comment: Joi.string().required(),
@@ -122,9 +98,7 @@ router.post("/add-leave-application", auth(), async function (req, res, next) {
     const leaveTypeIds = [2, 11, 12, 13, 15, 16];
     if (!leaveTypeIds.includes(parseInt(req.body.leapp_leave_type))) {
       if (isBefore(startDate, new Date())) {
-        return res
-          .status(400)
-          .json("Leave start date cannot be before today or today");
+        return res.status(400).json('Leave start date cannot be before today or today');
       }
     }
     /* if((parseInt(req.body.leapp_leave_type) !== 2) || (parseInt(req.body.leapp_leave_type) !== 12) || (parseInt(req.body.leapp_leave_type) !== 13)){
@@ -139,27 +113,18 @@ router.post("/add-leave-application", auth(), async function (req, res, next) {
 
     let daysRequested = leaveApplicationRequest.leaveDuration;
     if (parseInt(daysRequested) <= 0) {
-      return res
-        .status(400)
-        .json("Leave duration must be greater or equal to 1");
+      return res.status(400).json('Leave duration must be greater or equal to 1');
     }
 
-    const emp = await employees
-      .getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid))
-      .then((ed) => {
-        return ed;
-      });
+    const emp = await employees.getEmployeeByIdOnly(parseInt(leaveApplicationRequest.leapp_empid)).then((ed) => {
+      return ed;
+    });
     if (_.isEmpty(emp) || _.isNull(emp)) {
-      return res.status(400).json("Employee does not exist");
+      return res.status(400).json('Employee does not exist');
     }
 
-    const hrpoints = await hrFocalPointModel.getHrFocalPointsByLocationId(
-      emp.emp_location_id
-    );
-    if (_.isEmpty(hrpoints) || _.isNull(hrpoints))
-      return res
-        .status(400)
-        .json("There're currently no HR Focal Points at this location");
+    const hrpoints = await hrFocalPointModel.getHrFocalPointsByLocationId(emp.emp_location_id);
+    if (_.isEmpty(hrpoints) || _.isNull(hrpoints)) return res.status(400).json("There're currently no HR Focal Points at this location");
     /*
 
         const supervisorAssignment = await supervisorAssignmentService.getEmployeeSupervisor(leaveApplicationRequest.leapp_empid).then((val) => {
@@ -171,54 +136,43 @@ router.post("/add-leave-application", auth(), async function (req, res, next) {
         }
 */
 
-    const leaveTypeData = await leaveTypeService
-      .getLeaveType(leaveApplicationRequest.leapp_leave_type)
-      .then((data) => {
-        return data;
-      });
+    const leaveTypeData = await leaveTypeService.getLeaveType(leaveApplicationRequest.leapp_leave_type).then((data) => {
+      return data;
+    });
 
     if (_.isEmpty(leaveTypeData) || _.isNull(leaveTypeData)) {
-      return res.status(400).json("Invalid Leave Type");
+      return res.status(400).json('Invalid Leave Type');
     }
     if (daysRequested > parseInt(leaveTypeData.leave_duration)) {
-      return res
-        .status(400)
-        .json("Leave duration exceed leave duration for this leave type.");
+      return res.status(400).json('Leave duration exceed leave duration for this leave type.');
     }
 
     if (parseInt(leaveTypeData.lt_accrue) === 1) {
       const accrualData = {
         lea_emp_id: leaveApplicationRequest.leapp_empid,
         lea_year: startYear,
-        lea_leave_type: leaveApplicationRequest.leapp_leave_type,
+        lea_leave_type: leaveApplicationRequest.leapp_leave_type
       };
 
-      const accruedDays = await computeLeaveAccruals(accrualData).then(
-        (data) => {
-          return data;
-        }
-      );
+      const accruedDays = await computeLeaveAccruals(accrualData).then((data) => {
+        return data;
+      });
 
-      if (
-        parseInt(req.body.leapp_leave_type) !== 1 &&
-        parseInt(req.body.leapp_leave_type) !== 2
-      ) {
+      if (parseInt(req.body.leapp_leave_type) !== 1 && parseInt(req.body.leapp_leave_type) !== 2) {
         //leapp_leave_type
         if (_.isNull(accruedDays) || accruedDays === 0) {
-          return res.status(400).json("No Leave Accrued for Selected Leave");
+          return res.status(400).json('No Leave Accrued for Selected Leave');
         }
 
         if (parseInt(daysRequested) > parseInt(accruedDays)) {
-          return res
-            .status(400)
-            .json("Days Requested Greater than Accrued Days");
+          return res.status(400).json('Days Requested Greater than Accrued Days');
         }
       }
     }
 
-    leaveApplicationRequest["leapp_year"] = startYear;
-    leaveApplicationRequest["leapp_total_days"] = daysRequested;
-    leaveApplicationRequest["leapp_status"] = 0;
+    leaveApplicationRequest['leapp_year'] = startYear;
+    leaveApplicationRequest['leapp_total_days'] = daysRequested;
+    leaveApplicationRequest['leapp_status'] = 0;
     let holidays = leaveApplicationRequest.holiday_ids;
     const holidaysArray = [];
     holidays.map((hol) => {
@@ -229,81 +183,49 @@ router.post("/add-leave-application", auth(), async function (req, res, next) {
     chosenLocations.map((loc) => {
       chosenLocationsArray.push(loc);
     });
-    leaveApplicationRequest["leapp_locations"] = emp.emp_location_id; //removeDuplicates(chosenLocationsArray) ;
-    leaveApplicationRequest["leapp_holidays"] = removeDuplicates(holidaysArray);
+    leaveApplicationRequest['leapp_locations'] = emp.emp_location_id; //removeDuplicates(chosenLocationsArray) ;
+    leaveApplicationRequest['leapp_holidays'] = removeDuplicates(holidaysArray);
 
-    const leaveApplicationResponse = await leaveApplication
-      .addLeaveApplication(leaveApplicationRequest)
-      .then((data) => {
-        return data;
-      });
+    const leaveApplicationResponse = await leaveApplication.addLeaveApplication(leaveApplicationRequest).then((data) => {
+      return data;
+    });
 
     const leaveAppId = leaveApplicationResponse.leapp_id;
     hrpoints.map(async (hrp) => {
-      const subject = "New leave application";
-      const body = "Kindly attend to this leave application.";
+      const subject = 'New leave application';
+      const body = 'Kindly attend to this leave application.';
       const templateParams = {
         firstName: `${hrp.focal_person.emp_first_name}`,
-        title: `New Leave Application - Authorization Request`,
+        title: `New Leave Application - Authorization Request`
       };
       //emp
       const authorizationResponse = authorizationAction
-        .registerNewAction(
-          1,
-          leaveAppId,
-          hrp.hfp_emp_id,
-          0,
-          "Leave application initiated"
-        )
+        .registerNewAction(1, leaveAppId, hrp.hfp_emp_id, 0, 'Leave application initiated')
         .then((data) => {
           return data;
         });
-      const url = "leave-authorization";
-      const notifySupervisor = await notificationModel.registerNotification(
-        subject,
-        body,
-        hrp.hfp_emp_id,
-        0,
-        url
-      );
+      const url = 'leave-authorization';
+      const notifySupervisor = await notificationModel.registerNotification(subject, body, hrp.hfp_emp_id, 0, url);
       const mailerRes = await mailer
-        .sendAnnouncementNotification(
-          "noreply@ircng.org",
-          hrp.focal_person.emp_office_email,
-          subject,
-          templateParams
-        )
+        .sendAnnouncementNotification('noreply@ircng.org', hrp.focal_person.emp_office_email, subject, templateParams)
         .then((data) => {
           return data;
         });
     });
-    const sub = "New leave application";
-    const content = "Your new leave application was submitted successfully.";
-    const url = "leave-application";
-    const notifyEmployee = await notificationModel.registerNotification(
-      sub,
-      content,
-      req.body.leapp_empid,
-      0,
-      url
-    );
+    const sub = 'New leave application';
+    const content = 'Your new leave application was submitted successfully.';
+    const url = 'leave-application';
+    const notifyEmployee = await notificationModel.registerNotification(sub, content, req.body.leapp_empid, 0, url);
     //send mail
-    const subject = "Leave application";
+    const subject = 'Leave application';
     //const body = "Your leave application was received. ";
     const templateParams = {
       firstName: `${emp.emp_first_name}`,
-      title: `New Leave Application`,
+      title: `New Leave Application`
     };
-    const mailerRes = await mailer
-      .sendAnnouncementNotification(
-        "noreply@ircng.org",
-        emp.emp_office_email,
-        subject,
-        templateParams
-      )
-      .then((data) => {
-        return data;
-      });
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', emp.emp_office_email, subject, templateParams).then((data) => {
+      return data;
+    });
 
     /* if (_.isEmpty(authorizationResponse) || (_.isNull(authorizationResponse))) {
              return res.status(400).json('An Error Occurred')
@@ -317,7 +239,7 @@ router.post("/add-leave-application", auth(), async function (req, res, next) {
 });
 
 //Get approved application
-router.get("/approved-applications", async (req, res) => {
+router.get('/approved-applications', async (req, res) => {
   try {
     let appId = [];
     let leaveObj = {};
@@ -332,7 +254,7 @@ router.get("/approved-applications", async (req, res) => {
       authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
         leaveObj = {
           data,
-          officers,
+          officers
         };
         return res.status(200).json(leaveObj);
       });
@@ -343,94 +265,75 @@ router.get("/approved-applications", async (req, res) => {
 });
 
 /* Get Employee Leave application */
-router.get(
-  "/get-employee-leave/:emp_id",
-  auth(),
-  async function (req, res, next) {
-    try {
-      let empId = req.params["emp_id"];
-      let leaveObj = {};
-      let appId = [];
-      await employees.getEmployee(empId).then((data) => {
-        if (_.isEmpty(data)) {
-          return res.status(404).json(`Employee Doesn't Exist`);
-        } else {
-          leaveApplication.findEmployeeLeaveApplication(empId).then((data) => {
-            data.map(async (app) => {
-              appId.push(app.leapp_id);
-              /* if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
+router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next) {
+  try {
+    let empId = req.params['emp_id'];
+    let leaveObj = {};
+    let appId = [];
+    await employees.getEmployee(empId).then((data) => {
+      if (_.isEmpty(data)) {
+        return res.status(404).json(`Employee Doesn't Exist`);
+      } else {
+        leaveApplication.findEmployeeLeaveApplication(empId).then((data) => {
+          data.map(async (app) => {
+            appId.push(app.leapp_id);
+            /* if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
                        await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
                       }*/
-            });
-            authorizationAction
-              .getAuthorizationLog(appId, 1)
-              .then((officers) => {
-                let office = "";
-                console.log(officers);
-                officers.map((off) => {
-                  if (off?.officers)
-                    office += `${off?.officers?.emp_first_name} (${off?.officers?.emp_unique_id}), `;
-                });
-                leaveObj = {
-                  data,
-                  office,
-                  officers,
-                };
-                return res.status(200).json(leaveObj);
-              });
           });
-        }
-      });
-    } catch (err) {
-      return res.status(400).json(`Error while fetching leaves`);
-    }
+          authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
+            let office = '';
+            console.log(officers);
+            officers.map((off) => {
+              if (off?.officers) office += `${off?.officers?.emp_first_name} (${off?.officers?.emp_unique_id}), `;
+            });
+            leaveObj = {
+              data,
+              office,
+              officers
+            };
+            return res.status(200).json(leaveObj);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(400).json(`Error while fetching leaves`);
   }
-);
+});
 
-router.get("/:id", auth(), async (req, res) => {
+router.get('/:id', auth(), async (req, res) => {
   //get leave application details
   const id = parseInt(req.params.id);
   try {
     const application = await leaveApplication.getLeaveApplicationsById(id);
-    const log = await authorizationAction.getAuthorizationLog(
-      application.leapp_id,
-      1
-    );
-    const previousApplications = await leaveAppModel.getPreviousApplications(
-      application.leapp_empid,
-      id
-    );
+    const log = await authorizationAction.getAuthorizationLog(application.leapp_id, 1);
+    const previousApplications = await leaveAppModel.getPreviousApplications(application.leapp_empid, id);
     return res.status(200).json({ application, log, previousApplications });
   } catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
+    return res.status(400).json('Something went wrong. Try again.');
   }
 });
 
-router.get("/authorization/supervisor/:id", auth(), async (req, res) => {
+router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
   try {
     const supervisorId = req.params.id;
     let leaveObj = {};
     let ids = [];
     let authId = [];
-    const authAction = await authorizationAction
-      .getAuthorizationByTypeOfficerId(1, supervisorId)
-      .then((data) => {
-        return data;
-      });
+    const authAction = await authorizationAction.getAuthorizationByTypeOfficerId(1, supervisorId).then((data) => {
+      return data;
+    });
     authAction.map((app) => {
       ids.push(parseInt(app.auth_travelapp_id));
       authId.push(parseInt(app.auth_officer_id));
     });
-    let data = await leaveApplication
-      .getLeaveApplicationsForAuthorization(ids)
-      .then((apps) => {
-        return apps;
-      });
-    const officers = await authorizationAction
-      .getAuthorizationLog(ids, 1)
-      .then((off) => {
-        return off;
-      });
+    let data = await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((apps) => {
+      return apps;
+    });
+    const officers = await authorizationAction.getAuthorizationLog(ids, 1).then((off) => {
+      return off;
+    });
     const currentDesk = [];
     officers.map((officer) => {
       if (officer.auth_status === 0) {
@@ -441,7 +344,7 @@ router.get("/authorization/supervisor/:id", auth(), async (req, res) => {
           emp_phone_no: officer.officers?.emp_phone_no,
           emp_unique_id: officer.officers?.emp_unique_id,
           auth_travelapp_id: officer?.auth_travelapp_id,
-          auth_status: officer?.auth_status,
+          auth_status: officer?.auth_status
         };
         currentDesk.push(details);
       }
@@ -450,25 +353,22 @@ router.get("/authorization/supervisor/:id", auth(), async (req, res) => {
     leaveObj = {
       data,
       officers,
-      currentDesk,
+      currentDesk
     };
     //mark notifications as read
-    const notif = await notificationModel.markAsRead(
-      parseInt(supervisorId),
-      "leave-authorization"
-    );
+    const notif = await notificationModel.markAsRead(parseInt(supervisorId), 'leave-authorization');
 
     return res.status(200).json(leaveObj);
   } catch (e) {
-    return res.status(400).json("Something went wrong. Try again." + e.message);
+    return res.status(400).json('Something went wrong. Try again.' + e.message);
   }
 });
 
-router.patch("/update-leaveapp-status/:leaveId", auth(), async (req, res) => {
+router.patch('/update-leaveapp-status/:leaveId', auth(), async (req, res) => {
   try {
     const schema = Joi.object({
       leave: Joi.number().required(),
-      status: Joi.number().required(),
+      status: Joi.number().required()
     });
 
     const statusRequest = req.body;
@@ -479,30 +379,25 @@ router.patch("/update-leaveapp-status/:leaveId", auth(), async (req, res) => {
     }
 
     const leaveId = req.params.leaveId;
-    const leave = await leaveAppModel.getLeaveApplicationById(
-      parseInt(leaveId)
-    );
+    const leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId));
     if (_.isNull(leave) || _.isEmpty(leave)) {
-      return res.status(400).json("Leave application does not exist.");
+      return res.status(400).json('Leave application does not exist.');
     }
-    const status = await leaveAppModel.updateLeaveAppStatus(
-      parseInt(leaveId),
-      req.body.status
-    );
+    const status = await leaveAppModel.updateLeaveAppStatus(parseInt(leaveId), req.body.status);
     if (_.isNull(status) || _.isEmpty(status)) {
-      return res.status(400).json("Could not update record. Try again.");
+      return res.status(400).json('Could not update record. Try again.');
     }
-    return res.status(200).json("Leave status updated.");
+    return res.status(200).json('Leave status updated.');
   } catch (e) {
-    return res.status(400).json("Something went wrong.");
+    return res.status(400).json('Something went wrong.');
   }
 });
-router.patch("/update-leaveapp-period/:leaveId", auth(), async (req, res) => {
+router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res) => {
   try {
     const schema = Joi.object({
       //leave: Joi.number().required(),
       start_date: Joi.string().required(),
-      end_date: Joi.string().required(),
+      end_date: Joi.string().required()
     });
 
     const statusRequest = req.body;
@@ -515,11 +410,9 @@ router.patch("/update-leaveapp-period/:leaveId", auth(), async (req, res) => {
     let startDate = new Date(statusRequest.start_date);
     let endDate = new Date(statusRequest.end_date);
     const leaveId = req.params.leaveId;
-    let leave = await leaveAppModel
-      .getLeaveApplicationById(parseInt(leaveId))
-      .then((data) => {
-        return data;
-      });
+    let leave = await leaveAppModel.getLeaveApplicationById(parseInt(leaveId)).then((data) => {
+      return data;
+    });
     let daysRequested;
     const holidays = await publicHolidayModel.getThisYearsPublicHolidays();
     const holidaysArray = [];
@@ -614,60 +507,33 @@ router.patch("/update-leaveapp-period/:leaveId", auth(), async (req, res) => {
     holidays.map((pub) => {
       holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
     });
-    daysRequested = dateDiff(
-      statusRequest.start_date,
-      statusRequest.end_date,
-      holidaysArray
-    );
+    daysRequested = dateDiff(statusRequest.start_date, statusRequest.end_date, holidaysArray);
     const empId = req.user.username.user_id;
     if (parseInt(daysRequested) <= 0) {
-      return res
-        .status(400)
-        .json("Leave duration must be greater or equal to 1");
+      return res.status(400).json('Leave duration must be greater or equal to 1');
     }
 
     if (_.isNull(leave) || _.isEmpty(leave)) {
-      return res.status(400).json("Leave application does not exist.");
+      return res.status(400).json('Leave application does not exist.');
     }
-    const status = await leaveAppModel.updateLeaveAppPeriod(
-      parseInt(leaveId),
-      req.body.start_date,
-      req.body.end_date,
-      daysRequested
-    );
+    const status = await leaveAppModel.updateLeaveAppPeriod(parseInt(leaveId), req.body.start_date, req.body.end_date, daysRequested);
     if (_.isNull(status) || _.isEmpty(status)) {
-      return res.status(400).json("Could not update record. Try again.");
+      return res.status(400).json('Could not update record. Try again.');
     }
 
-    const removeAccruals = await leaveAccrualService
-      .removeLeaveAccrualByLeaveApplication(parseInt(leaveId))
-      .then((data) => {
-        return data;
-      });
+    const removeAccruals = await leaveAccrualService.removeLeaveAccrualByLeaveApplication(parseInt(leaveId)).then((data) => {
+      return data;
+    });
     //Insert individually
     for (let m = 1; m <= 12; m++) {
       let number = parseInt(m);
       if (number === 1) {
         if (one > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            oneDate.getFullYear(),
-            oneDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            one,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, oneDate.getFullYear(), oneDate.getMonth() + 1, leave.leapp_leave_type, one, leave.leapp_id);
         }
       } else if (number === 2) {
         if (two > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            twoDate.getFullYear(),
-            twoDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            two,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, twoDate.getFullYear(), twoDate.getMonth() + 1, leave.leapp_leave_type, two, leave.leapp_id);
         }
       } else if (number === 3) {
         if (three > 0) {
@@ -682,36 +548,15 @@ router.patch("/update-leaveapp-period/:leaveId", auth(), async (req, res) => {
         }
       } else if (number === 4) {
         if (four > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            fourDate.getFullYear(),
-            fourDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            four,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, fourDate.getFullYear(), fourDate.getMonth() + 1, leave.leapp_leave_type, four, leave.leapp_id);
         }
       } else if (number === 5) {
         if (five > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            fiveDate.getFullYear(),
-            fiveDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            five,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, fiveDate.getFullYear(), fiveDate.getMonth() + 1, leave.leapp_leave_type, five, leave.leapp_id);
         }
       } else if (number === 6) {
         if (six > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            sixDate.getFullYear(),
-            sixDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            six,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, sixDate.getFullYear(), sixDate.getMonth() + 1, leave.leapp_leave_type, six, leave.leapp_id);
         }
       } else if (number === 7) {
         if (seven > 0) {
@@ -737,25 +582,11 @@ router.patch("/update-leaveapp-period/:leaveId", auth(), async (req, res) => {
         }
       } else if (number === 9) {
         if (nine > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            nineDate.getFullYear(),
-            nineDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            nine,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, nineDate.getFullYear(), nineDate.getMonth() + 1, leave.leapp_leave_type, nine, leave.leapp_id);
         }
       } else if (number === 10) {
         if (ten > 0) {
-          await addToLeaveAccrual(
-            leave.leapp_empid,
-            tenDate.getFullYear(),
-            tenDate.getMonth() + 1,
-            leave.leapp_leave_type,
-            ten,
-            leave.leapp_id
-          );
+          await addToLeaveAccrual(leave.leapp_empid, tenDate.getFullYear(), tenDate.getMonth() + 1, leave.leapp_leave_type, ten, leave.leapp_id);
         }
       } else if (number === 11) {
         if (eleven > 0) {
@@ -781,89 +612,68 @@ router.patch("/update-leaveapp-period/:leaveId", auth(), async (req, res) => {
         }
       }
     }
-    return res.status(200).json("Leave period updated");
+    return res.status(200).json('Leave period updated');
   } catch (e) {
-    return res.status(400).json("Something went wrong." + e);
+    return res.status(400).json('Something went wrong.' + e);
   }
 });
 
-router.get(
-  "/get-leave-applications/:status",
-  auth(),
-  async function (req, res) {
-    try {
-      const status = req.params.status;
-      const leaves = await leaveAppModel.getLeaveApplicationsByStatus(
-        parseInt(status)
-      );
-      /*leaves.map(async (app) => {
+router.get('/get-leave-applications/:status', auth(), async function (req, res) {
+  try {
+    const status = req.params.status;
+    const leaves = await leaveAppModel.getLeaveApplicationsByStatus(parseInt(status));
+    /*leaves.map(async (app) => {
       if (new Date() > new Date(app.leapp_end_date).getTime()  && app.leapp_status == 3) {
         await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
       }
     })*/
-      return res.status(200).json(leaves);
-    } catch (e) {
-      return res.status(400).json("Something went wrong. Try again later.");
-    }
+    return res.status(200).json(leaves);
+  } catch (e) {
+    return res.status(400).json('Something went wrong. Try again later.');
   }
-);
+});
 
-router.patch("/re-assign-leave/:leaveId", auth(), async function (req, res) {
+router.patch('/re-assign-leave/:leaveId', auth(), async function (req, res) {
   try {
     const schema = Joi.object({
       reassignTo: Joi.number().required(),
       assignedTo: Joi.number().required(),
-      leaveId: Joi.number().allow(null, ""),
+      leaveId: Joi.number().allow(null, '')
     });
     const leaveReAssignmentRequest = req.body;
     const validationResult = schema.validate(leaveReAssignmentRequest, {
-      abortEarly: false,
+      abortEarly: false
     });
     if (validationResult.error) {
       return res.status(400).json(validationResult.error.details[0].message);
     }
     if (parseInt(req.body.assignedTo) === parseInt(req.body.reassignTo)) {
-      return res.status(400).json("You cannot re-assign to the same person.");
+      return res.status(400).json('You cannot re-assign to the same person.');
     }
-    const assignedOfficer = await employees.getEmployeeByIdOnly(
-      parseInt(req.body.assignedTo)
-    );
+    const assignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.assignedTo));
     if (!assignedOfficer) {
-      return res.status(400).json("The assigned officer does not exist.");
+      return res.status(400).json('The assigned officer does not exist.');
     }
-    const reAssignedOfficer = await employees.getEmployeeByIdOnly(
-      parseInt(req.body.reassignTo)
-    );
+    const reAssignedOfficer = await employees.getEmployeeByIdOnly(parseInt(req.body.reassignTo));
     if (!reAssignedOfficer) {
-      return res.status(400).json("The re-assign officer does not exist.");
+      return res.status(400).json('The re-assign officer does not exist.');
     }
     const leaveId = req.params.leaveId;
     const leave = await leaveAppModel.getLeaveApplicationById(leaveId);
     if (!leave) {
-      return res
-        .status(400)
-        .json("There's no record for this leave application request.");
+      return res.status(400).json("There's no record for this leave application request.");
     }
-    const officerLeave =
-      await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(
-        leave.leapp_id,
-        parseInt(req.body.assignedTo),
-        1
-      );
+    const officerLeave = await authorizationModel.getAuthorizationActionByAuthTravelAppIdOfficerType(
+      leave.leapp_id,
+      parseInt(req.body.assignedTo),
+      1
+    );
     if (!officerLeave) {
-      return res
-        .status(400)
-        .json("There's no leave assigned to this selected employee.");
+      return res.status(400).json("There's no leave assigned to this selected employee.");
     }
-    const markAsReAssign =
-      await authorizationModel.markAuthorizationRequestAsReassigned(
-        leaveId,
-        parseInt(req.body.assignedTo),
-        1,
-        3
-      );
+    const markAsReAssign = await authorizationModel.markAuthorizationRequestAsReassigned(leaveId, parseInt(req.body.assignedTo), 1, 3);
     if (!markAsReAssign) {
-      return res.status(400).json("Something went wrong. Try again.");
+      return res.status(400).json('Something went wrong. Try again.');
     }
     const comment = `Leave application that was initially assigned to ${assignedOfficer.emp_first_name} ${assignedOfficer.emp_last_name} is now assigned to ${reAssignedOfficer.emp_first_name} ${reAssignedOfficer.emp_last_name}`;
     const data = {
@@ -871,23 +681,17 @@ router.patch("/re-assign-leave/:leaveId", auth(), async function (req, res) {
       officer: req.body.reassignTo,
       status: 0,
       type: 1,
-      comment: comment,
+      comment: comment
     };
     const reAssignment = await authorizationModel.addNewAuthOfficer(data);
 
-    const subject = "Leave application re-assignment";
-    const body = "Leave application re-assignment";
-    const url = "leave-authorization";
+    const subject = 'Leave application re-assignment';
+    const body = 'Leave application re-assignment';
+    const url = 'leave-authorization';
     //const assignedNotify = await notificationModel.registerNotification(subject, comment, assignedOfficer.emp_id, 11, 'leave-authorization');
     //const notifySupervisor = await notificationModel.registerNotification(subject, comment, reAssignedOfficer.emp_id, 0, 'leave-authorization');
 
-    const notifyEmployee = await notificationModel.registerNotification(
-      subject,
-      comment,
-      leave.leapp_empid,
-      0,
-      "leave-application"
-    );
+    const notifyEmployee = await notificationModel.registerNotification(subject, comment, leave.leapp_empid, 0, 'leave-application');
     const assignedNotify = await handleInAppEmailNotifications(
       assignedOfficer.emp_first_name,
       subject,
@@ -906,84 +710,66 @@ router.patch("/re-assign-leave/:leaveId", auth(), async function (req, res) {
     );
 
     //const notifyEmployee = await handleInAppEmailNotifications(reAssignedOfficer.emp_first_name, subject,body, url, reAssignedOfficer.emp_office_email, leave.leapp_empid)
-    return res.status(200).json("Leave application re-assigned successfully.");
+    return res.status(200).json('Leave application re-assigned successfully.');
   } catch (e) {
-    return res.status(400).json("Something went wrong. Try again.");
+    return res.status(400).json('Something went wrong. Try again.');
   }
 });
 
-router.get("/schedule/cron", auth(), async function (req, res) {
+router.get('/schedule/cron', auth(), async function (req, res) {
   try {
     const result = await leaveApplication.getApprovedLeaves();
     result.map(async (re) => {
-      if (
-        new Date() >= new Date(re.leapp_start_date).getTime() &&
-        re.leapp_status === 1 &&
-        new Date() < new Date(re.leapp_end_date).getTime()
-      ) {
+      if (new Date() >= new Date(re.leapp_start_date).getTime() && re.leapp_status === 1 && new Date() < new Date(re.leapp_end_date).getTime()) {
         await leaveAppModel.updateLeaveAppStatus(re.leapp_id, 3);
       }
     });
-    return res.status(200).json("Good");
+    return res.status(200).json('Good');
   } catch (e) {
-    return res.status(400).json("Whoops!");
+    return res.status(400).json('Whoops!');
   }
 });
 
-router.get(
-  "/restate-leave-application/:leaveId/:status/:empId",
-  auth(),
-  async function (req, res) {
-    try {
-      const leaveId = parseInt(req.params.leaveId);
-      const status = parseInt(req.params.status);
-      const empId = parseInt(req.params.empId);
-      const leaveApp = await leaveApplication.getLeaveApplicationsById(leaveId);
-      if (_.isEmpty(leaveApp) || _.isNull(leaveApp)) {
-        return res.status(400).json("Whoops! Record not found.");
-      }
-      const empData = await employees.getEmployeeByIdOnly(empId);
-      if (_.isEmpty(empData) || _.isNull(empData)) {
-        return res.status(400).json("Employee record not found.");
-      }
-      const updateLeaveApp = await leaveApplication.updateLeaveAppStatus(
-        leaveId,
-        status
-      );
-      const accrual =
-        await leaveAccrualModel.destroyLeaveAccrualByRateEmpIdLeaveId(
-          0 - leaveApp.leapp_total_days,
-          leaveApp.leapp_empid,
-          leaveId
-        );
-      const authorizationResponse = authorizationAction
-        .registerNewAction(1, leaveId, empId, 0, "Leave application re-stated")
-        .then((data) => {
-          return data;
-        });
-
-      await handleInAppEmailNotifications(
-        empData.emp_first_name,
-        "Leave application re-stated",
-        "Leave application restated",
-        "leave-authorizations",
-        empData.emp_office_email,
-        empData.emp_id
-      );
-
-      return res.status(200).json("Leave application re-stated!");
-    } catch (e) {
-      return res.status(400).json("Whoops!");
+router.get('/restate-leave-application/:leaveId/:status/:empId', auth(), async function (req, res) {
+  try {
+    const leaveId = parseInt(req.params.leaveId);
+    const status = parseInt(req.params.status);
+    const empId = parseInt(req.params.empId);
+    const leaveApp = await leaveApplication.getLeaveApplicationsById(leaveId);
+    if (_.isEmpty(leaveApp) || _.isNull(leaveApp)) {
+      return res.status(400).json('Whoops! Record not found.');
     }
-  }
-);
+    const empData = await employees.getEmployeeByIdOnly(empId);
+    if (_.isEmpty(empData) || _.isNull(empData)) {
+      return res.status(400).json('Employee record not found.');
+    }
+    const updateLeaveApp = await leaveApplication.updateLeaveAppStatus(leaveId, status);
+    const accrual = await leaveAccrualModel.destroyLeaveAccrualByRateEmpIdLeaveId(0 - leaveApp.leapp_total_days, leaveApp.leapp_empid, leaveId);
+    const authorizationResponse = authorizationAction.registerNewAction(1, leaveId, empId, 0, 'Leave application re-stated').then((data) => {
+      return data;
+    });
 
-router.post("/leave-application-tracking-report", async function (req, res) {
+    await handleInAppEmailNotifications(
+      empData.emp_first_name,
+      'Leave application re-stated',
+      'Leave application restated',
+      'leave-authorizations',
+      empData.emp_office_email,
+      empData.emp_id
+    );
+
+    return res.status(200).json('Leave application re-stated!');
+  } catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+router.post('/leave-application-tracking-report', async function (req, res) {
   try {
     const schema = Joi.object({
       location: Joi.number().default(0).required(),
       month: Joi.number().required(),
-      year: Joi.number().required(),
+      year: Joi.number().required()
     });
 
     const validationResult = schema.validate(req.body, { abortEarly: false });
@@ -1014,19 +800,15 @@ router.post("/leave-application-tracking-report", async function (req, res) {
       6: 9,
       7: 10,
       8: 11,
-      9: 12,
+      9: 12
     };
 
     let lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0);
-    const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, "0");
-    const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(
-      2,
-      "0"
-    ); //January is 0!
+    const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
+    const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
     const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
 
-    const formatLastDayOfMonth =
-      lastDayOfMonthDD + "-" + lastDayOfMonthMM + "-" + lastDayOfMonthYYYY;
+    const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
 
     let employees = [];
 
@@ -1039,11 +821,7 @@ router.post("/leave-application-tracking-report", async function (req, res) {
     const responseArray = [];
 
     for (emp of employees) {
-      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(
-        month,
-        year,
-        emp.emp_unique_id
-      );
+      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
 
       if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck)) {
         continue;
@@ -1051,32 +829,25 @@ router.post("/leave-application-tracking-report", async function (req, res) {
 
       const contractHireDate = new Date(emp.emp_hire_date);
       const formatLastDayOfMonthDate = new Date(formatLastDayOfMonth);
-      const monthDiff = await differenceInMonths(
-        formatLastDayOfMonthDate,
-        contractHireDate
-      );
+      const monthDiff = await differenceInMonths(formatLastDayOfMonthDate, contractHireDate);
 
       let typeOfHire = null;
 
       if (monthDiff <= 6) {
-        typeOfHire = "Short term";
+        typeOfHire = 'Short term';
       }
 
       if (monthDiff > 6 && monthDiff < 36) {
-        typeOfHire = "Limited";
+        typeOfHire = 'Limited';
       }
 
       if (monthDiff >= 36) {
-        typeOfHire = "Regular";
+        typeOfHire = 'Regular';
       }
 
-      const annualLeaveDetails = await leaveTypeService.getLeaveTypeByName(
-        "Annual Leave"
-      );
+      const annualLeaveDetails = await leaveTypeService.getLeaveTypeByName('Annual Leave');
 
-      const sickLeaveDetails = await leaveTypeService.getLeaveTypeByName(
-        "Sick Leave"
-      );
+      const sickLeaveDetails = await leaveTypeService.getLeaveTypeByName('Sick Leave');
 
       //let annualLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
 
@@ -1086,13 +857,12 @@ router.post("/leave-application-tracking-report", async function (req, res) {
 
       let annualLeaveUsed = 0;
 
-      const annualTotalAccrued =
-        await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          annualLeaveDetails.leave_type_id
-        );
+      const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
+        fyYear,
+        month,
+        emp.emp_id,
+        annualLeaveDetails.leave_type_id
+      );
       let countAnnualTotalAccrued = 0;
 
       if (annualTotalAccrued) {
@@ -1102,13 +872,12 @@ router.post("/leave-application-tracking-report", async function (req, res) {
         annualLeaveAccrued = annualLeaveAccrued + accrued.lea_rate;
       }
 
-      const annualTotalUsed =
-        await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          annualLeaveDetails.leave_type_id
-        );
+      const annualTotalUsed = await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(
+        fyYear,
+        month,
+        emp.emp_id,
+        annualLeaveDetails.leave_type_id
+      );
 
       for (const used of annualTotalUsed) {
         annualLeaveUsed += used.lea_rate;
@@ -1116,20 +885,16 @@ router.post("/leave-application-tracking-report", async function (req, res) {
 
       const annualLeaveBalance = annualLeaveAccrued + annualLeaveUsed;
 
-      const annualLeaveBalEnding =
-        await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          annualLeaveDetails.leave_type_id
-        );
+      const annualLeaveBalEnding = await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(
+        fyYear,
+        month,
+        emp.emp_id,
+        annualLeaveDetails.leave_type_id
+      );
 
       const remainingAnnualAccrued = 12 - yearObject[month];
 
-      const annualLeaveBalEndingFy =
-        annualLeaveAccrued +
-        remainingAnnualAccrued * annualLeaveDetails.lt_rate +
-        annualLeaveUsed;
+      const annualLeaveBalEndingFy = annualLeaveAccrued + remainingAnnualAccrued * annualLeaveDetails.lt_rate + annualLeaveUsed;
 
       // let sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
       //
@@ -1137,25 +902,23 @@ router.post("/leave-application-tracking-report", async function (req, res) {
 
       let sickLeaveAccrued = 0;
       let sickLeaveUsed = 0;
-      const sickTotalAccrued =
-        await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          sickLeaveDetails.leave_type_id
-        );
+      const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
+        fyYear,
+        month,
+        emp.emp_id,
+        sickLeaveDetails.leave_type_id
+      );
 
       for (const accrued of sickTotalAccrued) {
         sickLeaveAccrued = sickLeaveAccrued + accrued.lea_rate;
       }
 
-      const sickTotalUsed =
-        await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          sickLeaveDetails.leave_type_id
-        );
+      const sickTotalUsed = await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(
+        fyYear,
+        month,
+        emp.emp_id,
+        sickLeaveDetails.leave_type_id
+      );
 
       for (const used of sickTotalUsed) {
         sickLeaveUsed = sickLeaveUsed + used.lea_rate;
@@ -1163,13 +926,12 @@ router.post("/leave-application-tracking-report", async function (req, res) {
 
       const sickLeaveBalance = sickLeaveAccrued + sickLeaveUsed;
 
-      const sickLeaveBalEnding =
-        await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          sickLeaveDetails.leave_type_id
-        );
+      const sickLeaveBalEnding = await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(
+        fyYear,
+        month,
+        emp.emp_id,
+        sickLeaveDetails.leave_type_id
+      );
       let countSickTotalAccrued = 0;
       if (sickTotalAccrued) {
         countSickTotalAccrued = sickTotalAccrued.length;
@@ -1177,10 +939,7 @@ router.post("/leave-application-tracking-report", async function (req, res) {
 
       const remainingSickAccrued = 12 - yearObject[month];
 
-      const sickLeaveBalEndingFy =
-        sickLeaveAccrued +
-        remainingSickAccrued * sickLeaveDetails.lt_rate +
-        sickLeaveUsed;
+      const sickLeaveBalEndingFy = sickLeaveAccrued + remainingSickAccrued * sickLeaveDetails.lt_rate + sickLeaveUsed;
 
       responseArray.push({
         d7: emp.emp_d7,
@@ -1201,20 +960,16 @@ router.post("/leave-application-tracking-report", async function (req, res) {
         annualLeaveBalance: annualLeaveBalance,
         annualLeaveBalEndingFy: annualLeaveBalEndingFy,
         annualLeaveBalEnding: annualLeaveBalEnding,
-        percentageAnnualLeaveUsed: Math.abs(
-          (annualLeaveUsed / annualLeaveAccrued) * 100
-        ).toFixed(2),
+        percentageAnnualLeaveUsed: Math.abs((annualLeaveUsed / annualLeaveAccrued) * 100).toFixed(2),
         sickLeaveAccrued: sickLeaveAccrued,
         sickLeaveUsed: sickLeaveUsed,
         sickLeaveBalance: sickLeaveBalance,
         sickLeaveBalEndingFy: sickLeaveBalEndingFy,
         sickLeaveBalEnding: sickLeaveBalEnding,
-        percentageSickLeaveUsed: Math.abs(
-          (sickLeaveUsed / sickLeaveAccrued) * 100
-        ).toFixed(2),
+        percentageSickLeaveUsed: Math.abs((sickLeaveUsed / sickLeaveAccrued) * 100).toFixed(2),
         fyYear: fyYear,
         month: month,
-        year: year,
+        year: year
       });
     }
 
@@ -1224,13 +979,13 @@ router.post("/leave-application-tracking-report", async function (req, res) {
   }
 });
 
-router.post("/leave-accrual-report", async function (req, res) {
+router.post('/leave-accrual-report', async function (req, res) {
   try {
     const schema = Joi.object({
       location: Joi.number().default(0).required(),
       month: Joi.number().required(),
       year: Joi.number().required(),
-      leaveType: Joi.number().required(),
+      leaveType: Joi.number().required()
     });
 
     const validationResult = schema.validate(req.body, { abortEarly: false });
@@ -1262,11 +1017,7 @@ router.post("/leave-accrual-report", async function (req, res) {
     const responseArray = [];
 
     for (emp of employees) {
-      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(
-        month,
-        year,
-        emp.emp_unique_id
-      );
+      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
 
       if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck)) {
         continue;
@@ -1274,13 +1025,7 @@ router.post("/leave-accrual-report", async function (req, res) {
 
       let leaveAccrued = 0;
 
-      const leaveTotalAccrued =
-        await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
-          fyYear,
-          month,
-          emp.emp_id,
-          leaveType
-        );
+      const leaveTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualForYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, leaveType);
 
       for (const accrued of leaveTotalAccrued) {
         leaveAccrued = leaveAccrued + accrued.lea_rate;
@@ -1300,7 +1045,7 @@ router.post("/leave-accrual-report", async function (req, res) {
         fyYear: fyYear,
         month: month,
         year: year,
-        leaveType: leaveTypeDetails,
+        leaveType: leaveTypeDetails
       });
     }
 
@@ -1310,11 +1055,11 @@ router.post("/leave-accrual-report", async function (req, res) {
   }
 });
 
-router.post("/leave-planner", async function (req, res) {
+router.post('/leave-planner', async function (req, res) {
   try {
     const schema = Joi.object({
       emp_id: Joi.number().required(),
-      fy_year: Joi.string().required(),
+      fy_year: Joi.string().required()
     });
 
     const validationResult = schema.validate(req.body, { abortEarly: false });
@@ -1330,8 +1075,7 @@ router.post("/leave-planner", async function (req, res) {
     const studyLeaveId = 3;
     const travelDayLeaveId = 10;
 
-    const supervisedEmployees =
-      await supervisorAssignmentService.getSupervisorEmployee(empId);
+    const supervisedEmployees = await supervisorAssignmentService.getSupervisorEmployee(empId);
 
     const responseArray = [];
     for (const supervisedEmployee of supervisedEmployees) {
@@ -1345,22 +1089,10 @@ router.post("/leave-planner", async function (req, res) {
         other_name: emp?.emp_other_name,
         position: emp.jobrole?.job_role,
         t3: emp.sector?.d_t3_code,
-        annualLeave: await findTotalLeaveAccurals(
-          sa_emp_id,
-          fyYear,
-          annualLeaveId
-        ),
+        annualLeave: await findTotalLeaveAccurals(sa_emp_id, fyYear, annualLeaveId),
         sickLeave: await findTotalLeaveAccurals(sa_emp_id, fyYear, sickLeaveId),
-        studyLeave: await findTotalLeaveAccurals(
-          sa_emp_id,
-          fyYear,
-          studyLeaveId
-        ),
-        travelDayLeave: await findTotalLeaveAccurals(
-          sa_emp_id,
-          fyYear,
-          travelDayLeaveId
-        ),
+        studyLeave: await findTotalLeaveAccurals(sa_emp_id, fyYear, studyLeaveId),
+        travelDayLeave: await findTotalLeaveAccurals(sa_emp_id, fyYear, travelDayLeaveId)
       };
 
       responseArray.push(leavePlannerObj);
@@ -1372,61 +1104,35 @@ router.post("/leave-planner", async function (req, res) {
   }
 });
 
-async function handleInAppEmailNotifications(
-  firstName,
-  title,
-  body,
-  url,
-  email,
-  empId
-) {
+async function handleInAppEmailNotifications(firstName, title, body, url, email, empId) {
   try {
     const templateParams = {
       firstName: firstName,
-      title: title,
+      title: title
     };
-    const mailerRes = await mailer
-      .sendAnnouncementNotification(
-        "noreply@ircng.org",
-        email,
-        title,
-        templateParams
-      )
-      .then((data) => {
-        return data;
-      });
-    const notifyOfficer = await notificationModel.registerNotification(
-      title,
-      body,
-      empId,
-      0,
-      url
-    );
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data;
+    });
+    const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
   } catch (e) {}
 }
 
 async function runLeaveSpillOver() {
   try {
-    const leaveSpillOverFile = reader.readFile(
-      "../leave_spill_over_to_fy23GGG.xlsx"
-    );
+    const leaveSpillOverFile = reader.readFile('../leave_spill_over_to_fy23GGG.xlsx');
     //convert xlsx to JSON
     const sheets = leaveSpillOverFile.SheetNames;
     for (let i = 0; i < sheets.length; i++) {
-      const temp = reader.utils.sheet_to_json(
-        leaveSpillOverFile.Sheets[leaveSpillOverFile.SheetNames[i]]
-      );
+      const temp = reader.utils.sheet_to_json(leaveSpillOverFile.Sheets[leaveSpillOverFile.SheetNames[i]]);
       for (const res1 of temp) {
         //console.log('Date:: '+ExcelDateToJSDate(res1.StartDate));
         const emp = await employeeModel.getEmployeeByUniqueId(res1.T7);
         //const hrpoints = await hrFocalPointModel.getHrFocalPointsByLocationId(emp.emp_location_id);
-        let leaveType = await leaveTypeService
-          .getLeaveTypeByName(res1.LeaveType)
-          .then((res) => {
-            return res;
-          });
+        let leaveType = await leaveTypeService.getLeaveTypeByName(res1.LeaveType).then((res) => {
+          return res;
+        });
         let leaveTypeId;
-        if (res1.LeaveType === "R&R") {
+        if (res1.LeaveType === 'R&R') {
           leaveTypeId = 7;
         } else {
           leaveTypeId = leaveType.leave_type_id;
@@ -1440,13 +1146,11 @@ async function runLeaveSpillOver() {
           lea_rate: res1.NumberOfDays,
           lea_archives: 0,
           lea_leaveapp_id: 0,
-          lea_expires_on: "1990-01-01",
-          lea_fy: "FY23",
-          leave_narration: "Leave legacy",
+          lea_expires_on: '1990-01-01',
+          lea_fy: 'FY23',
+          leave_narration: 'Leave legacy'
         };
-        const accrualLeave = await leaveAccrualService.addLeaveAccrual(
-          accrualData
-        );
+        const accrualLeave = await leaveAccrualService.addLeaveAccrual(accrualData);
         //Submit leave application
         //console.log(`Date Full: ${res1.StartDate}`);
         const leaveAppData = {
@@ -1458,13 +1162,11 @@ async function runLeaveSpillOver() {
           leapp_year: 2022,
           leapp_alt_phone: null,
           leapp_alt_email: null,
-          leapp_status: 0,
+          leapp_status: 0
         };
-        const leaveApplicationResponse = await leaveApplication
-          .addLeaveApplication(leaveAppData)
-          .then((data) => {
-            return data;
-          });
+        const leaveApplicationResponse = await leaveApplication.addLeaveApplication(leaveAppData).then((data) => {
+          return data;
+        });
         const leaveAppId = leaveApplicationResponse.leapp_id;
         /* hrpoints.map(async (hrp) => {
            const subject = "New leave application";
@@ -1482,13 +1184,7 @@ async function runLeaveSpillOver() {
          });*/
         //add authorizer
         const authorizationResponse = await authorizationAction
-          .registerNewAction(
-            1,
-            leaveAppId,
-            351,
-            0,
-            "Legacy Leave application initiated"
-          )
+          .registerNewAction(1, leaveAppId, 351, 0, 'Legacy Leave application initiated')
           .then((data) => {
             return data;
           });
@@ -1496,15 +1192,15 @@ async function runLeaveSpillOver() {
         const auth = await authorizationModel.update(
           {
             auth_status: 1,
-            auth_comment: "Legacy leaves",
-            auth_role_id: 1, //role,
+            auth_comment: 'Legacy leaves',
+            auth_role_id: 1 //role,
           },
           {
             where: {
               auth_travelapp_id: leaveAppId,
               auth_type: 1,
-              auth_officer_id: 351,
-            },
+              auth_officer_id: 351
+            }
           }
         );
 
@@ -1512,14 +1208,14 @@ async function runLeaveSpillOver() {
         await leaveAppModel.update(
           {
             leapp_status: 1,
-            leapp_approve_comment: "Legacy leaves",
+            leapp_approve_comment: 'Legacy leaves',
             leapp_approve_date: new Date(),
-            leapp_approve_by: 351,
+            leapp_approve_by: 351
           },
           {
             where: {
-              leapp_id: leaveAppId,
-            },
+              leapp_id: leaveAppId
+            }
           }
         );
 
@@ -1532,12 +1228,10 @@ async function runLeaveSpillOver() {
           lea_rate: 0 - res1.NumberOfDays,
           lea_archives: 0,
           lea_leaveapp_id: 0,
-          lea_expires_on: "1990-01-01",
-          lea_fy: "FY23",
+          lea_expires_on: '1990-01-01',
+          lea_fy: 'FY23'
         };
-        const negativeAccrualLeave = await leaveAccrualService.addLeaveAccrual(
-          negativeAccrualData
-        );
+        const negativeAccrualLeave = await leaveAccrualService.addLeaveAccrual(negativeAccrualData);
       }
     }
   } catch (e) {}
@@ -1553,14 +1247,7 @@ function ExcelDateToJSDate(serial) {
   total_seconds -= seconds;
   let hours = Math.floor(total_seconds / (60 * 60));
   let minutes = Math.floor(total_seconds / 60) % 60;
-  return new Date(
-    date_info.getFullYear(),
-    date_info.getMonth(),
-    date_info.getDate(),
-    hours,
-    minutes,
-    seconds
-  );
+  return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
 }
 
 function dateDiff(start, end, holidays) {
@@ -1580,9 +1267,7 @@ function dateDiff(start, end, holidays) {
       weekends++;
       pubHolidays.push(currentDate);
     }
-    let setDate = `${currentDate.getUTCFullYear()}-${
-      currentDate.getUTCMonth() + 1
-    }-${currentDate.getUTCDate()}`;
+    let setDate = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() + 1}-${currentDate.getUTCDate()}`;
     if (holidays.includes(setDate)) {
       if (!isWeekend(new Date(setDate))) {
         pubHolidays.push(currentDate);
@@ -1601,9 +1286,7 @@ function getDatesInRange(startDate, endDate) {
     if (isWeekend(date)) {
     }
     let newDate = new Date(date);
-    let formattedNewDate = `${newDate.getFullYear()}-${
-      newDate.getMonth() + 1
-    }-${newDate.getDate()}`;
+    let formattedNewDate = `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`;
     dates.push(formattedNewDate);
     date.setDate(date.getDate() + 1);
   }
@@ -1620,19 +1303,10 @@ function getDatesInMonth(month, year) {
   return dates;
 }
 
-async function addToLeaveAccrual(
-  empId,
-  year,
-  month,
-  leaveType,
-  noDays,
-  leaveId
-) {
+async function addToLeaveAccrual(empId, year, month, leaveType, noDays, leaveId) {
   const currentDate = new Date();
   const calendarYear =
-    currentDate.getMonth() + 1 >= 1 || currentDate.getMonth() + 1 <= 9
-      ? `FY${currentDate.getFullYear()}`
-      : `FY${currentDate.getFullYear() + 1}`;
+    currentDate.getMonth() + 1 >= 1 || currentDate.getMonth() + 1 <= 9 ? `FY${currentDate.getFullYear()}` : `FY${currentDate.getFullYear() + 1}`;
   const val = {
     lea_emp_id: empId,
     lea_year: year,
@@ -1641,8 +1315,8 @@ async function addToLeaveAccrual(
     lea_rate: 0 - noDays,
     lea_archives: 0,
     lea_leaveapp_id: leaveId,
-    lea_expires_on: "1900-01-01",
-    lea_fy: calendarYear,
+    lea_expires_on: '1900-01-01',
+    lea_fy: calendarYear
   };
   const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
     return data;
@@ -1655,12 +1329,7 @@ function removeDuplicates(arr) {
 
 async function findTotalLeaveAccurals(empId, fyYear, leaveTypeId) {
   let totalLeaveAccrued = 0;
-  const annualLeaveAccrued =
-    await leaveAccrualService.findLeaveAccrualsByLeaveTypeFYyearPositiveExcludeMonth(
-      empId,
-      fyYear,
-      leaveTypeId
-    );
+  const annualLeaveAccrued = await leaveAccrualService.findLeaveAccrualsByLeaveTypeFYyearPositiveExcludeMonth(empId, fyYear, leaveTypeId);
   for (const accrued of annualLeaveAccrued) {
     totalLeaveAccrued = totalLeaveAccrued + accrued.lea_rate;
   }
