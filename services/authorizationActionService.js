@@ -141,6 +141,7 @@ const updateAuthorizationStatus = async (req, res) => {
                   })
                   const emp = await EmployeeModel.getEmployeeById(leaveData.leapp_empid);
                   await handleInAppEmailNotifications(emp.emp_first_name, subject,body, 'leave-application', emp.emp_office_email, emp.emp_id);
+
                   if(parseInt(req.body.contactGroup) === 1){ //HR Focal point
                     const hrFocal = await hrFocalModel.getHrFocalPointsByLocationId(emp.emp_location_id).then((hr)=>{
                       return hr;
@@ -167,7 +168,9 @@ const updateAuthorizationStatus = async (req, res) => {
                       return su;
                     })
                     await handleInAppEmailNotifications(contactGroupDetails.emp_first_name, subject,body, 'leave-authorization', contactGroupDetails.emp_office_email, contactGroupDetails.emp_id);
-                  }else{
+                  }
+
+                  if(!_.isNull(nextOfficer) || !_.isEmpty(nextOfficer)){
                     await authorizationModel.create({
                       auth_officer_id: nextOfficer,
                       auth_type: type,
@@ -178,7 +181,7 @@ const updateAuthorizationStatus = async (req, res) => {
                     })
                     await handleInAppEmailNotifications(nextOff.emp_first_name, subject,body, 'leave-authorization', nextOff.office_email, nextOfficer);
                   }
-                break;
+
               }
               //Log
                 const logData = {
@@ -528,6 +531,19 @@ async function getAuthorizationByTypeOfficerId(type, supervisorId){
 
 }
 
+async function getAuthorizationByTypeOfficerIdStatus(type, supervisorId, status){
+  return  await authorizationModel.findAll({
+    where: {
+      auth_status:status,
+      auth_type: parseInt(type),
+      //auth_travelapp_id: authId,
+      auth_officer_id: supervisorId
+    },
+    include:[{model:EmployeeModel, as: 'officers'}]
+  });
+
+}
+
 // const getAuthorizationLog = async (authId, type )=>{
 //     return await authorizationModel.findAll({
 //         where:{auth_travelapp_id: authId, auth_type:type},
@@ -799,6 +815,7 @@ module.exports = {
     getOneAuthorizationByRefNo,
   getAuthorizationByTypeOfficerId,
   registerTimeAllocationAction,
-  handleInAppEmailNotifications
+  handleInAppEmailNotifications,
+  getAuthorizationByTypeOfficerIdStatus
 
 }
