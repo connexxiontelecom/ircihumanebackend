@@ -59,6 +59,28 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async getSupervisorEndYearResponseReport(masterId){
+      return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
+        include:[
+          {model:employeeModel, as:'supervisor'},
+          {model:ratingModel, as:'rating'},
+          {model:selfAssessmentMasterModel, as:'selfAssessment',
+            include:[
+              {model:employeeModel, as:'employee',
+                include: [
+                  {model: locationModel, as: 'location'},
+                  {model: sectorModel, as: 'sector'},
+                ]
+              },
+              {model:endOfYearResponseModel, as:'end_year_response',
+              },
+            ]
+          },
+
+        ]
+      })
+    }
+
     static async getSupervisorEndYearResponseByMasterIdOnly(masterId){
       return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
         include:[
