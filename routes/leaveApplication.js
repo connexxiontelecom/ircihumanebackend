@@ -328,6 +328,57 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
       ids.push(parseInt(app.auth_travelapp_id));
       authId.push(parseInt(app.auth_officer_id));
     });
+    let data = await leaveApplication.getLeaveApplicationsForAuthorizationByStatus(ids, 0).then((apps) => {
+      return apps;
+    });
+    const officers = await authorizationAction.getAuthorizationLog(ids, 1).then((off) => {
+      return off;
+    });
+    const currentDesk = [];
+    officers.map((officer) => {
+      if (officer.auth_status === 0) {
+        let details = {
+          emp_first_name: officer.officers?.emp_first_name,
+          emp_last_name: officer.officers?.emp_last_name,
+          emp_other_name: officer.officers?.emp_other_name,
+          emp_phone_no: officer.officers?.emp_phone_no,
+          emp_unique_id: officer.officers?.emp_unique_id,
+          auth_travelapp_id: officer?.auth_travelapp_id,
+          auth_status: officer?.auth_status
+        };
+        currentDesk.push(details);
+      }
+    });
+    //return res.status(200).json(currentDesk)
+    leaveObj = {
+      data,
+      officers,
+      currentDesk
+    };
+    //mark notifications as read
+    const notif = await notificationModel.markAsRead(parseInt(supervisorId), 'leave-authorization');
+
+    return res.status(200).json(leaveObj);
+  } catch (e) {
+    return res.status(400).json('Something went wrong. Try again.' + e.message);
+  }
+});
+
+
+router.get('/authorization/supervisor/:id/:status', auth(), async (req, res) => {
+  try {
+    const supervisorId = req.params.id;
+    const status = parseInt(req.params.status);
+    let leaveObj = {};
+    let ids = [];
+    let authId = [];
+    const authAction = await authorizationAction.getAuthorizationByTypeOfficerIdStatus(1, supervisorId, status).then((data) => {
+      return data;
+    });
+    authAction.map((app) => {
+      ids.push(parseInt(app.auth_travelapp_id));
+      authId.push(parseInt(app.auth_officer_id));
+    });
     let data = await leaveApplication.getLeaveApplicationsForAuthorization(ids).then((apps) => {
       return apps;
     });
