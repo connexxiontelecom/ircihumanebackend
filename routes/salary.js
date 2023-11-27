@@ -2402,14 +2402,14 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
           let empAdjustedGrossII = 0;
           let mainDeductions = 0;
-          let empSalaryStructureName = 'N/A';
-          let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id);
-
-          if (!_.isEmpty(empSalaryStructure)) {
-            if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
-              empSalaryStructureName = empSalaryStructure.salary_grade.sg_name;
-            }
-          }
+          //let empSalaryStructureName = 'N/A';
+          // let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id);
+          //
+          // if (!_.isEmpty(empSalaryStructure)) {
+          //   if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
+          //     empSalaryStructureName = empSalaryStructure.salary_grade.sg_name;
+          //   }
+          // }
 
           for (const empSalary of employeeSalaries) {
             // if (parseInt(empSalary.payment.pd_employee) === 1) {
@@ -2476,6 +2476,7 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
               locationName = `${locationData.l_t6_code}`;
             }
           }
+          let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
           let salaryObject = {
             employeeId: emp.salary_empid,
@@ -3391,14 +3392,14 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
           let empAdjustedGrossII = 0;
           let mainDeductions = 0;
-          let empSalaryStructureName = 'N/A';
-          let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id);
-
-          if (!_.isEmpty(empSalaryStructure)) {
-            if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
-              empSalaryStructureName = empSalaryStructure.salary_grade.sg_name;
-            }
-          }
+          //let empSalaryStructureName = 'N/A';
+          // let empSalaryStructure = await salaryStructure.findEmployeeSalaryStructure(emp.emp_id);
+          //
+          // if (!_.isEmpty(empSalaryStructure)) {
+          //   if (!_.isNull(empSalaryStructure.salary_grade) || !_.isEmpty(empSalaryStructure.salary_grade)) {
+          //     empSalaryStructureName = empSalaryStructure.salary_grade.sg_name;
+          //   }
+          // }
 
           for (const empSalary of employeeSalaries) {
             // if (parseInt(empSalary.payment.pd_employee) === 1) {
@@ -3465,6 +3466,8 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
               locationName = `${locationData.l_t6_code}`;
             }
           }
+
+          let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
           let salaryObject = {
             employeeId: emp.emp_id,
