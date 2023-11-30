@@ -159,6 +159,7 @@ const updateAuthorizationStatus = async (req, res) => {
                     })
 
                   }else if(parseInt(req.body.contactGroup) === 2){
+
                     await authorizationModel.create({
                       auth_officer_id: emp.emp_supervisor_id,
                       auth_type: type,
@@ -168,18 +169,27 @@ const updateAuthorizationStatus = async (req, res) => {
                       return su;
                     })
                     await handleInAppEmailNotifications(contactGroupDetails.emp_first_name, subject,body, 'leave-authorization', contactGroupDetails.emp_office_email, contactGroupDetails.emp_id);
+
+                  }
+                  console.log("Logging next officer: "+nextOfficer)
+                  if(!_.isUndefined(nextOfficer)){
+                    console.log("value Not undefined")
+                  }else{
+                    console.log('val undefined')
                   }
 
-                  if(!_.isNull(nextOfficer) || !_.isEmpty(nextOfficer)){
-                    await authorizationModel.create({
-                      auth_officer_id: nextOfficer,
-                      auth_type: type,
-                      auth_travelapp_id: appId
-                    });
-                    const nextOff = await employeeService.getEmployeeByIdOnly(nextOfficer).then(off=>{
-                      return off;
-                    })
-                    await handleInAppEmailNotifications(nextOff.emp_first_name, subject,body, 'leave-authorization', nextOff.office_email, nextOfficer);
+                  if(!_.isUndefined(nextOfficer)){
+                    if(!_.isNull(nextOfficer) || !_.isEmpty(nextOfficer) ){
+                      await authorizationModel.create({
+                        auth_officer_id: nextOfficer,
+                        auth_type: type,
+                        auth_travelapp_id: appId
+                      });
+                      const nextOff = await employeeService.getEmployeeByIdOnly(nextOfficer).then(off=>{
+                        return off;
+                      })
+                      await handleInAppEmailNotifications(nextOff.emp_first_name, subject,body, 'leave-authorization', nextOff.office_email, nextOfficer);
+                    }
                   }
 
               }
