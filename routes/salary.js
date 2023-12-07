@@ -30,6 +30,7 @@ const leaveTypeService = require('../services/leaveTypeService');
 const logs = require('../services/logService');
 const { getTimeSheetDayEntry } = require('../services/timeSheetService');
 const { businessDaysDifference } = require('../services/dateService');
+const pauseSalaryService = require('../services/pauseSalaryService');
 
 /* run salary routine */
 router.get('/salary-routine', auth(), async function (req, res, next) {
@@ -556,6 +557,10 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
     }
 
     for (const emp of employees) {
+      const checkForSalaryPause = await pauseSalaryService.findExistingPauseSalary(emp.emp_id, payrollMonth, payrollYear);
+      if (!_.isNull(checkForSalaryPause) || !_.isEmpty(checkForSalaryPause)) {
+        continue;
+      }
       employeeIdsLocation.push(emp.emp_id);
     }
 
@@ -577,6 +582,10 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           // syncronise employee data
           await employee.updateContractStartDate(emp.emp_id, emp.emp_hire_date);
 
+          const checkForSalaryPause = await pauseSalaryService.findExistingPauseSalary(emp.emp_id, payrollMonth, payrollYear);
+          if (!_.isNull(checkForSalaryPause) || !_.isEmpty(checkForSalaryPause)) {
+            continue;
+          }
           let accountNumber = emp.emp_account_no;
           let employeeVendorAccount = emp.emp_vendor_account;
           let letter = accountNumber.charAt(1);
@@ -4909,6 +4918,50 @@ router.post('/tax-report', auth(), async function (req, res, next) {
   }
 });
 
+router.post('/pause-salary', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      ps_empid: Joi.number().required(),
+      ps_month: Joi.number().required(),
+      ps_year: Joi.number().required()
+    });
+
+    const pauseSalaryRequest = req.body;
+    const validationResult = schema.validate(pauseSalaryRequest);
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    const existingPauseSalaryData = pauseSalaryService.findExistingPauseSalary(
+      pauseSalaryRequest.ps_empid,
+      pauseSalaryRequest.ps_month,
+      pauseSalaryRequest.ps_year
+    );
+    if (!_.isNull(existingPauseSalaryData) || !_.isEmpty(existingPauseSalaryData)) {
+      return res.status(400).json(`Salary already paused for employee for selected month and year`);
+    }
+
+    await pauseSalaryService.addPauseSalary({
+      ps_empid: pauseSalaryRequest.ps_empid,
+      ps_month: pauseSalaryRequest.ps_month,
+      ps_year: pauseSalaryRequest.ps_year,
+      ps_created_by: req.user.username.user_id
+    });
+
+    const logData = {
+      log_user_id: req.user.username.user_id,
+      log_description: 'Paused Salary',
+      log_date: new Date()
+    };
+    await logs.addLog(logData);
+
+    return res.status(200).json(`Salary paused for selected month and year`);
+  } catch (err) {
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+/* run salary routine location */
 /* run salary routine location */
 router.post('/salary-tes-routine', auth(), async function (req, res, next) {
   try {
