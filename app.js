@@ -179,6 +179,7 @@ const salary = require('./services/salaryService');
 const employee = require('./services/employeeService');
 const Joi = require('joi');
 const user = require('./services/userService');
+const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
 app.use('/payroll-journal', payrollJournalRouter);
 
 app.get('/', async function (req, res) {
@@ -414,12 +415,38 @@ async function endEmployeeContract() {
   } catch (e) {}
 }
 
+async function updateHireType() {
+  try {
+    const employees = await employee.getActiveEmployees([1, 2]);
+    for (const emp of employees) {
+      const employeeType = emp.emp_employee_type;
+      if (employeeType.toLowerCase() === 'employee') {
+        let hiredDate = new Date(emp.emp_hire_date);
+        const differenceInMonthsFromHireDateToToday = differenceInCalendarMonths(new Date(), hiredDate);
+        let hireType = null;
+        if (differenceInMonthsFromHireDateToToday > 0 && differenceInMonthsFromHireDateToToday <= 6) {
+          hireType = 'short-term';
+        } else if (differenceInMonthsFromHireDateToToday > 6 && differenceInMonthsFromHireDateToToday <= 36) {
+          hireType = 'limited-term';
+        } else if (differenceInMonthsFromHireDateToToday > 36) {
+          hireType = 'regular';
+        }
+        await employeeService.updateEmployeeHireType(emp.emp_id, hireType);
+      }
+    }
+  } catch (e) {
+    console.log('error from update hire type');
+    console.log(e.message);
+  }
+}
+
 nodeCron.schedule('0 6 * * *', updateApprovedLeaveStatus).start();
 nodeCron.schedule('0 6 * * *', travelDayLeaveAccrual).start();
 nodeCron.schedule('0 0 1 * *', runCronJobForRnRLeaveType).start();
 nodeCron.schedule('0 5 * * *', runGeneralMonthlyLeaveRoutine).start();
 nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
 nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
+nodeCron.schedule('* 6 * * *', updateHireType).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
