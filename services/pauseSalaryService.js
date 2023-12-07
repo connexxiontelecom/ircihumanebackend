@@ -13,7 +13,7 @@ async function addPauseSalary(pauseSalary) {
 async function findExistingPauseSalary(empId, month, year) {
   return await PauseSalaryService.findOne({
     where: {
-      ps_empid: empid,
+      ps_empid: empId,
       ps_month: month,
       ps_year: year
     }
