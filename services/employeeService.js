@@ -712,6 +712,19 @@ async function updateContractStartDate(employeeId, newDate) {
   );
 }
 
+async function updateEmployeeHireType(employeeId, hireType) {
+  return employee.update(
+    {
+      emp_hire_type: hireType
+    },
+    {
+      where: {
+        emp_id: employeeId
+      }
+    }
+  );
+}
+
 /*async function emp(id){
   const ep = await getEmployeeByIdOnly(id).then(y=>{
     return y;
@@ -815,5 +828,6 @@ module.exports = {
   updateSalaryGrade,
   updateContractStartDate,
   getAllActiveEmployees,
-  setNhf
+  setNhf,
+  updateEmployeeHireType
 };
