@@ -1,5 +1,5 @@
 const { sequelize, Sequelize } = require('./db');
-const PauseSalaryService = require('../models/PauseSalary')(sequelize, Sequelize.DataTypes);
+const PauseSalaryService = require('../models/pauseSalary')(sequelize, Sequelize.DataTypes);
 
 async function addPauseSalary(pauseSalary) {
   return await PauseSalaryService.create({
