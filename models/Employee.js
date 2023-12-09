@@ -1,18 +1,39 @@
-'use strict';
-const { sequelize, Sequelize } = require('../services/db');
-const { Model, Op } = require('sequelize');
+"use strict";
+const { sequelize, Sequelize } = require("../services/db");
+const { Model, Op } = require("sequelize");
 
-const Location = require('../models/Location')(sequelize, Sequelize.DataTypes);
-const JobRole = require('../models/JobRole')(sequelize, Sequelize.DataTypes);
-const Bank = require('../models/Bank')(sequelize, Sequelize.DataTypes);
-const Department = require('../models/Department')(sequelize, Sequelize.DataTypes);
-const StateModel = require('../models/State')(sequelize, Sequelize.DataTypes);
-const LgaModel = require('../models/localgovernment')(sequelize, Sequelize.DataTypes);
-const pensionModel = require('../models/PensionProvider')(sequelize, Sequelize.DataTypes);
-const ReportingEntityModel = require('../models/reportingentity')(sequelize, Sequelize.DataTypes);
-const OperationUnitModel = require('../models/operationunit')(sequelize, Sequelize.DataTypes);
-const FunctionalAreaModel = require('../models/functionalarea')(sequelize, Sequelize.DataTypes);
-const SalaryGradeModel = require('../models/salarygrade')(sequelize, Sequelize.DataTypes);
+const Location = require("../models/Location")(sequelize, Sequelize.DataTypes);
+const JobRole = require("../models/JobRole")(sequelize, Sequelize.DataTypes);
+const Bank = require("../models/Bank")(sequelize, Sequelize.DataTypes);
+const Department = require("../models/Department")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const StateModel = require("../models/State")(sequelize, Sequelize.DataTypes);
+const LgaModel = require("../models/localgovernment")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const pensionModel = require("../models/PensionProvider")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const ReportingEntityModel = require("../models/reportingentity")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const OperationUnitModel = require("../models/operationunit")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const FunctionalAreaModel = require("../models/functionalarea")(
+  sequelize,
+  Sequelize.DataTypes
+);
+const SalaryGradeModel = require("../models/salarygrade")(
+  sequelize,
+  Sequelize.DataTypes
+);
 //const SalaryStructureModel = require("../models/salarystructure")(sequelize, Sequelize.DataTypes);
 
 //const authorizationModel = require('../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
@@ -44,12 +65,12 @@ module.exports = (sequelize, DataTypes) => {
     static async updateEmployeeGrossSalary(empId, salary) {
       return await Employee.update(
         {
-          emp_gross: salary
+          emp_gross: salary,
         },
         {
           where: {
-            emp_id: empId
-          }
+            emp_id: empId,
+          },
         }
       );
     }
@@ -58,11 +79,15 @@ module.exports = (sequelize, DataTypes) => {
       return await Employee.findOne({ where: { emp_location_id: locationId } });
     }
     static async getEmployeesByLocationIds(locationIds) {
-      return await Employee.findAll({ where: { emp_location_id: locationIds } });
+      return await Employee.findAll({
+        where: { emp_location_id: locationIds },
+      });
     }
 
     static async getEmployeesBySectorIds(sectorIds) {
-      return await Employee.findAll({ where: { emp_department_id: sectorIds } });
+      return await Employee.findAll({
+        where: { emp_department_id: sectorIds },
+      });
     }
 
     static async getListOfEmployeesSupervising(empId) {
@@ -76,26 +101,31 @@ module.exports = (sequelize, DataTypes) => {
     static async updateEmployeeRelocatableStatus(empId, status) {
       return await Employee.update(
         {
-          emp_relocatable: status
+          emp_relocatable: status,
         },
         {
           where: {
-            emp_id: empId
-          }
+            emp_id: empId,
+          },
         }
       );
     }
     static async getEmployeeLeaveAccrual(year) {
       return Employee.findAll({
-        attributes: ['emp_first_name', 'emp_id', 'emp_last_name', 'emp_unique_id'],
+        attributes: [
+          "emp_first_name",
+          "emp_id",
+          "emp_last_name",
+          "emp_unique_id",
+        ],
         where: {
           emp_id: {
             [Op.in]: sequelize.literal(
               `(SELECT la.lea_emp_id, la.lea_rate  FROM leave_accruals la
                   WHERE la.lea_year = ${year} GROUP BY la.lea_emp_id)`
-            )
-          }
-        }
+            ),
+          },
+        },
       });
     }
   }
@@ -104,7 +134,7 @@ module.exports = (sequelize, DataTypes) => {
       emp_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true // Automatically gets converted to SERIAL for postgres
+        autoIncrement: true, // Automatically gets converted to SERIAL for postgres
       },
       emp_unique_id: DataTypes.INTEGER,
       emp_first_name: DataTypes.STRING,
@@ -175,61 +205,86 @@ module.exports = (sequelize, DataTypes) => {
       emp_vendor_account: DataTypes.STRING,
       emp_nhf_status: DataTypes.BOOLEAN,
       emp_employee_type: DataTypes.STRING,
+      emp_employee_category: DataTypes.STRING,
       emp_hire_type: DataTypes.STRING,
       createdAt: {
-        field: 'created_at',
-        type: DataTypes.DATE
+        field: "created_at",
+        type: DataTypes.DATE,
       },
       updatedAt: {
-        field: 'updated_at',
-        type: DataTypes.DATE
-      }
+        field: "updated_at",
+        type: DataTypes.DATE,
+      },
     },
     {
       sequelize,
-      modelName: 'Employee',
-      tableName: 'employees',
-      timestamps: true
+      modelName: "Employee",
+      tableName: "employees",
+      timestamps: true,
     }
   );
 
-  Employee.belongsTo(SalaryGradeModel, { as: 'salaryGrade', foreignKey: 'emp_grade_id' });
+  Employee.belongsTo(SalaryGradeModel, {
+    as: "salaryGrade",
+    foreignKey: "emp_grade_id",
+  });
   //Employee.belongsTo(SalaryStructureModel, {as: 'salary_structure', foreignKey: 'ss_empid'})
-  Employee.belongsTo(Employee, { as: 'supervisor', foreignKey: 'emp_supervisor_id' });
-  Employee.hasMany(Employee, { foreignKey: 'emp_id' });
+  Employee.belongsTo(Employee, {
+    as: "supervisor",
+    foreignKey: "emp_supervisor_id",
+  });
+  Employee.hasMany(Employee, { foreignKey: "emp_id" });
 
-  Employee.belongsTo(Location, { as: 'location', foreignKey: 'emp_location_id' });
-  Employee.hasMany(Location, { foreignKey: 'location_id' });
+  Employee.belongsTo(Location, {
+    as: "location",
+    foreignKey: "emp_location_id",
+  });
+  Employee.hasMany(Location, { foreignKey: "location_id" });
 
   // Employee.belongsTo(JobRole, { foreignKey: 'emp_job_role_id'})
   // Employee.hasMany(JobRole, {foreignKey: 'job_role_id'})
 
-  Employee.belongsTo(JobRole, { as: 'jobrole', foreignKey: 'emp_job_role_id' });
-  Employee.hasMany(JobRole, { foreignKey: 'job_role_id' });
+  Employee.belongsTo(JobRole, { as: "jobrole", foreignKey: "emp_job_role_id" });
+  Employee.hasMany(JobRole, { foreignKey: "job_role_id" });
 
-  Employee.belongsTo(Bank, { as: 'bank', foreignKey: 'emp_bank_id' });
-  Employee.hasMany(Bank, { foreignKey: 'bank_id' });
+  Employee.belongsTo(Bank, { as: "bank", foreignKey: "emp_bank_id" });
+  Employee.hasMany(Bank, { foreignKey: "bank_id" });
 
-  Employee.belongsTo(Department, { as: 'sector', foreignKey: 'emp_department_id' });
-  Employee.hasMany(Department, { foreignKey: 'department_id' });
+  Employee.belongsTo(Department, {
+    as: "sector",
+    foreignKey: "emp_department_id",
+  });
+  Employee.hasMany(Department, { foreignKey: "department_id" });
 
-  Employee.belongsTo(StateModel, { as: 'state', foreignKey: 'emp_state_id' });
-  Employee.hasMany(StateModel, { foreignKey: 's_id' });
+  Employee.belongsTo(StateModel, { as: "state", foreignKey: "emp_state_id" });
+  Employee.hasMany(StateModel, { foreignKey: "s_id" });
 
-  Employee.belongsTo(LgaModel, { as: 'lga', foreignKey: 'emp_lga_id' });
-  Employee.hasMany(LgaModel, { foreignKey: 'lg_id' });
+  Employee.belongsTo(LgaModel, { as: "lga", foreignKey: "emp_lga_id" });
+  Employee.hasMany(LgaModel, { foreignKey: "lg_id" });
 
-  Employee.belongsTo(pensionModel, { as: 'pension', foreignKey: 'emp_pension_id' });
-  Employee.hasMany(pensionModel, { foreignKey: 'pension_provider_id' });
+  Employee.belongsTo(pensionModel, {
+    as: "pension",
+    foreignKey: "emp_pension_id",
+  });
+  Employee.hasMany(pensionModel, { foreignKey: "pension_provider_id" });
 
-  Employee.belongsTo(OperationUnitModel, { as: 'operationUnit', foreignKey: 'emp_d4' });
-  Employee.hasMany(OperationUnitModel, { foreignKey: 'ou_id' });
+  Employee.belongsTo(OperationUnitModel, {
+    as: "operationUnit",
+    foreignKey: "emp_d4",
+  });
+  Employee.hasMany(OperationUnitModel, { foreignKey: "ou_id" });
 
-  Employee.belongsTo(ReportingEntityModel, { as: 'reportingEntity', foreignKey: 'emp_d5' });
-  Employee.hasMany(ReportingEntityModel, { foreignKey: 're_id' });
+  Employee.belongsTo(ReportingEntityModel, {
+    as: "reportingEntity",
+    foreignKey: "emp_d5",
+  });
+  Employee.hasMany(ReportingEntityModel, { foreignKey: "re_id" });
 
-  Employee.belongsTo(FunctionalAreaModel, { as: 'functionalArea', foreignKey: 'emp_d6' });
-  Employee.hasMany(FunctionalAreaModel, { foreignKey: 'fa_id' });
+  Employee.belongsTo(FunctionalAreaModel, {
+    as: "functionalArea",
+    foreignKey: "emp_d6",
+  });
+  Employee.hasMany(FunctionalAreaModel, { foreignKey: "fa_id" });
 
   //Employee.belongsTo(FunctionalAreaModel, {as:'functionalArea', foreignKey:'emp_d6'});
 
