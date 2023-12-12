@@ -451,6 +451,9 @@ async function updateHireType() {
     const employees = await employee.getActiveEmployees([1, 2]);
     for (const emp of employees) {
       const employeeType = emp.emp_employee_type;
+      if (!employeeType) {
+        continue;
+      }
       if (employeeType.toLowerCase() === 'employee') {
         let hiredDate = new Date(emp.emp_hire_date);
         const differenceInMonthsFromHireDateToToday = differenceInCalendarMonths(new Date(), hiredDate);
@@ -482,7 +485,7 @@ nodeCron.schedule('0 0 1 * *', runCronJobForRnRLeaveType).start();
 nodeCron.schedule('0 5 * * *', runGeneralMonthlyLeaveRoutine).start();
 nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
 nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
-nodeCron.schedule('* 6 * * *', updateHireType).start();
+nodeCron.schedule('0 4 * * *', updateHireType).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
