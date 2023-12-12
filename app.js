@@ -180,6 +180,7 @@ const employee = require('./services/employeeService');
 const Joi = require('joi');
 const user = require('./services/userService');
 const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
+const logs = require('./services/logService');
 app.use('/payroll-journal', payrollJournalRouter);
 
 app.get('/', async function (req, res) {
@@ -201,6 +202,11 @@ async function updateApprovedLeaveStatus() {
       if (new Date().getTime() >= new Date(act.leapp_end_date).getTime() && act.leapp_status === 3) {
         await leaveApplicationService.updateLeaveAppStatus(act.leapp_id, 4);
       }
+    });
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Update Approved Leave Status Cron Job',
+      log_date: new Date()
     });
   } catch (e) {}
 }
@@ -262,6 +268,11 @@ async function travelDayLeaveAccrual() {
         }
       });
     }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Travel Day Leave Routine Cron Job',
+      log_date: new Date()
+    });
   } catch (e) {}
 }
 
@@ -303,6 +314,11 @@ async function runCronJobForRnRLeaveType() {
           }
         });
       }
+      await logs.addLog({
+        log_user_id: 1,
+        log_description: 'R N R Leave Routine Cron Job',
+        log_date: new Date()
+      });
     }
   } catch (e) {
     //return res.status(400).json('Whoops!');
@@ -345,6 +361,11 @@ async function runGeneralMonthlyLeaveRoutine() {
         }
       }
     }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'General Monthly Leave Routine Cron Job',
+      log_date: new Date()
+    });
   } catch (e) {
     console.error(e);
   }
@@ -381,10 +402,15 @@ async function runGeneralYearlyLeaveRoutine() {
             lea_expires_on: expiresOn,
             lea_fy: calendarYear
           };
-          const addAccrualResponse = await addLeaveAccrual(leaveAccrual);
+          await addLeaveAccrual(leaveAccrual);
         }
       }
     }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'General Yearly Leave Routine Cron Job',
+      log_date: new Date()
+    });
   } catch (e) {
     console.error(e);
   }
@@ -412,6 +438,11 @@ async function endEmployeeContract() {
         await user.suspendUser(emp.emp_unique_id);
       }
     }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'End Employee Contract Cron Job',
+      log_date: new Date()
+    });
   } catch (e) {}
 }
 
@@ -434,6 +465,11 @@ async function updateHireType() {
         await employeeService.updateEmployeeHireType(emp.emp_id, hireType);
       }
     }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Update Hire Type Cron Job',
+      log_date: new Date()
+    });
   } catch (e) {
     console.log('error from update hire type');
     console.log(e.message);
