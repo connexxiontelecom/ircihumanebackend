@@ -212,7 +212,14 @@ async function updateApprovedLeaveStatus() {
       log_description: 'Update Approved Leave Status Cron Job',
       log_date: new Date()
     });
-  } catch (e) {}
+  } catch (e) {
+    const errorMessage = `error from update approved leave status cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
 }
 
 async function travelDayLeaveAccrual() {
@@ -277,7 +284,14 @@ async function travelDayLeaveAccrual() {
       log_description: 'Travel Day Leave Routine Cron Job',
       log_date: new Date()
     });
-  } catch (e) {}
+  } catch (e) {
+    const errorMessage = `error from travel day leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
 }
 
 async function runCronJobForRnRLeaveType() {
@@ -325,7 +339,12 @@ async function runCronJobForRnRLeaveType() {
       });
     }
   } catch (e) {
-    //return res.status(400).json('Whoops!');
+    const errorMessage = `error from R N R leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
   }
 }
 
@@ -371,6 +390,12 @@ async function runGeneralMonthlyLeaveRoutine() {
       log_date: new Date()
     });
   } catch (e) {
+    const errorMessage = `error general monthly leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
     console.error(e);
   }
 }
@@ -416,6 +441,12 @@ async function runGeneralYearlyLeaveRoutine() {
       log_date: new Date()
     });
   } catch (e) {
+    const errorMessage = `error from general yearly leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
     console.error(e);
   }
 }
@@ -447,7 +478,14 @@ async function endEmployeeContract() {
       log_description: 'End Employee Contract Cron Job',
       log_date: new Date()
     });
-  } catch (e) {}
+  } catch (e) {
+    const errorMessage = `error from end employee contract cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
 }
 
 async function updateHireType() {
@@ -478,8 +516,32 @@ async function updateHireType() {
       log_date: new Date()
     });
   } catch (e) {
+    const errorMessage = `error from update hire type cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
     console.log('error from update hire type');
     console.log(e.message);
+  }
+}
+
+async function clearOldLogs() {
+  try {
+    await logs.deleteLogs();
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Old Logs cleared cron job',
+      log_date: new Date()
+    });
+  } catch (e) {
+    const errorMessage = `error clear old logs cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
   }
 }
 
@@ -490,6 +552,7 @@ nodeCron.schedule('0 5 * * *', runGeneralMonthlyLeaveRoutine).start();
 nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
 nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
 nodeCron.schedule('0 4 * * *', updateHireType).start();
+nodeCron.schedule('* * * * *', clearOldLogs).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
