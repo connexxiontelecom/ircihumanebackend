@@ -16,8 +16,8 @@ function deleteLogs() {
   const daysToClearNotification = format(subDays(new Date(), 60), 'yyyy-MM-dd');
   return Log.destroy({
     where: {
-      created_at: {
-        [Op.gte]: daysToClearNotification
+      createdAt: {
+        [Op.lte]: daysToClearNotification
       }
     }
   });
