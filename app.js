@@ -552,7 +552,7 @@ nodeCron.schedule('0 5 * * *', runGeneralMonthlyLeaveRoutine).start();
 nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
 nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
 nodeCron.schedule('0 4 * * *', updateHireType).start();
-nodeCron.schedule('* * * * *', clearOldLogs).start();
+nodeCron.schedule('0 0 * * *', clearOldLogs).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
