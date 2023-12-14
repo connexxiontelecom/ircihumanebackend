@@ -1,4 +1,5 @@
 const { sequelize, Sequelize } = require('./db');
+const Employee = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 const PauseSalaryService = require('../models/pauseSalary')(sequelize, Sequelize.DataTypes);
 
 async function addPauseSalary(pauseSalary) {
@@ -10,8 +11,8 @@ async function addPauseSalary(pauseSalary) {
   });
 }
 
-async function findExistingPauseSalary(empId, month, year) {
-  return await PauseSalaryService.findOne({
+function findExistingPauseSalary(empId, month, year) {
+  return PauseSalaryService.findOne({
     where: {
       ps_empid: empId,
       ps_month: month,
@@ -20,7 +21,36 @@ async function findExistingPauseSalary(empId, month, year) {
   });
 }
 
+function findOnePauseSalary(pauseSalaryId) {
+  return PauseSalaryService.findOne({
+    where: {
+      ps_id: pauseSalaryId
+    }
+  });
+}
+
+function deletePauseSalary(pauseSalaryId) {
+  return PauseSalaryService.destroy({
+    where: {
+      ps_id: pauseSalaryId
+    }
+  });
+}
+
+function findPauseSalaryByMonthYear(month, year) {
+  return PauseSalaryService.findAll({
+    where: {
+      ps_month: month,
+      ps_year: year
+    },
+    include: [{ model: Employee, as: 'employee' }]
+  });
+}
+
 module.exports = {
   addPauseSalary,
-  findExistingPauseSalary
+  findExistingPauseSalary,
+  findOnePauseSalary,
+  deletePauseSalary,
+  findPauseSalaryByMonthYear
 };

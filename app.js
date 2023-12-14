@@ -22,35 +22,48 @@ app.use(
 );
 //Routes
 const employeeRouter = require('./routes/employees');
+app.use('/employees', employeeRouter);
+
 const bankRouter = require('./routes/bank');
+app.use('/banks', bankRouter);
+
 const pensionProviderRouter = require('./routes/pension-provider');
+app.use('/pension-providers', pensionProviderRouter);
+
 const hmoRouter = require('./routes/hmo');
+app.use('/hmos', hmoRouter);
+
 const departmentRouter = require('./routes/department');
+app.use('/departments', departmentRouter);
+
 const gradeRouter = require('./routes/grade');
+app.use('/grades', gradeRouter);
+
 const jobRoleRouter = require('./routes/job-role');
+app.use('/job-roles', jobRoleRouter);
+
 const locationRouter = require('./routes/location');
+app.use('/locations', locationRouter);
+
 const qualificationRouter = require('./routes/qualification');
+app.use('/qualifications', qualificationRouter);
+
 const subsidiaryRouter = require('./routes/subsidiary');
+app.use('/subsidiaries', subsidiaryRouter);
+
 const leaveTypeRouter = require('./routes/leave-type');
+app.use('/leave-types', leaveTypeRouter);
+
 const stateRouter = require('./routes/state');
+app.use('/states', stateRouter);
+
 const employeeCategoryRouter = require('./routes/employee-category');
+app.use('/employee-categories', employeeCategoryRouter);
+
 const leaveApplicationService = require('./services/leaveApplicationService');
 const leaveTypeService = require('./services/leaveTypeService');
 const employeeService = require('./services/employeeService');
 const leaveAccrualService = require('./services/leaveAccrualService');
-app.use('/employees', employeeRouter);
-app.use('/banks', bankRouter);
-app.use('/pension-providers', pensionProviderRouter);
-app.use('/hmos', hmoRouter);
-app.use('/departments', departmentRouter);
-app.use('/grades', gradeRouter);
-app.use('/job-roles', jobRoleRouter);
-app.use('/locations', locationRouter);
-app.use('/qualifications', qualificationRouter);
-app.use('/subsidiaries', subsidiaryRouter);
-app.use('/leave-types', leaveTypeRouter);
-app.use('/states', stateRouter);
-app.use('/employee-categories', employeeCategoryRouter);
 
 const userRouter = require('./routes/users');
 app.use('/users', userRouter);
@@ -177,6 +190,8 @@ const endYearResponseRouter = require('./routes/endOfYearResponse');
 app.use('/end-year-response', endYearResponseRouter);
 
 const payrollJournalRouter = require('./routes/payroll-journal');
+app.use('/payroll-journal', payrollJournalRouter);
+
 const nodeCron = require('node-cron');
 const { addLeaveAccrual } = require('./routes/leaveAccrual');
 const salary = require('./services/salaryService');
@@ -185,7 +200,6 @@ const Joi = require('joi');
 const user = require('./services/userService');
 const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
 const logs = require('./services/logService');
-app.use('/payroll-journal', payrollJournalRouter);
 
 app.get('/', async function (req, res) {
   res.send('you got here. so get out');
@@ -552,7 +566,7 @@ nodeCron.schedule('0 5 * * *', runGeneralMonthlyLeaveRoutine).start();
 nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
 nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
 nodeCron.schedule('0 4 * * *', updateHireType).start();
-nodeCron.schedule('0 0 * * *', clearOldLogs).start();
+nodeCron.schedule('* 3 * * *', clearOldLogs).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
