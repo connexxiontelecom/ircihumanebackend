@@ -1,5 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
+const { sequelize, Sequelize } = require('../services/db');
+const Employee = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class PauseSalary extends Model {
     /**
@@ -29,5 +31,8 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'pause_salary'
     }
   );
+
+  PauseSalary.belongsTo(Employee, { as: 'employee', foreignKey: 'salary_empid' });
+  PauseSalary.hasMany(Employee, { foreignKey: 'emp_id' });
   return PauseSalary;
 };
