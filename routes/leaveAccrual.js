@@ -26,6 +26,7 @@ async function addLeaveAccrual(data) {
         lea_archives: Joi.number().required(),
         lea_fy: Joi.string().required(),
         lea_expires_on: Joi.date().required(),
+        leave_narration: Joi.allow('', null)
 
     })
 

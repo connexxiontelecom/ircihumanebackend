@@ -204,6 +204,10 @@ module.exports = (sequelize, DataTypes) => {
       emp_contact_address: DataTypes.STRING,
       emp_vendor_account: DataTypes.STRING,
       emp_nhf_status: DataTypes.BOOLEAN,
+
+      emp_probation_end_date:DataTypes.DATE,
+      emp_probation : DataTypes.STRING,
+
       emp_employee_type: DataTypes.STRING,
       emp_employee_category: DataTypes.STRING,
       emp_hire_type: DataTypes.STRING,
