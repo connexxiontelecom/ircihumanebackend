@@ -2130,9 +2130,6 @@ router.post('/pull-approved-salary-routine-locations', auth(), async function (r
       const locationData = await locationService.findLocationById(location.pmyl_location_id);
       if (!_.isEmpty(locationData)) {
         const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id);
-        // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
-        //     return data
-        // })
 
         if (_.isEmpty(employees) || _.isNull(employees)) {
           return res.status(400).json(`No employee in selected locations`);
@@ -4921,9 +4918,7 @@ router.post('/tax-report', auth(), async function (req, res, next) {
 router.post('/pause-salary', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
-      ps_empid: Joi.number().required(),
-      ps_month: Joi.number().required(),
-      ps_year: Joi.number().required()
+      ps_empid: Joi.number().required()
     });
 
     const pauseSalaryRequest = req.body;
@@ -4933,10 +4928,21 @@ router.post('/pause-salary', auth(), async function (req, res, next) {
       return res.status(400).json(validationResult.error.details[0].message);
     }
 
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+
+    const existingSalary = await salary.getEmployeeSalary(payrollMonthYearData.pym_month, payrollMonthYearData.pym_year, pauseSalaryRequest.ps_empid);
+
+    if (!_.isNull(existingSalary) || !_.isEmpty(existingSalary)) {
+      return res.status(400).json(`Cannot Pause salary for employee with existing salary for current payroll month and year`);
+    }
+
     const existingPauseSalaryData = pauseSalaryService.findExistingPauseSalary(
       pauseSalaryRequest.ps_empid,
-      pauseSalaryRequest.ps_month,
-      pauseSalaryRequest.ps_year
+      payrollMonthYearData.pym_month,
+      payrollMonthYearData.pym_year
     );
     if (!_.isNull(existingPauseSalaryData) || !_.isEmpty(existingPauseSalaryData)) {
       return res.status(400).json(`Salary already paused for employee for selected month and year`);
@@ -4944,8 +4950,8 @@ router.post('/pause-salary', auth(), async function (req, res, next) {
 
     await pauseSalaryService.addPauseSalary({
       ps_empid: pauseSalaryRequest.ps_empid,
-      ps_month: pauseSalaryRequest.ps_month,
-      ps_year: pauseSalaryRequest.ps_year,
+      ps_month: payrollMonthYearData.pym_month,
+      ps_year: payrollMonthYearData.pym_year,
       ps_created_by: req.user.username.user_id
     });
 
@@ -4961,8 +4967,72 @@ router.post('/pause-salary', auth(), async function (req, res, next) {
     return res.status(400).json(JSON.stringify(err?.message));
   }
 });
-/* run salary routine location */
-/* run salary routine location */
+
+router.post('/unpause-salary', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      ps_id: Joi.number().required()
+    });
+
+    const pauseSalaryRequest = req.body;
+    const validationResult = schema.validate(pauseSalaryRequest);
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+
+    const existingPauseSalaryData = pauseSalaryService.findOnePauseSalary(pauseSalaryRequest.ps_id);
+    if (_.isNull(existingPauseSalaryData) || _.isEmpty(existingPauseSalaryData)) {
+      return res.status(400).json(`No paused salary found`);
+    }
+
+    const payrollMonth = parseInt(payrollMonthYearData.pym_month);
+    const payrollYear = parseInt(payrollMonthYearData.pym_year);
+    const existingPauseSalaryMonth = parseInt(existingPauseSalaryData.ps_month);
+    const existingPauseSalaryYear = parseInt(existingPauseSalaryData.ps_year);
+    const empId = parseInt(existingPauseSalaryData.ps_empid);
+
+    if (existingPauseSalaryMonth !== payrollMonth || existingPauseSalaryYear !== payrollYear) {
+      return res.status(400).json(`Cannot unpause salary for current non current payroll month and year `);
+    }
+
+    const existingSalary = await salary.getEmployeeSalary(payrollMonth, payrollYear, empId);
+
+    if (!_.isNull(existingSalary) || !_.isEmpty(existingSalary)) {
+      return res.status(400).json(`Cannot unpause salary for employee with existing salary for current payroll month and year`);
+    }
+
+    await pauseSalaryService.deletePauseSalary(pauseSalaryRequest.ps_id);
+
+    return res.status(200).json(`Salary unpaused for selected month and year`);
+  } catch (err) {
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
+router.get('/pause-salary', auth(), async function (req, res, next) {
+  try {
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+
+    const existingPauseSalaryData = await pauseSalaryService.findPauseSalaryByMonthYear(
+      payrollMonthYearData.pym_month,
+      payrollMonthYearData.pym_year
+    );
+
+    return res.status(200).json(existingPauseSalaryData);
+  } catch (err) {
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
 router.post('/salary-tes-routine', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
