@@ -132,7 +132,7 @@ const setNewPublicHoliday = async (req, res) => {
         });
 
         if (existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");*/
-      const group = Math.floor(Math.random() * 1001);
+        const group = new Date().valueOf(); // Math.floor(Math.random() * 1001);
       const pubData = {
             ph_name: public_name,
             ph_day: day,
@@ -149,7 +149,7 @@ const setNewPublicHoliday = async (req, res) => {
         };
         let i = 0;
         const holidayArray = [];
-          if(numDays > 0) {
+          if(numDays > 1) {
             let startDateFormat = `${month}/${day}/${year}`;
             let endDateFormat = `${to_month}/${to_day}/${to_year}`;
             const start = new Date(startDateFormat);
@@ -157,7 +157,7 @@ const setNewPublicHoliday = async (req, res) => {
             let loop = new Date(start);
             while (loop <= end) {
               //console.log(loop);
-              let newDate = loop.setDate(loop.getDate() + 1);
+              let newDate = loop.setDate(loop.getDate() + i);
               loop = new Date(newDate);
             //for(i=0; i<= numDays; i++){
             const loopPub = {

@@ -41,7 +41,6 @@ const createNewEmployee = async (req, res, next) => {
     const schema = Joi.object({
       first_name: Joi.string().required().messages({ 'any.required': 'Enter first name in the field provided' }),
       last_name: Joi.string().required().messages({ 'any.required': 'Enter last name in the field provided' }),
-      //other_name: Joi.string(),
       unique_id: Joi.string().required().messages({ 'any.required': 'Enter unique ID in the field provided' }),
       personal_email: Joi.string().allow(null, ''),
       office_email: Joi.string().allow(null, ''),
@@ -61,6 +60,9 @@ const createNewEmployee = async (req, res, next) => {
       //department: Joi.number().required().messages({"any.required": "What's this employee's Sector?"}),
       //grade_level: Joi.number().required().messages({"any.required":"What's this employee's grade level?"}),
       account_no: Joi.string().required().messages({ 'any.required': "Enter employee's account number" }),
+      contract_hire_date: Joi.string().required().messages({ 'any.required': "Enter contract hire date" }),
+      contract_start_date: Joi.string().required().messages({'any.required': "Enter contract hire start date"}),
+      contract_end_date: Joi.string().required().messages({'any.required': "Enter contract hire end date"}),
       bank: Joi.number().required().messages({ 'any.required': 'Choose the bank associated with the account number you entered?' }),
       //other_name:Joi.string().allow(null,''),
       other_name: Joi.string().allow(null, ''),
@@ -119,8 +121,11 @@ const createNewEmployee = async (req, res, next) => {
             let accountNumber = req.body.account_no;
             let letter = accountNumber.charAt(0);
             if (letter !== `'`) {
-              accountNumber = `'${accountNumber}`;
+              accountNumber = `${accountNumber}`;
             }
+            const contractHireDate = new Date(req.body.contract_hire_date);// new Date();
+            const numberOfDaysToAdd = 90; //3 months
+            const probationEndDate = contractHireDate.setDate(contractHireDate.getDate() + numberOfDaysToAdd );
             employee
               .create({
                 emp_first_name: req.body.first_name,
@@ -139,6 +144,11 @@ const createNewEmployee = async (req, res, next) => {
                 emp_d5: req.body.emp_d5,
                 emp_d6: req.body.emp_d6,
                 emp_d7: req.body.emp_d7,
+                emp_probation: 1,
+                emp_contract_hire_date: req.body.contract_hire_date,
+                emp_contract_start_date: req.body.contract_start_date,
+                emp_contract_end_date: req.body.contract_end_date,
+                emp_probation_end_date: probationEndDate,
                 emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg'
               })
               .catch(errHandler);
