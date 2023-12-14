@@ -68,14 +68,14 @@ const createNewEmployee = async (req, res, next) => {
       emp_d5: Joi.number().allow(null, ''),
       emp_d6: Joi.number().allow(null, ''),
 
-      first_name: Joi.string()
+      /*first_name: Joi.string()
         .required()
         .messages({ "any.required": "Enter first name in the field provided" }),
       last_name: Joi.string()
         .required()
-        .messages({ "any.required": "Enter last name in the field provided" }),
+        .messages({ "any.required": "Enter last name in the field provided" }),*/
       //other_name: Joi.string(),
-      unique_id: Joi.string()
+      /*unique_id: Joi.string()
         .required()
         .messages({ "any.required": "Enter unique ID in the field provided" }),
       personal_email: Joi.string().allow(null, ""),
@@ -83,7 +83,7 @@ const createNewEmployee = async (req, res, next) => {
       emp_d4: Joi.number().allow(null, ""),
       emp_d7: Joi.string().allow(null, ""),
       emp_d5: Joi.number().allow(null, ""),
-      emp_d6: Joi.number().allow(null, ""),
+      emp_d6: Joi.number().allow(null, ""),*/
       // birth_date: Joi.date().required().messages({'any.required':'Enter employee birth date'}),
       //personal_email: Joi.string().required().messages({'any.required': 'Enter a valid personal email address'}),
       //office_email: Joi.string().required().messages({'any.required': 'Enter a valid office email address'}),
@@ -107,13 +107,13 @@ const createNewEmployee = async (req, res, next) => {
       contract_start_date: Joi.string().required().messages({'any.required': "Enter contract hire start date"}),
       contract_end_date: Joi.string().required().messages({'any.required': "Enter contract hire end date"}),
       bank: Joi.number().required().messages({ 'any.required': 'Choose the bank associated with the account number you entered?' }),
-      account_no: Joi.string()
+      /*account_no: Joi.string()
         .required()
         .messages({ "any.required": "Enter employee's account number" }),
       bank: Joi.number().required().messages({
         "any.required":
           "Choose the bank associated with the account number you entered?",
-      }),
+      }),*/
       //other_name:Joi.string().allow(null,''),
       other_name: Joi.string().allow(null, ""),
       // hmo_no: Joi.string().required().messages({"any.required":"Enter employee's HMO number"}),
@@ -208,7 +208,7 @@ const createNewEmployee = async (req, res, next) => {
                 emp_contract_start_date: req.body.contract_start_date,
                 emp_contract_end_date: req.body.contract_end_date,
                 emp_probation_end_date: probationEndDate,
-                emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg',
+                //emp_passport: 'https://irc-ihumane.s3.us-east-2.amazonaws.com/placeholder.svg',
 
                 emp_employee_type: req.body.emp_employee_type,
                 emp_employee_category: req.body.emp_employee_category,
@@ -488,7 +488,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
       emp_d5: employeeData.emp_d5,
       emp_d6: employeeData.emp_d6,
       emp_d7: employeeData.emp_d7,
-      emp_contact_address: employeeData.emp_contact_address,
+      //emp_contact_address: employeeData.emp_contact_address,
       //emp_nin: employeeData.emp_sector,
     },
     {
