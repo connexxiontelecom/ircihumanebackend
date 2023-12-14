@@ -173,6 +173,10 @@ app.use('/rating', ratingRouter);
 const endYearRatingRouter = require('./routes/endYearRating');
 app.use('/end-year-rating', endYearRatingRouter);
 
+const performanceImprovement = require('./routes/performance-improvement');
+app.use('/performance-improvement', performanceImprovement);
+
+
 const salaryRouter = require('./routes/salary');
 app.use('/salary', salaryRouter);
 
