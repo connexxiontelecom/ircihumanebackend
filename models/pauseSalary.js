@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  PauseSalary.belongsTo(Employee, { as: 'employee', foreignKey: 'salary_empid' });
+  PauseSalary.belongsTo(Employee, { as: 'employee', foreignKey: 'ps_empid' });
   PauseSalary.hasMany(Employee, { foreignKey: 'emp_id' });
   return PauseSalary;
 };
