@@ -509,4 +509,24 @@ router.post('/approve-supervisor-performance-assessment', auth(), async function
 });
 
 
+
+router.get('/scheduled-performance-improvement/:empId', auth(), async function(req, res){
+  try{
+    const id = req.params.empId;
+    if(_.isNull(id)){
+      return res.status(400).json('Whoops! Something went wrong. Try again later');
+    }
+    const performance = await performanceImprovementModel.getEmployeeActivePerformanceImprovement(parseInt(id));
+
+    const obj = {
+      performance,
+    }
+    return res.status(200).json(obj);
+  }catch (e) {
+    return res.status(400).json('Whoops! Something went wrong. Try again later');
+  }
+});
+
+
+
 module.exports = router;

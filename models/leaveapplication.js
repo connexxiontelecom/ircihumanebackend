@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  Model
+  Model, Op
 } = require('sequelize');
 
 const {sequelize, Sequelize} = require("../services/db");
@@ -109,6 +109,12 @@ module.exports = (sequelize, DataTypes) => {
           leapp_empid: empId,
           leapp_status: [1,3,4]
         }
+      })
+    }
+
+    static async getAllLeaveApplicationsFromADate(startDate){
+      return await leaveApplication.findAll({
+        where:{leapp_start_date: {[Op.gte]:startDate} },
       })
     }
 
