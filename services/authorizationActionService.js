@@ -157,7 +157,7 @@ const updateAuthorizationStatus = async (req, res) => {
                       await handleInAppEmailNotifications(hrFocalDetails.emp_first_name, subject,body, 'leave-authorization', hrFocalDetails.emp_office_email,  hrFocalDetails.emp_id);
                     })
 
-                  }else if(parseInt(req.body.contactGroup) === 2){
+                  }/*else*/ if(parseInt(req.body.contactGroup) === 2){
 
                     await authorizationModel.create({
                       auth_officer_id: emp.emp_supervisor_id,
@@ -170,15 +170,15 @@ const updateAuthorizationStatus = async (req, res) => {
                     await handleInAppEmailNotifications(contactGroupDetails.emp_first_name, subject,body, 'leave-authorization', contactGroupDetails.emp_office_email, contactGroupDetails.emp_id);
 
                   }
-                  console.log("Logging next officer: "+nextOfficer)
+                  /*console.log("Logging next officer: "+nextOfficer)
                   if(!_.isUndefined(nextOfficer)){
                     console.log("value Not undefined")
                   }else{
                     console.log('val undefined')
-                  }
+                  }*/
 
                   if(!_.isUndefined(nextOfficer)){
-                    if(!_.isNull(nextOfficer) || !_.isEmpty(nextOfficer) ){
+                    //if(!_.isNull(nextOfficer) || !_.isEmpty(nextOfficer) ){
                       await authorizationModel.create({
                         auth_officer_id: nextOfficer,
                         auth_type: type,
@@ -188,7 +188,7 @@ const updateAuthorizationStatus = async (req, res) => {
                         return off;
                       })
                       await handleInAppEmailNotifications(nextOff.emp_first_name, subject,body, 'leave-authorization', nextOff.office_email, nextOfficer);
-                    }
+                    //}
                   }
 
               }
