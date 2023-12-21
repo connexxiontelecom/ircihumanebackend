@@ -32,7 +32,7 @@ router.post('/add-performance-improvement', auth(), async function (req, res, ne
       employees: Joi.array().required().messages({ 'any.required': 'Choose an employee' }),
       start_date: Joi.string().required().messages({ 'any.required': 'What is the start date?' }),
       end_date: Joi.string().required().messages({ 'any.required': 'What is the end date?' }),
-      max_end_date: Joi.string().required(),
+      max_end_date: Joi.number().required(),
     });
     const performanceRequest = req.body
     const validationResult = schema.validate(performanceRequest)
@@ -53,7 +53,7 @@ router.post('/add-performance-improvement', auth(), async function (req, res, ne
 
 
      await employees.map(async emp => {
-       const empPerformances = await performanceImprovementModel.getEmployeePerformanceImprovement(parseInt(emp));
+       const empPerformances = await performanceImprovementModel.getEmployeePerformanceImprovement(parseInt(emp.value));
        if(!(_.isNull(empPerformances)) || !(_.isEmpty(empPerformances)) ){
          empPerformances.map(async empPerf => {
            if (parseInt(empPerf.pi_status) === 1) {
@@ -62,7 +62,7 @@ router.post('/add-performance-improvement', auth(), async function (req, res, ne
          });
        }
         const data = {
-          emp_id:emp,
+          emp_id:emp.value,
           start_date:start_date,
           end_date:endDate,
           status:1
