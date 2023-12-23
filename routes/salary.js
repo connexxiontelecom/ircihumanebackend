@@ -4986,7 +4986,7 @@ router.post('/unpause-salary', auth(), async function (req, res, next) {
       return res.status(400).json(`No payroll month and year set`);
     }
 
-    const existingPauseSalaryData = pauseSalaryService.findOnePauseSalary(pauseSalaryRequest.ps_id);
+    const existingPauseSalaryData = await pauseSalaryService.findOnePauseSalary(pauseSalaryRequest.ps_id);
     if (_.isNull(existingPauseSalaryData) || _.isEmpty(existingPauseSalaryData)) {
       return res.status(400).json(`No paused salary found`);
     }
