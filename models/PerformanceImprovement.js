@@ -27,6 +27,11 @@ module.exports = (sequelize, DataTypes) => {
           where:{pi_emp_id: empId},
         })
       }
+      static async getPerformanceImprovementById(id) {
+        return PerformanceImprovement.findOne({
+          where:{pi_id: id},
+        })
+      }
       static async getEmployeeActivePerformanceImprovement(empId) {
         return PerformanceImprovement.findOne({
           where:{pi_emp_id: empId, pi_status:1},
@@ -45,6 +50,22 @@ module.exports = (sequelize, DataTypes) => {
         return await PerformanceImprovement.update({
             pi_status:status,
           },
+          {where:{pi_id:id},})
+      }
+
+
+      static async updatePerformanceDetails(id, status, start, end){
+        return await PerformanceImprovement.update({
+            pi_status:status,
+            pi_start_date:start,
+            pi_end_date:end,
+          },
+          {where:{pi_id:id},})
+      }
+
+
+      static async deletePerformanceImprovement(id){
+        return await PerformanceImprovement.destroy(
           {where:{pi_id:id},})
       }
 
