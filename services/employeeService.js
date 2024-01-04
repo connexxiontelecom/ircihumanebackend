@@ -434,6 +434,8 @@ async function updateEmployee(employeeId, employeeData) {
       emp_emergency_name: employeeData.emp_emergency_name,
       emp_emergency_contact: employeeData.emp_emergency_contact,
       emp_contact_address: employeeData.emp_contact_address,
+      //emp_employee_type:employeeData.emp_employee_type,
+      //emp_employee_category:employeeData.emp_employee_category,
       //emp_contract_end_date:employeeData.emp_contract_end_date,
       //emp_hire_date:employeeData.emp_hire_date,
     },
@@ -512,6 +514,8 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
       emp_d5: employeeData.emp_d5,
       emp_d6: employeeData.emp_d6,
       emp_d7: employeeData.emp_d7,
+      emp_employee_type:employeeData.emp_employee_type,
+      emp_employee_category:employeeData.emp_employee_category,
 
       //emp_contact_address: employeeData.emp_contact_address,
 
