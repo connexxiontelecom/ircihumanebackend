@@ -118,20 +118,7 @@ const setNewPublicHoliday = async (req, res) => {
         const to_year = to_date.getUTCFullYear();
 
         const numDays = dateRange(date, to_date).length; // (to_date.getTime() - date.getTime())/(1000*60*60*24);
-        //return res.status(400).json(`${day+1}`);
 
-
-
-       /* const existPeriod = await PublicHoliday.findOne({
-            attributes: ['ph_id', 'ph_name', 'ph_day', 'ph_month', 'ph_year'],
-            where: {
-                ph_day: day,
-                ph_month: month,
-                ph_year: year
-            }
-        });
-
-        if (existPeriod) return res.status(400).json("There's an existing public holiday with these entry.");*/
         const group = new Date().valueOf(); // Math.floor(Math.random() * 1001);
       const pubData = {
             ph_name: public_name,
@@ -156,10 +143,6 @@ const setNewPublicHoliday = async (req, res) => {
             const end = new Date(endDateFormat);
             let loop = new Date(start);
             while (loop <= end) {
-              //console.log(loop);
-              let newDate = loop.setDate(loop.getDate() + i);
-              loop = new Date(newDate);
-            //for(i=0; i<= numDays; i++){
             const loopPub = {
               ph_day: loop.getUTCDate(),// i === 0 ? day : (day + i),
               ph_date: loop, //i === 0 ? date : date.getTime() + (i * 24 * 60 * 60 * 1000),
@@ -175,33 +158,23 @@ const setNewPublicHoliday = async (req, res) => {
             }
             let pub = await PublicHoliday.create(loopPub)
               holidayArray.push(pub.ph_id)
-              //.catch(errHandler);
+              let newDate = loop.setDate(loop.getDate() + 1);
+              loop = new Date(newDate);
           }
-            //}
           }else{
             let sPub = await PublicHoliday.create(pubData)
-             // .catch(errHandler);
             holidayArray.push(sPub.ph_id)
           }
 
           //Check existing leave applications within the newly added public holiday period
         const appliedLeaves = await leaveApplicationModel.findAll({
           where:{
-          /*  leapp_start_date: {
-              [Op.between]:[public_date,public_date_to]
-            },
-            leapp_end_date: {
-              [Op.between]:[public_date,public_date_to]
-            },*/
             leapp_end_date: {[Op.lte]:public_date_to},
             leapp_end_date: {[Op.gte]:public_date_to}
           },
         });
-          //console.log(appliedLeaves)
-          /*console.log('Start: '+public_date);
-          console.log('End: '+public_date_to);
-          console.log('updating leave...');
-          console.log(appliedLeaves);*/
+
+
           if(!(_.isNull(appliedLeaves)) || !(_.isEmpty(appliedLeaves))){
             appliedLeaves.map(async appLeave => {
               let emp = await getEmployeeByIdOnly(appLeave.leapp_empid);
@@ -212,8 +185,6 @@ const setNewPublicHoliday = async (req, res) => {
               if(_.isNull(locationId) || _.isEmpty(locationId)){
                 return res.status(400).json("Employee location not found!");
               }
-             // if(!(_.isNull(appLeave.leapp_locations)) || !(_.isEmpty(appLeave.leapp_locations))){
-
                 if(locationArray.includes(parseInt(locationId)) || locationArray.includes(0) ){
                   let newDuration = parseInt(appLeave.leapp_total_days) - numDays;
                   if(newDuration <= 0){
@@ -232,21 +203,7 @@ const setNewPublicHoliday = async (req, res) => {
                     }
                   }
                 }
-              //}
-
-
             });
-
-            /* appliedLeaves.map(async appLeave => {
-               let newDuration = parseInt(appLeave.leapp_total_days) - numDays;
-                await leaveApplicationModel.updateLeaveAppDuration(appLeave.leapp_id, newDuration);
-                //check if it exist in leave accrual table
-               const leaveExistAccrual = await leaveAccrualModel.getLeaveAccrualByLeaveId(appLeave.leapp_id);
-               if(!(_.isNull(leaveExistAccrual)) || !(_.isEmpty(leaveExistAccrual))){
-                 //update lea_rate
-                 await leaveAccrualModel.updateLeaveAccrualDuration(appLeave.leapp_id, newDuration);
-               }
-             });*/
           }
         //Log
         const logData = {
@@ -258,7 +215,7 @@ const setNewPublicHoliday = async (req, res) => {
             return res.status(200).json(`New public holiday added successfully.`);
         });
     } catch (e) {
-        return res.status(500).json({message: "Something went wrong. Try again later." + e.message});
+        return res.status(500).json({message: "Something went wrong. Try again later." });
         ;
 
     }

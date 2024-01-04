@@ -105,6 +105,8 @@ const getAllLeaveApplicationFromStartDate = async ()=>{
           let accrual = await leaveAccrualModel.findOne({
             where:{lea_leaveapp_id: leave.leapp_id}
           });
+          console.log('Existing accrual')
+          //console.log(accrual)
           if(!(_.isNull(accrual)) || !(_.isEmpty(accrual))){
             //delete leave accruals
             await leaveAccrualModel.deleteLeaveAccrualEntryByLeaveId(parseInt(leave.leapp_id));
@@ -356,7 +358,7 @@ async function markLeaveApplicationAsFinal(leapp_start_date, leapp_end_date, lea
       }
     }
 
-    const leaveApp = await leaveApplicationModel.getLeaveApplicationById(leapp_id);
+    /*const leaveApp = await leaveApplicationModel.getLeaveApplicationById(leapp_id);
     if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){
       let startDate = new Date(leaveApp.leapp_start_date);
       let endDate = new Date(leaveApp.leapp_end_date);
@@ -379,7 +381,7 @@ async function markLeaveApplicationAsFinal(leapp_start_date, leapp_end_date, lea
         }
       }
 
-    }
+    }*/
   //}
 
 }

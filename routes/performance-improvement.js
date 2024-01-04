@@ -76,6 +76,72 @@ router.post('/add-performance-improvement', auth(), async function (req, res, ne
   }
 });
 
+router.post('/update-performance-improvement', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      start_date: Joi.string().required().messages({ 'any.required': 'What is the start date?' }),
+      end_date: Joi.string().required().messages({ 'any.required': 'What is the end date?' }),
+      max_end_date: Joi.number().required(),
+      empId: Joi.number().required(),
+      performanceId: Joi.number().required(),
+      status:Joi.number().required(),
+    });
+    const performanceRequest = req.body
+    const validationResult = schema.validate(performanceRequest)
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const {performanceId,empId, status, start_date, end_date, max_end_date } = req.body;
+
+
+    const maxEndDate = new Date(max_end_date);
+    const endDate = new Date(end_date);
+    if( endDate.getTime()  >  maxEndDate.getTime() ){
+      return res.status(400).json('End date is beyond the allocated period of 3 months');
+    }
+
+       const empPerformances = await performanceImprovementModel.getEmployeePerformanceImprovement(parseInt(empId));
+       if(!(_.isNull(empPerformances)) || !(_.isEmpty(empPerformances)) ){
+         empPerformances.map(async empPerf => {
+           if (parseInt(empPerf.pi_status) === 1) {
+             await performanceImprovementModel.updatePerformanceStatus(empPerf.pi_id, 0);
+           }
+         });
+       }
+        const performance = await performanceImprovementModel.getPerformanceImprovementById(parseInt(performanceId));
+        if(!(_.isNull(performance)) || !(_.isEmpty(performance))){
+            await performanceImprovementModel.updatePerformanceDetails(parseInt(performanceId), parseInt(status), start_date, end_date);
+        }
+
+    return res.status(200).json(`Action successful.`)
+
+  } catch (err) {
+    return res.status(400).json(`Something went wrong. Try again later.`)
+  }
+});
+
+
+router.get('/delete-performance-improvement/:performanceId', auth(), async function (req, res, next) {
+  try {
+    const performanceId = req.params.performanceId;
+
+    if(_.isNull(performanceId) || _.isEmpty(performanceId)){
+      return res.status(400).json("Something went wrong. Try again later.");
+    }
+
+    const performance = await performanceImprovementModel.getPerformanceImprovementById(parseInt(performanceId));
+    if(!(_.isNull(performance)) || !(_.isEmpty(performance))){
+        await performanceImprovementModel.deletePerformanceImprovement(parseInt(performanceId));
+    }
+    return res.status(200).json(`Action successful.`)
+
+  } catch (err) {
+    return res.status(400).json(`Something went wrong. Try again later.`)
+  }
+});
+
 router.post('/add-performance-plan', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
