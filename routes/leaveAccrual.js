@@ -220,6 +220,7 @@ router.get('/:year/:empId', auth(), async (req, res)=>{
             const totalTaken = await leaveAccrual.getTotalTakenLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
             const totalArchived = await leaveAccrual.getArchivedLeaveAccrualByYearEmployeeLeaveType(year, empId, leaveTypeId);
          const employeeLeaveObject = {
+            leaveTypeId: leaveTypeId,
              leaveType: leaveType.leave_name,
              totalTaken: totalTaken[0].totalTaken,
              totalAccrued: totalAccrued[0].totalAccrued,
@@ -240,6 +241,29 @@ router.get('/:year/:empId', auth(), async (req, res)=>{
     return res.status(400).json("Something went wrong."+e.message);
   }
 });
+
+
+
+router.get('/leave-type/:leaveTypeId/:year/:empId', auth(), async (req, res)=>{
+  try{
+    const leaveTypeId = parseInt(req.params.leaveTypeId);
+    const year = req.params.year;
+    const empId = parseInt(req.params.empId);
+    const accrual = await leaveAccrualModel.getLeaveAccrualByLeaveType(year, empId, leaveTypeId);
+    const leaveType = await leaveTypeModel.getLeaveTypeById(leaveTypeId);
+    const emp = await employee.getEmployeeByIdOnly(empId);
+    const leaveEmp = {
+      employee:emp,
+      accrual,
+      leaveType,
+    }
+    return res.status(200).json(leaveEmp);
+  }catch (e) {
+    return res.status(400).json("Something went wrong."+e.message);
+  }
+});
+
+
 
 router.get('/leave/annual-sick/:year/:empId', auth(), async (req, res)=>{
   try{
