@@ -8,7 +8,7 @@ const locationModel = require('../models/Location')(sequelize, Sequelize.DataTyp
 
 const { format, subDays } = require('date-fns');
 
-function getMasterList(month, year, location_id, sub_category){
+function getMasterList(month, year, location_id, sub_category) {
   return masterListModel.findAll({
     where: {
       month: month,
@@ -18,7 +18,6 @@ function getMasterList(month, year, location_id, sub_category){
     }
   });
 }
-
 
 async function generateMasterList() {
   const month = new Date().getMonth() + 1;
@@ -81,10 +80,25 @@ async function generateMasterList() {
     const internationalStaff = employees.filter((emp) => emp.emp_employee_category === 'International Staff').length;
     const nationalStaff = employees.filter((emp) => emp.emp_employee_category === 'National Staff').length;
 
-    const newHire = employees.filter((emp) => emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year).length;
-    const newHireAndCorper = employees.filter((emp) => emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year && emp.emp_employee_category === 'Corper').length;
-    const newHireAndInternationalStaff = employees.filter((emp)=> emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year && emp.emp_employee_category === 'International Staff').length;
-    const newHireAndNationalStaff = employees.filter((emp)=> emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year && emp.emp_employee_category === 'National Staff').length;
+    const newHire = employees.filter(
+      (emp) => emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year
+    ).length;
+    const newHireAndCorper = employees.filter(
+      (emp) =>
+        emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year && emp.emp_employee_category === 'Corper'
+    ).length;
+    const newHireAndInternationalStaff = employees.filter(
+      (emp) =>
+        emp.emp_contract_hire_date.getMonth() === month &&
+        emp.emp_contract_hire_date.getFullYear() === year &&
+        emp.emp_employee_category === 'International Staff'
+    ).length;
+    const newHireAndNationalStaff = employees.filter(
+      (emp) =>
+        emp.emp_contract_hire_date.getMonth() === month &&
+        emp.emp_contract_hire_date.getFullYear() === year &&
+        emp.emp_employee_category === 'National Staff'
+    ).length;
 
     const corperPercentage = (corper / totalEmployees) * 100;
     const internationalStaffPercentage = (internationalStaff / totalEmployees) * 100;
@@ -151,24 +165,24 @@ async function generateMasterList() {
     };
 
     const masterList = {
-        location_id: locationId,
-        regular_term: regular,
-        limited_term: limtedTerm,
-        short_term: shortTerm,
-        male: male,
-        female: female,
-        total: totalEmployees,
-        percentage_workforce: 100,
-        cost_per_site: 0,
-        percentage_cost_per_site: 0,
-        new_hire: newHire,
-        relocate_from: 0,
-        relocate_to: 0,
-        exit: 0,
-        month: month,
-        year: year,
-        sub_category: 0
-    }
+      location_id: locationId,
+      regular_term: regular,
+      limited_term: limtedTerm,
+      short_term: shortTerm,
+      male: male,
+      female: female,
+      total: totalEmployees,
+      percentage_workforce: 100,
+      cost_per_site: 0,
+      percentage_cost_per_site: 0,
+      new_hire: newHire,
+      relocate_from: 0,
+      relocate_to: 0,
+      exit: 0,
+      month: month,
+      year: year,
+      sub_category: 0
+    };
 
     await Promise.all([
       updateOrCreateMasterList(corperMasterList),
@@ -177,10 +191,9 @@ async function generateMasterList() {
       updateOrCreateMasterList(masterList)
     ]);
   }
-
 }
 
-async function updateOrCreateMasterList(masterListData: any) {
+async function updateOrCreateMasterList(masterListData) {
   const { month, year, sub_category, location_id } = masterListData;
   const existingMasterList = await masterListModel.findOne({
     where: {
@@ -202,8 +215,7 @@ async function updateOrCreateMasterList(masterListData: any) {
   }
 }
 
-
 module.exports = {
- generateMasterList,
+  generateMasterList,
   getMasterList
 };
