@@ -9,7 +9,7 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     return Promise.all([
-      queryInterface.createTable('master_list_report', {
+      queryInterface.createTable('master_lists', {
         id: {
           allowNull: false,
           autoIncrement: true,

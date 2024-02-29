@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'masterList',
-      tableName: 'master_list'
+      tableName: 'master_lists'
     }
   );
 
