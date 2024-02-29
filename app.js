@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
+const { generateMasterList } = require('./services/master_list_service');
 const _ = require('lodash');
 const tracer = require('dd-trace').init();
 var StatsD = require('hot-shots');
@@ -175,7 +176,6 @@ app.use('/end-year-rating', endYearRatingRouter);
 
 const performanceImprovement = require('./routes/performance-improvement');
 app.use('/performance-improvement', performanceImprovement);
-
 
 const salaryRouter = require('./routes/salary');
 app.use('/salary', salaryRouter);
@@ -567,6 +567,7 @@ nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
 nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
 nodeCron.schedule('0 4 * * *', updateHireType).start();
 nodeCron.schedule('* 3 * * *', clearOldLogs).start();
+nodeCron.schedule('0 0 * * *', generateMasterList).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
