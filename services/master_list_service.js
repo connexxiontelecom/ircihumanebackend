@@ -8,27 +8,17 @@ const locationModel = require('../models/Location')(sequelize, Sequelize.DataTyp
 
 const { format, subDays } = require('date-fns');
 
-function getMasterList(month, year, location_id) {
+function getMasterList(month, year, location_id, sub_category){
   return masterListModel.findAll({
     where: {
       month: month,
       year: year,
-      location_id: location_id
+      location_id: location_id,
+      sub_category: sub_category
     }
   });
 }
 
-function addMasterList(masterList) {
-  return masterListModel.create(masterList);
-}
-
-function updateMasterList(masterList, id) {
-  return masterListModel.update(masterList, {
-    where: {
-      id: id
-    }
-  });
-}
 
 async function generateMasterList() {
   const month = new Date().getMonth() + 1;
@@ -214,5 +204,6 @@ async function updateOrCreateMasterList(masterListData: any) {
 
 
 module.exports = {
- generateMasterList
+ generateMasterList,
+  getMasterList
 };

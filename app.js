@@ -192,6 +192,9 @@ app.use('/end-year-response', endYearResponseRouter);
 const payrollJournalRouter = require('./routes/payroll-journal');
 app.use('/payroll-journal', payrollJournalRouter);
 
+const masterListRouter = require('./routes/master-list');
+app.use('/master-list', masterListRouter);
+
 const nodeCron = require('node-cron');
 const { addLeaveAccrual } = require('./routes/leaveAccrual');
 const salary = require('./services/salaryService');
