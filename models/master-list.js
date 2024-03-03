@@ -30,8 +30,8 @@ module.exports = (sequelize, DataTypes) => {
       month: DataTypes.INTEGER,
       year: DataTypes.INTEGER,
       sub_category: DataTypes.INTEGER,
-      created_at: DataTypes.DATE,
-      updated_at: DataTypes.DATE
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE
     },
     {
       sequelize,

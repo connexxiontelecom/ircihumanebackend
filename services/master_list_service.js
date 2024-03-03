@@ -25,7 +25,7 @@ async function generateMasterList() {
   const todaysDate = new Date();
   const allLocations = await locationModel.findAll();
   for (const location of allLocations) {
-    const locationId = location.id;
+    const locationId = location.location_id;
     const employees = await employeeModel.findAll({
       where: {
         emp_location_id: locationId,
@@ -81,22 +81,24 @@ async function generateMasterList() {
     const nationalStaff = employees.filter((emp) => emp.emp_employee_category === 'National Staff').length;
 
     const newHire = employees.filter(
-      (emp) => emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year
+      (emp) => new Date(emp.emp_contract_hire_date).getMonth() === month && new Date(emp.emp_contract_hire_date).getFullYear() === year
     ).length;
     const newHireAndCorper = employees.filter(
       (emp) =>
-        emp.emp_contract_hire_date.getMonth() === month && emp.emp_contract_hire_date.getFullYear() === year && emp.emp_employee_category === 'Corper'
+        new Date(emp.emp_contract_hire_date).getMonth() === month &&
+        new Date(emp.emp_contract_hire_date).getFullYear() === year &&
+        emp.emp_employee_category === 'Corper'
     ).length;
     const newHireAndInternationalStaff = employees.filter(
       (emp) =>
-        emp.emp_contract_hire_date.getMonth() === month &&
-        emp.emp_contract_hire_date.getFullYear() === year &&
+        new Date(emp.emp_contract_hire_date).getMonth() === month &&
+        new Date(emp.emp_contract_hire_date).getFullYear() === year &&
         emp.emp_employee_category === 'International Staff'
     ).length;
     const newHireAndNationalStaff = employees.filter(
       (emp) =>
-        emp.emp_contract_hire_date.getMonth() === month &&
-        emp.emp_contract_hire_date.getFullYear() === year &&
+        new Date(emp.emp_contract_hire_date).getMonth() === month &&
+        new Date(emp.emp_contract_hire_date).getFullYear() === year &&
         emp.emp_employee_category === 'National Staff'
     ).length;
 
@@ -112,7 +114,7 @@ async function generateMasterList() {
       male: maleAndCorper,
       female: femaleAndCorper,
       total: corper,
-      percentage_workforce: corperPercentage,
+      percentage_workforce: corperPercentage.toFixed(2),
       cost_per_site: 0,
       percentage_cost_per_site: 0,
       new_hire: newHireAndCorper,
@@ -132,7 +134,7 @@ async function generateMasterList() {
       male: maleAndInternationalStaff,
       female: femaleAndInternationalStaff,
       total: internationalStaff,
-      percentage_workforce: internationalStaffPercentage,
+      percentage_workforce: internationalStaffPercentage.toFixed(2),
       cost_per_site: 0,
       percentage_cost_per_site: 0,
       new_hire: newHireAndInternationalStaff,
@@ -152,7 +154,7 @@ async function generateMasterList() {
       male: maleAndNationalStaff,
       female: femaleAndNationalStaff,
       total: nationalStaff,
-      percentage_workforce: nationalStaffPercentage,
+      percentage_workforce: nationalStaffPercentage.toFixed(2),
       cost_per_site: 0,
       percentage_cost_per_site: 0,
       new_hire: newHireAndNationalStaff,
