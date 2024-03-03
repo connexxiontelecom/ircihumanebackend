@@ -208,6 +208,15 @@ app.get('/', async function (req, res) {
   res.send('you got here. so get out');
 });
 
+// app.get('/', async function (req, res) {
+//   try {
+//     const data = await generateMasterList();
+//     return res.status(200).json(data);
+//   } catch (err) {
+//     return res.status(400).json(err.message);
+//   }
+// });
+
 async function updateApprovedLeaveStatus() {
   try {
     const approvedLeaves = await leaveApplicationService.getLeavesByStatus(1);
