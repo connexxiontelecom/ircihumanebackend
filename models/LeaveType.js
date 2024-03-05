@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
 
+      static async getLeaveTypeById(leaveTypeId) {
+        return await LeaveType.findOne({
+          where: {leave_type_id:leaveTypeId}
+        })
+      }
         static async getAllLeaveTypes(){
           return await LeaveType.findAll();
         }

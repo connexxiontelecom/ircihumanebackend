@@ -515,7 +515,7 @@ router.post('/run-salary-gross-archive', auth(), async function (req, res) {
         workBook.Sheets[workBook.SheetNames[0]])
       for (const res1 of temp) {
         console.log(`D7 is : ${res1.D7}\n`)
-        const emp = await employeeModel.getEmployeeByD7(parseInt(res1.D7))
+        const emp = await employeeModel.getEmployeeByD7(res1.D7)
         if (emp) {
             const empArchiveData = {
               si_empid: emp.emp_id,
