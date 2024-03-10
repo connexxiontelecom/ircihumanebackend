@@ -37,12 +37,15 @@ async function generateMasterList() {
       }
     });
 
-    // 3.⁠ ⁠Regional
-    // 4.⁠ ⁠Interns
-    // 5.⁠ ⁠Consultant
-    // 6.⁠ ⁠Volunteer
-    // 7.⁠ ⁠Incentive Workers
-    // 8.⁠ ⁠Casual Workers
+    //1. Corper
+    //2. International Staff
+    //3. National Staff
+    // 4.Regional
+    // 5.Interns
+    // 6.Consultant
+    // 7.Volunteer
+    // 8. Incentive Workers
+    // 9.Casual Workers
 
     const totalEmployees = employees.length;
 
