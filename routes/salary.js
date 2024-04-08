@@ -1079,12 +1079,13 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                     }
 
                     if (parseInt(computationalPayment.pd_id === 40)) {
+                      amount = (parseFloat(costOfLivingAllowance) / 100) * fullGross;
                       salaryObject = {
                         salary_empid: emp.emp_id,
                         salary_paymonth: payrollMonth,
                         salary_payyear: payrollYear,
                         salary_pd: computationalPayment.pd_id,
-                        salary_amount: costOfLivingAllowance,
+                        salary_amount: amount,
                         salary_share: 0,
                         salary_tax: 0,
                         salary_location_id: emp.emp_location_id,
