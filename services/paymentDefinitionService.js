@@ -116,6 +116,13 @@ async function getComputedPayments() {
     }
   });
 }
+async function getCustomComputedPayments() {
+  return await Pd.findAll({
+    where: {
+      pd_value: 3
+    }
+  });
+}
 
 async function getWelfare() {
   return await Pd.findAll({
@@ -202,5 +209,6 @@ module.exports = {
   getTaxPayments,
   getNsitfPayments,
   getPayrollJournalPayments,
-  getSeverancePayments
+  getSeverancePayments,
+  getCustomComputedPayments
 };
