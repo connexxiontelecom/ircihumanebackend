@@ -1206,7 +1206,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                 if (checkb > checka) {
                   allowableSum = checkb;
                 }
-                let taxRelief = (20 / 100) * empAdjustedGrossII + allowableSum;
+                let taxRelief = (20 / 100) * newTaxableIncome + allowableSum;
                 let minimumTax = (parseFloat(minimumTaxRateData[0].mtr_rate) / 100) * empAdjustedGrossII;
                 let tempTaxAmount = newTaxableIncome - taxRelief;
                 let TtempTaxAmount = tempTaxAmount;
