@@ -1201,7 +1201,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
                 }
                 let newTaxableIncome = empAdjustedGrossII - welfareIncomes;
                 let checka = parseFloat(200000 / 12);
-                let checkb = parseFloat((1 / 100) * empAdjustedGrossII);
+                let checkb = parseFloat((1 / 100) * newTaxableIncome);
                 let allowableSum = checka;
                 if (checkb > checka) {
                   allowableSum = checkb;
