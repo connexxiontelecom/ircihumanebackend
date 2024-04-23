@@ -199,6 +199,29 @@ async function approveSalary(month, year, user, date, location) {
   );
 }
 
+async function unapproveSalary(month, year, user, date, location) {
+  return await Salary.update(
+    {
+      salary_approved: 0,
+      salary_approved_by: user,
+      salary_approved_date: date,
+      salary_authorised: 0,
+      salary_authorised_by: user,
+      salary_authorised_date: date,
+      salary_confirmed: 0,
+      salary_confirmed_by: user,
+      salary_confirmed_date: date
+    },
+    {
+      where: {
+        salary_paymonth: month,
+        salary_payyear: year,
+        salary_location_id: location
+      }
+    }
+  );
+}
+
 async function confirmSalary(month, year, user, date, location) {
   return await Salary.update(
     {
@@ -219,6 +242,43 @@ async function confirmSalary(month, year, user, date, location) {
 async function unconfirmSalary(month, year, user, date, location) {
   return await Salary.update(
     {
+      salary_confirmed: 0,
+      salary_confirmed_by: user,
+      salary_confirmed_date: date
+    },
+    {
+      where: {
+        salary_paymonth: month,
+        salary_payyear: year,
+        salary_location_id: location
+      }
+    }
+  );
+}
+
+async function authoriseSalary(month, year, user, date, location) {
+  return await Salary.update(
+    {
+      salary_authorised: 1,
+      salary_authorised_by: user,
+      salary_authorised_date: date
+    },
+    {
+      where: {
+        salary_paymonth: month,
+        salary_payyear: year,
+        salary_location_id: location
+      }
+    }
+  );
+}
+
+async function unauthoriseSalary(month, year, user, date, location) {
+  return await Salary.update(
+    {
+      salary_authorised: 0,
+      salary_authorised_by: user,
+      salary_authorised_date: date,
       salary_confirmed: 0,
       salary_confirmed_by: user,
       salary_confirmed_date: date
@@ -270,5 +330,8 @@ module.exports = {
   getEmployeesByPfaLocation,
   getEmployeeSalaryByUniqueIdAndMonthYear,
   getEmployeeSalaryByD7,
-  getEmployeeSalaryByD7AndMonthYear
+  getEmployeeSalaryByD7AndMonthYear,
+  authoriseSalary,
+  unauthoriseSalary,
+  unapproveSalary
 };
