@@ -2522,6 +2522,31 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
           }
           let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
+          let approvedBy = 'N/A';
+          let approvedDate = 'N/A';
+          let authorisedBy = 'N/A';
+          let authorisedDate = 'N/A';
+          let confirmedBy = 'N/A';
+          let confirmedDate = 'N/A';
+
+          const approvedByData = await user.findUserByUserId(employeeSalaries[0].salary_approved_by);
+          if (!_.isEmpty(approvedByData)) {
+            approvedBy = `${approvedByData.user_name}`;
+            approvedDate = new Date(employeeSalaries[0].salary_approved_date).toISOString().split('T')[0];
+          }
+
+          const authorisedByData = await user.findUserByUserId(employeeSalaries[0].salary_authorised_by);
+          if (!_.isEmpty(authorisedByData)) {
+            authorisedBy = `${authorisedByData.user_name}`;
+            authorisedDate = new Date(employeeSalaries[0].salary_authorised_date).toISOString().split('T')[0];
+          }
+
+          const confirmedByData = await user.findUserByUserId(employeeSalaries[0].salary_confirmed_by);
+          if (!_.isEmpty(confirmedByData)) {
+            confirmedBy = `${confirmedByData.user_name}`;
+            confirmedDate = new Date(employeeSalaries[0].salary_confirmed_date).toISOString().split('T')[0];
+          }
+
           let salaryObject = {
             employeeId: emp.salary_empid,
             employeeName: employeeSalaries[0].salary_emp_name,
@@ -2538,7 +2563,13 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
             year: payrollYear,
             employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
             empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
-            salaryGrade: empSalaryStructureName
+            salaryGrade: empSalaryStructureName,
+            approvedBy,
+            approvedDate,
+            authorisedBy,
+            authorisedDate,
+            confirmedBy,
+            confirmedDate
           };
 
           employeeSalary.push(salaryObject);
