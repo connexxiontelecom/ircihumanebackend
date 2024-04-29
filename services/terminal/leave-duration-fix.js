@@ -47,13 +47,22 @@ const errHandler = (err) => {
 async function findDepartmentById(departmentId) {
   return await department.findOne({where: {department_id: departmentId}});
 }*/
-let targetDate = '2023-12-01';
+
+// SELECT * FROM leave_applications WHERE (leapp_start_date <= '2024-04-09') AND (leapp_end_date >= '2024-04-09');
+
+
+let targetDate = '2024-12-01';
+let start = '2024-04-09';
+let end = '2024-04-09';
+let counter = 0;
 
 const getAllLeaveApplicationFromStartDate = async ()=>{
   try{
-    const leaveApplications = await leaveApplicationModel.getAllLeaveApplicationsFromADate(targetDate);
-    //console.log(leaveApplications)
+    const leaveApplications = await leaveApplicationModel.getAllLeaveApplicationsByDateRange(start, end);
+    //const leaveApplications = await leaveApplicationModel.getAllLeaveApplicationsFromADate(targetDate);
+    //console.log(leaveApplications.length)
       //loop leaves
+    const holidayObj = [];
       leaveApplications.map(async leave => {
 
 
@@ -67,13 +76,11 @@ const getAllLeaveApplicationFromStartDate = async ()=>{
         const steps = 1;
 
         let currentDate = new Date(startDate);
-
         const pHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
         let holidays = [];
         pHolidays.map((pub) => {
           holidays.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
         });
-
 
         while (currentDate <= new Date(endDate)) {
           if (isWeekend(currentDate)) {
@@ -90,22 +97,34 @@ const getAllLeaveApplicationFromStartDate = async ()=>{
           currentDate.setUTCDate(currentDate.getUTCDate() + steps);
         }
         let dateDifference = diffDays - parseInt(pubHolidays.length); //duration ;
+        //if (parseInt(leave.leapp_total_days) !== parseInt(dateDifference)) {
+          let holidayIds = await getPublicHolidayIds(leave.leapp_start_date, leave.leapp_end_date);
+          console.log("=============================")
+          console.log("Start Date: "+leave.leapp_start_date+" End Date: "+leave.leapp_end_date+" \n")
+          console.log("=============================")
 
-        //let dateDifference = dateDiff(leave.leapp_start_date, leave.leapp_end_date);
-        //console.log("Difference: "+dateDifference)
-
-        if (parseInt(leave.leapp_total_days) !== parseInt(dateDifference)) {
-          //update leave total days
-          await leaveApplicationModel.update({
-            leapp_total_days: dateDifference
-          }, {
-            where: {leapp_id: leave.leapp_id}
-          });
+          if(parseInt(dateDifference) <= 0){
+            //update leave status
+            await leaveApplicationModel.update({
+              leapp_status: 5, //denote archived
+              leapp_holidays: holidayIds
+            }, {
+              where: {leapp_id: leave.leapp_id}
+            });
+          }else{
+            //update leave total days
+            await leaveApplicationModel.update({
+              leapp_total_days: dateDifference,
+              leapp_holidays: holidayIds
+            }, {
+              where: {leapp_id: leave.leapp_id}
+            });
+          }
           //update leave accrual
           let accrual = await leaveAccrualModel.findOne({
             where:{lea_leaveapp_id: leave.leapp_id}
           });
-          console.log('Existing accrual')
+          //console.log('Existing accrual')
           //console.log(accrual)
           if(!(_.isNull(accrual)) || !(_.isEmpty(accrual))){
             //delete leave accruals
@@ -115,13 +134,61 @@ const getAllLeaveApplicationFromStartDate = async ()=>{
             //update accrual
             //await leaveAccrualModel.updateLeaveAccrualDuration(parseInt(leave.leapp_id), parseInt(dateDifference));
           }
-        }
+          
+          
+        //}
+        console.log(holidayObj)
       })
+
+    console.log("Total records: "+counter)
 
     //console.log(leaveApplications);
   }catch (e) {
     console.log(e.message);
   }
+}
+
+//getPublicHolidayIds('2024-03-22', '2024-04-12');
+
+async function getPublicHolidayIds(startDate, endDate){
+  let pubHolidays = [];
+  let holidays = [];
+  let holidayIds = [];
+  let publicHolidays = 0;
+  let steps = 1;
+
+  let currentDate = new Date(startDate);
+  while (currentDate <= new Date(endDate)) {
+
+    if (isWeekend(currentDate)) {
+      //weekends++;
+      pubHolidays.push(currentDate);
+    }
+
+    let setDate = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() + 1}-${(currentDate.getUTCDate())}`
+
+    if (holidays.includes(setDate)) {
+      if (!isWeekend(new Date(setDate))) {
+        pubHolidays.push(currentDate);
+      }
+      publicHolidays++;
+    }
+    let matc = await publicHolidayModel.getPublicHolidayByDate(setDate);
+    if( !(_.isNull(matc)) || !(_.isEmpty(matc)) ){
+      holidayIds.push(matc.ph_id)
+    }
+    currentDate.setUTCDate(currentDate.getUTCDate() + steps);
+  }
+  console.log("Holiday ID: "+holidayIds.toString()+"\n")
+  return holidayIds.toString()
+
+ /* const pHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
+  let holidays = [];
+  pHolidays.map((pub) => {
+    holidays.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+  });*/
+
+
 }
 
   getAllLeaveApplicationFromStartDate();
@@ -196,10 +263,12 @@ async function addToLeaveAccrual(empId, year, month, leaveType, noDays, leaveId)
     lea_fy: calendarYear,
     leave_narration: `${noDays} deducted from accrued leaves`,
   }
-  const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
+ /* const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
     return data
-  })
+  })*/
 }
+
+
 
 function getDatesInRange(startDate, endDate) {
   const date = new Date(startDate.getTime());

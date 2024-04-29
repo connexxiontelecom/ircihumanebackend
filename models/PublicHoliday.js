@@ -35,6 +35,12 @@ module.exports = (sequelize, DataTypes) => {
             where:{ph_location: {[Op.in]:locationId}, ph_archive:0  },
           })
         }
+        
+        static async getPublicHolidayByDate(date){
+          return await PublicHoliday.findOne({
+            where:{ph_date: {[Op.eq]:date} },
+          })
+        }
 
 
         static async getThisYearsPublicHolidays(){

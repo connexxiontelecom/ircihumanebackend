@@ -187,12 +187,12 @@ const setNewPublicHoliday = async (req, res) => {
               }
                 if(locationArray.includes(parseInt(locationId)) || locationArray.includes(0) ){
                   let newDuration = parseInt(appLeave.leapp_total_days) - numDays;
-                  if(newDuration <= 0){
-                    await leaveApplicationModel.deleteLeaveApplication(appLeave.leapp_id);
-                  }else{
+                  //if(newDuration <= 0){
+                   // await leaveApplicationModel.deleteLeaveApplication(appLeave.leapp_id);
+                  //}else{
                     await leaveApplicationModel.updateLeaveAppDurationLocationHoliday(appLeave.leapp_id, newDuration, emp.location_id, /*locationArray.toString()*/ holidayArray.toString());
-                  }
-                  //check if it exist in leave accrual table
+                 // }
+                  //check if it exist in leave accrual table 
                   const leaveExistAccrual = await leaveAccrualModel.getLeaveAccrualByLeaveId(appLeave.leapp_id);
                   if(!(_.isNull(leaveExistAccrual)) || !(_.isEmpty(leaveExistAccrual))){
                     if(newDuration <= 0){

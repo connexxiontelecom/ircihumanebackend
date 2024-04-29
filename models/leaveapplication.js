@@ -118,6 +118,15 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async getAllLeaveApplicationsByDateRange(startDate, endDate){
+      return await leaveApplication.findAll({
+        where:{
+          leapp_start_date: {[Op.lte]:startDate}, 
+          leapp_end_date : {[Op.gte]: endDate} 
+        },
+      })
+    }
+
   };
   leaveApplication.init({
     leapp_id: {
