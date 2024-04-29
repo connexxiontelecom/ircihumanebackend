@@ -109,6 +109,15 @@ module.exports = (sequelize, DataTypes) => {
 
         })
       }
+
+      static async getLeaveAccrualByLeaveType(year, empId, leaveType) {
+        return await leaveAccrual.findAll({
+          attributes:[
+            'lea_emp_id','lea_rate', 'lea_leave_type', 'lea_expires_on', 'leave_narration', 'lea_month', 'lea_year'],
+          where: {lea_fy: year, lea_emp_id: empId, lea_leave_type:leaveType}
+
+        })
+      }
       static async getTotalTakenLeaveAccrualsByYearEmpId(year, empId) {
         return await leaveAccrual.findAll({
           attributes:[
