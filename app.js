@@ -58,6 +58,9 @@ app.use('/leave-types', leaveTypeRouter);
 const stateRouter = require('./routes/state');
 app.use('/states', stateRouter);
 
+const countryCodeRouter = require('./routes/country-code');
+app.use('/country-codes', countryCodeRouter);
+
 const employeeCategoryRouter = require('./routes/employee-category');
 app.use('/employee-categories', employeeCategoryRouter);
 
