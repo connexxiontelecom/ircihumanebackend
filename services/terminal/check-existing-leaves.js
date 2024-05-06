@@ -10,45 +10,10 @@ const EmployeeModel = require("../../models/Employee")(sequelize, Sequelize.Data
 const leaveApplicationModel = require("../../models/leaveapplication")(sequelize, Sequelize.DataTypes);
 const leaveAccrualModel = require("../../models/leaveaccrual")(sequelize, Sequelize.DataTypes);
 const publicHolidayModel = require("../../models/PublicHoliday")(sequelize, Sequelize.DataTypes);
+const fs = require('fs');
 
 
-//const bcrypt = require("bcrypt");
-/*const jwt = require('jsonwebtoken');
-const Joi = require('joi');
-const logs = require('../services/logService')
-
-const helper = require('../helper');
-const errHandler = (err) => {
-  console.log("Error: ", err);
-}*/
-/*const getDepartments = async (req, res) => {
-  try {
-    let sectorLeadIds = [];
-    const departments = await department.findAll({
-      attributes: ['department_name', 'department_id', 'd_t3_code', 'd_sector_lead_id'],
-    });
-    departments.map((depart) => {
-      sectorLeadIds.push(depart.d_sector_lead_id);
-    })
-    const sectorsLeads = await EmployeeModel.findAll({where: {emp_id: sectorLeadIds}}).then((emp) => {
-      return emp;
-    });
-    departmentObj = {
-      departments,
-      sectorsLeads
-    }
-    res.status(200).json(departmentObj);
-  } catch (e) {
-    res.status(500).json({message: "Something went wrong. Try again later"});
-  }
-}
-
-
-async function findDepartmentById(departmentId) {
-  return await department.findOne({where: {department_id: departmentId}});
-}*/
-
-// SELECT * FROM leave_applications WHERE (leapp_start_date <= '2024-04-09') AND (leapp_end_date >= '2024-04-09');
+// SELECT * FROM `leave_applications` WHERE leapp_status IN(1,3,4) AND YEAR(createdAt) = 2024;
 
 
 let targetDate = '2024-12-01';
@@ -58,91 +23,23 @@ let counter = 0;
 
 const getAllLeaveApplicationFromStartDate = async ()=>{
   try{
-    const leaveApplications = await leaveApplicationModel.getAllLeaveApplicationsByDateRange(start, end);
-    //const leaveApplications = await leaveApplicationModel.getAllLeaveApplicationsFromADate(targetDate);
-    //console.log(leaveApplications.length)
+    const leaveApplications = await leaveApplicationModel.getLeaveAppsUnknown();
       //loop leaves
     const holidayObj = [];
       leaveApplications.map(async leave => {
-
-
-        const startDate = new Date(leave.leapp_start_date);
-        const endDate = new Date(leave.leapp_end_date)
-        const diffTime = Math.abs(endDate - startDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        const pubHolidays = [];
-        let publicHolidays = 0;
-        let weekends = 0;
-        const steps = 1;
-
-        let currentDate = new Date(startDate);
-        const pHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
-        let holidays = [];
-        pHolidays.map((pub) => {
-          holidays.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
-        });
-
-        while (currentDate <= new Date(endDate)) {
-          if (isWeekend(currentDate)) {
-            weekends++;
-            pubHolidays.push(currentDate);
+        //check leave accrual
+        let accrual = await leaveAccrualModel.getLeaveAccrualByLeaveApplicationId(leave.leapp_id);
+        if(_.isEmpty(accrual) || _.isNull(accrual)){
+          let emp = await EmployeeModel.getEmployeeById(leave.leapp_empid);
+          fs.appendFileSync('../../assets/missing-in-accrual.txt', `Leave ID: ${leave.leapp_id} | Employee T7: ${emp.emp_unique_id} | Employee ID: ${leave.leapp_empid} | Date: ${leave.createdAt}\n`)
+          //fs.appendFileSync('../../assets/comman-separated-in-accrual.txt', `${leave.leapp_id},`)
+        }else{
+          //console.log('something')
+          if(parseInt(accrual.lea_rate) <= 0){
+            fs.appendFileSync('../../assets/deduction.txt', `Leave ID: ${leave.leapp_id} | Employee ID: ${leave.leapp_empid} | Date: ${leave.createdAt}\n`)
           }
-          let setDate = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() + 1}-${(currentDate.getUTCDate())}`
-          if (holidays.includes(setDate)) {
-            if (!isWeekend(new Date(setDate))) {
-              pubHolidays.push(currentDate);
-            }
-            publicHolidays++;
-          }
-          currentDate.setUTCDate(currentDate.getUTCDate() + steps);
         }
-        let dateDifference = diffDays - parseInt(pubHolidays.length); //duration ;
-        //if (parseInt(leave.leapp_total_days) !== parseInt(dateDifference)) {
-          let holidayIds = await getPublicHolidayIds(leave.leapp_start_date, leave.leapp_end_date);
-          console.log("=============================")
-          console.log("Start Date: "+leave.leapp_start_date+" End Date: "+leave.leapp_end_date+" \n")
-          console.log("=============================")
-
-          if(parseInt(dateDifference) <= 0){
-            //update leave status
-            await leaveApplicationModel.update({
-              leapp_status: 5, //denote archived
-              leapp_holidays: holidayIds
-            }, {
-              where: {leapp_id: leave.leapp_id}
-            });
-          }else{
-            //update leave total days
-            await leaveApplicationModel.update({
-              leapp_total_days: dateDifference,
-              leapp_holidays: holidayIds
-            }, {
-              where: {leapp_id: leave.leapp_id}
-            });
-          }
-          //update leave accrual
-          let accrual = await leaveAccrualModel.findOne({
-            where:{lea_leaveapp_id: leave.leapp_id}
-          });
-          //console.log('Existing accrual')
-          //console.log(accrual)
-          if(!(_.isNull(accrual)) || !(_.isEmpty(accrual))){
-            //delete leave accruals
-            await leaveAccrualModel.deleteLeaveAccrualEntryByLeaveId(parseInt(leave.leapp_id));
-            //insert new record
-            await markLeaveApplicationAsFinal(leave.leapp_start_date, leave.leapp_end_date, leave.leapp_empid, leave.leapp_leave_type, leave.leapp_id)
-            //update accrual
-            //await leaveAccrualModel.updateLeaveAccrualDuration(parseInt(leave.leapp_id), parseInt(dateDifference));
-          }
-          
-          
-        //}
-        console.log(holidayObj)
       })
-
-    console.log("Total records: "+counter)
-
-    //console.log(leaveApplications);
   }catch (e) {
     console.log(e.message);
   }
