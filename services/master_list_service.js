@@ -17,7 +17,19 @@ function getMasterList(month, year, location_id, sub_category) {
       year: year,
       location_id: location_id,
       sub_category: sub_category
-    }
+    },
+    include:[{model:locationModel, as: 'location'}]
+  });
+}
+
+function getMasterListFromAllLocations(month, year, sub_category) {
+  return masterListModel.findAll({
+    where: {
+      month: month,
+      year: year,
+      sub_category: sub_category
+    },
+    include:[{model:locationModel, as: 'location'}]
   });
 }
 
@@ -939,5 +951,6 @@ async function updateOrCreateMasterList(masterListData) {
 
 module.exports = {
   generateMasterList,
-  getMasterList
+  getMasterList,
+  getMasterListFromAllLocations
 };

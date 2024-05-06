@@ -2,6 +2,9 @@
 const { sequelize, Sequelize } = require('../services/db');
 const { Model } = require('sequelize');
 
+//const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const LocationModel = require("../models/Location")(sequelize, Sequelize.DataTypes);
+
 module.exports = (sequelize, DataTypes) => {
   class MasterList extends Model {
     static associate(models) {}
@@ -36,9 +39,14 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'masterList',
-      tableName: 'master_lists'
+      tableName: 'master_lists',
+      timestamps: false
     }
   );
-
+  MasterList.belongsTo(LocationModel, {
+    as: "location",
+    foreignKey: "location_id",
+  });
   return MasterList;
 };
+ 

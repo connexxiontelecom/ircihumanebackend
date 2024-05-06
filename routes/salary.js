@@ -31,6 +31,7 @@ const logs = require('../services/logService');
 const { getTimeSheetDayEntry } = require('../services/timeSheetService');
 const { businessDaysDifference } = require('../services/dateService');
 const pauseSalaryService = require('../services/pauseSalaryService');
+const reconciliationService = require('../services/reconciliationService');
 
 /* run salary routine */
 router.get('/salary-routine', auth(), async function (req, res, next) {
@@ -1637,16 +1638,12 @@ router.post('/undo-salary-routine', auth(), async function (req, res, next) {
       }
     }
 
-    await salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation);
-    // const leaveAccrualData = {
-    //     lea_month: payrollMonth, lea_year: payrollYear, lea_emp_id: employeeIdsLocation
-    // }
-    // const leaveAccrualsUndo = await removeLeaveAccrualEmployees(leaveAccrualData).then((data) => {
-    //     return data
-    // })
-
-    await variationalPayment.undoVariationalPaymentMonthYearEmployee(payrollMonth, payrollYear, employeeIdsLocation);
-
+    await Promise.all([
+      salary.undoSalaryMonthYear(payrollMonth, payrollYear, employeeIdsLocation),
+      reconciliationService.deleteReconciliation(payrollMonth, payrollYear, pmylLocationId),
+      reconciliationService.deleteReconciliationMonthYearLocation(payrollMonth, payrollYear, pmylLocationId),
+      variationalPayment.undoVariationalPaymentMonthYearEmployee(payrollMonth, payrollYear, employeeIdsLocation)
+    ]);
     const logData = {
       log_user_id: req.user.username.user_id,
       log_description: 'Undo Payroll Routine',
@@ -2130,6 +2127,138 @@ router.get('/pull-approved-salary-routine-locations', auth(), async function (re
   }
 });
 
+router.get('/pull-authorised-salary-routine-locations', auth(), async function (req, res, next) {
+  try {
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    } else {
+      const payrollMonth = payrollMonthYearData.pym_month;
+      const payrollYear = payrollMonthYearData.pym_year;
+      //check if payroll routine has been run
+
+      let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear);
+
+      if (_.isEmpty(payrollRun) || _.isNull(payrollRun)) {
+        return res.status(400).json(`Payroll Routine has not been run for any location`);
+      }
+
+      let payrollLocations = await payrollMonthYearLocation.findAuthorisedPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear);
+
+      if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
+        return res.status(400).json(`No Authorised Payroll Routines`);
+      }
+
+      let locationSalaryArray = [];
+      for (const location of payrollLocations) {
+        const locationData = await locationService.findLocationById(location.pmyl_location_id);
+
+        if (!_.isEmpty(locationData)) {
+          const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id);
+          // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
+          //     return data
+          // })
+
+          if (_.isEmpty(employees) || _.isNull(employees)) {
+            return res.status(400).json(`No employee in selected locations`);
+          }
+
+          let locationTotalGross = 0;
+          let locationTotalGrossII = 0;
+          let locationTotalGrossI = 0;
+          let locationTotalDeduction = 0;
+          let locationTotalNetPay = 0;
+          let locationTotalEmployee = 0;
+          let grossSalary = 0;
+          let netSalary = 0;
+          let totalDeduction = 0;
+
+          for (const emp of employees) {
+            let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.salary_empid);
+            if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+              locationTotalEmployee++;
+
+              for (const empSalary of employeeSalaries) {
+                if (parseInt(empSalary.payment.pd_total_gross) === 1) {
+                  if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                    locationTotalGrossI = locationTotalGrossI + parseFloat(empSalary.salary_amount);
+                  }
+
+                  if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+                    locationTotalGrossI = locationTotalGrossI - parseFloat(empSalary.salary_amount);
+                  }
+                }
+
+                if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+                  if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                    locationTotalGrossII = locationTotalGrossII + parseFloat(empSalary.salary_amount);
+                  }
+
+                  if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+                    locationTotalGrossII = locationTotalGrossII - parseFloat(empSalary.salary_amount);
+                  }
+                }
+
+                if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+                  grossSalary = parseFloat(empSalary.salary_amount) + grossSalary;
+                } else {
+                  totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction;
+                }
+              }
+              netSalary = grossSalary - totalDeduction;
+              // let empJobRole = 'N/A'
+              // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
+              // if(empJobRoleId > 0){
+              //     empJobRole = emp.jobRole.job_role
+              // }
+              //
+              // let sectorName = 'N/A'
+              // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
+              // if (sectorId > 0) {
+              //
+              //
+              //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
+              // }
+              // let salaryObject = {
+              //     employeeId: emp.emp_id,
+              //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
+              //     employeeUniqueId: emp.emp_unique_id,
+              //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
+              //     jobRole: empJobRole,
+              //     sector: sectorName,
+              //     grossSalary: grossSalary,
+              //     totalDeduction: totalDeduction,
+              //     netSalary: netSalary
+              // }
+            }
+          }
+
+          locationTotalGross = locationTotalGrossII + locationTotalGross;
+          locationTotalDeduction = totalDeduction + locationTotalDeduction;
+
+          let locationSalaryObject = {
+            locationId: locationData.location_id,
+            locationName: locationData.location_name,
+            locationCode: locationData.location_t6_code,
+            locationTotalGross: locationTotalGross,
+            locationTotalDeduction: locationTotalDeduction,
+            locationTotalNet: locationTotalGross - locationTotalDeduction,
+            locationEmployeesCount: locationTotalEmployee,
+            month: payrollMonth,
+            year: payrollYear
+          };
+
+          locationSalaryArray.push(locationSalaryObject);
+        }
+      }
+      return res.status(200).json(locationSalaryArray);
+    }
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
 router.post('/pull-approved-salary-routine-locations', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
@@ -2390,6 +2519,31 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
           }
           let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
+          let approvedBy = 'N/A';
+          let approvedDate = 'N/A';
+          let authorisedBy = 'N/A';
+          let authorisedDate = 'N/A';
+          let confirmedBy = 'N/A';
+          let confirmedDate = 'N/A';
+
+          const approvedByData = await user.findUserByUserId(employeeSalaries[0].salary_approved_by);
+          if (!_.isEmpty(approvedByData)) {
+            approvedBy = `${approvedByData.user_name}`;
+            approvedDate = new Date(employeeSalaries[0].salary_approved_date).toISOString().split('T')[0];
+          }
+
+          const authorisedByData = await user.findUserByUserId(employeeSalaries[0].salary_authorised_by);
+          if (!_.isEmpty(authorisedByData)) {
+            authorisedBy = `${authorisedByData.user_name}`;
+            authorisedDate = new Date(employeeSalaries[0].salary_authorised_date).toISOString().split('T')[0];
+          }
+
+          const confirmedByData = await user.findUserByUserId(employeeSalaries[0].salary_confirmed_by);
+          if (!_.isEmpty(confirmedByData)) {
+            confirmedBy = `${confirmedByData.user_name}`;
+            confirmedDate = new Date(employeeSalaries[0].salary_confirmed_date).toISOString().split('T')[0];
+          }
+
           let salaryObject = {
             employeeId: emp.salary_empid,
             employeeName: employeeSalaries[0].salary_emp_name,
@@ -2406,7 +2560,13 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
             year: payrollYear,
             employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
             empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
-            salaryGrade: empSalaryStructureName
+            salaryGrade: empSalaryStructureName,
+            approvedBy,
+            approvedDate,
+            authorisedBy,
+            authorisedDate,
+            confirmedBy,
+            confirmedDate
           };
 
           employeeSalary.push(salaryObject);
@@ -2632,6 +2792,70 @@ router.post('/confirm-salary-routine', auth(), async function (req, res, next) {
   }
 });
 
+router.post('/unconfirm-salary-routine', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      pmyl_location_id: Joi.number().required()
+    });
+
+    const payrollRequest = req.body;
+    const validationResult = schema.validate(payrollRequest);
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    // let employeeId = req.body.employee
+    let location = req.body.pmyl_location_id;
+
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+    const payrollMonth = payrollMonthYearData.pym_month;
+    const payrollYear = payrollMonthYearData.pym_year;
+    let today = new Date();
+    let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+
+    let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear);
+    if (_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)) {
+      return res.status(400).json(`Payroll Routine has not been run for payroll month and year`);
+    }
+
+    let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location);
+
+    if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
+      return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`);
+    }
+
+    let unconfirmRoutine = await payrollMonthYearLocation.unconfirmPayrollMonthYearLocation(
+      location,
+      req.user.username.user_id,
+      date,
+      payrollMonth,
+      payrollYear
+    );
+
+    if (_.isEmpty(unconfirmRoutine) || _.isNull(unconfirmRoutine)) {
+      return res.status(400).json(`An error occurred while approve one or more location routine `);
+    }
+
+    await salary.unconfirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
+
+    const logData = {
+      log_user_id: req.user.username.user_id,
+      log_description: `Return payroll routine for ${payrollMonth} - ${payrollYear}`,
+      log_date: new Date()
+    };
+    await logs.addLog(logData);
+    return res.status(200).json(`Payroll Confirmed`);
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+    next(err);
+  }
+});
+
 router.post('/unconfirms-salary-routine', auth(), async function (req, res, next) {
   try {
     let locations = req.body.pmyl_location_id;
@@ -2695,7 +2919,8 @@ router.post('/unconfirms-salary-routine', auth(), async function (req, res, next
 router.post('/approve-salary-routine', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
-      pmyl_location_id: Joi.number().required()
+      pmyl_location_id: Joi.number().required(),
+      pmyl_comment: Joi.string().default(null)
     });
 
     const payrollRequest = req.body;
@@ -2707,6 +2932,7 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
 
     // let employeeId = req.body.employee
     let location = req.body.pmyl_location_id;
+    let comment = req.body.pmyl_comment;
 
     const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
     if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
@@ -2733,8 +2959,12 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
       return res.status(400).json(`Payroll Routine for location has not been confirmed`);
     }
 
+    if (parseInt(checkRoutine.pmyl_authorised) === 0) {
+      return res.status(400).json(`Payroll Routine has not been authorised`);
+    }
+
     if (parseInt(checkRoutine.pmyl_approved) === 1) {
-      return res.status(400).json(`Payroll Routine for location has already been confirmed`);
+      return res.status(400).json(`Payroll Routine for location has already been approved`);
     }
 
     let approveRoutine = await payrollMonthYearLocation.approvePayrollMonthYearLocation(
@@ -2742,7 +2972,8 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
       req.user.username.user_id,
       date,
       payrollMonth,
-      payrollYear
+      payrollYear,
+      comment
     );
 
     if (_.isEmpty(approveRoutine) || _.isNull(approveRoutine)) {
@@ -2804,10 +3035,11 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
   }
 });
 
-router.post('/unconfirm-salary-routine', auth(), async function (req, res, next) {
+router.post('/unapprove-salary-routine', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
-      pmyl_location_id: Joi.number().required()
+      pmyl_location_id: Joi.number().required(),
+      pmyl_comment: Joi.string().default(null)
     });
 
     const payrollRequest = req.body;
@@ -2819,6 +3051,7 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
 
     // let employeeId = req.body.employee
     let location = req.body.pmyl_location_id;
+    let comment = req.body.pmyl_comment;
 
     const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
     if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
@@ -2840,27 +3073,157 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
       return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`);
     }
 
-    let unconfirmRoutine = await payrollMonthYearLocation.unconfirmPayrollMonthYearLocation(
+    let unauthorisedRoutine = await payrollMonthYearLocation.unapprovePayrollMonthYearLocation(
       location,
       req.user.username.user_id,
       date,
       payrollMonth,
-      payrollYear
+      payrollYear,
+      comment
     );
 
-    if (_.isEmpty(unconfirmRoutine) || _.isNull(unconfirmRoutine)) {
+    if (_.isEmpty(unauthorisedRoutine) || _.isNull(unauthorisedRoutine)) {
       return res.status(400).json(`An error occurred while approve one or more location routine `);
     }
 
-    await salary.unconfirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
+    await salary.unapproveSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
 
     const logData = {
       log_user_id: req.user.username.user_id,
-      log_description: `Return payroll routine for ${payrollMonth} - ${payrollYear}`,
+      log_description: `Unapproved payroll routine for ${payrollMonth} - ${payrollYear}`,
       log_date: new Date()
     };
     await logs.addLog(logData);
-    return res.status(200).json(`Payroll Confirmed`);
+    return res.status(200).json(`Payroll Unapproved`);
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+    next(err);
+  }
+});
+
+router.post('/authorise-salary-routine', auth(), async function (req, res, next) {
+  try {
+    let locations = req.body.pmyl_location_id;
+    let comment = req.body.pmyl_comment;
+
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+    const payrollMonth = payrollMonthYearData.pym_month;
+    const payrollYear = payrollMonthYearData.pym_year;
+    let today = new Date();
+    let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+
+    let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear);
+
+    if (_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)) {
+      return res.status(400).json(`Payroll Routine has not been run for payroll month and year`);
+    }
+
+    if (_.isEmpty(locations) || _.isNull(locations)) {
+      return res.status(400).json(`No Location Selected`);
+    }
+    const countLocations = locations.length;
+    let i = 0;
+
+    for (const location of locations) {
+      let authoriseRoutine = await payrollMonthYearLocation.authorisePayrollMonthYearLocation(
+        location,
+        req.user.username.user_id,
+        date,
+        payrollMonth,
+        payrollYear,
+        comment
+      );
+
+      if (_.isEmpty(authoriseRoutine) || _.isNull(authoriseRoutine)) {
+        return res.status(400).json(`An error occurred while authorising one or more location routine `);
+      }
+
+      await salary.authoriseSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
+      i++;
+    }
+
+    if (countLocations === i) {
+      const logData = {
+        log_user_id: req.user.username.user_id,
+        log_description: `Authorised payroll routine for ${payrollMonth} - ${payrollYear}`,
+        log_date: new Date()
+      };
+      await logs.addLog(logData);
+      return res.status(200).json(`Payroll Authorised`);
+    } else {
+      return res.status(400).json(`An Error Occurred`);
+    }
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+    next(err);
+  }
+});
+
+router.post('/unauthorise-salary-routine', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      pmyl_location_id: Joi.number().required(),
+      pmyl_comment: Joi.string().default(null)
+    });
+
+    const payrollRequest = req.body;
+    const validationResult = schema.validate(payrollRequest);
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    // let employeeId = req.body.employee
+    let location = req.body.pmyl_location_id;
+    let comment = req.body.pmyl_comment;
+
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+    const payrollMonth = payrollMonthYearData.pym_month;
+    const payrollYear = payrollMonthYearData.pym_year;
+    let today = new Date();
+    let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+
+    let checkSuperRoutine = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(payrollMonth, payrollYear);
+    if (_.isEmpty(checkSuperRoutine) || _.isNull(checkSuperRoutine)) {
+      return res.status(400).json(`Payroll Routine has not been run for payroll month and year`);
+    }
+
+    let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location);
+
+    if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
+      return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`);
+    }
+
+    let unauthorisedRoutine = await payrollMonthYearLocation.unauthorisePayrollMonthYearLocation(
+      location,
+      req.user.username.user_id,
+      date,
+      payrollMonth,
+      payrollYear,
+      comment
+    );
+
+    if (_.isEmpty(unauthorisedRoutine) || _.isNull(unauthorisedRoutine)) {
+      return res.status(400).json(`An error occurred while approve one or more location routine `);
+    }
+
+    await salary.unauthoriseSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
+
+    const logData = {
+      log_user_id: req.user.username.user_id,
+      log_description: `Unathorised payroll routine for ${payrollMonth} - ${payrollYear}`,
+      log_date: new Date()
+    };
+    await logs.addLog(logData);
+    return res.status(200).json(`Payroll Unauthorised`);
   } catch (err) {
     console.log(err?.message);
     return res.status(400).json(JSON.stringify(err?.message));
@@ -4912,6 +5275,357 @@ router.get('/pause-salary', auth(), async function (req, res, next) {
     return res.status(200).json(existingPauseSalaryData);
   } catch (err) {
     return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
+router.post('/reconciliation', auth(), async function (req, res, next) {
+  const schema = Joi.object({
+    r_location_id: Joi.number().required(),
+    r_month: Joi.number().required(),
+    r_year: Joi.number().required()
+  });
+
+  const reconciliationRequest = req.body;
+  const validationResult = schema.validate(reconciliationRequest);
+
+  if (validationResult.error) {
+    return res.status(400).json(validationResult.error.details[0].message);
+  }
+
+  let location = parseInt(req.body.r_location_id);
+  let month = parseInt(req.body.r_month);
+  let year = parseInt(req.body.r_year);
+  let comment = null;
+
+  try {
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+
+    const salaryRoutineCheck = await salary.getSalaryMonthYear(month, year);
+
+    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+      return res.status(400).json(`Payroll Routine has not been run`);
+    }
+
+    const reconciliationRoutineCheck = await reconciliationService.getReconciliationMonthYearLocation(month, year, location);
+
+    if (!_.isNull(reconciliationRoutineCheck) || !_.isEmpty(reconciliationRoutineCheck)) {
+      return res.status(400).json(`Reconciliation has already been run for selected month and year and location`);
+    }
+
+    let employees = await salary.getDistinctEmployeesLocationMonthYear(month, year, location);
+    employees = employees.map((emp) => {
+      return { emp_id: emp.salary_empid };
+    });
+
+    if (_.isEmpty(employees) || _.isNull(employees)) {
+      return res.status(400).json(`No Employees Selected Location`);
+    }
+
+    for (const emp of employees) {
+      let grossSalary = 0;
+      let netSalary = 0;
+      let totalDeduction = 0;
+
+      let previousGrossSalary = 0;
+      let previousNetSalary = 0;
+      let previousTotalDeduction = 0;
+
+      let employeeSalaries = await salary.getEmployeeSalary(month, year, emp.emp_id);
+
+      if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+        let empAdjustedGrossII = 0;
+        let mainDeductions = 0;
+
+        for (const empSalary of employeeSalaries) {
+          if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+            if (parseInt(empSalary.payment.pd_employee) === 1) {
+              grossSalary = parseFloat(empSalary.salary_amount) + grossSalary;
+            }
+          } else {
+            mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions;
+            if (parseInt(empSalary.payment.pd_employee) === 1) {
+              if (parseInt(empSalary.payment.pd_total_gross_ii) === 0 && parseInt(empSalary.payment.pd_total_gross) === 0) {
+                totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction;
+              }
+            }
+          }
+
+          if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+              empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount);
+            }
+
+            if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+              empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount);
+            }
+          }
+        }
+        netSalary = grossSalary - mainDeductions;
+      }
+
+      //check if month is december and calculate pervious month
+      let previousMonth = month;
+      let previousYear = year;
+      if (month === 1) {
+        previousMonth = 12;
+        previousYear = year - 1;
+      } else {
+        month = month - 1;
+      }
+
+      let employeePreviousMonthSalaries = await salary.getEmployeeSalary(previousMonth, previousYear, emp.emp_id);
+      if (!(_.isNull(employeePreviousMonthSalaries) || _.isEmpty(employeePreviousMonthSalaries))) {
+        let empAdjustedGrossII = 0;
+        let mainDeductions = 0;
+
+        for (const empSalary of employeePreviousMonthSalaries) {
+          // if (parseInt(empSalary.payment.pd_employee) === 1) {
+          if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+            if (parseInt(empSalary.payment.pd_employee) === 1) {
+              previousGrossSalary = parseFloat(empSalary.salary_amount) + previousGrossSalary;
+            }
+          } else {
+            mainDeductions = parseFloat(empSalary.salary_amount) + mainDeductions;
+            if (parseInt(empSalary.payment.pd_employee) === 1) {
+              if (parseInt(empSalary.payment.pd_total_gross_ii) === 0 && parseInt(empSalary.payment.pd_total_gross) === 0) {
+                previousTotalDeduction = parseFloat(empSalary.salary_amount) + previousTotalDeduction;
+              }
+            }
+          }
+
+          if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+              empAdjustedGrossII = empAdjustedGrossII + parseFloat(empSalary.salary_amount);
+            }
+
+            if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+              empAdjustedGrossII = empAdjustedGrossII - parseFloat(empSalary.salary_amount);
+            }
+          }
+        }
+        previousNetSalary = previousGrossSalary - mainDeductions;
+      }
+
+      let reconciliationObject = {
+        r_employee_id: emp.emp_id,
+        r_employee_t7: employeeSalaries[0].salary_emp_unique_id,
+        r_employee_d7: employeeSalaries[0].salary_d7,
+        r_employee_name: employeeSalaries[0].salary_emp_name,
+        r_month: month,
+        r_year: year,
+        r_location_id: location,
+        r_gross: grossSalary,
+        r_net: netSalary,
+        r_previous_net: previousNetSalary,
+        r_previous_gross: previousGrossSalary,
+        r_variance_net: netSalary - previousNetSalary,
+        r_variance_gross: grossSalary - previousGrossSalary,
+        r_comment: comment
+      };
+
+      await reconciliationService.addReconciliation(reconciliationObject);
+    }
+
+    await reconciliationService.addReconciliationMonthYearLocation({
+      rmyl_month: month,
+      rmyl_year: year,
+      rmyl_location_id: location,
+      rmyl_run_by: req.user.username.user_id,
+      rmyl_comment: comment,
+      rmyl_date: new Date()
+    });
+
+    return res.status(200).json('Reconciliation Run Successfully');
+  } catch (err) {
+    await reconciliationService.deleteReconciliation(month, year, location);
+    await reconciliationService.deleteReconciliationMonthYearLocation(month, year, location);
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
+router.post('/pull-reconciliation', auth(), async function (req, res, next) {
+  const schema = Joi.object({
+    r_location_id: Joi.number().required(),
+    r_month: Joi.number().required(),
+    r_year: Joi.number().required()
+  });
+
+  const reconciliationRequest = req.body;
+  const validationResult = schema.validate(reconciliationRequest);
+
+  if (validationResult.error) {
+    return res.status(400).json(validationResult.error.details[0].message);
+  }
+
+  let location = parseInt(req.body.r_location_id);
+  let month = parseInt(req.body.r_month);
+  let year = parseInt(req.body.r_year);
+
+  try {
+    const reconciliationRoutineCheck = await reconciliationService.getReconciliationMonthYearLocation(month, year, location);
+
+    if (_.isNull(reconciliationRoutineCheck) || _.isEmpty(reconciliationRoutineCheck)) {
+      return res.status(400).json(`Reconciliation has not been run for selected month and year and location`);
+    }
+
+    const reconciliationData = await reconciliationService.getReconciliationByMonthYearLocation(month, year, location);
+
+    return res.status(200).json(reconciliationData);
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
+router.patch('/comment-reconciliation', auth(), async function (req, res, next) {
+  const schema = Joi.object({
+    r_id: Joi.number().required(),
+    r_comment: Joi.number().required()
+  });
+
+  const reconciliationRequest = req.body;
+  const validationResult = schema.validate(reconciliationRequest);
+
+  if (validationResult.error) {
+    return res.status(400).json(validationResult.error.details[0].message);
+  }
+
+  const reconciliationId = parseInt(req.body.r_id);
+  const reconciliationComment = req.body.r_comment;
+
+  try {
+    const reconciliationData = await reconciliationService.getReconciliationById(reconciliationId);
+
+    if (_.isNull(reconciliationData) || _.isEmpty(reconciliationData)) {
+      return res.status(400).json(`Reconciliation not found`);
+    }
+
+    await reconciliationService.updateReconciliationComment(reconciliationId, reconciliationComment);
+
+    return res.status(200).json('Reconciliation Comment Updated Successfully');
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+  }
+});
+
+router.post('/payment-request', auth(), async function (req, res, next) {
+  try {
+    const schema = Joi.object({
+      month: Joi.number().required(),
+      year: Joi.number().required(),
+      location_id: Joi.number().required()
+    });
+
+    const paymentRequest = req.body;
+    const validationResult = schema.validate(paymentRequest);
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
+    if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
+      return res.status(400).json(`No payroll month and year set`);
+    }
+
+    const month = paymentRequest.month;
+    const year = paymentRequest.year;
+    const locationId = paymentRequest.location_id;
+    //check if payroll routine has been run
+
+    let payrollRun = await payrollMonthYearLocation.findPayrollMonthYearLocationMonthYear(month, year);
+
+    if (_.isEmpty(payrollRun) || _.isNull(payrollRun)) {
+      return res.status(400).json(`Payroll Routine has not been run for any location`);
+    }
+
+    let payrollLocations = await payrollMonthYearLocation.findApprovedPayrollMonthYearLocationMonthYear(month, year);
+
+    if (_.isEmpty(payrollLocations) || _.isNull(payrollLocations)) {
+      return res.status(400).json(`No Approved Payroll Routines`);
+    }
+
+    const locationData = await locationService.findLocationById(locationId);
+
+    if (_.isEmpty(locationData) || _.isNull(locationData)) {
+      return res.status(400).json(`Location not found`);
+    }
+    const employees = await salary.getDistinctEmployeesLocationMonthYear(month, year, locationId);
+
+    if (_.isEmpty(employees) || _.isNull(employees)) {
+      return res.status(400).json(`No employee in selected locations`);
+    }
+
+    let locationTotalGross = 0;
+    let locationTotalGrossII = 0;
+    let locationTotalGrossI = 0;
+    let locationTotalDeduction = 0;
+    let locationTotalEmployee = 0;
+    let grossSalary = 0;
+    let netSalary = 0;
+    let totalDeduction = 0;
+
+    for (const emp of employees) {
+      let employeeSalaries = await salary.getEmployeeSalary(month, year, emp.salary_empid);
+      if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+        locationTotalEmployee++;
+
+        for (const empSalary of employeeSalaries) {
+          if (parseInt(empSalary.payment.pd_total_gross) === 1) {
+            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+              locationTotalGrossI = locationTotalGrossI + parseFloat(empSalary.salary_amount);
+            }
+
+            if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+              locationTotalGrossI = locationTotalGrossI - parseFloat(empSalary.salary_amount);
+            }
+          }
+
+          if (parseInt(empSalary.payment.pd_total_gross_ii) === 1) {
+            if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+              locationTotalGrossII = locationTotalGrossII + parseFloat(empSalary.salary_amount);
+            }
+
+            if (parseInt(empSalary.payment.pd_payment_type) === 2) {
+              locationTotalGrossII = locationTotalGrossII - parseFloat(empSalary.salary_amount);
+            }
+          }
+
+          if (parseInt(empSalary.payment.pd_payment_type) === 1) {
+            grossSalary = parseFloat(empSalary.salary_amount) + grossSalary;
+          } else {
+            totalDeduction = parseFloat(empSalary.salary_amount) + totalDeduction;
+          }
+        }
+        netSalary = grossSalary - totalDeduction;
+      }
+    }
+
+    locationTotalGross = locationTotalGrossII + locationTotalGross;
+    locationTotalDeduction = totalDeduction + locationTotalDeduction;
+    let locationSalaryObject = {
+      locationId: locationData.location_id,
+      locationName: locationData.location_name,
+      locationCode: locationData.location_t6_code,
+      locationTotalGross: locationTotalGross,
+      locationTotalDeduction: locationTotalDeduction,
+      locationTotalNet: locationTotalGross - locationTotalDeduction,
+      locationEmployeesCount: locationTotalEmployee,
+      month: month,
+      year: year
+    };
+
+    return res.status(200).json(locationSalaryObject);
+  } catch (err) {
+    console.log(err?.message);
+    return res.status(400).json(JSON.stringify(err?.message));
+    next(err);
   }
 });
 
