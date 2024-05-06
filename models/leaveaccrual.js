@@ -180,6 +180,12 @@ module.exports = (sequelize, DataTypes) => {
           where: {lea_rate: rate, lea_leaveapp_id: leaveId, lea_emp_id: empId },
 
         })
+      }   
+      static async getLeaveAccrualByLeaveApplicationId(leaveId) {
+        return await leaveAccrual.findOne({
+          where: {lea_leaveapp_id: leaveId},
+
+        })
       }
       static async destroyLeaveAccrualByRateEmpIdLeaveId(rate, empId, leaveId) {
         return await leaveAccrual.destroy({

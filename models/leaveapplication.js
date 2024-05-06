@@ -126,6 +126,14 @@ module.exports = (sequelize, DataTypes) => {
         },
       })
     }
+    static async getLeaveAppsUnknown(){
+      return await leaveApplication.findAll({
+        where:{
+          leapp_status: [1,3,4],
+        },
+        where:sequelize.where(sequelize.fn('YEAR', sequelize.col('createdAt')), 2024),
+      })
+    }
 
   };
   leaveApplication.init({
