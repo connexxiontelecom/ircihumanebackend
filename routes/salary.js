@@ -2722,7 +2722,7 @@ router.get('/confirm-salary-routine', auth(), async function (req, res, next) {
             log_date: new Date()
           };
           await logs.addLog(logData);
-          return res.status(200).json(`Payroll Confirmed`);
+          return res.status(200).json(`Payroll Routine Confirmed`);
         }
       }
     }
@@ -2848,7 +2848,7 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
       log_date: new Date()
     };
     await logs.addLog(logData);
-    return res.status(200).json(`Payroll Confirmed`);
+    return res.status(200).json(`Payroll Unconfirmed`);
   } catch (err) {
     console.log(err?.message);
     return res.status(400).json(JSON.stringify(err?.message));
@@ -3153,7 +3153,7 @@ router.post('/authorise-salary-routine', auth(), async function (req, res, next)
         log_date: new Date()
       };
       await logs.addLog(logData);
-      return res.status(200).json(`Payroll Authorised`);
+      return res.status(200).json(`Payroll Routine Authorised`);
     } else {
       return res.status(400).json(`An Error Occurred`);
     }
@@ -5374,7 +5374,7 @@ router.post('/reconciliation', auth(), async function (req, res, next) {
         previousMonth = 12;
         previousYear = year - 1;
       } else {
-        month = month - 1;
+        // month = month - 1;
       }
 
       let employeePreviousMonthSalaries = await salary.getEmployeeSalary(previousMonth, previousYear, emp.emp_id);
@@ -5485,7 +5485,7 @@ router.post('/pull-reconciliation', auth(), async function (req, res, next) {
 router.patch('/comment-reconciliation', auth(), async function (req, res, next) {
   const schema = Joi.object({
     r_id: Joi.number().required(),
-    r_comment: Joi.number().required()
+    r_comment: Joi.string().required()
   });
 
   const reconciliationRequest = req.body;

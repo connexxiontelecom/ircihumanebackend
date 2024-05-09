@@ -196,7 +196,8 @@ router.post('/add-user', auth(), async function (req, res, next) {
       perm_undo_salary_mapping: Joi.number().required(),
       perm_payroll_journal: Joi.number().required(),
       perm_application_tracking: Joi.number().required(),
-      perm_supervisor_reassignment: Joi.number().required()
+      perm_supervisor_reassignment: Joi.number().required(),
+      perm_authorise_payroll: Joi.number().required()
     });
 
     const validationResult = schema.validate(req.body);
@@ -263,7 +264,8 @@ router.post('/add-user', auth(), async function (req, res, next) {
         perm_undo_salary_mapping: req.body.perm_undo_salary_mapping,
         perm_payroll_journal: req.body.perm_payroll_journal,
         perm_application_tracking: req.body.perm_application_tracking,
-        perm_supervisor_reassignment: req.body.perm_supervisor_reassignment
+        perm_supervisor_reassignment: req.body.perm_supervisor_reassignment,
+        perm_authorise_payroll: req.body.perm_authorise_payroll
       };
       const addPermission = await permissionService.addPermission(permissionObject).then((data) => {
         return data;
