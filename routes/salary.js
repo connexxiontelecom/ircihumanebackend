@@ -5374,7 +5374,7 @@ router.post('/reconciliation', auth(), async function (req, res, next) {
         previousMonth = 12;
         previousYear = year - 1;
       } else {
-        month = month - 1;
+        // month = month - 1;
       }
 
       let employeePreviousMonthSalaries = await salary.getEmployeeSalary(previousMonth, previousYear, emp.emp_id);
