@@ -8,6 +8,7 @@ const _ = require('lodash');
 const tracer = require('dd-trace').init();
 var StatsD = require('hot-shots');
 var dogstatsd = new StatsD();
+const salaryCronJobs = require('./routes/cronJobs/salary_cron');
 
 // Increment a counter.
 dogstatsd.increment('page.views');
@@ -207,18 +208,18 @@ const user = require('./services/userService');
 const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
 const logs = require('./services/logService');
 
-app.get('/', async function (req, res) {
-  res.send('you got here. so get out');
-});
-
 // app.get('/', async function (req, res) {
-//   try {
-//     const data = await generateMasterList();
-//     return res.status(200).json(data);
-//   } catch (err) {
-//     return res.status(400).json(err.message);
-//   }
+//   res.send('you got here. so get out');
 // });
+
+app.get('/', async function (req, res) {
+  try {
+    await salaryCronJobs.computeSalaryLocations();
+    return res.status(200).json('Cron Job ran successfully');
+  } catch (err) {
+    return res.status(400).json(err.message);
+  }
+});
 
 async function updateApprovedLeaveStatus() {
   try {
@@ -583,6 +584,8 @@ nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
 nodeCron.schedule('0 4 * * *', updateHireType).start();
 nodeCron.schedule('* 3 * * *', clearOldLogs).start();
 nodeCron.schedule('0 0 * * *', generateMasterList).start();
+// run every 1 hour
+nodeCron.schedule('0 */1 * * *', salaryCronJobs.computeSalaryLocations).start();
 
 /* Error handler middleware */
 app.use((err, req, res, next) => {
