@@ -208,18 +208,18 @@ const user = require('./services/userService');
 const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
 const logs = require('./services/logService');
 
-// app.get('/', async function (req, res) {
-//   res.send('you got here. so get out');
-// });
-
 app.get('/', async function (req, res) {
-  try {
-    await salaryCronJobs.computeSalaryLocations();
-    return res.status(200).json('Cron Job ran successfully');
-  } catch (err) {
-    return res.status(400).json(err.message);
-  }
+  res.send('Get out');
 });
+
+// app.get('/', async function (req, res) {
+//   try {
+//     await salaryCronJobs.computeSalaryLocations();
+//     return res.status(200).json('Cron Job ran successfully');
+//   } catch (err) {
+//     return res.status(400).json(err.message);
+//   }
+// });
 
 async function updateApprovedLeaveStatus() {
   try {

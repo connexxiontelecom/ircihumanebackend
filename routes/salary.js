@@ -1872,6 +1872,18 @@ router.get('/pull-salary-routine-locations', auth(), async function (req, res, n
             year: payrollYear
           };
 
+          await salaryCron.addSalaryCron({
+            sc_location_id: locationData.location_id,
+            sc_location_name: locationData.location_name,
+            sc_location_code: locationData.location_t6_code,
+            sc_gross: locationTotalGross,
+            sc_total_deduction: locationTotalDeduction,
+            sc_net: locationTotalNetPay,
+            sc_employee_count: locationTotalEmployee,
+            sc_month: payrollMonth,
+            sc_year: payrollYear
+          });
+
           locationSalaryArray.push(locationSalaryObject);
         }
       }
