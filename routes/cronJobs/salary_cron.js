@@ -4,6 +4,7 @@ const payrollMonthYearLocation = require('../../services/payrollMonthYearLocatio
 const locationService = require('../../services/locationService');
 const salary = require('../../services/salaryService');
 const salaryCron = require('../../services/salaryCronService');
+const logs = require('../../services/logService');
 
 async function computeSalaryLocations() {
   try {
@@ -117,6 +118,11 @@ async function computeSalaryLocations() {
 
       await salaryCron.addSalaryCron(locationSalaryObject);
     }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Computed Salary Locations',
+      log_date: new Date()
+    });
   } catch (err) {
     console.log(err?.message);
   }
