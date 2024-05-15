@@ -560,11 +560,6 @@ async function updateHireType() {
 async function clearOldLogs() {
   try {
     await logs.deleteLogs();
-    await logs.addLog({
-      log_user_id: 1,
-      log_description: 'Old Logs cleared cron job',
-      log_date: new Date()
-    });
   } catch (e) {
     const errorMessage = `error clear old logs cron job ${e.message}`;
     await logs.addLog({
