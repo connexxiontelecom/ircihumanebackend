@@ -39,7 +39,7 @@ async function computeSalaryLocations() {
       }
       const locationData = await locationService.findLocationById(location.pmyl_location_id);
 
-      if (!_.isEmpty(locationData)) {
+      if (_.isEmpty(locationData)) {
         console.log(`No location found for location id ${location.pmyl_location_id}`);
         continue;
       }

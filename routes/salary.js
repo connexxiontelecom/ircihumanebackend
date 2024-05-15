@@ -1336,15 +1336,18 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           pmyl_location_id: pmylLocationId
         };
 
-        await payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject);
-
-        //return  res.status(200).json(GrossArray)
         const logData = {
           log_user_id: req.user.username.user_id,
           log_description: 'Ran Payroll Routine',
           log_date: new Date()
         };
-        await logs.addLog(logData);
+
+        await Promise.all([
+          payrollMonthYearLocation.addPayrollMonthYearLocation(pmylObject),
+          salaryCron.deleteSalaryCron(payrollMonth, payrollYear, pmylLocationId),
+          logs.addLog(logData)
+        ]);
+
         return res.status(200).json('Action Successful');
       } else {
         return res.status(400).json(`Payroll Routine has already been run for selected location`);
@@ -1906,6 +1909,23 @@ router.get('/pull-confirmed-salary-routine-locations', auth(), async function (r
       for (const location of payrollLocations) {
         const locationData = await locationService.findLocationById(location.pmyl_location_id);
 
+        const existingSalaryCron = await salaryCron.getSalaryCronByMonthYearLocation(payrollMonth, payrollYear, location.pmyl_location_id);
+        if (!_.isEmpty(existingSalaryCron) || !_.isNull(existingSalaryCron)) {
+          locationSalaryArray.push({
+            locationId: existingSalaryCron.sc_location_id,
+            locationName: existingSalaryCron.sc_location_name,
+            locationCode: existingSalaryCron.sc_location_code,
+            locationTotalGross: existingSalaryCron.sc_gross,
+            locationTotalDeduction: existingSalaryCron.sc_total_deduction,
+            locationTotalNet: existingSalaryCron.sc_net,
+            locationEmployeesCount: existingSalaryCron.sc_employee_count,
+            month: existingSalaryCron.sc_month,
+            year: existingSalaryCron.sc_year
+          });
+
+          continue;
+        }
+
         if (!_.isEmpty(locationData)) {
           const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id);
 
@@ -2041,10 +2061,24 @@ router.get('/pull-approved-salary-routine-locations', auth(), async function (re
         const locationData = await locationService.findLocationById(location.pmyl_location_id);
 
         if (!_.isEmpty(locationData)) {
+          const existingSalaryCron = await salaryCron.getSalaryCronByMonthYearLocation(payrollMonth, payrollYear, location.pmyl_location_id);
+          if (!_.isEmpty(existingSalaryCron) || !_.isNull(existingSalaryCron)) {
+            locationSalaryArray.push({
+              locationId: existingSalaryCron.sc_location_id,
+              locationName: existingSalaryCron.sc_location_name,
+              locationCode: existingSalaryCron.sc_location_code,
+              locationTotalGross: existingSalaryCron.sc_gross,
+              locationTotalDeduction: existingSalaryCron.sc_total_deduction,
+              locationTotalNet: existingSalaryCron.sc_net,
+              locationEmployeesCount: existingSalaryCron.sc_employee_count,
+              month: existingSalaryCron.sc_month,
+              year: existingSalaryCron.sc_year
+            });
+
+            continue;
+          }
+
           const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id);
-          // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
-          //     return data
-          // })
 
           if (_.isEmpty(employees) || _.isNull(employees)) {
             return res.status(400).json(`No employee in selected locations`);
@@ -2173,6 +2207,23 @@ router.get('/pull-authorised-salary-routine-locations', auth(), async function (
         const locationData = await locationService.findLocationById(location.pmyl_location_id);
 
         if (!_.isEmpty(locationData)) {
+          const existingSalaryCron = await salaryCron.getSalaryCronByMonthYearLocation(payrollMonth, payrollYear, location.pmyl_location_id);
+          if (!_.isEmpty(existingSalaryCron) || !_.isNull(existingSalaryCron)) {
+            locationSalaryArray.push({
+              locationId: existingSalaryCron.sc_location_id,
+              locationName: existingSalaryCron.sc_location_name,
+              locationCode: existingSalaryCron.sc_location_code,
+              locationTotalGross: existingSalaryCron.sc_gross,
+              locationTotalDeduction: existingSalaryCron.sc_total_deduction,
+              locationTotalNet: existingSalaryCron.sc_net,
+              locationEmployeesCount: existingSalaryCron.sc_employee_count,
+              month: existingSalaryCron.sc_month,
+              year: existingSalaryCron.sc_year
+            });
+
+            continue;
+          }
+
           const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id);
           // const employees = await employee.getAllEmployeesByLocation(location.pmyl_location_id).then((data) => {
           //     return data
