@@ -2380,6 +2380,23 @@ router.post('/pull-approved-salary-routine-locations', auth(), async function (r
     for (const location of payrollLocations) {
       const locationData = await locationService.findLocationById(location.pmyl_location_id);
       if (!_.isEmpty(locationData)) {
+        const existingSalaryCron = await salaryCron.getSalaryCronByMonthYearLocation(payrollMonth, payrollYear, location.pmyl_location_id);
+        if (!_.isEmpty(existingSalaryCron) || !_.isNull(existingSalaryCron)) {
+          locationSalaryArray.push({
+            locationId: existingSalaryCron.sc_location_id,
+            locationName: existingSalaryCron.sc_location_name,
+            locationCode: existingSalaryCron.sc_location_code,
+            locationTotalGross: existingSalaryCron.sc_gross,
+            locationTotalDeduction: existingSalaryCron.sc_total_deduction,
+            locationTotalNet: existingSalaryCron.sc_net,
+            locationEmployeesCount: existingSalaryCron.sc_employee_count,
+            month: existingSalaryCron.sc_month,
+            year: existingSalaryCron.sc_year
+          });
+
+          continue;
+        }
+
         const employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location.pmyl_location_id);
 
         if (_.isEmpty(employees) || _.isNull(employees)) {
@@ -2429,30 +2446,6 @@ router.post('/pull-approved-salary-routine-locations', auth(), async function (r
               }
             }
             netSalary = grossSalary - totalDeduction;
-            // let empJobRole = 'N/A'
-            // let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id)
-            // if(empJobRoleId > 0){
-            //     empJobRole = emp.jobRole.job_role
-            // }
-            //
-            // let sectorName = 'N/A'
-            // let sectorId = parseInt(employeeSalaries[0].salary_department_id)
-            // if (sectorId > 0) {
-            //
-            //
-            //     sectorName = `${emp.sector.department_name} - ${emp.sector.d_t3_code}`
-            // }
-            // let salaryObject = {
-            //     employeeId: emp.emp_id,
-            //     employeeName: `${emp.emp_first_name} ${emp.emp_last_name}`,
-            //     employeeUniqueId: emp.emp_unique_id,
-            //     location: `${emp.location.location_name} - ${emp.location.l_t6_code}`,
-            //     jobRole: empJobRole,
-            //     sector: sectorName,
-            //     grossSalary: grossSalary,
-            //     totalDeduction: totalDeduction,
-            //     netSalary: netSalary
-            // }
           }
         }
 
