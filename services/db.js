@@ -10,12 +10,14 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, pr
 });
 
 
+/*
 
-// const sequelize = new Sequelize('ircihumane', 'root', 'root', {
-//     host: 'localhost',
-//     port: 8889,
-//     dialect: 'mysql'
-// });
+ const sequelize = new Sequelize('ircihumane', 'root', 'root', {
+     host: 'localhost',
+     port: 8889,
+    dialect: 'mysql'
+ });
+*/
 
 
 try {

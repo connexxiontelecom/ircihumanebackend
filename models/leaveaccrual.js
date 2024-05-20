@@ -187,6 +187,17 @@ module.exports = (sequelize, DataTypes) => {
 
         })
       }
+
+      static async getLeaveAccrualByLeaveApplicationIdAndMore(leaveId) {
+        return await leaveAccrual.findOne({
+          where: {
+            lea_leaveapp_id: leaveId,
+            lea_rate: {[Op.lte]:0},
+            lea_fy: 'FY2024'
+          },
+
+        })
+      }
       static async destroyLeaveAccrualByRateEmpIdLeaveId(rate, empId, leaveId) {
         return await leaveAccrual.destroy({
           where: {lea_rate: rate, lea_leaveapp_id: leaveId, lea_emp_id: empId },
