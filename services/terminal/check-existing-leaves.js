@@ -25,20 +25,124 @@ const getAllLeaveApplicationFromStartDate = async ()=>{
   try{
     const leaveApplications = await leaveApplicationModel.getLeaveAppsUnknown();
       //loop leaves
-    const holidayObj = [];
+    //console.log(leaveApplications.length)
       leaveApplications.map(async leave => {
         //check leave accrual
-        let accrual = await leaveAccrualModel.getLeaveAccrualByLeaveApplicationId(leave.leapp_id);
-        if(_.isEmpty(accrual) || _.isNull(accrual)){
+        /*let accrual = await leaveAccrualModel.getLeaveAccrualByLeaveApplicationIdAndMore(leave.leapp_id);
+        if(_.isEmpty(accrual) || _.isNull(accrual)){*/
+          
           let emp = await EmployeeModel.getEmployeeById(leave.leapp_empid);
           fs.appendFileSync('../../assets/missing-in-accrual.txt', `Leave ID: ${leave.leapp_id} | Employee T7: ${emp.emp_unique_id} | Employee ID: ${leave.leapp_empid} | Date: ${leave.createdAt}\n`)
-          //fs.appendFileSync('../../assets/comman-separated-in-accrual.txt', `${leave.leapp_id},`)
-        }else{
-          //console.log('something')
-          if(parseInt(accrual.lea_rate) <= 0){
-            fs.appendFileSync('../../assets/deduction.txt', `Leave ID: ${leave.leapp_id} | Employee ID: ${leave.leapp_empid} | Date: ${leave.createdAt}\n`)
+          /**
+           *
+           * Register this on leave accrual table
+           */
+
+
+          const startDate = new Date(leave.leapp_start_date);
+          const endDate = new Date(leave.leapp_end_date)
+          const diffTime = Math.abs(endDate - startDate);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          const pubHolidays = [];
+          let publicHolidays = 0;
+          let weekends = 0;
+          const steps = 1;
+
+          let currentDate = new Date(startDate);
+          const pHolidays = await publicHolidayModel.getThisYearsPublicHolidays();
+          let holidays = [];
+          pHolidays.map((pub) => {
+            holidays.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+          });
+
+          while (currentDate <= new Date(endDate)) {
+            if (isWeekend(currentDate)) {
+              weekends++;
+              pubHolidays.push(currentDate);
+            }
+            let setDate = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() + 1}-${(currentDate.getUTCDate())}`
+            if (holidays.includes(setDate)) {
+              if (!isWeekend(new Date(setDate))) {
+                pubHolidays.push(currentDate);
+              }
+              publicHolidays++;
+            }
+            currentDate.setUTCDate(currentDate.getUTCDate() + steps);
           }
-        }
+          let dateDifference = diffDays - parseInt(pubHolidays.length); //duration ;
+
+          let holidayIds = await getPublicHolidayIds(leave.leapp_start_date, leave.leapp_end_date);
+//console.log('========= Hello ==========')
+
+          if(parseInt(dateDifference) <= 0){
+            //update leave status
+            await leaveApplicationModel.update({
+              leapp_status: 5, //denote archived
+              leapp_holidays: holidayIds
+            }, {
+              where: {leapp_id: leave.leapp_id}
+            });
+          }else{
+            //update leave total days
+            await leaveApplicationModel.update({
+              leapp_total_days: dateDifference,
+              leapp_holidays: holidayIds
+            }, {
+              where: {leapp_id: leave.leapp_id}
+            });
+          }
+        
+          //update leave accrual
+        let accrual = await leaveAccrualModel.findOne({
+          where:{lea_leaveapp_id: leave.leapp_id}
+        });
+
+          if(!(_.isNull(accrual)) || !(_.isEmpty(accrual))){
+            //delete leave accruals
+            await leaveAccrualModel.deleteLeaveAccrualEntryByLeaveId(parseInt(leave.leapp_id));
+            //insert new record
+            await markLeaveApplicationAsFinal(leave.leapp_start_date, leave.leapp_end_date, leave.leapp_empid, leave.leapp_leave_type, leave.leapp_id)
+          }else{
+            //insert new record
+            await markLeaveApplicationAsFinal(leave.leapp_start_date, leave.leapp_end_date, leave.leapp_empid, leave.leapp_leave_type, leave.leapp_id)
+          }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+        }else{
+          fs.appendFileSync('../../assets/recorded.txt', `Leave ID: ${leave.leapp_id} | Employee ID: ${leave.leapp_empid} | Date: ${leave.createdAt}\n`)
+        }*/
+        
+        
+        
+        
       })
   }catch (e) {
     console.log(e.message);
@@ -160,9 +264,9 @@ async function addToLeaveAccrual(empId, year, month, leaveType, noDays, leaveId)
     lea_fy: calendarYear,
     leave_narration: `${noDays} deducted from accrued leaves`,
   }
- /* const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
+  const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
     return data
-  })*/
+  })
 }
 
 
@@ -269,7 +373,7 @@ async function markLeaveApplicationAsFinal(leapp_start_date, leapp_end_date, lea
   holidays.map((pub) => {
     holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
   });
-  //if(parseInt(status) === 1){
+  
     //Insert individually
     for(let m = 1; m<= 12; m++){
       let number = parseInt(m);
@@ -322,33 +426,8 @@ async function markLeaveApplicationAsFinal(leapp_start_date, leapp_end_date, lea
           await addToLeaveAccrual(leapp_empid, twelveDate.getFullYear(), twelveDate.getMonth() + 1, leapp_leave_type, twelve, leapp_id);
         }
       }
+
     }
-
-    /*const leaveApp = await leaveApplicationModel.getLeaveApplicationById(leapp_id);
-    if(!(_.isNull(leaveApp)) || !(_.isEmpty(leaveApp)) ){
-      let startDate = new Date(leaveApp.leapp_start_date);
-      let endDate = new Date(leaveApp.leapp_end_date);
-      let numDays
-      if(startDate.getDay() === 6 || startDate.getDay() === 0){
-        numDays = await differenceInBusinessDays(endDate, startDate) + 2;
-      }else{
-        numDays = await differenceInBusinessDays(endDate, startDate) + 1;
-      }
-      let i = 0;
-      if(numDays > 0){
-        for(i=0; i<= numDays; i++){
-          const loopPeriod = {
-            emp_id:leaveApp.leapp_empid,
-            day:i === 0 ? startDate.getUTCDate() : (startDate.getUTCDate() + i),
-            month: startDate.getUTCMonth() + 1,
-            year: startDate.getUTCFullYear()
-          }
-          await timeSheetService.updateTimesheetByDateRange(loopPeriod);
-        }
-      }
-
-    }*/
-  //}
 
 }
 module.exports = {

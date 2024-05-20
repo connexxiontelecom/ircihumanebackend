@@ -130,8 +130,9 @@ module.exports = (sequelize, DataTypes) => {
       return await leaveApplication.findAll({
         where:{
           leapp_status: [1,3,4],
+          leapp_year: 2024
         },
-        where:sequelize.where(sequelize.fn('YEAR', sequelize.col('createdAt')), 2024),
+        //where:sequelize.where(sequelize.fn('YEAR', sequelize.col('createdAt')), 2024),
       })
     }
 
