@@ -2870,7 +2870,7 @@ router.post('/confirm-salary-routine', auth(), async function (req, res, next) {
 router.post('/unconfirm-salary-routine', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
-      pmyl_location_id: Joi.number().required()
+      pmyl_location_id: Joi.array().items(Joi.number()).required()
     });
 
     const payrollRequest = req.body;
@@ -2881,7 +2881,7 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
     }
 
     // let employeeId = req.body.employee
-    let location = req.body.pmyl_location_id;
+    let locations = req.body.pmyl_location_id;
 
     const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
     if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
@@ -2897,26 +2897,29 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
       return res.status(400).json(`Payroll Routine has not been run for payroll month and year`);
     }
 
-    let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location);
+    for (const location of locations) {
+      let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location);
 
-    if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
-      return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`);
+      if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
+        console.log(`Payroll Routine has not been run for one or more location, check selection`);
+        continue;
+      }
+
+      let unconfirmRoutine = await payrollMonthYearLocation.unconfirmPayrollMonthYearLocation(
+        location,
+        req.user.username.user_id,
+        date,
+        payrollMonth,
+        payrollYear
+      );
+
+      if (_.isEmpty(unconfirmRoutine) || _.isNull(unconfirmRoutine)) {
+        console.log(`An error occurred while approve one or more location routine `);
+        continue;
+      }
+
+      await salary.unconfirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
     }
-
-    let unconfirmRoutine = await payrollMonthYearLocation.unconfirmPayrollMonthYearLocation(
-      location,
-      req.user.username.user_id,
-      date,
-      payrollMonth,
-      payrollYear
-    );
-
-    if (_.isEmpty(unconfirmRoutine) || _.isNull(unconfirmRoutine)) {
-      return res.status(400).json(`An error occurred while approve one or more location routine `);
-    }
-
-    await salary.unconfirmSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
-
     const logData = {
       log_user_id: req.user.username.user_id,
       log_description: `Return payroll routine for ${payrollMonth} - ${payrollYear}`,
@@ -3242,7 +3245,7 @@ router.post('/authorise-salary-routine', auth(), async function (req, res, next)
 router.post('/unauthorise-salary-routine', auth(), async function (req, res, next) {
   try {
     const schema = Joi.object({
-      pmyl_location_id: Joi.number().required(),
+      pmyl_location_id: Joi.array().items(Joi.number()).required(),
       pmyl_comment: Joi.string().default(null)
     });
 
@@ -3253,8 +3256,7 @@ router.post('/unauthorise-salary-routine', auth(), async function (req, res, nex
       return res.status(400).json(validationResult.error.details[0].message);
     }
 
-    // let employeeId = req.body.employee
-    let location = req.body.pmyl_location_id;
+    let locations = req.body.pmyl_location_id;
     let comment = req.body.pmyl_comment;
 
     const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear();
@@ -3271,27 +3273,30 @@ router.post('/unauthorise-salary-routine', auth(), async function (req, res, nex
       return res.status(400).json(`Payroll Routine has not been run for payroll month and year`);
     }
 
-    let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location);
+    for (const location of locations) {
+      let checkRoutine = await payrollMonthYearLocation.findPayrollByMonthYearLocation(payrollMonth, payrollYear, location);
 
-    if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
-      return res.status(400).json(`Payroll Routine has not been run for one or more location, check selection`);
+      if (_.isEmpty(checkRoutine) || _.isNull(checkRoutine)) {
+        console.log(`Payroll Routine has not been run for one or more location, check selection`);
+        continue;
+      }
+
+      let unauthorisedRoutine = await payrollMonthYearLocation.unauthorisePayrollMonthYearLocation(
+        location,
+        req.user.username.user_id,
+        date,
+        payrollMonth,
+        payrollYear,
+        comment
+      );
+
+      if (_.isEmpty(unauthorisedRoutine) || _.isNull(unauthorisedRoutine)) {
+        console.log(`An error occurred while approve one or more location routine `);
+        continue;
+      }
+
+      await salary.unauthoriseSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
     }
-
-    let unauthorisedRoutine = await payrollMonthYearLocation.unauthorisePayrollMonthYearLocation(
-      location,
-      req.user.username.user_id,
-      date,
-      payrollMonth,
-      payrollYear,
-      comment
-    );
-
-    if (_.isEmpty(unauthorisedRoutine) || _.isNull(unauthorisedRoutine)) {
-      return res.status(400).json(`An error occurred while approve one or more location routine `);
-    }
-
-    await salary.unauthoriseSalary(payrollMonth, payrollYear, req.user.username.user_id, date, location);
-
     const logData = {
       log_user_id: req.user.username.user_id,
       log_description: `Unathorised payroll routine for ${payrollMonth} - ${payrollYear}`,
