@@ -30,4 +30,4 @@ try {
 module.exports = {
     sequelize,
     Sequelize
-}
+} 
