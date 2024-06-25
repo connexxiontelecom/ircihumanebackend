@@ -2878,7 +2878,7 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
 
     if (validationResult.error) {
       return res.status(400).json(validationResult.error.details[0].message);
-    }
+    } 
 
     // let employeeId = req.body.employee
     let locations = req.body.pmyl_location_id;
