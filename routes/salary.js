@@ -1,3 +1,4 @@
+const { sequelize, Sequelize } = require('../services/db');
 const Joi = require('joi');
 const _ = require('lodash');
 const express = require('express');
@@ -33,6 +34,7 @@ const { businessDaysDifference } = require('../services/dateService');
 const pauseSalaryService = require('../services/pauseSalaryService');
 const reconciliationService = require('../services/reconciliationService');
 const salaryCron = require('../services/salaryCronService');
+const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocation')(sequelize, Sequelize.DataTypes);;
 
 /* run salary routine */
 router.get('/salary-routine', auth(), async function (req, res, next) {
@@ -3710,6 +3712,23 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
       if (_.isEmpty(employees) || _.isNull(employees)) {
         return res.status(400).json(`No Employees Selected Location`);
       }
+      const authorized = await payrollMonthYearLocationModel.getActionedBy(pmylLocationId, payrollMonth, payrollYear, 'authorizedBy');
+      const approvedBy = await payrollMonthYearLocationModel.getActionedBy(pmylLocationId, payrollMonth, payrollYear, 'approvedBy');
+      const confirmedBy = await payrollMonthYearLocationModel.getActionedBy(pmylLocationId, payrollMonth, payrollYear, 'confirmedBy');
+      let authorisedBy = authorized;
+      const location = await payrollMonthYearLocationModel.getLocation(pmylLocationId, payrollMonth, payrollYear);
+      //let approvedDate = 'N/A';
+     // let approvedBy = 'N/A';
+      //let authorisedDate = 'N/A';
+      //let confirmedBy = 'N/A';
+      //let confirmedDate = 'N/A';
+
+      const otherDetails = {
+        approvedBy,
+        authorisedBy,
+        confirmedBy,
+        location,
+      }
 
       for (const emp of employees) {
         let grossSalary = 0;
@@ -3820,13 +3839,15 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
             year: payrollYear,
             employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
             empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
-            salaryGrade: empSalaryStructureName
+            salaryGrade: empSalaryStructureName,
           };
 
           employeeSalary.push(salaryObject);
         }
+
       }
-      return res.status(200).json(employeeSalary);
+      const resObj = {employeeSalary, otherDetails}
+      return res.status(200).json(resObj);
     }
   } catch (err) {
     console.log(err?.message);
