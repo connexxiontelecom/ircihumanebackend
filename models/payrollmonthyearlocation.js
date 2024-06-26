@@ -1,5 +1,8 @@
 'use strict';
 const { Model } = require('sequelize');
+const { sequelize, Sequelize } = require("../services/db");
+const EmployeeModel = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const locationModel = require("../models/Location")(sequelize, Sequelize.DataTypes);
 module.exports = (sequelize, DataTypes) => {
   class payrollmonthyearlocation extends Model {
     /**
@@ -10,6 +13,27 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async getActionedBy(locationId, month, year, type) {
+      return await payrollmonthyearlocation.findOne({
+        include: [
+          {model: EmployeeModel, as: type},
+        ],
+        where: {pmyl_location_id: locationId, pmyl_month: month, pmyl_year: year}
+
+      })
+    }
+    static async getLocation(locationId, month, year) {
+      return await payrollmonthyearlocation.findOne({
+        include: [
+          {model: locationModel, as: 'location'},
+        ],
+        where: {pmyl_location_id: locationId, pmyl_month: month, pmyl_year: year}
+
+      })
+    }
+    
+    
   }
   payrollmonthyearlocation.init(
     {
@@ -39,5 +63,11 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'payroll_month_year_locations'
     }
   );
+
+  payrollmonthyearlocation.belongsTo(EmployeeModel, {as: 'authorizedBy', foreignKey: 'pmyl_authorised_by'});
+  payrollmonthyearlocation.belongsTo(EmployeeModel, {as: 'approvedBy', foreignKey: 'pmyl_approved_by'});
+  payrollmonthyearlocation.belongsTo(EmployeeModel, {as: 'confirmedBy', foreignKey: 'pmyl_confirmed_by'});
+  payrollmonthyearlocation.belongsTo(locationModel, {as: 'location', foreignKey: 'pmyl_location_id'});
+
   return payrollmonthyearlocation;
 };
