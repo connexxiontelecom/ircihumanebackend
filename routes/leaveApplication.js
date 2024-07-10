@@ -364,7 +364,6 @@ router.get('/authorization/supervisor/:id', auth(), async (req, res) => {
   }
 });
 
-
 router.get('/authorization/supervisor/:id/:status', auth(), async (req, res) => {
   try {
     const supervisorId = req.params.id;
@@ -874,7 +873,7 @@ router.post('/leave-application-tracking-report', async function (req, res) {
     for (emp of employees) {
       const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
 
-      if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck)) {
+      if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck) || salaryCheck.length === 0) {
         continue;
       }
 
