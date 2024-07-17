@@ -984,7 +984,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           //adjusted gross basic computation
           if (parseInt(computationalPayment.pd_amount) === 2) {
             if (parseInt(computationalPayment.pd_id) !== 7) {
-              amount = (parseFloat(computationalPayment.pd_percentage) / 100) * basicAdjustedGross;
+              amount = (parseFloat(computationalPayment.pd_percentage) / 100) * immutableEmpGross;
 
               salaryObject = {
                 salary_empid: emp.emp_id,
