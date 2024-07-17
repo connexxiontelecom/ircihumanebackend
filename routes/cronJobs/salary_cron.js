@@ -7,6 +7,7 @@ const salaryCron = require('../../services/salaryCronService');
 const logs = require('../../services/logService');
 const employee = require('../../services/employeeService');
 const salaryStructure = require('../../services/salaryStructureService');
+const salaryGrade = require('../../services/salaryGradeService');
 
 async function computeSalaryLocations() {
   try {
@@ -144,11 +145,19 @@ async function syncSalaryStructure() {
         const grossSalary = parseFloat(employee?.emp_gross);
         const empId = employee?.emp_id;
         if (grossSalary === 0) {
-          console.log(`No gross salary found for employee ${employee.emp_id} - ${employee.emp_name}`);
+          console.log(`No gross salary found for employee ${employee.emp_id}`);
           continue;
         }
-        const empSalaryStructure = await salaryStructure.findSalaryStructure(empId);
-        const salaryGrade = empSalaryStructure?.ss_grade;
+        let employeeSalaries = await salary.getEmployeeSalary(6, 2024, empId);
+
+        let salaryGradeId = null;
+        if (employeeSalaries?.length > 0) {
+          const salaryGradeName = employeeSalaries[0]?.salary_grade;
+          const salaryGradeData = await salaryGrade.findSalaryGradeByName(salaryGradeName);
+          if (salaryGradeData) {
+            salaryGradeId = salaryGradeData.sg_id;
+          }
+        }
         await salaryStructure.deleteSalaryStructuresEmployee(empId);
 
         await Promise.all([
@@ -156,19 +165,19 @@ async function syncSalaryStructure() {
             ss_empid: empId,
             ss_pd: 1,
             ss_amount: grossSalary,
-            ss_grade: salaryGrade
+            ss_grade: salaryGradeId
           }),
           salaryStructure.addSalaryStructure({
             ss_empid: empId,
             ss_pd: 2,
             ss_amount: 100000,
-            ss_grade: salaryGrade
+            ss_grade: salaryGradeId
           }),
           salaryStructure.addSalaryStructure({
             ss_empid: empId,
             ss_pd: 3,
             ss_amount: 100000,
-            ss_grade: salaryGrade
+            ss_grade: salaryGradeId
           })
         ]);
       }
