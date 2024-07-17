@@ -622,6 +622,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
       let empGross = parseFloat(emp.emp_gross);
 
+      let baseHT = 100000;
+
       const immutableEmpGross = parseFloat(emp.emp_gross);
 
       let hiredDate = new Date(emp.emp_hire_date);
@@ -660,6 +662,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
             daysBeforeStart--;
           }
           empGross = empGross - daysBeforeStart * (empGross / 22);
+          baseHT = baseHT - daysBeforeStart * (baseHT / 22);
         }
       }
 
@@ -683,7 +686,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         }
       }
 
-      if (empGross <= 0) {
+      if (empGross <= 0 || baseHT <= 0) {
         continue;
       }
 
@@ -749,7 +752,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           salary_paymonth: payrollMonth,
           salary_payyear: payrollYear,
           salary_pd: 1,
-          salary_amount: immutableEmpGross,
+          salary_amount: empGross,
           salary_share: 100,
           salary_tax: 0,
           salary_location_id: emp.emp_location_id,
@@ -773,7 +776,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           salary_paymonth: payrollMonth,
           salary_payyear: payrollYear,
           salary_pd: 2,
-          salary_amount: 100000,
+          salary_amount: baseHT,
           salary_share: 0,
           salary_tax: 0,
           salary_location_id: emp.emp_location_id,
@@ -797,7 +800,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           salary_paymonth: payrollMonth,
           salary_payyear: payrollYear,
           salary_pd: 3,
-          salary_amount: 100000,
+          salary_amount: baseHT,
           salary_share: 0,
           salary_tax: 0,
           salary_location_id: emp.emp_location_id,
@@ -1020,7 +1023,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
             }
 
             if (parseInt(computationalPayment.pd_id) === 7 && emp.emp_nhf_status) {
-              amount = (parseFloat(computationalPayment.pd_percentage) / 100) * basicAdjustedGross;
+              amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empGross;
 
               salaryObject = {
                 salary_empid: emp.emp_id,

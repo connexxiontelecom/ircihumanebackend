@@ -85,7 +85,7 @@ router.post('/add-salary-structure', auth(), async function (req, res, next) {
 
       await employee.updateSalaryGrade(empId, salaryStructureRequest.ss_grade);
 
-      await Promise.allSettled([
+      await Promise.all([
         salaryStructure.addSalaryStructure({
           ss_empid: empId,
           ss_pd: 1,
@@ -184,7 +184,7 @@ router.patch('/update-salary-structure/:emp_id', auth(), async function (req, re
 
       await employee.updateSalaryGrade(empId, salaryStructureRequest.ss_grade);
 
-      await Promise.allSettled([
+      await Promise.all([
         salaryStructure.addSalaryStructure({
           ss_empid: empId,
           ss_pd: 1,
