@@ -794,7 +794,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           salary_empid: emp.emp_id,
           salary_paymonth: payrollMonth,
           salary_payyear: payrollYear,
-          salary_pd: 2,
+          salary_pd: 3,
           salary_amount: 100000,
           salary_share: 0,
           salary_tax: 0,
