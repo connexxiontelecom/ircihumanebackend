@@ -50,7 +50,7 @@ router.post('/add-salary-structure', auth(), async function (req, res, next) {
 
     const employeeData = await employee.getEmployee(empId);
 
-    if (!_.isEmpty(employeeData) || !_.isNull(employeeData)) {
+    if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
       return res.status(400).json(`Employee Doesn't Exists`);
     }
 
@@ -149,7 +149,7 @@ router.patch('/update-salary-structure/:emp_id', auth(), async function (req, re
 
     const employeeData = await employee.getEmployee(empId);
 
-    if (!_.isEmpty(employeeData) || !_.isNull(employeeData)) {
+    if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
       return res.status(400).json(`Employee Doesn't Exists`);
     }
 
