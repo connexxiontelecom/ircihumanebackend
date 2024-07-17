@@ -743,36 +743,6 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       let paymentDefinitionData = await paymentDefinition.findBasicPaymentDefinition();
       let basicSalaryPercent = parseFloat(paymentDefinitionData.pd_pr_gross);
 
-      //  splitting into percentages
-
-      percent = parseFloat(percentage.pd_pr_gross);
-      amount = (percent / 100) * empGross;
-
-      salaryObject = {
-        salary_empid: emp.emp_id,
-        salary_paymonth: payrollMonth,
-        salary_payyear: payrollYear,
-        salary_pd: percentage.pd_id,
-        salary_amount: amount,
-        salary_share: percent,
-        salary_tax: 0,
-        salary_location_id: emp.emp_location_id,
-        salary_jobrole_id: empJobRoleId,
-        salary_department_id: empDepartmentId,
-        salary_grade: empSalaryStructureName,
-        salary_gross: emp.emp_gross,
-        salary_emp_name: `${emp.emp_first_name} ${emp.emp_last_name}`,
-        salary_emp_unique_id: emp.emp_unique_id,
-        salary_emp_start_date: emp.emp_hire_date,
-        salary_emp_end_date: emp.emp_contract_end_date,
-        salary_bank_id: emp.emp_bank_id,
-        salary_account_number: accountNumber,
-        salary_sort_code: emp.bank.bank_code,
-        salary_pfa: emp.emp_pension_id,
-        salary_d7: emp.emp_d7,
-        salary_emp_vendor_account: employeeVendorAccount
-      };
-
       const [response1, response2, response3] = await Promise.all([
         salary.addSalary({
           salary_empid: emp.emp_id,
