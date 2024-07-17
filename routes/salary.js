@@ -572,7 +572,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       payrollYear,
       employeeIdsLocation
     );
-    if (!_.isEmpty(pendingVariationalPayment) || !_.isNull(pendingVariationalPayment)) {
+    if (pendingVariationalPayment?.length > 0) {
       return res.status(400).json(`There are pending Variational Payments`);
     }
     //check if payroll routine has been run
