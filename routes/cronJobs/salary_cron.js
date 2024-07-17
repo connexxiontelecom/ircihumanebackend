@@ -131,46 +131,52 @@ async function computeSalaryLocations() {
 }
 
 async function syncSalaryStructure() {
-  const locations = await locationService.findAllLocations();
-  for (const location of locations) {
-    const locationId = location.location_id;
-    const employees = await employee.getActiveEmployeesByLocation(locationId);
-    if (employees?.length === 0) {
-      console.log(`No active employees found for location ${location.location_name}`);
-      continue;
-    }
-    for (const employee of employees) {
-      const grossSalary = parseFloat(employee?.emp_gross);
-      const empId = employee?.emp_id;
-      if (grossSalary === 0) {
-        console.log(`No gross salary found for employee ${employee.emp_id} - ${employee.emp_name}`);
+  try {
+    const locations = await locationService.findAllLocations();
+    for (const location of locations) {
+      const locationId = location.location_id;
+      const employees = await employee.getActiveEmployeesByLocation(locationId);
+      if (employees?.length === 0) {
+        console.log(`No active employees found for location ${location.location_name}`);
         continue;
       }
-      const empSalaryStructure = await salaryStructure.findSalaryStructure(empId);
-      const salaryGrade = empSalaryStructure?.ss_grade;
-      await salaryStructure.deleteSalaryStructuresEmployee(empId);
+      for (const employee of employees) {
+        const grossSalary = parseFloat(employee?.emp_gross);
+        const empId = employee?.emp_id;
+        if (grossSalary === 0) {
+          console.log(`No gross salary found for employee ${employee.emp_id} - ${employee.emp_name}`);
+          continue;
+        }
+        const empSalaryStructure = await salaryStructure.findSalaryStructure(empId);
+        const salaryGrade = empSalaryStructure?.ss_grade;
+        await salaryStructure.deleteSalaryStructuresEmployee(empId);
 
-      await Promise.all([
-        salaryStructure.addSalaryStructure({
-          ss_empid: empId,
-          ss_pd: 1,
-          ss_amount: grossSalary,
-          ss_grade: salaryGrade
-        }),
-        salaryStructure.addSalaryStructure({
-          ss_empid: empId,
-          ss_pd: 2,
-          ss_amount: 100000,
-          ss_grade: salaryGrade
-        }),
-        salaryStructure.addSalaryStructure({
-          ss_empid: empId,
-          ss_pd: 3,
-          ss_amount: 100000,
-          ss_grade: salaryGrade
-        })
-      ]);
+        await Promise.all([
+          salaryStructure.addSalaryStructure({
+            ss_empid: empId,
+            ss_pd: 1,
+            ss_amount: grossSalary,
+            ss_grade: salaryGrade
+          }),
+          salaryStructure.addSalaryStructure({
+            ss_empid: empId,
+            ss_pd: 2,
+            ss_amount: 100000,
+            ss_grade: salaryGrade
+          }),
+          salaryStructure.addSalaryStructure({
+            ss_empid: empId,
+            ss_pd: 3,
+            ss_amount: 100000,
+            ss_grade: salaryGrade
+          })
+        ]);
+      }
     }
+    return JSON.stringify({ message: 'Salary structure sync successful' });
+  } catch (e) {
+    console.error(`Error while syncing salary structure `, e.message);
+    return JSON.stringify({ error: e.message });
   }
 }
 

@@ -214,8 +214,8 @@ const logs = require('./services/logService');
 
 app.get('/', async function (req, res) {
   try {
-    await salaryCronJobs.syncSalaryStructure();
-    return res.status(200).json('Cron Job ran successfully');
+    const response = await salaryCronJobs.syncSalaryStructure();
+    return res.status(200).json(response);
   } catch (err) {
     return res.status(400).json(err.message);
   }
