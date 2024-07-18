@@ -645,6 +645,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
       const formatLastDayOfMonthReverse = lastDayOfMonthYYYY + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthDD;
 
+      const formatFirstDayOfMonth = lastDayOfMonthYYYY + '-' + lastDayOfMonthMM + '-' + '1';
+
       const payrollDate = new Date(formatLastDayOfMonthReverse);
       let checkDate = lastDayOfMonthYYYY + '-' + lastDayOfMonthMM + '-' + '1';
 
@@ -655,13 +657,13 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         let hireDay = String(hiredDate.getDate()).padStart(2, '0');
         if (parseInt(hireDay) > 1) {
           checkSecondDateWeekend = await isWeekend(hiredDate);
-          daysBeforeStart = await businessDaysDifference(emp.emp_hire_date, checkDate);
+          daysBeforeStart = await businessDaysDifference(formatLastDayOfMonthReverse, emp.emp_hire_date);
           if (!checkSecondDateWeekend) {
             daysBeforeStart--;
           }
 
-          empGross = (22 - daysBeforeStart) * (empGross / 22);
-          baseHT = (22 - daysBeforeStart) * (baseHT / 22);
+          empGross = daysBeforeStart * (empGross / 22);
+          baseHT = daysBeforeStart * (baseHT / 22);
 
           // empGross = empGross - daysBeforeStart * (empGross / 22);
           // baseHT = baseHT - daysBeforeStart * (baseHT / 22);
@@ -679,13 +681,13 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         const reverseFormatContractEndDate = contractEndDateYYYY + '-' + contractEndDateMM + '-' + contractEndDateDD;
 
         if (formatContractEndDate !== formatLastDayOfMonth) {
-          daysBeforeStart = await businessDaysDifference(formatLastDayOfMonthReverse, reverseFormatContractEndDate);
+          daysBeforeStart = await businessDaysDifference(reverseFormatContractEndDate, formatFirstDayOfMonth);
           if (!isWeekend(contractEndDate)) {
             daysBeforeStart--;
           }
 
-          empGross = (22 - daysBeforeStart) * (empGross / 22);
-          baseHT = (22 - daysBeforeStart) * (baseHT / 22);
+          empGross = daysBeforeStart * (empGross / 22);
+          baseHT = daysBeforeStart * (baseHT / 22);
 
           // empGross = empGross - daysBeforeStart * (empGross / 22);
           // baseHT = baseHT - daysBeforeStart * (baseHT / 22);
