@@ -12,9 +12,9 @@ async function businessDaysDifference(endDate, beginningDate) {
     daysBeforeStart++;
   }
   //
-  // if(!await isWeekend(endDate) && await isWeekend(beginningDate)){
-  //     daysBeforeStart++
-  // }
+  if (!(await isWeekend(endDate)) && (await isWeekend(beginningDate))) {
+    daysBeforeStart++;
+  }
   return daysBeforeStart;
 }
 
