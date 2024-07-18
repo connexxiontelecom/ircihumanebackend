@@ -661,8 +661,12 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
           if (!checkSecondDateWeekend) {
             daysBeforeStart--;
           }
-          empGross = empGross - daysBeforeStart * (empGross / 22);
-          baseHT = baseHT - daysBeforeStart * (baseHT / 22);
+
+          empGross = (22 - daysBeforeStart) * (empGross / 22);
+          baseHT = (22 - daysBeforeStart) * (baseHT / 22);
+
+          // empGross = empGross - daysBeforeStart * (empGross / 22);
+          // baseHT = baseHT - daysBeforeStart * (baseHT / 22);
         }
       }
 
@@ -682,7 +686,11 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
             daysBeforeStart--;
           }
 
-          empGross = empGross - daysBeforeStart * (empGross / 22);
+          empGross = (22 - daysBeforeStart) * (empGross / 22);
+          baseHT = (22 - daysBeforeStart) * (baseHT / 22);
+
+          // empGross = empGross - daysBeforeStart * (empGross / 22);
+          // baseHT = baseHT - daysBeforeStart * (baseHT / 22);
         }
       }
 
