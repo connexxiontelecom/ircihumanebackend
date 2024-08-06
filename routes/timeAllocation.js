@@ -37,6 +37,24 @@ router.get('/', auth(), async function (req, res, next) {
 
     }
 });
+
+router.get('/:month/:year', auth(), async function (req, res, next) {
+    try {
+        let empId = req.params.emp_id
+        let month = parseInt(req.params.month)
+        let year = parseInt(req.params.year)
+
+
+        const timeAllocationBreakDown = await timeAllocation.getTimeAllocationListByMonthYear(month, year).then((data) => {
+            return data
+        })
+
+        return res.status(200).json(timeAllocationBreakDown)
+    } catch (err) {
+        return res.status(400).json(`Error while fetching time allocation ${err.message}`);
+
+    }
+});
 /* Add to time sheet */
 router.post('/add-time-allocation', auth(), async function (req, res, next) {
     try {

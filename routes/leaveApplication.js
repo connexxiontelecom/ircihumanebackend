@@ -263,6 +263,36 @@ router.get('/approved-applications', async (req, res) => {
     return res.status(400).json(`Error while fetching leaves ${err.message}`);
   }
 });
+//Get approved application by T7
+router.get('/approved-applications/:t7', async (req, res) => {
+  try {
+    let empT7 = req.params['t7'];
+    let employeeObj = await employeeModel.getEmployeeByUniqueId(empT7)
+    if (_.isEmpty(employeeObj)) {
+      return res.status(404).json(`Invalid T7 or employee does not exist.`);
+    }
+    let appId = [];
+    let leaveObj = {};
+    await leaveApplication.findAllActiveLeaveApplicationsByEmpId(employeeObj.emp_id).then((data) => {
+      data.map(async (app) => {
+        appId.push(app.leapp_id);
+        /* if (new Date(app.leapp_end_date).getTime() > new Date() && app.leapp_status == 3) {
+              } else {
+                await leaveAppModel.updateLeaveAppStatus(app.leapp_id, 4);
+              }*/
+      });
+      authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
+        leaveObj = {
+          data,
+          officers
+        };
+        return res.status(200).json(leaveObj);
+      });
+    });
+  } catch (err) {
+    return res.status(400).json(`Error while fetching leaves ${err.message}`);
+  }
+});
 
 /* Get Employee Leave application */
 router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next) {
