@@ -70,6 +70,20 @@ async function findAllActiveLeaveApplications() {
   })
 }
 
+async function findAllActiveLeaveApplicationsByEmpId(empId) {
+  let currentDate = new Date();
+  return await LeaveApplication.findAll({
+    where:{
+      leapp_status:[1,3,4],
+      leapp_empid:empId
+     // leapp_start_date: { [Op.gte]: currentDate.getTime() }
+      }, //approved & active
+    order: [
+      ['leapp_id', 'DESC'],
+    ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+  })
+}
+
 async function findEmployeeLeaveApplication(empId) {
 
     return await LeaveApplication.findAll({
@@ -174,5 +188,6 @@ module.exports = {
     getApprovedLeaves,
   updateLeaveAppStatus,
   getLeavesByStatus,
-  getLeaveApplicationsForAuthorizationByStatus
+  getLeaveApplicationsForAuthorizationByStatus,
+  findAllActiveLeaveApplicationsByEmpId
 }

@@ -12,6 +12,14 @@ async function findAllTimeAllocations() {
     })
 }
 
+async function getTimeAllocationListByMonthYear(month, year) {
+  return await TimeAllocation.findAll({
+    where: {ta_month: month, ta_year: year},
+    order: [['ta_id', 'DESC']],
+    include: [{model:Employee, as:'employee'}]
+  })
+}
+
 
 async function addTimeAllocation(timeAllocationData) {
     return await TimeAllocation.create({
@@ -188,5 +196,6 @@ module.exports = {
     timeAllocationStatus,
     findTimeAllocationDetailByRefNo,
     findTimeAllocationDetailByStatus,
-    deleteTimeAllocationByRefNo
+    deleteTimeAllocationByRefNo,
+  getTimeAllocationListByMonthYear
 }
