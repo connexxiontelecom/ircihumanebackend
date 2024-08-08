@@ -4,6 +4,7 @@ const eachDayOfInterval = require('date-fns/eachDayOfInterval');
 function businessDaysDifference(endDate, startDate) {
   const start = new Date(startDate);
   const end = new Date(endDate);
+  if (start.getTime() === end.getTime() && !isWeekend(start) && !isWeekend(end)) return 1;
   const businessDays = eachDayOfInterval({ start, end });
   return businessDays.filter((date) => !isWeekend(date)).length;
 }
