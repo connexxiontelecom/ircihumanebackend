@@ -658,11 +658,11 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       if (hireYear === parseInt(payrollYear) && hireMonth === parseInt(payrollMonth)) {
         let hireDay = String(hiredDate.getDate()).padStart(2, '0');
         if (parseInt(hireDay) > 1) {
-          checkSecondDateWeekend = await isWeekend(hiredDate);
-          daysBeforeStart = await businessDaysDifference(formatLastDayOfMonthReverse, emp.emp_hire_date);
-          if (!checkSecondDateWeekend) {
-            daysBeforeStart--;
-          }
+          // checkSecondDateWeekend = await isWeekend(hiredDate);
+          daysBeforeStart = businessDaysDifference(formatLastDayOfMonthReverse, emp.emp_hire_date);
+          // if (!checkSecondDateWeekend) {
+          //   daysBeforeStart--;
+          // }
 
           empGross = daysBeforeStart * (empGross / 22);
           baseHT = daysBeforeStart * (baseHT / 22);
@@ -683,10 +683,10 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         const reverseFormatContractEndDate = contractEndDateYYYY + '-' + contractEndDateMM + '-' + contractEndDateDD;
 
         if (formatContractEndDate !== formatLastDayOfMonth) {
-          daysBeforeStart = await businessDaysDifference(reverseFormatContractEndDate, formatFirstDayOfMonth);
-          if (!isWeekend(contractEndDate)) {
-            daysBeforeStart--;
-          }
+          daysBeforeStart = businessDaysDifference(reverseFormatContractEndDate, formatFirstDayOfMonth);
+          // if (!isWeekend(contractEndDate)) {
+          //   daysBeforeStart--;
+          // }
 
           empGross = daysBeforeStart * (empGross / 22);
           baseHT = daysBeforeStart * (baseHT / 22);
