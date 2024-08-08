@@ -828,11 +828,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         for (const allowance of hazardAllowances) {
           const hazardAllowance = parseFloat(allowance.la_amount);
 
-          if (hazardAllowance <= 0) continue;
-
-          const locationAllowance = daysBeforeStart * (hazardAllowance / 22);
-
-          if (locationAllowance <= 0) continue;
+          const locationAllowance = daysBeforeStart > 0 ? daysBeforeStart * (hazardAllowance / 22) : hazardAllowance;
 
           salaryObject = {
             salary_empid: emp.emp_id,
