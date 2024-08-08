@@ -656,17 +656,9 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       if (hireYear === parseInt(payrollYear) && hireMonth === parseInt(payrollMonth)) {
         let hireDay = String(hiredDate.getDate()).padStart(2, '0');
         if (parseInt(hireDay) > 1) {
-          // checkSecondDateWeekend = await isWeekend(hiredDate);
           daysBeforeStart = businessDaysDifference(formatLastDayOfMonthReverse, emp.emp_hire_date);
-          // if (!checkSecondDateWeekend) {
-          //   daysBeforeStart--;
-          // }
-
           empGross = daysBeforeStart * (empGross / 22);
           baseHT = daysBeforeStart * (baseHT / 22);
-
-          // empGross = empGross - daysBeforeStart * (empGross / 22);
-          // baseHT = baseHT - daysBeforeStart * (baseHT / 22);
         }
       }
 
@@ -682,15 +674,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
         if (formatContractEndDate !== formatLastDayOfMonth) {
           daysBeforeStart = businessDaysDifference(reverseFormatContractEndDate, formatFirstDayOfMonth);
-          // if (!isWeekend(contractEndDate)) {
-          //   daysBeforeStart--;
-          // }
-
           empGross = daysBeforeStart * (empGross / 22);
           baseHT = daysBeforeStart * (baseHT / 22);
-
-          // empGross = empGross - daysBeforeStart * (empGross / 22);
-          // baseHT = baseHT - daysBeforeStart * (baseHT / 22);
         }
       }
 
@@ -841,12 +826,20 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       const hazardAllowances = await locationAllowance.findLocationAllowanceByLocationId(emp.emp_location_id);
       if (!_.isEmpty(hazardAllowances) || !_.isNull(hazardAllowances)) {
         for (const allowance of hazardAllowances) {
+          const hazardAllowance = parseFloat(allowance.la_amount);
+
+          if (hazardAllowance <= 0) continue;
+
+          const locationAllowance = daysBeforeStart * (hazardAllowance / 22);
+
+          if (locationAllowance <= 0) continue;
+
           salaryObject = {
             salary_empid: emp.emp_id,
             salary_paymonth: payrollMonth,
             salary_payyear: payrollYear,
             salary_pd: allowance.la_payment_id,
-            salary_amount: allowance.la_amount,
+            salary_amount: locationAllowance,
             salary_share: 0,
             salary_tax: 0,
             salary_location_id: emp.emp_location_id,
