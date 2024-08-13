@@ -57,6 +57,10 @@ router.get('/month-year/:month/:year', auth(), async function (req, res, next) {
     let empId = req.params.emp_id;
     let month = parseInt(req.params.month);
     let year = parseInt(req.params.year);
+    try {
+        let empId = req.params.emp_id
+        let month = parseInt(req.params.month)
+        let year = parseInt(req.params.year)
 
     const timeAllocationBreakDown = await timeAllocation.getTimeAllocationListByMonthYear(month, year).then((data) => {
       return data;
