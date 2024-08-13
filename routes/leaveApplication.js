@@ -267,7 +267,7 @@ router.get('/approved-applications', async (req, res) => {
 router.get('/approved-applications/:t7', async (req, res) => {
   try {
     let empT7 = req.params['t7'];
-    let employeeObj = await employeeModel.getEmployeeByUniqueId(empT7)
+    let employeeObj = await employeeModel.getEmployeeByUniqueId(empT7);
     if (_.isEmpty(employeeObj)) {
       return res.status(404).json(`Invalid T7 or employee does not exist.`);
     }
@@ -313,7 +313,7 @@ router.get('/get-employee-leave/:emp_id', auth(), async function (req, res, next
           });
           authorizationAction.getAuthorizationLog(appId, 1).then((officers) => {
             let office = '';
-            console.log(officers);
+            // console.log(officers);
             officers.map((off) => {
               if (off?.officers) office += `${off?.officers?.emp_first_name} (${off?.officers?.emp_unique_id}), `;
             });
