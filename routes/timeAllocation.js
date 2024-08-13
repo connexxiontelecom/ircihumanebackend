@@ -38,7 +38,7 @@ router.get('/', auth(), async function (req, res, next) {
     }
 });
 
-router.get('/manage-time-allocation/:month/:year', auth(), async function (req, res, next) {
+router.get('/month-year/:month/:year', auth(), async function (req, res, next) {
     try {
         let empId = req.params.emp_id
         let month = parseInt(req.params.month)
