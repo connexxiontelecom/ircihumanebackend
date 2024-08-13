@@ -37,30 +37,10 @@ router.get('/', auth(), async function (req, res, next) {
 });
 
 router.get('/month-year/:month/:year', auth(), async function (req, res, next) {
-
-    try {
-        let empId = req.params.emp_id
-        let month = parseInt(req.params.month)
-        let year = parseInt(req.params.year)
-
-        const timeAllocationBreakDown = await timeAllocation.getTimeAllocationListByMonthYear(month, year).then((data) => {
-            return data
-        })
-
-        return res.status(200).json(timeAllocationBreakDown)
-    } catch (err) {
-        return res.status(400).json(` Error while fetching time allocation `);
-
-    }
-
   try {
     let empId = req.params.emp_id;
     let month = parseInt(req.params.month);
     let year = parseInt(req.params.year);
-    try {
-        let empId = req.params.emp_id
-        let month = parseInt(req.params.month)
-        let year = parseInt(req.params.year)
 
     const timeAllocationBreakDown = await timeAllocation.getTimeAllocationListByMonthYear(month, year).then((data) => {
       return data;
@@ -325,65 +305,12 @@ router.get('/view-time-allocation/:ref_no', auth(), async function (req, res, ne
 
     return res.status(200).json(timeAllocationData);
   } catch (err) {
-    return res.status(400).json(`Error while fetching time allocation `);
+    return res.status(400).json(`Error while fetching time allocation ${err.message}`);
     next(err);
   }
 });
 
 router.get('/get-employee-time-allocation/:emp_id', auth(), async function (req, res, next) {
-
-    try {
-        let empId = req.params.emp_id
-
-
-        const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsEmployee(empId).then((data) => {
-            return data
-        })
-
-        return res.status(200).json(timeAllocationBreakDown)
-    } catch (err) {
-        return res.status(400).json(`Error while fetching time allocation`);
-        next(err);
-    }
-});
-
-router.get('/authorization/:super_id', auth(), async function (req, res, next) {
-    try {
-
-        let super_id = req.params.super_id
-        let ref_no = [];
-        let timeObj = {};
-
-        await authorizationAction.getAuthorizationByTypeOfficerId(2,super_id).then((data) => {
-            data.map((da) => {
-                ref_no.push(da.auth_travelapp_id)
-            });
-        })
-        await timeAllocation.findTimeAllocationsByRefNo(ref_no).then((data) => {
-            authorizationAction.getAuthorizationLog(ref_no, 2).then((officers) => {
-                timeObj = {
-                    data,
-                    officers
-                }
-                return res.status(200).json(timeObj);
-            });
-        })
-
-    } catch (err) {
-        return res.status(400).json(`Error while fetching time allocation `);
-        next(err);
-    }
-});
-
-
-router.get('/get-timesheet-submission/:status', auth(), async function(req, res){
-  try{
-    const status = req.params.status;
-    const allocations = await timeAllocationModel.getTimesheetSubmissionByStatus(parseInt(status));
-    return res.status(200).json(allocations);
-  }catch (e) {
-    return res.status(400).json("Something went wrong. Try again later.")
-
   try {
     let empId = req.params.emp_id;
     const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsEmployee(empId).then((data) => {
