@@ -1252,6 +1252,9 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         await salary.undoSalaryMonthYearLocation(payrollMonth, payrollYear, pmylLocationId);
         return res.status(400).json(`No Payment Definition has been Indicated as Tax `);
       }
+
+      if (parseFloat(empAdjustedGrossII) <= 70000) continue;
+
       let newTaxableIncome = empAdjustedGrossII - welfareIncomes;
       let checka = parseFloat(200000 / 12);
       let checkb = parseFloat((1 / 100) * newTaxableIncome);
@@ -1266,8 +1269,6 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       let cTax;
       let totalTaxAmount = 0;
       let i = 1;
-
-      if (parseFloat(newTaxableIncome) <= 70000) continue;
 
       let taxObjects = [];
       if (parseFloat(tempTaxAmount) > 0) {
