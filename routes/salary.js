@@ -34,7 +34,7 @@ const { businessDaysDifference } = require('../services/dateService');
 const pauseSalaryService = require('../services/pauseSalaryService');
 const reconciliationService = require('../services/reconciliationService');
 const salaryCron = require('../services/salaryCronService');
-const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocation')(sequelize, Sequelize.DataTypes);;
+const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocation')(sequelize, Sequelize.DataTypes);
 
 /* run salary routine */
 router.get('/salary-routine', auth(), async function (req, res, next) {
@@ -1022,7 +1022,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
             }
 
             if (parseInt(computationalPayment.pd_id) === 7 && emp.emp_nhf_status) {
-              amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empGross;
+              amount = (parseFloat(computationalPayment.pd_percentage) / 100) * empAdjustedGrossII;
 
               salaryObject = {
                 salary_empid: emp.emp_id,
@@ -1266,6 +1266,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
       let cTax;
       let totalTaxAmount = 0;
       let i = 1;
+
+      if (parseFloat(newTaxableIncome) <= 70000) continue;
 
       let taxObjects = [];
       if (parseFloat(tempTaxAmount) > 0) {
@@ -2913,7 +2915,7 @@ router.post('/unconfirm-salary-routine', auth(), async function (req, res, next)
 
     if (validationResult.error) {
       return res.status(400).json(validationResult.error.details[0].message);
-    } 
+    }
 
     // let employeeId = req.body.employee
     let locations = req.body.pmyl_location_id;
@@ -3751,7 +3753,7 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
       let authorisedBy = authorized;
       const location = await payrollMonthYearLocationModel.getLocation(pmylLocationId, payrollMonth, payrollYear);
       //let approvedDate = 'N/A';
-     // let approvedBy = 'N/A';
+      // let approvedBy = 'N/A';
       //let authorisedDate = 'N/A';
       //let confirmedBy = 'N/A';
       //let confirmedDate = 'N/A';
@@ -3760,8 +3762,8 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
         approvedBy,
         authorisedBy,
         confirmedBy,
-        location,
-      }
+        location
+      };
 
       for (const emp of employees) {
         let grossSalary = 0;
@@ -3872,14 +3874,13 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
             year: payrollYear,
             employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
             empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
-            salaryGrade: empSalaryStructureName,
+            salaryGrade: empSalaryStructureName
           };
 
           employeeSalary.push(salaryObject);
         }
-
       }
-      const resObj = {employeeSalary, otherDetails}
+      const resObj = { employeeSalary, otherDetails };
       return res.status(200).json(resObj);
     }
   } catch (err) {
