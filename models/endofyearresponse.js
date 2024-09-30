@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     eyr_gs_id: DataTypes.INTEGER,
     eyr_strength: DataTypes.STRING,
     eyr_growth_area: DataTypes.STRING,
+    eyr_support_growth_area: DataTypes.STRING,
     eyr_response: DataTypes.STRING,
     eyr_master_id: DataTypes.INTEGER,
     eyr_status: DataTypes.INTEGER
