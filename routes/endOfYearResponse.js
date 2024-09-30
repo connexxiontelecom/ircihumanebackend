@@ -14,6 +14,7 @@ const selfAssessmentMaster = require("../services/selfAssessmentMasterService");
 const {sequelize, Sequelize} = require('../services/db');
 const endYearSupervisorResponse = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
 const selfassessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
+const mailer = require('../services/IRCMailer')
 
 /* Add end of year question Assessment */
 router.get('/', auth(), async function (req, res, next) {
@@ -199,6 +200,21 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
             if (i > 0) {
                 return res.status(400).json(`An error Occurred while adding`)
             } else {
+              //send email notification
+                //employee
+                if(!(_.isEmpty(employeeData.emp_office_email)) || !(_.isNull(employeeData.emp_office_email)) ){
+                  const message = `Thank you for submitting your end of year assessment. We'll do well to notify your supervisor. `;
+                  notify("Self Assessment", message, employeeData);
+                }
+                //supervisor
+                const supervisorData = await employees.getEmployee(employeeData.emp_supervisor_id).then((data) => {
+                  return data
+                })
+                if(!(_.isEmpty(supervisorData.emp_office_email)) || !(_.isNull(supervisorData.emp_office_email)) ){
+                  const text = `${employeeData.emp_first_name} - (${employeeData.emp_unique_id}) submitted his/her end of year assessment a while ago. Do well to login to assess employee.`;
+                  notify("Assess Employee", text, supervisorData);
+                }
+
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": "Responded to Goal Setting",
@@ -250,6 +266,20 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
 
             return res.status(400).json(`An error Occurred, Check for Open End of Activity`)
         } else {
+
+          //employee
+          if(!(_.isEmpty(employeeData.emp_office_email)) || !(_.isNull(employeeData.emp_office_email)) ){
+            const message = `Thank you for submitting your end of year assessment. We'll do well to notify your supervisor. `;
+            notify("Assess Employee", message, employeeData);
+          }
+          //supervisor
+          const supervisorData = await employees.getEmployee(employeeData.emp_supervisor_id).then((data) => {
+            return data
+          })
+          if(!(_.isEmpty(supervisorData.emp_office_email)) || !(_.isNull(supervisorData.emp_office_email)) ){
+            const text = `${employeeData.emp_first_name} - (${employeeData.emp_unique_id}) submitted his/her end of year assessment a while ago. Do well to login to assess employee.`;
+            notify("Assess Employee", text, supervisorData);
+          }
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": "Added Ended of Year Question",
@@ -268,6 +298,7 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
         next(err);
     }
 });
+
 
 
 router.get('/get-end-year/:emp_id/:gs_id', auth(), async function (req, res, next) {
@@ -346,6 +377,21 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth(), async function (req, res
         const rateEmployee = await endYearResponse.rateEmployeeByMasterId(masterId, rating).then((data)=>{
             return data
         })
+
+
+        //employee
+        if(!(_.isEmpty(employeeData.emp_office_email)) || !(_.isNull(employeeData.emp_office_email)) ){
+          const message = `Your end of year assessment was approved! `;
+          notify("Good News!", message, employeeData);
+        }
+        //supervisor
+        const supervisorData = await employees.getEmployee(employeeData.emp_supervisor_id).then((data) => {
+          return data
+        })
+        if(!(_.isEmpty(supervisorData.emp_office_email)) || !(_.isNull(supervisorData.emp_office_email)) ){
+          const text = `Hello ${supervisorData.emp_first_name} - (${supervisorData.emp_unique_id}), you approved ${employeeData.emp_first_name} - (${employeeData.emp_unique_id}) end of year assessment a while ago. Contact admin if this was done in error. Thank you.`;
+          notify("End of Year Assessment Approved!", text, supervisorData);
+        }
 
 
         const logData = {
@@ -450,5 +496,12 @@ router.get('/supervisor-end-year-response/:masterId', auth(), async function(req
     return res.status(400).json("Something went wrong.");
   }
 })
+
+
+async function notify(subject, message, userData){
+    const mailerRes =  await mailer.sendMail('noreply@ircng.org', userData.emp_office_email, subject, message).then((data)=>{
+      return data
+    })
+}
 
 module.exports = router;

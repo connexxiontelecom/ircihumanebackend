@@ -77,7 +77,8 @@ async function sendMail(from, to, subject, text){
       from: from,
       to: to,
       subject: subject,
-      text: text
+      text: text,
+      template: 'notificationByEmail',
     }
     await transport.sendMail(message, function(err, res){
       if (err) {
