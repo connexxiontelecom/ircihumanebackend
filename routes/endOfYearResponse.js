@@ -172,6 +172,7 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
                     eyr_gs_id: gsId,
                     eyr_strength: er.eyr_strength,
                     eyr_growth_area: er.eyr_growth_area,
+                    eyr_support_growth_area: er.eyr_support_growth_area,
                     eyr_response: er.eyr_response,
                     eyr_status: 0,
                 }

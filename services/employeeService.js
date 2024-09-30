@@ -493,6 +493,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
       emp_emergency_name: employeeData.emp_emergency_name,
       emp_emergency_contact: employeeData.emp_emergency_contact,
       emp_contract_end_date: employeeData.emp_contract_end_date,
+      emp_probation_end_date: employeeData.emp_probation_end_date,
       emp_hire_date: employeeData.emp_hire_date,
       emp_dob: employeeData.emp_dob,
       emp_job_role_id: employeeData.emp_job_role_id,
