@@ -571,7 +571,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res) => {
           nineDate = new Date(vd);
           nine++;
           break;
-        case 1:
+        case 10:
           tenDate = new Date(vd);
           ten++;
           break;
@@ -648,7 +648,7 @@ router.patch('/update-leaveapp-period/:leaveId', auth(), async (req, res) => {
             seven,
             leave.leapp_id
           );
-        }
+        } 
       } else if (number === 8) {
         if (eight > 0) {
           await addToLeaveAccrual(
