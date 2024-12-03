@@ -1,5 +1,5 @@
-import path from 'path';
-import AWS from 'aws-sdk';
+const path = require('path');
+const AWS = require('aws-sdk');
 const s3 = new AWS.S3({
   accessKeyId: `${process.env.ACCESS_KEY}`,
   secretAccessKey: `${process.env.SECRET_KEY}`
