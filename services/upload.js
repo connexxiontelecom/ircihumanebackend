@@ -5,7 +5,7 @@ const s3 = new AWS.S3({
   secretAccessKey: `${process.env.SECRET_KEY}`
 });
 
-export const uploadFile = (fileRequest) => {
+const uploadFile = (fileRequest) => {
   return new Promise(async (resolve, reject) => {
     let s3Res;
     const fileExt = path.extname(fileRequest.name);
@@ -25,4 +25,8 @@ export const uploadFile = (fileRequest) => {
       resolve(s3Res);
     });
   });
+};
+
+module.exports = {
+  uploadFile
 };

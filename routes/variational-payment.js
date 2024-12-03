@@ -10,7 +10,7 @@ const employees = require('../services/employeeService');
 const salary = require('../services/salaryService');
 const path = require('path');
 const { removePayrollMonthYearLocation } = require('../services/payrollMonthYearLocationService');
-const uploadHelper = require('../services/upload');
+const { uploadFile } = require('../services/upload');
 const reader = require('xlsx');
 const fs = require('fs');
 const https = require('https');
@@ -298,7 +298,7 @@ router.post('/upload-payment', auth(), async (req, res) => {
       return res.status(400).json('Invalid file format');
     }
 
-    let uploadResponse = await uploadHelper.uploadFile(variationalPaymentFile);
+    let uploadResponse = await uploadFile(variationalPaymentFile);
     uploadResponse = String(uploadResponse);
 
     await https.get(uploadResponse, async function (response) {
