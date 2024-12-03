@@ -347,7 +347,7 @@ router.post('/upload-payment', auth(), async (req, res) => {
       variationalPaymentToBeInserted.push({
         vp_emp_id: employeeId,
         vp_payment_def_id: defaultId,
-        vp_amount: row.amount,
+        vp_amount: parseFloat(row.amount),
         vp_payment_month: parsedMonth,
         vp_payment_year: parsedYear,
         vp_default_id: 1
