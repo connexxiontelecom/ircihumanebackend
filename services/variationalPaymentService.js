@@ -26,6 +26,10 @@ async function setNewSingleVariationalPayment(variationalData) {
   return await variationalPaymentModel.create(variationalData);
 }
 
+async function createManyVariationalPayment(variationalData) {
+  return await variationalPaymentModel.bulkCreate(variationalData);
+}
+
 const getVariationalPayments = async () => {
   return await variationalPaymentModel.findAll({
     include: ['employee']
@@ -207,5 +211,6 @@ module.exports = {
   getUnconfirmedVariationalPaymentMonthYearEmployees,
   undoVariationalPaymentMonthYearEmployee,
   deletePaymentEntryEmployeeMonthYear,
-  getVariationalPaymentPayType
+  getVariationalPaymentPayType,
+  createManyVariationalPayment
 }

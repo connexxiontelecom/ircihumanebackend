@@ -349,7 +349,7 @@ router.post('/run-salary-gross-archive', auth(), async function (req, res) {
             si_new_gross: res1['NewGross'],
             si_reason: req.body.reason
           };
-          newValues.push(empArchiveData);
+          newValues.push(salaryIncrementModel.addSalaryIncrement(empArchiveData));
         } else {
           errorBag++;
         }
@@ -357,12 +357,11 @@ router.post('/run-salary-gross-archive', auth(), async function (req, res) {
 
       if (errorBag > 1) {
         return res.status(400).json('Something went wrong. Try again later.');
-      } else {
-        newValues.map(async (val) => {
-          await salaryIncrementModel.addSalaryIncrement(val);
-        });
-        return res.status(200).json("Salary increment uploaded. Kindly inspect record to ensure it's accuracy.");
       }
+
+      await Promise.all(newValues);
+
+      return res.status(200).json("Salary increment uploaded. Kindly inspect record to ensure it's accuracy.");
     });
   } catch (e) {
     return res.status(400).json('Something went wrong. Try again later.');
@@ -386,28 +385,31 @@ router.post('/process-salary-increment', auth(), async function (req, res) {
       return res.status(200).json('Salary increment record cleared!');
     }
     const salaryIncrementRecords = await salaryIncrementModel.getSalaryIncrements();
-    if (!_.isEmpty(salaryIncrementRecords) || !_.isNull(salaryIncrementRecords)) {
-      salaryIncrementRecords.map(async (salRecord) => {
-        const emp = await employeeModel.getEmployeeById(parseInt(salRecord.si_empid));
-        const empArchiveData = {
-          sga_empid: salRecord.si_empid,
-          sga_prev_salary: emp.emp_gross,
-          sga_new_salary: salRecord.si_new_gross,
-          sga_reason: salRecord.si_reason,
-          sga_attachment: 'attachment'
-        };
-        await salaryGrossArchiveModel.archiveSalary(empArchiveData);
-        await employeeModel.updateEmployeeGrossSalary(salRecord.si_empid, salRecord.si_new_gross);
-        const ss = await salaryStrucModel.getEmployeeSalaryStructure(salRecord.si_empid);
-        ss.map(async (s) => {
-          let amt = (s.payment.pd_pr_gross / 100) * salRecord.si_new_gross;
-          await salaryStrucModel.updateSalaryStructureAmount(s.ss_empid, amt, s.payment.pd_id);
-        });
-      });
-      //clear salary increment table
-      await salaryIncrementModel.deleteSalaryIncrementRecords();
-      return res.status(200).json('Salary increment processed!');
+    if (_.isEmpty(salaryIncrementRecords) || _.isNull(salaryIncrementRecords)) {
+      return res.status(400).json('No salary increment record to process.');
     }
+
+    salaryIncrementRecords.map(async (salRecord) => {
+      const emp = await employeeModel.getEmployeeById(parseInt(salRecord.si_empid));
+      const empArchiveData = {
+        sga_empid: salRecord.si_empid,
+        sga_prev_salary: emp.emp_gross,
+        sga_new_salary: salRecord.si_new_gross,
+        sga_reason: salRecord.si_reason,
+        sga_attachment: 'attachment'
+      };
+      await salaryGrossArchiveModel.archiveSalary(empArchiveData);
+      await employeeModel.updateEmployeeGrossSalary(salRecord.si_empid, salRecord.si_new_gross);
+      const ss = await salaryStrucModel.getEmployeeSalaryStructure(salRecord.si_empid);
+      ss.map(async (s) => {
+        await salaryStrucModel.updateSalaryStructureAmount(s.ss_empid, salRecord.si_new_gross, 1);
+        await salaryStrucModel.updateSalaryStructureAmount(s.ss_empid, 100000, 2);
+        await salaryStrucModel.updateSalaryStructureAmount(s.ss_empid, 100000, 3);
+      });
+    });
+    //clear salary increment table
+    await salaryIncrementModel.deleteSalaryIncrementRecords();
+    return res.status(200).json('Salary increment processed!');
   } catch (e) {
     //console.log(e.message)
     return res.status(400).json('Something went wrong. Try again later.');
