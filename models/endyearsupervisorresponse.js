@@ -116,7 +116,8 @@ module.exports = (sequelize, DataTypes) => {
     eysr_rating: DataTypes.INTEGER,
     eysr_status: DataTypes.INTEGER,
     eysr_supervisor_id: DataTypes.INTEGER,
-    eysr_additional_comment: DataTypes.TEXT
+    eysr_additional_comment: DataTypes.TEXT,
+    eyr_support_growth_area: DataTypes.TEXT, 
   }, {
     sequelize,
     modelName: 'EndYearSupervisorResponse',
