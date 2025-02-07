@@ -1123,6 +1123,19 @@ router.post('/get-Journal', auth(), async function (req, res, next) {
       return res.status(400).json('No journals found');
     }
 
+    for (let journal of journals) {
+      const d7 = journal.j_t7;
+      if (!d7) {
+        journal.dataValues.employee = null;
+      } else {
+        let employeeData = await employeeService.getEmployeeByD7(d7);
+        if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
+          employeeData = await employeeService.getEmployeeById(d7);
+        }
+        journal.dataValues.employee = employeeData || null;
+      }
+    }
+
     return res.status(200).json(journals);
   } catch (err) {
     console.error(`Error while adding user `, err.message);
