@@ -21,7 +21,9 @@ async function runLeaveSpillOver() {
       cellText:false,
       cellDates:true
     };
-    const leaveSpillOverFile = reader.readFile('./splitted.xlsx');
+    const leaveSpillOverFile = reader.readFile('./CarryOverLeaves.xlsx');
+    //const leaveSpillOverFile = reader.readFile('./leaveSpillOver2024.xlsx');
+    //const leaveSpillOverFile = reader.readFile('./spillOver2024.xlsx');
     //const workbook = reader.read(source, { 'type': type, cellDates: true });
 //convert xlsx to JSON
     let rows = [];
@@ -35,24 +37,25 @@ async function runLeaveSpillOver() {
     const sheets = leaveSpillOverFile.SheetNames;
    // for (let i = 0; i < sheets.length; i++) {
       const temp = reader.utils.sheet_to_json(
-        leaveSpillOverFile.Sheets[leaveSpillOverFile.SheetNames[1]])
+        leaveSpillOverFile.Sheets[leaveSpillOverFile.SheetNames[0]])
         //leaveSpillOverFile.Sheets[leaveSpillOverFile.SheetNames[i]])
-      console.log(temp)
+      //console.log(temp)
       for (const res1 of temp) {
         //console.log('Date:: '+ExcelDateToJSDate(res1.StartDate));
         const emp = await employeeModel.getEmployeeByUniqueId(res1.T7)
-        //console.log(`${res1.T7}`)
+        console.log(`${res1.T7}`)
         const accrualData = {
           lea_emp_id: emp.emp_id,
           lea_month: 10,
-          lea_year: 2023,
+          lea_year: 2024,
           lea_leave_type:  1,
           lea_rate: res1.NumberOfDays,
           lea_archives: 0,
           lea_leaveapp_id: 0,
           lea_expires_on: '1990-01-01',
-          lea_fy: 'FY2024',
-          leave_narration:'Spilled over leave accrued for FY2024'
+          lea_fy: 'FY2025',
+          leave_narration:'Carry over leave'
+          //leave_narration:'Spill over leave'
         };
         const accrualLeave = await leaveAccrualService.addLeaveAccrual(accrualData);
 

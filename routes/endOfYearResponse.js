@@ -418,6 +418,7 @@ router.post('/supervisor-end-year-response', auth(), async function(req, res){
       master: Joi.number().required(),
       growth_area: Joi.string().required(),
       additional_comment: Joi.string().allow(null),
+      eyr_support_growth_area: Joi.string().allow(null),
       approve: Joi.number().required(),
       supervisor: Joi.number().required(),
       employee: Joi.number().required(),
@@ -431,12 +432,13 @@ router.post('/supervisor-end-year-response', auth(), async function(req, res){
     if (validationResult.error) {
       return res.status(400).json(validationResult.error.details[0].message)
     }
-    const {strength, rating, master,
+    const {strength, rating, master,eyr_support_growth_area,
       growth_area, additional_comment,
       approve, supervisor, employee, gsId, } = supRequest;
       let approve_status = approve === 1 ? 1 : 0;
     const data = {
       eysr_strength: strength,
+      eyr_support_growth_area:eyr_support_growth_area,
       eysr_growth: growth_area,
       eysr_rating:rating,
       eysr_master_id:master,
@@ -503,5 +505,9 @@ async function notify(subject, message, userData){
       return data
     })
 }
+const userData = {
+  emp_office_email:'talktojoegee@gmail.com'
+};
+notify('Test', 'Hello Joe', userData)
 
 module.exports = router;
