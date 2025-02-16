@@ -273,6 +273,7 @@ router.post('/single-payment', auth(), async (req, res) => {
   }
 });
 
+
 router.post('/upload-payment', auth(), async (req, res) => {
   try {
     const requestBody = req.body;
@@ -293,81 +294,82 @@ router.post('/upload-payment', auth(), async (req, res) => {
     const variationalPaymentFile = req.files.variational_payment_file;
 
     const fileExt = path.extname(variationalPaymentFile.name).toLowerCase();
+    const allowedExtensions = ['.xlsx', '.xls', '.csv'];
 
-    if (fileExt !== '.xlsx' || fileExt !== '.xls' || fileExt !== '.csv') {
-      return res.status(400).json('Invalid file format');
+    if (!allowedExtensions.includes(fileExt)) {
+      return res.status(400).json({ error: 'Invalid file format. Allowed formats: .xlsx, .xls, .csv' });
     }
+    const dir = __dirname + '/assets/' + variationalPaymentFile.name;
+    await variationalPaymentFile.mv(dir, async (err) => {
+      if (err) {
+        return res.status(400).json('File upload failed!'); // console.log('File upload failed!')
+      }
 
-    let uploadResponse = await uploadFile(variationalPaymentFile);
-    uploadResponse = String(uploadResponse);
-
-    await https.get(uploadResponse, async function (response) {
-      await response.pipe(file);
-    });
-
-    if (!fs.existsSync('./variational-payment-file.xlsx')) {
-      return res.status(400).json('File not found');
-    }
-
-    const files = await reader.readFile('./variational-payment-file.xlsx');
-    let rows = [];
-    const sheets = files.SheetNames;
-
-    for (let i = 0; i < sheets.length; i++) {
-      const temp = reader.utils.sheet_to_json(files.Sheets[files.SheetNames[i]]);
+      const workBook = await reader.readFile(dir);
+      let errorBag = 0;
+      const newValues = [];
+      let rows = [];
+      const sheets = workBook.SheetNames;
+      const temp = reader.utils.sheet_to_json(workBook.Sheets[workBook.SheetNames[0]]);
       for (const res1 of temp) {
         rows.push(res1);
       }
-    }
 
-    if (_.isEmpty(rows) || _.isNull(rows)) {
-      return res.status(400).json('No data found in the file');
-    }
-    const length = rows.length;
-    let inserted = 0;
+      if (_.isEmpty(rows) || _.isNull(rows)) {
+        return res.status(400).json('No data found in the file');
+      }
+      const length = rows.length;
+      let inserted = 0
+      //console.log(rows)
 
-    const parsedMonth = parseInt(payroll.pym_month);
-    const parsedYear = parseInt(payroll.pym_year);
-    const defaultId = parseInt(requestBody.default_id);
-    const variationalPaymentToBeInserted = [];
+      const parsedMonth = parseInt(payroll.pym_month);
+      const parsedYear = parseInt(payroll.pym_year);
+      const defaultId = parseInt(requestBody.default_id);
+      const variationalPaymentToBeInserted = [];
+      for (const row of rows) {
+        const employee = await getEmployeeByD7(row.D7);
+        if (!employee) {
+          fs.appendFileSync(__dirname + '/assets/' +'variational-payment.txt', `${row.D7}\n`);
+          continue;
+        }
 
-    for (const row of rows) {
-      const employee = await getEmployeeByD7(row.d7);
-      if (!employee) continue;
+        const employeeId = parseInt(employee?.emp_id);
 
-      const employeeId = parseInt(employee.emp_id);
+        const [existingRecord, upTsp] = await Promise.all([
+          variationalPayment.getVariationalPaymentMonthYear(parsedMonth, parsedYear, employeeId, defaultId),
+          timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(employeeId, parsedMonth, parsedYear, 1)
+        ]);
 
-      const [existingRecord, upTsp] = await Promise.all([
-        variationalPayment.getVariationalPaymentMonthYear(parsedMonth, parsedYear, employeeId, defaultId),
-        timesheetPenaltyService.updateTimeSheetPenaltyMonthYearEmpIdStatus(employeeId, parsedMonth, parsedYear, 1)
-      ]);
+        if (existingRecord || !upTsp) continue;
+        const amountKey = Object.keys(row).find(key => key.trim() === "amount");
+        const amount = amountKey ? row[amountKey] : 0;
+        variationalPaymentToBeInserted.push({
+          vp_emp_id: employeeId,
+          vp_payment_def_id: defaultId,
+          vp_amount: parseFloat(amount),
+          vp_payment_month: parsedMonth,
+          vp_payment_year: parsedYear,
+          vp_default_id: 1
+        });
+        inserted++;
+      }
+      await variationalPayment.createManyVariationalPayment(variationalPaymentToBeInserted);
 
-      if (existingRecord || !upTsp) continue;
-
-      variationalPaymentToBeInserted.push({
-        vp_emp_id: employeeId,
-        vp_payment_def_id: defaultId,
-        vp_amount: parseFloat(row.amount),
-        vp_payment_month: parsedMonth,
-        vp_payment_year: parsedYear,
-        vp_default_id: 1
+      await logs.addLog({
+        log_user_id: req.user.username.user_id,
+        log_description: 'Uploaded variational payment file',
+        log_date: new Date()
       });
-      inserted++;
-    }
-    await variationalPayment.createManyVariationalPayment(variationalPaymentToBeInserted);
 
-    await logs.addLog({
-      log_user_id: req.user.username.user_id,
-      log_description: 'Uploaded variational payment file',
-      log_date: new Date()
+      res.status(200).json(`Successfully uploaded and parsed ${inserted} records out of ${length}`);
+
     });
-
-    res.status(200).json(`Successfully uploaded and parsed ${inserted} records out of ${length}`);
   } catch (e) {
     const errorMessage = e.message || 'Something went wrong';
     return res.status(400).json(errorMessage);
   }
 });
+
 
 router.get('/:id', auth(), async (req, res, next) => {
   try {
