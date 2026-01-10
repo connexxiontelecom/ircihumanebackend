@@ -1,6 +1,6 @@
 const { QueryTypes, Op } = require('sequelize');
 const { sequelize, Sequelize } = require('./db');
-const TaxRelief = require('../models/taxRelief')(sequelize, Sequelize.DataTypes);
+const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
 
 async function addTaxRelief(taxReliefData) {
   return await TaxRelief.create({
@@ -62,7 +62,7 @@ async function sumActiveReliefsByEmployee(empId) {
   const sum = await TaxRelief.sum('relief_amount', {
     where: {
       emp_id: empId,
-      status: 1,
+      status: 1
     }
   });
   return sum || 0;
@@ -256,4 +256,3 @@ module.exports = {
   sumActiveReliefsByEmployee,
   computeTax
 };
-
