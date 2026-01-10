@@ -138,6 +138,7 @@ const createNewEmployee = async (req, res, next) => {
 
       //other_name:Joi.string().allow(null,''),
       other_name: Joi.string().allow(null, ""),
+      nationality: Joi.number().allow(null, ""),
       // hmo_no: Joi.string().required().messages({"any.required":"Enter employee's HMO number"}),
       // hmo_id: Joi.number().required().messages({"any.required":"What's the HMO associated with the HMO number you entered?"}),
       // pensionable: Joi.number().required().messages({"any.required":"Is this employee pensionable?"}),
@@ -224,6 +225,7 @@ const createNewEmployee = async (req, res, next) => {
                 emp_d5: req.body.emp_d5,
                 emp_d6: req.body.emp_d6,
                 emp_d7: req.body.emp_d7,
+                nationality: req.body.nationality,
 
 
                 emp_probation: 1,
@@ -434,6 +436,7 @@ async function updateEmployee(employeeId, employeeData) {
       emp_emergency_name: employeeData.emp_emergency_name,
       emp_emergency_contact: employeeData.emp_emergency_contact,
       emp_contact_address: employeeData.emp_contact_address,
+      emp_nin: employeeData.emp_nin,
       //emp_employee_type:employeeData.emp_employee_type,
       //emp_employee_category:employeeData.emp_employee_category,
       //emp_contract_end_date:employeeData.emp_contract_end_date,
@@ -518,6 +521,7 @@ async function updateEmployeeFromBackoffice(employeeId, employeeData) {
       emp_employee_type:employeeData.emp_employee_type,
       emp_employee_category:employeeData.emp_employee_category,
       emp_vendor_account:employeeData.emp_vendor_account,
+      nationality: employeeData.nationality,
 
       //emp_contact_address: employeeData.emp_contact_address,
 

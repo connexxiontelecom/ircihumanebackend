@@ -28,6 +28,23 @@ module.exports = {
       ts_end: {
         type: Sequelize.TEXT
       },
+
+
+      ts_comment: {
+        type: Sequelize.TEXT
+      },
+      ts_date_approved: {
+        type: Sequelize.TEXT
+      },
+      ts_approved_by: {
+        type: Sequelize.TEXT
+      },
+      ts_status: {
+        type: Sequelize.TEXT
+      },
+
+
+
       ts_duration: {
         type: Sequelize.DOUBLE
       },

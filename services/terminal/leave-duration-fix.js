@@ -263,9 +263,9 @@ async function addToLeaveAccrual(empId, year, month, leaveType, noDays, leaveId)
     lea_fy: calendarYear,
     leave_narration: `${noDays} deducted from accrued leaves`,
   }
- /* const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
+  const addAccrualResponse = await addLeaveAccrual(val).then((data) => {
     return data
-  })*/
+  })
 }
 
 
@@ -287,92 +287,92 @@ function getDatesInRange(startDate, endDate) {
 
 async function markLeaveApplicationAsFinal(leapp_start_date, leapp_end_date, leapp_empid, leapp_leave_type, leapp_id){
 
+  try{
+    let startDate = new Date(leapp_start_date);
+    let endDate = new Date(leapp_end_date);
+    //let daysRequested
+    const holidays = await publicHolidayModel.getThisYearsPublicHolidays()
+    const holidaysArray = [];
+    holidays.map((pub) => {
+      holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+    });
+    let validLeaveDates = [];
+    const datesWithin = getDatesInRange(startDate, endDate);
+    let one = 0, oneDate,
+      two = 0, twoDate,
+      three = 0, threeDate,
+      four = 0, fourDate,
+      five = 0, fiveDate,
+      six = 0, sixDate,
+      seven = 0, sevenDate,
+      eight = 0, eightDate,
+      nine = 0, nineDate,
+      ten = 0, tenDate,
+      eleven = 0, elevenDate,
+      twelve = 0, twelveDate;
+    datesWithin.map((dw)=>{
+      if(!(holidaysArray.includes(dw)) && !(isWeekend(new Date(dw))) ){
+        validLeaveDates.push(dw);
+      }
+    });
+    validLeaveDates.map(async (vd) => {
+      let validDate = new Date(vd);
+      let validMonth = validDate.getMonth() + 1;
+      switch (parseInt(validMonth)) {
+        case 1:
+          oneDate = new Date(vd);
+          one++;
+          break;
+        case 2:
+          twoDate = new Date(vd);
+          two++;
+          break;
+        case 3:
+          threeDate = new Date(vd);
+          three++;
+          break;
+        case 4:
+          fourDate = new Date(vd);
+          four++;
+          break;
+        case 5:
+          fiveDate = new Date(vd);
+          five++;
+          break;
+        case 6:
+          sixDate = new Date(vd);
+          six++;
+          break;
+        case 7:
+          sevenDate = new Date(vd);
+          seven++;
+          break;
+        case 8:
+          eightDate = new Date(vd);
+          eight++;
+          break;
+        case 9:
+          nineDate = new Date(vd);
+          nine++;
+          break;
+        case 10:
+          tenDate = new Date(vd);
+          ten++;
+          break;
+        case 11:
+          elevenDate = new Date(vd);
+          eleven++;
+          break;
+        case 12:
+          twelveDate = new Date(vd);
+          twelve++;
 
-  let startDate = new Date(leapp_start_date);
-  let endDate = new Date(leapp_end_date);
-  //let daysRequested
-  const holidays = await publicHolidayModel.getThisYearsPublicHolidays()
-  const holidaysArray = [];
-  holidays.map((pub) => {
-    holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
-  });
-  let validLeaveDates = [];
-  const datesWithin = getDatesInRange(startDate, endDate);
-  let one = 0, oneDate,
-    two = 0, twoDate,
-    three = 0, threeDate,
-    four = 0, fourDate,
-    five = 0, fiveDate,
-    six = 0, sixDate,
-    seven = 0, sevenDate,
-    eight = 0, eightDate,
-    nine = 0, nineDate,
-    ten = 0, tenDate,
-    eleven = 0, elevenDate,
-    twelve = 0, twelveDate;
-  datesWithin.map((dw)=>{
-    if(!(holidaysArray.includes(dw)) && !(isWeekend(new Date(dw))) ){
-      validLeaveDates.push(dw);
-    }
-  });
-  validLeaveDates.map(async (vd) => {
-    let validDate = new Date(vd);
-    let validMonth = validDate.getMonth() + 1;
-    switch (parseInt(validMonth)) {
-      case 1:
-        oneDate = new Date(vd);
-        one++;
-        break;
-      case 2:
-        twoDate = new Date(vd);
-        two++;
-        break;
-      case 3:
-        threeDate = new Date(vd);
-        three++;
-        break;
-      case 4:
-        fourDate = new Date(vd);
-        four++;
-        break;
-      case 5:
-        fiveDate = new Date(vd);
-        five++;
-        break;
-      case 6:
-        sixDate = new Date(vd);
-        six++;
-        break;
-      case 7:
-        sevenDate = new Date(vd);
-        seven++;
-        break;
-      case 8:
-        eightDate = new Date(vd);
-        eight++;
-        break;
-      case 9:
-        nineDate = new Date(vd);
-        nine++;
-        break;
-      case 10:
-        tenDate = new Date(vd);
-        ten++;
-        break;
-      case 11:
-        elevenDate = new Date(vd);
-        eleven++;
-        break;
-      case 12:
-        twelveDate = new Date(vd);
-        twelve++;
-
-    }
-  });
-  holidays.map((pub) => {
-    holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
-  });
-  //if(parseInt(status) === 1){
+      }
+    });
+    holidays.map((pub) => {
+      holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
+    });
+    //if(parseInt(status) === 1){
     //Insert individually
     for(let m = 1; m<= 12; m++){
       let number = parseInt(m);
@@ -451,7 +451,13 @@ async function markLeaveApplicationAsFinal(leapp_start_date, leapp_end_date, lea
       }
 
     }*/
-  //}
+    //}
+  }catch (e) {
+    console.log(e)
+  }
+
+
+
 
 }
 module.exports = {

@@ -32,6 +32,19 @@ module.exports = (sequelize, DataTypes) => {
               lea_fy: calendarYear
             })
         }
+        static async updateLeaveAccrual(empId, month, year, leaveType, noOfDays, expiresOn, leaveAppId){
+          const calendarYear = month <= 9 ? `FY${year}` : `FY${year+1}`;
+          leaveAccrual.create({
+              lea_emp_id: empId,
+              lea_month: month,
+              lea_year: year,
+              lea_leave_type: leaveType,
+              lea_rate: noOfDays,
+              lea_expires_on: expiresOn || null,
+              lea_fy: calendarYear,
+              lea_leaveapp_id: leaveAppId || null
+            })
+        }
 
         static async getAllLeaveAccruals(year) {
             return await leaveAccrual.findAll({

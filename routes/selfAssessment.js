@@ -337,6 +337,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async functi
                 sam_gs_id: gsId,
                 sam_emp_id: empId,
                 sam_status: 0,
+                sam_supervisor_id: employeeData.emp_supervisor_id,
                 sam_optional: saRequests[0].optional,
                 sam_discussion_held_on: saRequests[0].sam_discussion_held_on,
                 sam_year: gsData.gs_year

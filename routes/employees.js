@@ -132,7 +132,11 @@ router.patch('/update-employee-backoffice/:emp_id', auth(), async function (req,
     // if(checkEmployeeContractEndDateWeekend || checkEmployeeHireDateWeekend){
     //     return res.status(400).json('Hire date or contract end date cannot be a weekend')
     // }
+    console.log("================================\n")
+    console.log(employeeData)
+    console.log("================================\n")
     await employees.updateEmployeeFromBackoffice(empId, employeeData);
+
     const result = isAfter(employeeContractEndDate, new Date());
     if (result) {
       await employees.unSuspendEmployee(empId);

@@ -1,36 +1,33 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('time_allocations', {
-      ta_id: {
+    await queryInterface.createTable('countries', {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      ta_emp_id: {
-        type: Sequelize.INTEGER
+      iso: {
+        type: Sequelize.STRING
       },
-      ta_month: {
-        type: Sequelize.TEXT
+      name: {
+        type: Sequelize.STRING
       },
-      ta_year: {
-        type: Sequelize.TEXT
+      nicename: {
+        type: Sequelize.STRING
       },
-      ta_tcode: {
-        type: Sequelize.TEXT
+      iso3: {
+        type: Sequelize.STRING
       },
-
-      ta_approved_by: {
-        type: Sequelize.TEXT
+      numcode: {
+        type: Sequelize.STRING
       },
-      ta_date_approved: {
-        type: Sequelize.TEXT
+      phonecode: {
+        type: Sequelize.STRING
       },
-
-
-      ta_charge: {
-        type: Sequelize.DOUBLE
+      flag: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -43,6 +40,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('time_allocations');
+    await queryInterface.dropTable('countries');
   }
 };
