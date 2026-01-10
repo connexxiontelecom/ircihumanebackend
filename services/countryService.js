@@ -1,6 +1,6 @@
-const {QueryTypes} = require('sequelize')
-const {sequelize, Sequelize} = require('./db');
-const CountryModel = require("../models/Country")(sequelize, Sequelize.DataTypes)
+const { QueryTypes } = require('sequelize');
+const { sequelize, Sequelize } = require('./db');
+const CountryModel = require('../models/country')(sequelize, Sequelize.DataTypes);
 
 const errHandler = (err) => {
   console.log('Error:', err);
@@ -12,16 +12,7 @@ const errHandler = (err) => {
 const getCountries = async (req, res) => {
   try {
     const countries = await CountryModel.findAll({
-      attributes: [
-        'id',
-        'iso',
-        'name',
-        'nicename',
-        'iso3',
-        'numcode',
-        'phonecode',
-        'flag'
-      ],
+      attributes: ['id', 'iso', 'name', 'nicename', 'iso3', 'numcode', 'phonecode', 'flag'],
       order: [['name', 'ASC']]
     });
     res.status(200).json(countries);
@@ -158,4 +149,3 @@ module.exports = {
   updateCountry,
   findCountryById
 };
-
