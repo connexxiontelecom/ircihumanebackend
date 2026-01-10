@@ -1184,6 +1184,29 @@ router.post('/leave-planner', async function (req, res) {
   }
 });
 
+router.post('/leave-report', async function (req, res) {
+  try {
+    const schema = Joi.object({
+      month: Joi.number().required(),
+      year: Joi.number().required(),
+      status: Joi.number().required(),
+    });
+
+    const validationResult = schema.validate(req.body, { abortEarly: false });
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    const month = parseInt(req.body.month);
+    const year = parseInt(req.body.year);
+    const status = parseInt(req.body.status);
+    const report = await leaveAppModel.getLeaveApplicationsByParam(status,month,year);
+    return res.status(200).json(report);
+  } catch (e) {
+    return res.status(400).json(e.message);
+  }
+});
 async function handleInAppEmailNotifications(firstName, title, body, url, email, empId) {
   try {
     const templateParams = {

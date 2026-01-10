@@ -9,14 +9,14 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     return Promise.all([
-     /* queryInterface.addColumn(
-        'end_year_responses',
-        'eyr_support_growth_area',
+      queryInterface.addColumn(
+        'employees',
+        'nationality',
         {
           type: Sequelize.TEXT,
           allowNull:true,
         }
-      ),*/
+      ),
 
     ]);
   },

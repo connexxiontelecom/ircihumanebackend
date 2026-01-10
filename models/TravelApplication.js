@@ -48,6 +48,21 @@ module.exports = (sequelize, DataTypes) => {
         ],*/
       });
     }
+    static async checkExistingTravelApplication(employeeId, startDate, endDate) {
+      return await TravelApplication.findOne({
+        where: {
+          travelapp_employee_id: employeeId,
+          travelapp_status: [0,1],
+          [Sequelize.Op.or]: [
+            {
+              travelapp_start_date: { [Sequelize.Op.lte]: endDate },
+              travelapp_end_date: { [Sequelize.Op.gte]: startDate }
+            }
+          ]
+        }
+      });
+    }
+
   }
   TravelApplication.init(
     {
@@ -106,3 +121,4 @@ module.exports = (sequelize, DataTypes) => {
 
   return TravelApplication;
 };
+

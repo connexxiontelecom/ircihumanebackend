@@ -25,6 +25,11 @@ async function addLeaveApplication(leaveApplicationData) {
         leapp_alt_email: leaveApplicationData.leapp_alt_phone,
         leapp_holidays: leaveApplicationData.leapp_holidays.toString(),
         leapp_locations: leaveApplicationData.leapp_locations.toString(),
+
+        leapp_verify_date: leaveApplicationData.leapp_end_date,
+        leapp_approve_date: leaveApplicationData.leapp_end_date,
+        leapp_verify_by:640,
+        leapp_approve_by:640,
         // leapp_verify_by: leaveApplicationData.leapp_verify_by,
         // leapp_verify_date: leaveApplicationData.leapp_verify_date,
         // leapp_verify_comment: leaveApplicationData.leapp_verify_comment,

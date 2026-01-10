@@ -9,16 +9,18 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, pr
   port: process.env.DB_PORT,
   dialect: 'mysql',
   logging: false
-});
-*/
+});*/
+
+
 
 
 
  const sequelize = new Sequelize('ircihumane', 'root', 'root', {
-     host: 'localhost',
-     port: 8889,
+     host: '127.0.0.1',
+     port: 8883,
     dialect: 'mysql'
  });
+//2025-07-03_09-47-21
 
 
 try {

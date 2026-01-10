@@ -62,8 +62,18 @@ app.use('/states', stateRouter);
 const countryCodeRouter = require('./routes/country-code');
 app.use('/country-codes', countryCodeRouter);
 
+const reliefTypeRouter = require('./routes/reliefType.routes');
+app.use('/relief-types', reliefTypeRouter);
+
+const taxReliefRouter = require('./routes/taxRelief.routes');
+app.use('/tax-reliefs', taxReliefRouter);
+
+
 const employeeCategoryRouter = require('./routes/employee-category');
 app.use('/employee-categories', employeeCategoryRouter);
+
+const countryRouter = require('./routes/country');
+app.use('/countries', countryRouter);
 
 const leaveApplicationService = require('./services/leaveApplicationService');
 const leaveTypeService = require('./services/leaveTypeService');

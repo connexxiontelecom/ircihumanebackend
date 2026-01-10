@@ -15,6 +15,7 @@ router.patch('/:id',auth(), publicHolidays.updatePublicHoliday);
 //router.get('/group/:id',auth(), publicHolidays.deletePublicHolidayByGroup);
 router.get('/delete-group/:id',auth(), publicHolidays.deletePublicHolidayByGroup);
 router.get('/group/:id',auth(), publicHolidays.archivePublicHolidayByGroup);
+router.post('/duration',auth(), publicHolidays.durationCounter);
 
 
 module.exports = router;

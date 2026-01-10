@@ -166,6 +166,10 @@ module.exports = {
             type: Sequelize.STRING,
           allowNull:true
           },
+          nationality: {
+            type: Sequelize.STRING,
+          allowNull:true
+          },
           emp_employment_date: {
             type:Sequelize.DATE,
             allowNull:true

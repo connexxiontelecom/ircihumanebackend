@@ -170,7 +170,11 @@ router.post('/new-travel-application', auth(), async (req, res) => {
       if (_.isNull(sectorLeads) || _.isEmpty(sectorLeads)) {
         return res.status(400).json('Employee sector does not exist. Either set it up or contact admin.');
       }
-
+      //check for existing application(pending or approved)
+      const checkExistingRecord = await travelApplicationModel.checkExistingTravelApplication(req.body.employee, new Date(startDate), new Date(endDate))
+      if (checkExistingRecord) {
+        return res.status(400).json("You already have an existing application that is either pending or approved.");
+      }
       //supervisorAssignmentService.getEmployeeSupervisor(req.body.employee).then((sup)=>{
       //if(sup){
       const url = req.headers.referer;
