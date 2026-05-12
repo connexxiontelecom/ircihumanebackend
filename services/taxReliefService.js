@@ -1,6 +1,7 @@
 const { QueryTypes, Op } = require('sequelize');
 const { sequelize, Sequelize } = require('./db');
 const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
+const ReliefSalary = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
 
 async function addTaxRelief(taxReliefData) {
   return await TaxRelief.create({
@@ -68,6 +69,41 @@ async function sumActiveReliefsByEmployee(empId) {
   return sum || 0;
 }
 
+async function addReliefSalary(reliefSalaryData) {
+  return await ReliefSalary.create({
+    relief_Id: reliefSalaryData.relief_Id,
+    Month: reliefSalaryData.Month,
+    Year: reliefSalaryData.Year,
+    relief_Amount: reliefSalaryData.relief_Amount
+  });
+}
+
+async function addReliefSalaryForEmployee(empId, month, year, taxReliefs) {
+  const activeReliefs = taxReliefs || (await findActiveTaxReliefsByEmployee(empId));
+  if (!activeReliefs?.length) return [];
+
+  const reliefIds = activeReliefs.map((relief) => relief.id);
+
+  await ReliefSalary.destroy({
+    where: {
+      relief_Id: {
+        [Op.in]: reliefIds
+      },
+      Month: month,
+      Year: year
+    }
+  });
+
+  return await ReliefSalary.bulkCreate(
+    activeReliefs.map((relief) => ({
+      relief_Id: relief.id,
+      Month: month,
+      Year: year,
+      relief_Amount: relief.relief_amount || 0
+    }))
+  );
+}
+
 /**
  * Compute tax for an employee
  * @param {number} empId - Employee ID
@@ -77,7 +113,8 @@ async function sumActiveReliefsByEmployee(empId) {
  */
 async function computeTax(empId, newTaxableIncome, taxRatesData) {
   // Get sum of active tax reliefs for employee
-  const taxRelief = await sumActiveReliefsByEmployee(empId);
+  const activeTaxReliefs = await findActiveTaxReliefsByEmployee(empId);
+  const taxRelief = activeTaxReliefs.reduce((sum, relief) => sum + parseFloat(relief.relief_amount || 0), 0);
 
   let tempTaxAmount = newTaxableIncome - taxRelief;
   const TtempTaxAmount = tempTaxAmount;
@@ -118,6 +155,7 @@ async function computeTax(empId, newTaxableIncome, taxRatesData) {
   return {
     totalTaxAmount,
     taxRelief,
+    activeTaxReliefs,
     taxObjects,
     tempTaxAmount: TtempTaxAmount
   };
@@ -254,5 +292,7 @@ module.exports = {
   updateTaxRelief,
   deleteTaxRelief,
   sumActiveReliefsByEmployee,
+  addReliefSalary,
+  addReliefSalaryForEmployee,
   computeTax
 };

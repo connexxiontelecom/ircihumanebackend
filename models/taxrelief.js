@@ -1,7 +1,11 @@
 'use strict';
+const { sequelize, Sequelize } = require('../services/db');
 const {
   Model
 } = require('sequelize');
+const Employee = require("../models/Employee")(sequelize, Sequelize.DataTypes);
+const ReliefType = require("../models/relieftype")(sequelize, Sequelize.DataTypes);
+
 module.exports = (sequelize, DataTypes) => {
   class TaxRelief extends Model {
     /**
@@ -32,6 +36,17 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'TaxRelief',
     tableName: 'tax_reliefs'
   });
+
+  TaxRelief.belongsTo(Employee, {
+    foreignKey: 'emp_id',
+    as: 'employee'
+  });
+
+  TaxRelief.belongsTo(ReliefType, {
+    foreignKey: 'relief_type_id',
+    as: 'reliefType'
+  });
+
   return TaxRelief;
 };
 

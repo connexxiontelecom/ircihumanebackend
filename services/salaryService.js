@@ -1,10 +1,12 @@
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const { sequelize, Sequelize } = require('./db');
 const Salary = require('../models/salary')(sequelize, Sequelize.DataTypes);
 const PaymentDefinition = require('../models/paymentdefinition')(sequelize, Sequelize.DataTypes);
 const Employee = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 const VariationalPayment = require('../models/VariationalPayment')(sequelize, Sequelize.DataTypes);
 const SeverancePay = require('../models/severancePay')(sequelize, Sequelize.DataTypes);
+const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
+const ReliefSalary = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 
 async function addSalary(salary) {
@@ -43,24 +45,78 @@ async function getSalaryMonthYear(month, year) {
   });
 }
 
-async function undoSalaryMonthYear(month, year, employees) {
-  await SeverancePay.destroy({
+async function undoReliefSalaryMonthYear(month, year, employees) {
+  if (!employees) {
+    return await ReliefSalary.destroy({
+      where: {
+        Month: month,
+        Year: year
+      }
+    });
+  }
+
+  const employeeIds = Array.isArray(employees) ? employees : [employees];
+  if (employeeIds.length === 0) return 0;
+
+  const taxReliefs = await TaxRelief.findAll({
+    attributes: ['id'],
     where: {
-      sp_month: month,
-      sp_year: year,
-      sp_empid: employees
+      emp_id: {
+        [Op.in]: employeeIds
+      }
     }
   });
-  return await Salary.destroy({
+  const reliefIds = taxReliefs.map((relief) => relief.id);
+
+  if (reliefIds.length === 0) return 0;
+
+  return await ReliefSalary.destroy({
     where: {
-      salary_paymonth: month,
-      salary_payyear: year,
-      salary_empid: employees
+      relief_Id: {
+        [Op.in]: reliefIds
+      },
+      Month: month,
+      Year: year
     }
   });
 }
 
+async function undoSalaryMonthYear(month, year, employees) {
+  const salaryWhere = {
+    salary_paymonth: month,
+    salary_payyear: year
+  };
+  const severanceWhere = {
+    sp_month: month,
+    sp_year: year
+  };
+
+  if (employees) {
+    salaryWhere.salary_empid = employees;
+    severanceWhere.sp_empid = employees;
+  }
+
+  await undoReliefSalaryMonthYear(month, year, employees);
+  await SeverancePay.destroy({
+    where: severanceWhere
+  });
+  return await Salary.destroy({
+    where: salaryWhere
+  });
+}
+
 async function undoSalaryMonthYearLocation(month, year, locationId) {
+  const salaryEmployees = await Salary.findAll({
+    attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('salary_empid')), 'salary_empid']],
+    where: {
+      salary_paymonth: month,
+      salary_payyear: year,
+      salary_location_id: locationId
+    }
+  });
+  const employeeIds = salaryEmployees.map((salaryEmployee) => salaryEmployee.salary_empid);
+
+  await undoReliefSalaryMonthYear(month, year, employeeIds);
   await SeverancePay.destroy({
     where: {
       sp_month: month,
