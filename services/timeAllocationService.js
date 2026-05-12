@@ -12,6 +12,14 @@ async function findAllTimeAllocations() {
     })
 }
 
+async function getTimeAllocationListByMonthYear(month, year) {
+  return await TimeAllocation.findAll({
+    where: {ta_month: month, ta_year: year},
+    order: [['ta_id', 'DESC']],
+    include: [{model:Employee, as:'employee'}]
+  })
+}
+
 
 async function addTimeAllocation(timeAllocationData) {
     return await TimeAllocation.create({
@@ -22,7 +30,8 @@ async function addTimeAllocation(timeAllocationData) {
         ta_charge: timeAllocationData.ta_charge,
         ta_ref_no: timeAllocationData.ta_ref_no,
         ta_t0_code: timeAllocationData.ta_t0_code,
-        ta_t0_percent: timeAllocationData.ta_t0_percent
+        ta_t0_percent: timeAllocationData.ta_t0_percent,
+        ta_date_approved: timeAllocationData?.ta_date_approved,
 
     });
 }
@@ -60,22 +69,37 @@ async function updateTimeAllocationByTaId(ta_id, timeAllocationData){
         ta_charge: timeAllocationData.ta_charge
 
     }, {
-            where:{
-                ta_id:ta_id
-            }
-        });
+        where:{
+            ta_id:ta_id
+        }
+    });
 }
 
 async function findTimeAllocation(empId, month, year) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
 async function findTimeAllocationDetail(month, year, empId) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
+        order: [['ta_id', 'DESC']],
+        include: [{model:Employee, as:'employee'}]
+    })
+}
+
+async function findTimeAllocationDetailByStatus(month, year, empId) {
+    return await TimeAllocation.findAll({
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: [1, 0]},
+        order: [['ta_id', 'DESC']],
+        include: [{model:Employee, as:'employee'}]
+    })
+}
+async function findTimeAllocationDetailByRefNo(ref_no) {
+    return await TimeAllocation.findAll({
+        where: {ta_ref_no:ref_no},
         order: [['ta_id', 'DESC']],
         include: [{model:Employee, as:'employee'}]
     })
@@ -93,13 +117,13 @@ async function findTimeAllocationDetailMonthYear(month, year) {
     return await TimeAllocation.findOne({
         where: {ta_month: month, ta_year: year},
         order: [['ta_id', 'DESC']],
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
     })
 }
 
 async function findTimeAllocationsDetail(empId, month, year) {
     return await TimeAllocation.findAll({
-        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status:null},
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year},
         include: [{model:Employee, as:'employee'}]
     })
 }
@@ -119,16 +143,28 @@ async function findTimeAllocationsByRefNo(ref_no) {
     })
 }
 
+async function deleteTimeAllocationByRefNo(ref_no) {
+    return TimeAllocation.destroy({
+        where: {ta_ref_no: ref_no}
+    });
+}
+
 async function findOneTimeAllocationByRefNo(ref_no) {
     return await TimeAllocation.findOne({
         where: {ta_ref_no: ref_no},
-        include: [Employee]
+        include: [{model:Employee, as:'employee'}]
+    })
+}
+
+async function timeAllocationStatus(empId, month, year) {
+    return await TimeAllocation.findOne({
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: 1},
     })
 }
 
 async function sumTimeAllocation(empId, month, year) {
     return await TimeAllocation.sum('ta_charge', {
-        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status:null},
+        where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: 0},
         include: [{model:Employee, as:'employee'}]
     })
 }
@@ -144,7 +180,7 @@ module.exports = {
     addTimeAllocation,
     findTimeAllocation,
     updateTimeAllocation,
-  updateTimeAllocationByTaId,
+    updateTimeAllocationByTaId,
     sumTimeAllocation,
     deleteTimeAllocation,
     getTimeAllocationApplicationsForAuthorization,
@@ -156,5 +192,10 @@ module.exports = {
     findTimeAllocationDetailMonthYear,
     findOneTimeAllocationByRefNo,
     findOneTimeAllocationDetail,
-  deleteTimeAllocationByIds
+    deleteTimeAllocationByIds,
+    timeAllocationStatus,
+    findTimeAllocationDetailByRefNo,
+    findTimeAllocationDetailByStatus,
+    deleteTimeAllocationByRefNo,
+  getTimeAllocationListByMonthYear
 }

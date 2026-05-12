@@ -14,6 +14,7 @@ const selfAssessmentMaster = require("../services/selfAssessmentMasterService");
 const {sequelize, Sequelize} = require('../services/db');
 const endYearSupervisorResponse = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
 const selfassessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
+const mailer = require('../services/IRCMailer')
 
 /* Add end of year question Assessment */
 router.get('/', auth(), async function (req, res, next) {
@@ -101,8 +102,8 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
     let addResponse;
     try {
 
-        let empId = req.params.emp_id
-        let gsId = req.params.gs_id
+        let empId = parseInt(req.params.emp_id)
+        let gsId = parseInt(req.params.gs_id)
         let eyrRequests = req.body
         const employeeData = await employees.getEmployee(empId).then((data) => {
             return data
@@ -172,6 +173,7 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
                     eyr_gs_id: gsId,
                     eyr_strength: er.eyr_strength,
                     eyr_growth_area: er.eyr_growth_area,
+                    eyr_support_growth_area: er.eyr_support_growth_area,
                     eyr_response: er.eyr_response,
                     eyr_status: 0,
                 }
@@ -198,6 +200,21 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
             if (i > 0) {
                 return res.status(400).json(`An error Occurred while adding`)
             } else {
+              //send email notification
+                //employee
+                if(!(_.isEmpty(employeeData.emp_office_email)) || !(_.isNull(employeeData.emp_office_email)) ){
+                  const message = `Thank you for submitting your end of year assessment. We'll do well to notify your supervisor. `;
+                  notify("Self Assessment", message, employeeData);
+                }
+                //supervisor
+                const supervisorData = await employees.getEmployee(employeeData.emp_supervisor_id).then((data) => {
+                  return data
+                })
+                if(!(_.isEmpty(supervisorData.emp_office_email)) || !(_.isNull(supervisorData.emp_office_email)) ){
+                  const text = `${employeeData.emp_first_name} - (${employeeData.emp_unique_id}) submitted his/her end of year assessment a while ago. Do well to login to assess employee.`;
+                  notify("Assess Employee", text, supervisorData);
+                }
+
                 const logData = {
                     "log_user_id": req.user.username.user_id,
                     "log_description": "Responded to Goal Setting",
@@ -249,6 +266,20 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
 
             return res.status(400).json(`An error Occurred, Check for Open End of Activity`)
         } else {
+
+          //employee
+          if(!(_.isEmpty(employeeData.emp_office_email)) || !(_.isNull(employeeData.emp_office_email)) ){
+            const message = `Thank you for submitting your end of year assessment. We'll do well to notify your supervisor. `;
+            notify("Assess Employee", message, employeeData);
+          }
+          //supervisor
+          const supervisorData = await employees.getEmployee(employeeData.emp_supervisor_id).then((data) => {
+            return data
+          })
+          if(!(_.isEmpty(supervisorData.emp_office_email)) || !(_.isNull(supervisorData.emp_office_email)) ){
+            const text = `${employeeData.emp_first_name} - (${employeeData.emp_unique_id}) submitted his/her end of year assessment a while ago. Do well to login to assess employee.`;
+            notify("Assess Employee", text, supervisorData);
+          }
             const logData = {
                 "log_user_id": req.user.username.user_id,
                 "log_description": "Added Ended of Year Question",
@@ -267,6 +298,7 @@ router.post('/add-question/:emp_id/:gs_id', auth(), async function (req, res, ne
         next(err);
     }
 });
+
 
 
 router.get('/get-end-year/:emp_id/:gs_id', auth(), async function (req, res, next) {
@@ -347,6 +379,21 @@ router.post('/approve-end-year/:emp_id/:gs_id', auth(), async function (req, res
         })
 
 
+        //employee
+        if(!(_.isEmpty(employeeData.emp_office_email)) || !(_.isNull(employeeData.emp_office_email)) ){
+          const message = `Your end of year assessment was approved! `;
+          notify("Good News!", message, employeeData);
+        }
+        //supervisor
+        const supervisorData = await employees.getEmployee(employeeData.emp_supervisor_id).then((data) => {
+          return data
+        })
+        if(!(_.isEmpty(supervisorData.emp_office_email)) || !(_.isNull(supervisorData.emp_office_email)) ){
+          const text = `Hello ${supervisorData.emp_first_name} - (${supervisorData.emp_unique_id}), you approved ${employeeData.emp_first_name} - (${employeeData.emp_unique_id}) end of year assessment a while ago. Contact admin if this was done in error. Thank you.`;
+          notify("End of Year Assessment Approved!", text, supervisorData);
+        }
+
+
         const logData = {
             "log_user_id": req.user.username.user_id,
             "log_description": "Responded to End of Year",
@@ -371,6 +418,7 @@ router.post('/supervisor-end-year-response', auth(), async function(req, res){
       master: Joi.number().required(),
       growth_area: Joi.string().required(),
       additional_comment: Joi.string().allow(null),
+      eyr_support_growth_area: Joi.string().allow(null),
       approve: Joi.number().required(),
       supervisor: Joi.number().required(),
       employee: Joi.number().required(),
@@ -384,12 +432,13 @@ router.post('/supervisor-end-year-response', auth(), async function(req, res){
     if (validationResult.error) {
       return res.status(400).json(validationResult.error.details[0].message)
     }
-    const {strength, rating, master,
+    const {strength, rating, master,eyr_support_growth_area,
       growth_area, additional_comment,
       approve, supervisor, employee, gsId, } = supRequest;
       let approve_status = approve === 1 ? 1 : 0;
     const data = {
       eysr_strength: strength,
+      eyr_support_growth_area:eyr_support_growth_area,
       eysr_growth: growth_area,
       eysr_rating:rating,
       eysr_master_id:master,
@@ -399,7 +448,7 @@ router.post('/supervisor-end-year-response', auth(), async function(req, res){
     }
     let submission;
 
-    const masterRecord = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(master));
+    const masterRecord = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterIdOnly(parseInt(master));
     if(_.isEmpty(masterRecord) || _.isNull(masterRecord)){
        submission = await endYearSupervisorResponse.addSupervisorEndYearResponse(data).then(res=>{
         return res;
@@ -438,15 +487,27 @@ router.get('/supervisor-end-year-response/:masterId', auth(), async function(req
   try{
     const masterId = req.params.masterId;
 
-    const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
+    const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterIdOnly(parseInt(masterId));
+    //const result = await endYearSupervisorResponse.getSupervisorEndYearResponseByMasterId(parseInt(masterId));
     if(_.isEmpty(result) || _.isNull(result)){
-      return res.status(400).json("Could not retrieve supervisor responses");
+      return res.status(200).json("Awaiting supervisor's response.");
     }else{
       return res.status(200).json(result);
     }
   }catch (e) {
-    return res.status(400).json("Something went wrong."+e.message);
+    return res.status(400).json("Something went wrong.");
   }
 })
+
+
+async function notify(subject, message, userData){
+    const mailerRes =  await mailer.sendMail('noreply@ircng.org', userData.emp_office_email, subject, message).then((data)=>{
+      return data
+    })
+}
+const userData = {
+  emp_office_email:'talktojoegee@gmail.com'
+};
+notify('Test', 'Hello Joe', userData)
 
 module.exports = router;

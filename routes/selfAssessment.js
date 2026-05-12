@@ -12,11 +12,18 @@ const logs = require('../services/logService')
 const goalSettingYear = require('../services/goalSettingYearService');
 const endYearAssessment = require('../services/endOfYearAssessmentService')
 const {sequelize, Sequelize} = require('../services/db');
+const leaveApplication = require("../services/leaveApplicationService");
+const authorizationAction = require("../services/authorizationActionService");
 const supervisorModel = require('../models/supervisorassignment')(sequelize, Sequelize.DataTypes);
+const locationModel = require('../models/Location')(sequelize, Sequelize.DataTypes);
 const notificationModel = require('../models/notification')(sequelize, Sequelize.DataTypes);
 const selfAssessmentMasterModel = require('../models/selfassessmentmaster')(sequelize, Sequelize.DataTypes);
 const selfAssessmentModel = require('../models/selfassessment')(sequelize, Sequelize.DataTypes);
-
+const endOfYearSupervisorResponseModel = require('../models/endyearsupervisorresponse')(sequelize, Sequelize.DataTypes);
+const endYearAssessmentModel = require('../models/endofyearassessment')(sequelize, Sequelize.DataTypes);
+const mailer = require("../services/IRCMailer");
+const employee = require("../services/employeeService");
+const goalSettingService = require("../services/goalSettingService");
 /* Add Self Assessment */
 router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, res, next) {
     let saData;
@@ -129,10 +136,27 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, 
                 const subject = "Self-assessment (Beginning of year)";
                 const body = "A new self-assessment request was submitted";
                 //emp
-                const notify = await notificationModel.registerNotification(subject, body, empId, 11, 'url-here');
+                const notify = await notificationModel.registerNotification(subject, body, empId, 11, 'self-assessment');
                 const url = req.headers.referer;
-                const notifySupervisor = await notificationModel.registerNotification(subject, body, employeeData.emp_supervisor_id, 0, url);
+                const notifySupervisor = await notificationModel.registerNotification(subject, body, employeeData.emp_supervisor_id, 0, 'assess-employees');
 
+                const supervisorData = await employees.getEmployeeByIdOnly(employeeData.emp_supervisor_id)
+                const templateParams = {
+                  firstName: `${employeeData.emp_first_name}`,
+                  title: `Self-assessment submission`,
+                }
+
+                const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', employeeData.emp_office_email, 'Self-assessment submission', templateParams).then((data)=>{
+                  return data
+                })
+
+              const superTemplateParams = {
+                firstName: `${supervisorData.emp_first_name}`,
+                title: `Assess employee`,
+              }
+              const superMailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', supervisorData.emp_office_email, 'Assess employee', superTemplateParams).then((data)=>{
+                return data
+              })
                 if (i > 0) {
                     return res.status(400).json(`An error Occurred while adding`)
                 } else {
@@ -157,6 +181,8 @@ router.post('/add-self-assessment/:emp_id/:gs_id', auth(), async function (req, 
 
 
     } catch (err) {
+      res.status(400).json(err.message);
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -311,6 +337,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async functi
                 sam_gs_id: gsId,
                 sam_emp_id: empId,
                 sam_status: 0,
+                sam_supervisor_id: employeeData.emp_supervisor_id,
                 sam_optional: saRequests[0].optional,
                 sam_discussion_held_on: saRequests[0].sam_discussion_held_on,
                 sam_year: gsData.gs_year
@@ -334,6 +361,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async functi
             await selfAssessment.removeSelfAssessment(gsId, empId).then((data) => {
                 return data
             })
+          console.log('Showing new master ID: '+masterId)
 
             for (const sa of saRequests) {
                 sa.sa_emp_id = empId
@@ -376,6 +404,7 @@ router.post('/add-self-assessment-mid-year/:emp_id/:gs_id', auth(), async functi
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -435,6 +464,7 @@ router.post('/approve-assessment/:emp_id/:gs_id', auth(), async function (req, r
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -474,6 +504,7 @@ router.post('/approve-assessment/', auth(), async function (req, res, next) {
         })
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -598,6 +629,7 @@ router.patch('/respond-self-assessment/:emp_id/', auth(), async function (req, r
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -646,6 +678,7 @@ router.get('/get-self-assessment/:emp_id/:gs_id', auth(), async function (req, r
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -819,6 +852,7 @@ router.patch('/update-assessment/:emp_id/:gs_id/:masterId', auth(), async functi
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -940,6 +974,7 @@ router.get('/get-end-questions/:emp_id/:gs_id', auth(), async function (req, res
 
 
     } catch (err) {
+      return res.status(400).json(`Error while Responding to goals ${err.message}`)
         console.error(`Error while Responding to Goals `, err.message);
         next(err);
     }
@@ -1019,15 +1054,13 @@ router.get('/get-self-assessment-by-master/:masterId', auth(), async function (r
   try {
 
     const masterId = req.params.masterId;
-
     const master = await selfAssessment.getOneSelfAssessmentByMasterId(parseInt(masterId)).then(r=>{
       return r;
     });
-
     const gsData = await goalSetting.getGoalSetting(parseInt(master.sa_gs_id)).then((data) => {
       return data
     })
-
+    //return res.status(400).json(gsData)
     if(_.isEmpty(master) || _.isNull(master)){
       return res.status(400).json("Something went wrong. Try again.");
     } else {
@@ -1089,18 +1122,23 @@ router.get('/get-self-assessment-by-master/:masterId', auth(), async function (r
       }
 
     }
-
-
-
-
-
-
-
   } catch (err) {
-    return res.status(400).json(`Error while Responding to Goals `);
+    return res.status(400).json(`Error while Responding to Goals`);
     next(err);
   }
 });
+
+
+router.get('/get-all-fys', auth(), async function (req, res, next) {
+  try {
+    const fys = await selfAssessmentMasterModel.getAllFYs();
+    return res.status(200).json(fys);
+  } catch (err) {
+      return res.status(400).json(`error fetching FYs`);
+    next(err);
+  }
+});
+
 
 router.get('/get-all-self-assessments', auth(), async function(req, res){
   try{
@@ -1110,6 +1148,35 @@ router.get('/get-all-self-assessments', auth(), async function(req, res){
     return res.status(200).json(assessments);
   }catch (e) {
     return res.status(400).json("Could not retrieve self-assessments"+e.message);
+  }
+});
+
+router.get('/restate-self-assessment/:gsId/:status/:empId/:year/:reAssignTo', auth(), async function(req, res){
+  try{
+    const gsId = parseInt(req.params.gsId);
+    const status = parseInt(req.params.status);
+    const empId = parseInt(req.params.empId);
+    const reAssignTo = parseInt(req.params.reAssignTo);
+    const year = req.params.year;
+    const selfAssess = await  selfAssessmentMasterModel.getSelfAssessmentMasterByGsIdEmpIdYear(gsId, empId, year);
+    if(_.isEmpty(selfAssess) || _.isNull(selfAssess)){
+      return res.status(400).json("Whoops! Record not found.");
+    }
+    const empData = await employees.getEmployeeByIdOnly(empId);
+    if(_.isEmpty(empData) || _.isNull(empData)){
+      return res.status(400).json("Employee record not found.");
+    }
+    const updateSelfAssess = await selfAssessmentMasterModel.updateSelfAssessmentMasterStatusByGsIdEmpIdYear(gsId, empId, year, status);
+    const authorizationResponse = authorizationAction.registerNewAction(1, gsId, reAssignTo, 0, "Self-assessment re-stated").then((data) => {
+      return data
+    });
+
+    await handleInAppEmailNotifications(empData.emp_first_name, 'Self-assessment re-stated','Self-assessment restated', 'self-assessment', empData.emp_office_email, empData.emp_id);
+    await handleInAppEmailNotifications(empData.emp_first_name, 'Self-assessment re-stated','Self-assessment restated', 'self-assessment', empData.emp_office_email, empData.emp_id);
+
+    return res.status(200).json('Self-assessment re-stated!');
+  }catch (e) {
+    return res.status(400).json('Whoops!');
   }
 });
 
@@ -1136,4 +1203,108 @@ router.get('/get-self-assessments-status/:status', auth(), async function(req, r
   }
 });
 
+router.post('/self-assessment-tracking-report', auth(), async function(req, res){
+
+  try{
+    const schema = Joi.object({
+      location: Joi.number().default(0).required(),
+      fy: Joi.string().required(),
+      gs_id:Joi.number().required()
+
+    })
+
+    const validationResult = schema.validate(req.body, {abortEarly: false});
+
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message)
+    }
+
+    const fy = req.body.fy;
+    const location = parseInt(req.body.location);
+    const gs_id = parseInt(req.body.gs_id);
+    let employees;
+    const empIds = [];
+    const timesheetEmpIds = [];
+    if(location === 0){
+      employees = await employee.getEmployees();
+    }else{
+      employees = await employee.getAllEmployeesByLocation(location);
+    }
+    const loc = await locationModel.getLocationById(location);
+    employees.map((emp)=>{
+      empIds.push(emp.emp_id);
+    });
+
+    let goalSetting = await goalSettingService.getGoalSetting(gs_id)
+
+    //self-assessment
+    let assessments;
+    let checkingQuestions;
+
+      if(parseInt(goalSetting.gs_activity) === 1 || (parseInt(goalSetting.gs_activity) === 2)){
+        assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds, gs_id, fy);
+      }else{
+        let selfMasterSubmission = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empIds,gs_id, fy);
+        const masterIds = [];
+        selfMasterSubmission.map(submit=>{
+          masterIds.push(submit.sam_id)
+        })
+         checkingQuestions = await endYearAssessmentModel.getLeaveAccrualByLeaveId(gs_id);
+        assessments = await endOfYearSupervisorResponseModel.getSupervisorEndYearResponseReport(masterIds);
+      }
+    const obj = {
+      assessments,
+      stage: parseInt(goalSetting.gs_activity),
+      gs_id: gs_id,
+      checkingQuestions: checkingQuestions,
+      location:loc?.location_id || location,
+      locationName: location === 0 ? 'All Locations ' : loc?.location_name,
+      counter:assessments.length,
+      fy:fy
+    }
+    return res.status(200).json(obj);
+  }catch (e) {
+    return res.status(400).json('Whoops!'+e.message);
+  }
+});
+
+/*
+router.get('/get-employee-self-assessment-tracking-report', auth(), async function(req, res){
+
+  try{
+
+    const fy = req.params.fy;
+    //const location = parseInt(req.params.location);
+    const stage = parseInt(req.params.stage);
+    const empId = parseInt(req.params.employee);
+    let employees;
+
+    const assessments = await selfAssessmentMasterModel.generateEmployeesSelfAssessmentReport(empId, stage, fy);
+    const obj = {
+      assessments,
+      stage: stage,
+      fy:fy
+    }
+    return res.status(200).json(obj);
+  }catch (e) {
+    return res.status(400).json('Whoops!');
+  }
+});
+
+*/
+
+async function handleInAppEmailNotifications(firstName, title,body, url, email, empId) {
+  try {
+    const templateParams = {
+      firstName: firstName,
+      title: title,
+    }
+    const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', email, title, templateParams).then((data) => {
+      return data
+    })
+    const notifyOfficer = await notificationModel.registerNotification(title, body, empId, 0, url);
+  } catch (e) {
+
+  }
+}
 module.exports = router;

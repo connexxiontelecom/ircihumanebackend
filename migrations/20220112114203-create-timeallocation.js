@@ -20,6 +20,15 @@ module.exports = {
       ta_tcode: {
         type: Sequelize.TEXT
       },
+
+      ta_approved_by: {
+        type: Sequelize.TEXT
+      },
+      ta_date_approved: {
+        type: Sequelize.TEXT
+      },
+
+
       ta_charge: {
         type: Sequelize.DOUBLE
       },

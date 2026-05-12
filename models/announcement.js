@@ -54,6 +54,20 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+
+    static async getAnnouncementById(id){
+      return await Announcement.findOne({
+        where:{a_id:id},
+        include:[{model:employeeModel, as:'author'}]
+      })
+    }
+    static async updateAnnouncementAttachmentUrl(id, url){
+      return await Announcement.update({
+          a_attachment:url,
+        },
+        {where:{a_id:id},})
+    }
+
   };
   Announcement.init({
     a_id: {

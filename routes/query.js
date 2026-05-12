@@ -11,6 +11,7 @@ router.get('/',auth(), queryService.getAllQueries);
 router.get('/employee/:id',auth(), queryService.getAllEmployeeQueries);
 router.get('/:id',auth(), queryService.getQuery);
 
+router.post('/query-doc/:queryId', auth(), queryService.uploadQueryFiles);
 
 
 module.exports = router;

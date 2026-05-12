@@ -109,6 +109,12 @@ async function getAllLeaves() {
     return await leaveType.findAll()
 }
 
+async function getAllEmployeeLeavesTypesByRelocatableStatus(status) {
+    return await leaveType.findAll({
+      where:{ lt_rr: [status,0], }
+    })
+}
+
 async function getAccruableLeaves() {
     return await leaveType.findAll({
         where: {
@@ -117,10 +123,27 @@ async function getAccruableLeaves() {
     })
 }
 
+async function getLeavesWithOptions(accruable, relocatable, mode) {
+    return await leaveType.findAll({
+        where: {
+            lt_accrue: accruable,
+            lt_rr: relocatable,
+            lt_mode: mode
+        }
+    })
+}
+
 async function getLeaveType(leaveTypeId) {
     return await leaveType.findOne({
         where: {
             leave_type_id: leaveTypeId
+        }
+    })
+}
+async function getLeaveTypeByName(leaveName) {
+    return await leaveType.findOne({
+        where: {
+            leave_name: leaveName
         }
     })
 }
@@ -133,5 +156,8 @@ module.exports = {
     setNewLeaveType,
     getAllLeaves,
     getAccruableLeaves,
-    getLeaveType
+    getLeaveType,
+    getLeaveTypeByName,
+  getAllEmployeeLeavesTypesByRelocatableStatus,
+    getLeavesWithOptions
 }

@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class salaryGrade extends Model {
     /**
@@ -12,21 +10,25 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-  };
-  salaryGrade.init({
-    sg_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true // Automatically gets converted to SERIAL for postgres
+  }
+  salaryGrade.init(
+    {
+      sg_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true // Automatically gets converted to SERIAL for postgres
+      },
+      sg_name: DataTypes.STRING,
+      sg_minimum: DataTypes.DOUBLE,
+      sg_midpoint: DataTypes.DOUBLE,
+      sg_maximum: DataTypes.DOUBLE,
+      sg_col_allowance: DataTypes.DOUBLE
     },
-    sg_name: DataTypes.STRING,
-    sg_minimum: DataTypes.DOUBLE,
-    sg_midpoint: DataTypes.DOUBLE,
-    sg_maximum: DataTypes.DOUBLE
-  }, {
-    sequelize,
-    modelName: 'salaryGrade',
-    tableName: 'salary_grades'
-  });
+    {
+      sequelize,
+      modelName: 'salaryGrade',
+      tableName: 'salary_grades'
+    }
+  );
   return salaryGrade;
 };

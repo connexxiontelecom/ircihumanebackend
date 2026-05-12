@@ -27,9 +27,41 @@ module.exports = (sequelize, DataTypes) => {
           })
         }
 
-        static async markAsReAssignedApplication(authId, officerId, type){
+      static async getAllPendingTimesheetAuthorizations(type = 2, status = 0){
+        return AuthorizationAction.findAll({
+          where:{
+            auth_type:type,
+            auth_status: status
+          }
+        })
+      }
+
+      static async updateAuthorizationStatus(authId, status){
+        return await AuthorizationAction.update({
+          auth_status:status, //reassigned
+        },{
+          where:{
+            auth_travelapp_id:authId,
+            //auth_officer_id: officerId,
+            //auth_type: type
+          }
+        });
+      }
+
+        static async markAsReAssignedApplication(authId, type){
           return await AuthorizationAction.update({
             auth_status:3, //reassigned
+          },{
+            where:{
+              auth_travelapp_id:authId,
+              //auth_officer_id: officerId,
+              auth_type: type
+            }
+          });
+        }
+        static async markAuthorizationRequestAsReassigned(authId, officerId, type, status){
+          return await AuthorizationAction.update({
+            auth_status:status, //reassigned
           },{
             where:{
               auth_travelapp_id:authId,
@@ -55,7 +87,7 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
         },
-        auth_travelapp_id: DataTypes.INTEGER,
+        auth_travelapp_id: DataTypes.STRING,
         auth_officer_id: {
             type:DataTypes.INTEGER,
             unique:true

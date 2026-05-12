@@ -23,6 +23,13 @@ async function addLeaveApplication(leaveApplicationData) {
         leapp_year: leaveApplicationData.leapp_year,
         leapp_alt_phone: leaveApplicationData.leapp_alt_phone,
         leapp_alt_email: leaveApplicationData.leapp_alt_phone,
+        leapp_holidays: leaveApplicationData.leapp_holidays.toString(),
+        leapp_locations: leaveApplicationData.leapp_locations.toString(),
+
+        leapp_verify_date: leaveApplicationData.leapp_end_date,
+        leapp_approve_date: leaveApplicationData.leapp_end_date,
+        leapp_verify_by:640,
+        leapp_approve_by:640,
         // leapp_verify_by: leaveApplicationData.leapp_verify_by,
         // leapp_verify_date: leaveApplicationData.leapp_verify_date,
         // leapp_verify_comment: leaveApplicationData.leapp_verify_comment,
@@ -59,7 +66,21 @@ async function findAllActiveLeaveApplications() {
   let currentDate = new Date();
   return await LeaveApplication.findAll({
     where:{
-      leapp_status:1,
+      leapp_status:[1,3,4],
+     // leapp_start_date: { [Op.gte]: currentDate.getTime() }
+      }, //approved & active
+    order: [
+      ['leapp_id', 'DESC'],
+    ], include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+  })
+}
+
+async function findAllActiveLeaveApplicationsByEmpId(empId) {
+  let currentDate = new Date();
+  return await LeaveApplication.findAll({
+    where:{
+      leapp_status:[1,3,4],
+      leapp_empid:empId
      // leapp_start_date: { [Op.gte]: currentDate.getTime() }
       }, //approved & active
     order: [
@@ -119,9 +140,44 @@ async function getLeaveApplicationWithId(id){
 const getLeaveApplicationsForAuthorization = async (leaveAppIds) => {
     return await LeaveApplication.findAll({
         where: {leapp_id: leaveAppIds},
+      order: [
+        ['leapp_id', 'DESC'],
+      ],
         include: [Leave, 'employee', 'verify', 'recommend', 'approve']
     })
 }
+const getLeaveApplicationsForAuthorizationByStatus = async (leaveAppIds, status) => {
+    return await LeaveApplication.findAll({
+        where: {leapp_id: leaveAppIds, leapp_status: status},
+      order: [
+        ['leapp_id', 'DESC'],
+      ],
+        include: [Leave, 'employee', 'verify', 'recommend', 'approve']
+    })
+}
+
+const getApprovedLeaves = async () =>{
+  return await LeaveApplication.findAll({
+    where: {leapp_status: 1}
+  })
+}
+const getLeavesByStatus = async (status) =>{
+  return await LeaveApplication.findAll({
+    where: {leapp_status: status}
+  })
+}
+
+const updateLeaveAppStatus = async (leaveId, status) =>{
+  return await LeaveApplication.update({
+      leapp_status:status},
+    {where:{leapp_id:leaveId}
+    });
+
+  /*return await LeaveApplication.findAll({
+    where: {leapp_status: 1}
+  })*/
+}
+
 
 
 module.exports = {
@@ -133,5 +189,10 @@ module.exports = {
     getLeaveApplicationsById,
     findAllApprovedLeaveApplications,
     findAllActiveLeaveApplications,
-    getLeaveApplicationWithId
+    getLeaveApplicationWithId,
+    getApprovedLeaves,
+  updateLeaveAppStatus,
+  getLeavesByStatus,
+  getLeaveApplicationsForAuthorizationByStatus,
+  findAllActiveLeaveApplicationsByEmpId
 }

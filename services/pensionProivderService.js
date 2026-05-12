@@ -83,10 +83,15 @@ async function getAllPensionProviders(){
     return await pension.findAll({attributes: ['provider_name', 'pension_provider_id', 'provider_code']});
 }
 
+async function getPensionServiceById(id){
+    return await pension.findOne({where: {pension_provider_id: id}});
+}
+
 module.exports = {
     getPensionProviderById,
     getPensionProviders,
     updatePensionProvider,
     setNewPensionProvider,
-    getAllPensionProviders
+    getAllPensionProviders,
+    getPensionServiceById
 }

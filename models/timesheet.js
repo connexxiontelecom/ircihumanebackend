@@ -14,6 +14,16 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static async updateTimesheetStatus(ref_no, status){
+      return await timesheet.update({
+        ts_ref_no:status,
+      },{
+        where:{
+          ts_ref_no:ref_no
+        }
+      })
+    }
   };
   timesheet.init(
       {
@@ -30,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     ts_end: DataTypes.TEXT,
     ts_duration: DataTypes.DOUBLE,
     ts_ref_no: DataTypes.TEXT,
+    ts_status: DataTypes.TEXT,
     ts_is_present: DataTypes.INTEGER,
 
   }, {

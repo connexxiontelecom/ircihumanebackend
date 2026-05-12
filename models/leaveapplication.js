@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  Model
+  Model, Op
 } = require('sequelize');
 
 const {sequelize, Sequelize} = require("../services/db");
@@ -44,6 +44,32 @@ module.exports = (sequelize, DataTypes) => {
         order:[['leapp_id', 'DESC']]
       })
     }
+
+    static async getLeaveApplicationsByParam(status, month, year) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+
+      return await leaveApplication.findAll({
+        where: {
+          leapp_status: status,
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          }
+        },
+        include: [
+          { model: Employee, as: 'employee',
+            include:[
+              {model:LocationModel, as: 'location'},
+            ]
+          },
+          { model: LeaveType, as: 'leave_type' }
+        ],
+        order: [['leapp_id', 'DESC']]
+      });
+    }
+
+
+
     static async getLeaveApplicationsByStatus(status){
       return await leaveApplication.findAll({
         where:{leapp_status:status},
@@ -67,6 +93,26 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static async deleteLeaveApplication(leaveId){
+      return await leaveApplication.destroy({where:{ leapp_id: leaveId }})
+    }
+    static async updateLeaveAppDuration(leaveId, duration){
+      return await leaveApplication.update({
+      leapp_total_days:duration},
+        {where:{leapp_id:leaveId}
+      });
+    }
+   static async updateLeaveAppDurationLocationHoliday(leaveId, duration, location, holiday){
+      return await leaveApplication.update({
+      leapp_total_days:duration,
+      leapp_locations:location,
+      leapp_holidays:holiday,
+
+        },
+        {where:{leapp_id:leaveId}
+      });
+    }
+
     static async updateLeaveAppPeriod(leaveId, start, end, length){
       return await leaveApplication.update({
           leapp_start_date:start,
@@ -80,6 +126,56 @@ module.exports = (sequelize, DataTypes) => {
     static async getAllEmployeeApprovedLeaveApplications(empId){
       return await leaveApplication.findAll({
         where:{leapp_empid:empId, leapp_status: 1}
+      })
+    }
+
+
+
+    static async getAllEmployeeValidLeaveApplications(empId) {
+      return await leaveApplication.findAll({
+        where: {
+          leapp_empid: empId,
+          leapp_status: [1,3,4]
+        }
+      })
+    }
+
+    static async getAllLeaveApplicationsFromADate(startDate){
+      return await leaveApplication.findAll({
+        where:{leapp_start_date: {[Op.gte]:startDate} },
+      })
+    }
+
+    static async getAllLeaveApplicationsByDateRange(startDate, endDate){
+      return await leaveApplication.findAll({
+        where:{
+          leapp_start_date: {[Op.lte]:startDate}, 
+          leapp_end_date : {[Op.gte]: endDate} 
+        },
+      })
+    }
+    static async getAllLeaveApplicationsByStartId(startId){
+      return await leaveApplication.findAll({
+        where:{
+          leapp_id : {[Op.gte]: startId} ,
+          leapp_status: [1,3,4]
+        },
+      })
+    }
+    static async getAllLeaveApplicationsByLeaveAppId(id){
+      return await leaveApplication.findAll({
+        where:{
+          leapp_id: id,
+        },
+      })
+    }
+    static async getLeaveAppsUnknown(){
+      return await leaveApplication.findAll({
+        where:{
+          leapp_status: [1,3,4],
+          leapp_year: 2024
+        },
+        //where:sequelize.where(sequelize.fn('YEAR', sequelize.col('createdAt')), 2024),
       })
     }
 
@@ -107,7 +203,9 @@ module.exports = (sequelize, DataTypes) => {
     leapp_status: DataTypes.INTEGER,
     leapp_year: DataTypes.INTEGER,
     leapp_alt_email: DataTypes.STRING,
-    leapp_alt_phone: DataTypes.STRING
+    leapp_alt_phone: DataTypes.STRING,
+    leapp_locations: DataTypes.STRING,
+    leapp_holidays: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'leaveApplication',

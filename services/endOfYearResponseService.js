@@ -15,6 +15,7 @@ async function addEndOfYearResponse(assessmentData) {
         eyr_gs_id: assessmentData.eyr_gs_id,
         eyr_strength : assessmentData.eyr_strength,
         eyr_growth_area: assessmentData.eyr_growth_area,
+        eyr_support_growth_area: assessmentData.eyr_support_growth_area,
         eyr_response: assessmentData.eyr_response,
         eyr_status: assessmentData.eyr_status
     });
@@ -25,7 +26,7 @@ async function getEndOfYearResponse(eyrGsId, eyrEmpId) {
 }
 
 async function removeResponse(empId, gsId) {
-    return await EndYearResponse.destroy({where: {eyr_gs_id: gsId}, eyr_emp_id: empId})
+    return await EndYearResponse.destroy({where: {eyr_gs_id: gsId, eyr_emp_id: empId} })
 }
 
 async function approveEndYearResponseByMasterId(masterId) {

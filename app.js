@@ -1,200 +1,616 @@
-    const express = require("express");
-    const dotenv = require("dotenv");
-    const bodyParser = require('body-parser');
-    const cors = require('cors');
-    const fileUpload = require('express-fileupload');
+const express = require('express');
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const fileUpload = require('express-fileupload');
+const { generateMasterList } = require('./services/master_list_service');
+const _ = require('lodash');
+const tracer = require('dd-trace').init();
+var StatsD = require('hot-shots');
+var dogstatsd = new StatsD();
+const salaryCronJobs = require('./routes/cronJobs/salary_cron');
 
-    const app = express();
-    app.use(cors());
-    app.use(express.json());
-    dotenv.config();
-    app.use(fileUpload({
-        createParentPath: true
-    }));
-    //Routes
-    const employeeRouter = require('./routes/employees');
-    const bankRouter = require('./routes/bank');
-    const pensionProviderRouter = require('./routes/pension-provider');
-    const hmoRouter = require('./routes/hmo');
-    const departmentRouter = require('./routes/department');
-    const gradeRouter = require('./routes/grade');
-    const jobRoleRouter = require('./routes/job-role');
-    const locationRouter = require('./routes/location');
-    const qualificationRouter = require('./routes/qualification');
-    const subsidiaryRouter = require('./routes/subsidiary');
-    const leaveTypeRouter = require('./routes/leave-type');
-    const stateRouter = require('./routes/state');
-    const employeeCategoryRouter = require('./routes/employee-category');
+// Increment a counter.
+dogstatsd.increment('page.views');
 
-    app.use('/employees', employeeRouter);
-   app.use('/banks', bankRouter);
-    app.use('/pension-providers', pensionProviderRouter);
-   app.use('/hmos', hmoRouter);
-   app.use('/departments', departmentRouter);
-   app.use('/grades', gradeRouter);
-   app.use('/job-roles', jobRoleRouter);
-   app.use('/locations', locationRouter);
-   app.use('/qualifications', qualificationRouter);
-   app.use('/subsidiaries', subsidiaryRouter);
-   app.use('/leave-types', leaveTypeRouter);
-   app.use('/states', stateRouter);
-   app.use('/employee-categories', employeeCategoryRouter);
-   
-    const userRouter = require('./routes/users')
-    app.use('/users', userRouter);
+const app = express();
+app.use(cors());
+app.use(express.json());
+dotenv.config();
+app.use(
+  fileUpload({
+    createParentPath: true
+  })
+);
+//Routes
+const employeeRouter = require('./routes/employees');
+app.use('/employees', employeeRouter);
 
-    const paymentDefinitionRouter = require('./routes/paymentDefinitions')
-    app.use('/payment-definitions', paymentDefinitionRouter);
+const bankRouter = require('./routes/bank');
+app.use('/banks', bankRouter);
 
-    const lgaRouter = require('./routes/lga')
-    app.use('/local-government', lgaRouter)
+const pensionProviderRouter = require('./routes/pension-provider');
+app.use('/pension-providers', pensionProviderRouter);
 
-    const educationRouter = require('./routes/education')
-    app.use('/education', educationRouter)
+const hmoRouter = require('./routes/hmo');
+app.use('/hmos', hmoRouter);
 
-    const workExperienceRouter = require('./routes/work-experience')
-    app.use('/work-experience', workExperienceRouter)
+const departmentRouter = require('./routes/department');
+app.use('/departments', departmentRouter);
 
-    const announcementRouter = require('./routes/announcement')
-    app.use('/announcements', announcementRouter)
+const gradeRouter = require('./routes/grade');
+app.use('/grades', gradeRouter);
 
-    const queryRouter = require('./routes/query')
-    app.use('/queries', queryRouter)
+const jobRoleRouter = require('./routes/job-role');
+app.use('/job-roles', jobRoleRouter);
 
-    const queryReplyRouter = require('./routes/queryReply')
-    app.use('/query-reply', queryReplyRouter)
+const locationRouter = require('./routes/location');
+app.use('/locations', locationRouter);
 
-    const logRouter = require('./routes/logs')
-    app.use('/logs', logRouter)
+const qualificationRouter = require('./routes/qualification');
+app.use('/qualifications', qualificationRouter);
 
-    const taxRateRouter = require('./routes/taxRates')
-    app.use('/tax-rates', taxRateRouter)
+const subsidiaryRouter = require('./routes/subsidiary');
+app.use('/subsidiaries', subsidiaryRouter);
 
-    const minimumTaxRateRouter = require('./routes/minimumTaxRates')
-    app.use('/minimum-tax-rate', minimumTaxRateRouter)
+const leaveTypeRouter = require('./routes/leave-type');
+app.use('/leave-types', leaveTypeRouter);
 
-    const locationAllowanceRouter = require('./routes/locationAllowances')
-    app.use('/location-allowance',locationAllowanceRouter)
+const stateRouter = require('./routes/state');
+app.use('/states', stateRouter);
 
-    const authorizationRoleRouter = require('./routes/authorization-role')
-    app.use('/authorization-roles',authorizationRoleRouter)
+const countryCodeRouter = require('./routes/country-code');
+app.use('/country-codes', countryCodeRouter);
+
+const reliefTypeRouter = require('./routes/reliefType.routes');
+app.use('/relief-types', reliefTypeRouter);
+
+const taxReliefRouter = require('./routes/taxRelief.routes');
+app.use('/tax-reliefs', taxReliefRouter);
 
 
-    const donorRouter = require('./routes/donor')
-    app.use('/donor',donorRouter)
+const employeeCategoryRouter = require('./routes/employee-category');
+app.use('/employee-categories', employeeCategoryRouter);
 
-    const grantChartRouter = require('./routes/grantChart')
-    app.use('/grant-chart',grantChartRouter)
+const countryRouter = require('./routes/country');
+app.use('/countries', countryRouter);
 
-    const leaveApplication = require('./routes/leaveApplication')
-    app.use('/leave-application', leaveApplication)
+const leaveApplicationService = require('./services/leaveApplicationService');
+const leaveTypeService = require('./services/leaveTypeService');
+const employeeService = require('./services/employeeService');
+const leaveAccrualService = require('./services/leaveAccrualService');
 
-    const leaveDoc = require('./routes/leaveDoc')
-    app.use('/leavedoc', leaveDoc)
+const userRouter = require('./routes/users');
+app.use('/users', userRouter);
 
-    const supervisorAssignment = require('./routes/supervisorAssignment')
-    app.use('/supervisor-assignment', supervisorAssignment)
+const paymentDefinitionRouter = require('./routes/paymentDefinitions');
+app.use('/payment-definitions', paymentDefinitionRouter);
 
+const lgaRouter = require('./routes/lga');
+app.use('/local-government', lgaRouter);
 
-    const publicHolidayRouter =require("./routes/publicHolidays");
-    app.use('/public-holidays', publicHolidayRouter);
+const educationRouter = require('./routes/education');
+app.use('/education', educationRouter);
 
-    const travelApplicationRouter =require("./routes/travelApplication");
-    app.use('/travel-applications', travelApplicationRouter);
+const workExperienceRouter = require('./routes/work-experience');
+app.use('/work-experience', workExperienceRouter);
 
-    const authorizationRouter = require("./routes/authorization");
-    app.use('/application-authorization', authorizationRouter);
+const announcementRouter = require('./routes/announcement');
+app.use('/announcements', announcementRouter);
 
-    const variationalPaymentRouter = require("./routes/variational-payment");
-    app.use('/variational-payment', variationalPaymentRouter);
+const queryRouter = require('./routes/query');
+app.use('/queries', queryRouter);
 
-    const sectorLeadRouter =require("./routes/sectorLead");
-    app.use('/sector-leads', sectorLeadRouter)
+const queryReplyRouter = require('./routes/queryReply');
+app.use('/query-reply', queryReplyRouter);
 
+const logRouter = require('./routes/logs');
+app.use('/logs', logRouter);
 
-    const timeSheet = require('./routes/timeSheet')
-    app.use('/time-sheet', timeSheet)
+const taxRateRouter = require('./routes/taxRates');
+app.use('/tax-rates', taxRateRouter);
 
-    const timeSheetPenalty = require('./routes/time-sheet-penalty')
-    app.use('/time-sheet-penalty', timeSheetPenalty)
+const minimumTaxRateRouter = require('./routes/minimumTaxRates');
+app.use('/minimum-tax-rate', minimumTaxRateRouter);
 
-    const timeAllocation = require('./routes/timeAllocation')
-    app.use('/time-allocation', timeAllocation)
+const locationAllowanceRouter = require('./routes/locationAllowances');
+app.use('/location-allowance', locationAllowanceRouter);
 
+const authorizationRoleRouter = require('./routes/authorization-role');
+app.use('/authorization-roles', authorizationRoleRouter);
 
-    const payrollMonthYearRouter = require('./routes/payrollMonthYear')
-    app.use('/payroll-month-year', payrollMonthYearRouter)
+const donorRouter = require('./routes/donor');
+app.use('/donor', donorRouter);
 
-    const salaryGradeRouter = require('./routes/salaryGrade')
-    app.use('/salary-grade', salaryGradeRouter)
+const grantChartRouter = require('./routes/grantChart');
+app.use('/grant-chart', grantChartRouter);
 
-    const salaryStructureRouter = require('./routes/salaryStructure')
-    app.use('/salary-structure', salaryStructureRouter)
+const leaveApplication = require('./routes/leaveApplication');
+app.use('/leave-application', leaveApplication);
 
-    const goalSettingRouter = require('./routes/goalSetting')
-    app.use('/goal-setting', goalSettingRouter)
+const leaveDoc = require('./routes/leaveDoc');
+app.use('/leavedoc', leaveDoc);
 
-    const goalSettingYearRouter = require('./routes/goalSettingYear')
-    app.use('/goal-setting-year', goalSettingYearRouter)
+const supervisorAssignment = require('./routes/supervisorAssignment');
+app.use('/supervisor-assignment', supervisorAssignment);
 
-    const selfAssessmentRouter = require('./routes/selfAssessment')
-    app.use('/self-assessment', selfAssessmentRouter)
+const publicHolidayRouter = require('./routes/publicHolidays');
+app.use('/public-holidays', publicHolidayRouter);
 
-    const hrFocalPointRouter = require('./routes/hrfocalpoint')
-    app.use('/hr-focal-point', hrFocalPointRouter)
+const travelApplicationRouter = require('./routes/travelApplication');
+app.use('/travel-applications', travelApplicationRouter);
 
-    const endYearAssessmentRouter = require('./routes/endOfYearAssessment')
-    app.use('/end-year-assessment', endYearAssessmentRouter)
+const authorizationRouter = require('./routes/authorization');
+app.use('/application-authorization', authorizationRouter);
 
-    const ratingRouter = require('./routes/rating')
-    app.use('/rating', ratingRouter)
+const variationalPaymentRouter = require('./routes/variational-payment');
+app.use('/variational-payment', variationalPaymentRouter);
 
-    const endYearRatingRouter = require('./routes/endYearRating')
-    app.use('/end-year-rating', endYearRatingRouter)
+const sectorLeadRouter = require('./routes/sectorLead');
+app.use('/sector-leads', sectorLeadRouter);
 
-    const salaryRouter = require('./routes/salary')
-    app.use('/salary', salaryRouter)
+const timeSheet = require('./routes/timeSheet');
+app.use('/time-sheet', timeSheet);
 
-    const leaveAccrualRouter = require('./routes/leaveAccrual')
-    app.use('/leave-accrual', leaveAccrualRouter.router)
+const timeSheetPenalty = require('./routes/time-sheet-penalty');
+app.use('/time-sheet-penalty', timeSheetPenalty);
 
-    const notificationRouter = require('./routes/notification')
-    app.use('/notifications', notificationRouter);
+const timeAllocation = require('./routes/timeAllocation');
+app.use('/time-allocation', timeAllocation);
 
-    const endYearResponseRouter = require('./routes/endOfYearResponse')
-    app.use('/end-year-response', endYearResponseRouter);
+const payrollMonthYearRouter = require('./routes/payrollMonthYear');
+app.use('/payroll-month-year', payrollMonthYearRouter);
 
-    const payrollJournalRouter = require('./routes/payroll-journal')
-    app.use('/payroll-journal', payrollJournalRouter);
+const salaryGradeRouter = require('./routes/salaryGrade');
+app.use('/salary-grade', salaryGradeRouter);
 
-    app.get('/',  async function(req, res) {
-        res.send('you got here. so get out')
+const salaryStructureRouter = require('./routes/salaryStructure');
+app.use('/salary-structure', salaryStructureRouter);
+
+const goalSettingRouter = require('./routes/goalSetting');
+app.use('/goal-setting', goalSettingRouter);
+
+const goalSettingYearRouter = require('./routes/goalSettingYear');
+app.use('/goal-setting-year', goalSettingYearRouter);
+
+const selfAssessmentRouter = require('./routes/selfAssessment');
+app.use('/self-assessment', selfAssessmentRouter);
+
+const hrFocalPointRouter = require('./routes/hrfocalpoint');
+app.use('/hr-focal-point', hrFocalPointRouter);
+
+const endYearAssessmentRouter = require('./routes/endOfYearAssessment');
+app.use('/end-year-assessment', endYearAssessmentRouter);
+
+const ratingRouter = require('./routes/rating');
+app.use('/rating', ratingRouter);
+
+const endYearRatingRouter = require('./routes/endYearRating');
+app.use('/end-year-rating', endYearRatingRouter);
+
+const performanceImprovement = require('./routes/performance-improvement');
+app.use('/performance-improvement', performanceImprovement);
+
+const salaryRouter = require('./routes/salary');
+app.use('/salary', salaryRouter);
+
+const leaveAccrualRouter = require('./routes/leaveAccrual');
+app.use('/leave-accrual', leaveAccrualRouter.router);
+
+const notificationRouter = require('./routes/notification');
+app.use('/notifications', notificationRouter);
+
+const endYearResponseRouter = require('./routes/endOfYearResponse');
+app.use('/end-year-response', endYearResponseRouter);
+
+const payrollJournalRouter = require('./routes/payroll-journal');
+app.use('/payroll-journal', payrollJournalRouter);
+
+const masterListRouter = require('./routes/master-list');
+app.use('/master-list', masterListRouter);
+
+const nodeCron = require('node-cron');
+const { addLeaveAccrual } = require('./routes/leaveAccrual');
+const salary = require('./services/salaryService');
+const employee = require('./services/employeeService');
+const Joi = require('joi');
+const user = require('./services/userService');
+const differenceInCalendarMonths = require('date-fns/differenceInCalendarMonths');
+const logs = require('./services/logService');
+
+app.get('/', async function (req, res) {
+  res.send('Get out');
+});
+
+// app.get('/', async function (req, res) {
+//   try {
+//     const response = await salaryCronJobs.syncSalaryStructure();
+//     return res.status(200).json(response);
+//   } catch (err) {
+//     return res.status(400).json(err.message);
+//   }
+// });
+
+async function updateApprovedLeaveStatus() {
+  try {
+    const approvedLeaves = await leaveApplicationService.getLeavesByStatus(1);
+    const activeLeaves = await leaveApplicationService.getLeavesByStatus(3);
+    //update approved leaves to the status of active
+    approvedLeaves.map(async (re) => {
+      if (new Date().getTime() >= new Date(re.leapp_start_date).getTime() && re.leapp_status === 1) {
+        await leaveApplicationService.updateLeaveAppStatus(re.leapp_id, 3);
+      }
     });
-
-    /* Error handler middleware */
-    app.use((err, req, res, next) => {
-        const statusCode = err.statusCode || 500;
-        console.error(err.message, err.stack);
-        return res.status(statusCode).json({'message': err.message});
-
+    //update active leaves to the status of finished
+    activeLeaves.map(async (act) => {
+      if (new Date().getTime() >= new Date(act.leapp_end_date).getTime() && act.leapp_status === 3) {
+        await leaveApplicationService.updateLeaveAppStatus(act.leapp_id, 4);
+      }
     });
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Update Approved Leave Status Cron Job',
+      log_date: new Date()
+    });
+  } catch (e) {
+    const errorMessage = `error from update approved leave status cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
+}
 
-     let port;
+async function travelDayLeaveAccrual() {
+  try {
+    const travelDayLeave = await leaveTypeService.getLeaveTypeByName('Travel Day');
+    const cDate = new Date();
+    const currentDay = cDate.getDate();
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const currentDate = `${currentDay}-${currentMonth}-${currentYear}`;
+    //const reverseCurrentDate = `${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay}`;
 
+    let travelAccrualDays = [`1-10-${currentYear}`, `1-1-${currentYear}`, `1-4-${currentYear}`, `1-7-${currentYear}`];
+    let travelAccrualExpires = [`${currentYear + 1}-1-14`, `${currentYear}-4-14`, `${currentYear}-7-14`, `${currentYear}-9-14`];
+    if (!_.isEmpty(travelDayLeave) || !_.isNull(travelDayLeave)) {
+      const nonRelocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(0);
 
-    if(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION' ){
-        port = process.env.PORT || 4321
+      if (travelAccrualDays.includes(currentDate)) {
+        nonRelocatableEmployees.map(async (reEmp) => {
+          const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(
+            reEmp.emp_id,
+            currentMonth,
+            currentYear,
+            travelDayLeave.leave_type_id
+          );
+          const calendarYear = currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear + 1}`;
+          if (_.isEmpty(existing) || _.isNull(existing)) {
+            let expiresOn = null;
+            if (currentDate === travelAccrualDays[0]) {
+              expiresOn = travelAccrualExpires[0];
+            } else if (currentDate === travelAccrualDays[1]) {
+              expiresOn = travelAccrualExpires[1];
+            } else if (currentDate === travelAccrualDays[2]) {
+              expiresOn = travelAccrualExpires[2];
+            } else if (currentDate === travelAccrualDays[3]) {
+              expiresOn = travelAccrualExpires[3];
+            }
+            const data = {
+              lea_emp_id: reEmp.emp_id,
+              lea_month: currentMonth,
+              lea_year: currentYear,
+              lea_leave_type: travelDayLeave.leave_type_id,
+              lea_rate: parseFloat(travelDayLeave.lt_rate),
+              lea_archives: 0,
+              lea_leaveapp_id: 0,
+              lea_expires_on: expiresOn,
+              lea_fy: calendarYear
+            };
+            await leaveAccrualService.addLeaveAccrual(data);
+          }
+        });
+      }
+      const leaveAccruals = await leaveAccrualService.getLeaveAccruals();
+      leaveAccruals.map(async (leaveAccr) => {
+        if (new Date() >= new Date(leaveAccr.lea_expires_on) && leaveAccr.lea_archives === 0) {
+          const inst = await leaveAccrualService.archiveAccrual(leaveAccr.lea_id);
+        }
+      });
     }
-
-    if(process.env.NODE_ENV === 'TEST'){
-        port = 0
-    }
-
-
-
-    const server =   app.listen(port, ()=>{
-        console.log(`Listening on ${port}`);
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Travel Day Leave Routine Cron Job',
+      log_date: new Date()
     });
+  } catch (e) {
+    const errorMessage = `error from travel day leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
+}
 
+async function runCronJobForRnRLeaveType() {
+  try {
+    const months = [2, 4, 6, 8, 10, 12];
+    const cDate = new Date();
+    const currentDay = cDate.getDate();
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const result = await leaveApplicationService.getApprovedLeaves();
+    const rNrLeaveType = await leaveTypeService.getLeaveTypeByName('R & R');
+    if (!_.isEmpty(rNrLeaveType) || !_.isNull(rNrLeaveType)) {
+      const relocatableEmployees = await employeeService.getEmployeeByRelocatableStatus(1);
 
-    module.exports = server
+      if (months.includes(currentMonth)) {
+        relocatableEmployees.map(async (reEmp) => {
+          const existing = await leaveAccrualService.findLeaveAccrualByLeaveApplication(
+            reEmp.emp_id,
+            currentMonth,
+            currentYear,
+            rNrLeaveType.leave_type_id
+          );
+          if (_.isEmpty(existing) || _.isNull(existing)) {
+            let expiresOn = `${currentYear}-${currentMonth === 12 ? 1 : currentMonth + 1}-15`;
+            const calendarYear = currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear + 1}`;
+            const data = {
+              lea_emp_id: reEmp.emp_id,
+              lea_month: currentMonth,
+              lea_year: currentYear,
+              lea_leave_type: rNrLeaveType.leave_type_id,
+              lea_rate: parseFloat(rNrLeaveType.lt_rate),
+              lea_archives: 0,
+              lea_leaveapp_id: 0,
+              lea_expires_on: expiresOn,
+              lea_fy: calendarYear
+            };
+            await leaveAccrualService.addLeaveAccrual(data);
+          }
+        });
+      }
+      await logs.addLog({
+        log_user_id: 1,
+        log_description: 'R N R Leave Routine Cron Job',
+        log_date: new Date()
+      });
+    }
+  } catch (e) {
+    const errorMessage = `error from R N R leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
+}
+
+async function runGeneralMonthlyLeaveRoutine() {
+  try {
+    const leaveTypesData = await leaveTypeService.getLeavesWithOptions(1, 0, 1);
+    // ids here are 1 and 2
+    const employees = await employee.getAllActiveEmployees();
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const calendarYear = currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear + 1}`;
+    const leaveYear = currentMonth <= 9 ? currentYear : currentYear + 1;
+    const expiresOn = `${leaveYear}-09-30`;
+    for (const emp of employees) {
+      for (const leaveType of leaveTypesData) {
+        const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypePositive(
+          emp.emp_id,
+          currentMonth,
+          currentYear,
+          leaveType.leave_type_id
+        );
+        if (_.isEmpty(existingLeaveAccruals) || _.isNull(existingLeaveAccruals)) {
+          const leaveAccrual = {
+            lea_emp_id: emp.emp_id,
+            lea_month: currentMonth,
+            lea_year: currentYear,
+            lea_leave_type: leaveType.leave_type_id,
+            lea_rate: parseFloat(leaveType.lt_rate),
+            lea_leaveapp_id: 0,
+            lea_archives: 0,
+            lea_expires_on: expiresOn,
+            lea_fy: calendarYear
+          };
+          await addLeaveAccrual(leaveAccrual);
+        }
+      }
+    }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'General Monthly Leave Routine Cron Job',
+      log_date: new Date()
+    });
+  } catch (e) {
+    const errorMessage = `error general monthly leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+    console.error(e);
+  }
+}
+
+async function runGeneralYearlyLeaveRoutine() {
+  try {
+    const leaveTypesData = await leaveTypeService.getLeavesWithOptions(1, 0, 2);
+    // ids here are 3
+    const employees = await employee.getAllActiveEmployees();
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const calendarYear = currentMonth <= 9 ? `FY${currentYear}` : `FY${currentYear + 1}`;
+    const leaveYear = currentMonth <= 9 ? currentYear : currentYear + 1;
+    const expiresOn = `${leaveYear}-09-30`;
+    for (const emp of employees) {
+      for (const leaveType of leaveTypesData) {
+        const existingLeaveAccruals = await leaveAccrualService.findLeaveAccrualByLeaveTypeFYyearPositiveExcludeMonth(
+          emp.emp_id,
+          calendarYear,
+          leaveType.leave_type_id
+        );
+        if (_.isEmpty(existingLeaveAccruals) || _.isNull(existingLeaveAccruals)) {
+          const leaveAccrual = {
+            lea_emp_id: emp.emp_id,
+            lea_month: currentMonth,
+            lea_year: currentYear,
+            lea_leave_type: leaveType.leave_type_id,
+            lea_rate: parseFloat(leaveType.lt_rate),
+            lea_leaveapp_id: 0,
+            lea_archives: 0,
+            lea_expires_on: expiresOn,
+            lea_fy: calendarYear
+          };
+          await addLeaveAccrual(leaveAccrual);
+        }
+      }
+    }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'General Yearly Leave Routine Cron Job',
+      log_date: new Date()
+    });
+  } catch (e) {
+    const errorMessage = `error from general yearly leave routine cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+    console.error(e);
+  }
+}
+
+async function endEmployeeContract() {
+  try {
+    const employees = await employee.getActiveEmployees([1, 2]);
+    for (const emp of employees) {
+      let contractEndDate = new Date(emp.emp_contract_end_date);
+      let contractEndYear = contractEndDate.getFullYear();
+      let contractEndMonth = contractEndDate.getMonth() + 1;
+      let contractEndDay = contractEndDate.getDate();
+      if (contractEndDay < 10) contractEndDay = '0' + contractEndDay;
+      if (contractEndMonth < 10) contractEndMonth = '0' + contractEndMonth;
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      let mm = today.getMonth() + 1; // Months start at 0!
+      let dd = today.getDate();
+      if (dd < 10) dd = '0' + dd;
+      if (mm < 10) mm = '0' + mm;
+      const currentDateFormatted = `${yyyy}-${mm}-${dd}`;
+      const contractEndDateFormatted = `${contractEndYear}-${contractEndMonth}-${contractEndDay}`;
+      if (currentDateFormatted === contractEndDateFormatted) {
+        await user.suspendUser(emp.emp_unique_id);
+      }
+    }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'End Employee Contract Cron Job',
+      log_date: new Date()
+    });
+  } catch (e) {
+    const errorMessage = `error from end employee contract cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
+}
+
+async function updateHireType() {
+  try {
+    const employees = await employee.getActiveEmployees([1, 2]);
+    for (const emp of employees) {
+      const employeeType = emp.emp_employee_type;
+      if (!employeeType) {
+        continue;
+      }
+      if (employeeType.toLowerCase() === 'employee') {
+        let hiredDate = new Date(emp.emp_hire_date);
+        const differenceInMonthsFromHireDateToToday = differenceInCalendarMonths(new Date(), hiredDate);
+        let hireType = null;
+        if (differenceInMonthsFromHireDateToToday > 0 && differenceInMonthsFromHireDateToToday <= 6) {
+          hireType = 'short-term';
+        } else if (differenceInMonthsFromHireDateToToday > 6 && differenceInMonthsFromHireDateToToday <= 36) {
+          hireType = 'limited-term';
+        } else if (differenceInMonthsFromHireDateToToday > 36) {
+          hireType = 'regular';
+        }
+        await employeeService.updateEmployeeHireType(emp.emp_id, hireType);
+      }
+    }
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: 'Update Hire Type Cron Job',
+      log_date: new Date()
+    });
+  } catch (e) {
+    const errorMessage = `error from update hire type cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+    console.log('error from update hire type');
+    console.log(e.message);
+  }
+}
+
+async function clearOldLogs() {
+  try {
+    await logs.deleteLogs();
+  } catch (e) {
+    const errorMessage = `error clear old logs cron job ${e.message}`;
+    await logs.addLog({
+      log_user_id: 1,
+      log_description: errorMessage,
+      log_date: new Date()
+    });
+  }
+}
+
+nodeCron.schedule('0 6 * * *', updateApprovedLeaveStatus).start();
+nodeCron.schedule('0 6 * * *', travelDayLeaveAccrual).start();
+nodeCron.schedule('0 0 1 * *', runCronJobForRnRLeaveType).start();
+nodeCron.schedule('0 5 * * *', runGeneralMonthlyLeaveRoutine).start();
+nodeCron.schedule('0 5 * * *', runGeneralYearlyLeaveRoutine).start();
+nodeCron.schedule('* 6 * * *', endEmployeeContract).start();
+nodeCron.schedule('0 4 * * *', updateHireType).start();
+nodeCron.schedule('* 3 * * *', clearOldLogs).start();
+nodeCron.schedule('0 0 * * *', generateMasterList).start();
+// run every 1 hour
+nodeCron.schedule('0 */1 * * *', salaryCronJobs.computeSalaryLocations).start();
+
+/* Error handler middleware */
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  console.error(err.message, err.stack);
+  return res.status(statusCode).json({ message: err.message });
+});
+
+let port;
+
+if (process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION') {
+  port = process.env.PORT || 4321;
+}
+
+if (process.env.NODE_ENV === 'TEST') {
+  port = 0;
+}
+
+const server = app.listen(port, () => {
+  console.log(`Listening on ${port}`);
+});
+
+module.exports = server;

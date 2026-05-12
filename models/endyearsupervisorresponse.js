@@ -6,6 +6,10 @@ const {sequelize, Sequelize} = require("../services/db");
 const employeeModel = require('./Employee')(sequelize, Sequelize)
 const ratingModel = require('./rating')(sequelize, Sequelize)
 const selfAssessmentMasterModel = require('./selfassessmentmaster')(sequelize, Sequelize)
+const endOfYearResponseModel = require('./endofyearresponse')(sequelize, Sequelize)
+const endOfYearAssessmentModel = require('./endofyearassessment')(sequelize, Sequelize)
+const locationModel = require('./Location')(sequelize, Sequelize)
+const sectorModel = require('./Department')(sequelize, Sequelize)
 module.exports = (sequelize, DataTypes) => {
   class EndYearSupervisorResponse extends Model {
     /**
@@ -31,6 +35,53 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async getSupervisorEndYearResponseByMasterId(masterId){
+      return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
+        include:[
+          {model:employeeModel, as:'supervisor'},
+          {model:ratingModel, as:'rating'},
+          {model:selfAssessmentMasterModel, as:'selfAssessment',
+            include:[
+              {model:employeeModel, as:'employee',
+                include: [
+                  {model: locationModel, as: 'location'},
+                  {model: sectorModel, as: 'sector'},
+                ]
+              },
+              {model:endOfYearResponseModel, as:'end_year_response',
+                /*include: [
+                  { model: endOfYearAssessmentModel, as: 'end_year_assessment'}
+                ]*/
+              },
+            ]
+          },
+
+        ]
+      })
+    }
+
+    static async getSupervisorEndYearResponseReport(masterId){
+      return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
+        include:[
+          {model:employeeModel, as:'supervisor'},
+          {model:ratingModel, as:'rating'},
+          {model:selfAssessmentMasterModel, as:'selfAssessment',
+            include:[
+              {model:employeeModel, as:'employee',
+                include: [
+                  {model: locationModel, as: 'location'},
+                  {model: sectorModel, as: 'sector'},
+                ]
+              },
+              {model:endOfYearResponseModel, as:'end_year_response',
+              },
+            ]
+          },
+
+        ]
+      })
+    }
+
+    static async getSupervisorEndYearResponseByMasterIdOnly(masterId){
       return await EndYearSupervisorResponse.findAll({ where: { eysr_master_id: masterId },
         include:[
           {model:employeeModel, as:'supervisor'},
@@ -65,7 +116,8 @@ module.exports = (sequelize, DataTypes) => {
     eysr_rating: DataTypes.INTEGER,
     eysr_status: DataTypes.INTEGER,
     eysr_supervisor_id: DataTypes.INTEGER,
-    eysr_additional_comment: DataTypes.TEXT
+    eysr_additional_comment: DataTypes.TEXT,
+    eyr_support_growth_area: DataTypes.TEXT, 
   }, {
     sequelize,
     modelName: 'EndYearSupervisorResponse',
@@ -74,5 +126,6 @@ module.exports = (sequelize, DataTypes) => {
   EndYearSupervisorResponse.belongsTo(employeeModel, {as:'supervisor', foreignKey:'eysr_supervisor_id'});
   EndYearSupervisorResponse.belongsTo(ratingModel, {as:'rating', foreignKey:'eysr_rating'});
   EndYearSupervisorResponse.belongsTo(selfAssessmentMasterModel, {as:'selfAssessment', foreignKey:'eysr_master_id'});
+  EndYearSupervisorResponse.hasMany(endOfYearResponseModel, {as:'end_of_year_response', foreignKey:'eyr_master_id'});
   return EndYearSupervisorResponse;
 };

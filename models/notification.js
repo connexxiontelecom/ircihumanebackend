@@ -47,6 +47,13 @@ module.exports = (sequelize, DataTypes) => {
         include:[{model: employeeModel, as:'employee'}]
       })
     }
+    static async markAsRead(empId, url){
+      return await Notification.update({
+        n_is_read: 1
+      },{
+        where:{n_user_id:empId, n_is_read:0, n_url: url},
+      })
+    }
 
   };
   Notification.init({

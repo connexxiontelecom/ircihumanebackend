@@ -39,7 +39,7 @@ dotenv.config();
 
 const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: 465,
+    port: process.env.SMTP_PORT,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
@@ -77,7 +77,8 @@ async function sendMail(from, to, subject, text){
       from: from,
       to: to,
       subject: subject,
-      text: text
+      text: text,
+      template: 'notificationByEmail',
     }
     await transport.sendMail(message, function(err, res){
       if (err) {
@@ -110,7 +111,8 @@ async function paySlipSendMail(from, to, subject, templateParams){
                 jobRole: templateParams.jobRole,
                 employeeId: templateParams.employeeId,
                 monthNumber: templateParams.monthNumber,
-                yearNumber: templateParams.yearNumber
+                yearNumber: templateParams.yearNumber,
+                urlString: templateParams.urlString
             }
         };
 
@@ -130,9 +132,108 @@ async function paySlipSendMail(from, to, subject, templateParams){
 
 }
 
+async function journalProcessedSendMail(from, to, subject, templateParams){
+    try{
+
+        const message = {
+            from: from, // TODO: email sender
+            to: to, // TODO: email receiver
+            subject: subject,
+            text: 'Wooohooo it works!!',
+            template: 'journalnotification',
+            context: {
+                monthYear: templateParams.monthYear,
+                name: templateParams.name,
+                monthNumber: templateParams.monthNumber,
+                yearNumber: templateParams.yearNumber,
+
+            }
+        };
+
+
+
+   return   await transport.sendMail(message, function(err, res){
+            if (err) {
+                return err
+            }
+            else {
+                return res
+            }
+        })
+    }catch (e) {
+
+    }
+
+}
+
+async function resetPasswordSendMail(from, to, subject, templateParams){
+    try{
+
+        const message = {
+            from: from,
+            to: to,
+            subject: subject,
+            text: 'Wooohooo it works!!',
+            template: 'resetpassword',
+            context: {
+                name: templateParams.name,
+                department: templateParams.department,
+                jobRole: templateParams.jobRole,
+                employeeId: templateParams.employeeId,
+                password: templateParams.password
+            }
+        };
+
+
+
+   return   await transport.sendMail(message, function(err, res){
+            if (err) {
+                return err
+            }
+            else {
+                return res
+            }
+        })
+    }catch (e) {
+
+    }
+
+}
+
+
+async function sendAnnouncementNotification(from, to, subject, templateParams){
+  try{
+
+    const message = {
+      from: from, // TODO: email sender
+      to: to, // TODO: email receiver
+      subject: subject,
+      text: 'Wooohooo it works!!',
+      template: 'notificationByEmail',
+      context: {
+        firstName: templateParams.firstName,
+        title: templateParams.title,
+      }
+    };
+    return   await transport.sendMail(message, function(err, res){
+      if (err) {
+        return err
+      }
+      else {
+        return res
+      }
+    })
+  }catch (e) {
+
+  }
+
+}
 //sendMail('trendingnow@gmail.com', 'you@me.com', 'Subject goes here...', 'Here goes the content..')
 
 module.exports = {
   sendMail,
-    paySlipSendMail
+    paySlipSendMail,
+    resetPasswordSendMail,
+  sendAnnouncementNotification,
+    journalProcessedSendMail
 }
