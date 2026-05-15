@@ -10,12 +10,13 @@ const EmployeeModel = require('../../models/Employee')(sequelize, Sequelize.Data
 const timeAllocationModel = require('../../models/timeallocation')(sequelize, Sequelize.DataTypes);
 const timesheetModel = require('../../models/timesheet')(sequelize, Sequelize.DataTypes);
 const publicHolidayModel = require('../../models/PublicHoliday')(sequelize, Sequelize.DataTypes);
-const salaryMappingDetailsModel = require('../../models/salarymappingdetails')(sequelize, Sequelize.DataTypes);
-const salaryMappingMasterModel = require('../../models/salarymappingmaster')(sequelize, Sequelize.DataTypes);
+const authorizationModel = require('../../models/AuthorizationAction')(sequelize, Sequelize.DataTypes);
+//const salaryMappingDetailsModel = require('../../models/salarymappingdetails')(sequelize, Sequelize.DataTypes);
+//const salaryMappingMasterModel = require('../../models/salarymappingmaster')(sequelize, Sequelize.DataTypes);
 
 const timesheetBulkUploadFix = async () => {
   try {
-    const filePath = path.resolve(__dirname, '../../assets/TimesheetSubmitted.xlsx');
+    const filePath = path.resolve(__dirname, '../../assets/TimesheetD1Charge.xlsx');
     const successLog = path.resolve(__dirname, '../../assets/timesheet-success.txt');
     const failedLog = path.resolve(__dirname, '../../assets/timesheet-failed.txt');
 
@@ -50,81 +51,71 @@ const timesheetBulkUploadFix = async () => {
 
       const publicHolidays = await getPublicHolidays(year, month);
       const lastDay = getLastDayOfMonth(year, month);
-
       await sequelize.transaction(async (t) => {
-        const salaryMappingMaster = await salaryMappingMasterModel.findOne({
-          where: { smm_month: month, smm_year: year },
-          transaction: t,
-        });
+        const allocations = extractAllocations(row);
 
-        if (!salaryMappingMaster) {
-          console.log(`No salary mapping master for ${emp.emp_d7} (${month}/${year})`);
+        if (allocations.length === 0) {
+          console.log(`No allocations for ${emp.emp_unique_id}`);
           return;
         }
 
 
-          let allocationRecords = await salaryMappingDetailsModel.findAll({
-            where: {
-              smd_master_id: parseInt(salaryMappingMaster.smm_id),
-              smd_employee_t7: emp.emp_d7,
-            },
-            transaction: t,
-          });
+        for (const alloc of allocations) {
+          //console.log("=====================================================================")
+          //console.log(alloc)
+          //console.log("=====================================================================")
 
+          await timeAllocationModel.create({
+            ta_emp_id: emp.emp_id,
+            ta_month: month,
+            ta_year: year,
+            ta_tcode: alloc.tcode,
+            ta_charge: alloc.charge,
+            ta_status: 0,
+            //ta_approved_by: supervisorId,
+            //ta_comment: row.SupervisorToApprove,
+            ta_ref_no: refNo,
+            ta_t0_code: null,
+            ta_t0_percent: null,
+          }, { transaction: t });
 
-        if (allocationRecords.length === 0) {
-          console.log("**************************************************************************************************")
-          console.log(`No salary detail for Emp D7: ${emp.emp_d7} 
-          (${month}/${year}) Salary Mapping Master ID: ${salaryMappingMaster.smm_id} | Counter ${allocationRecords.length}`);
-          console.log("**************************************************************************************************")
-          return;
+          counter++;
         }
 
-            for (const record of allocationRecords) {
-              console.log("==============================================================================================================")
-              console.log(`Emp ID || ${emp.emp_unique_id} || Emp D7 || ${emp.emp_d7} || TCode ${record.smd_donor_t1} (${month}/${year})`)
-              console.log("==============================================================================================================")
-             /* await timeAllocationModel.create({
-                ta_emp_id: emp.emp_id,
-                ta_month: month,
-                ta_year: year,
-                ta_tcode: record.smd_donor_t1,
-                ta_charge: record.smd_allocation,
-                ta_status: 0,
-                ta_approved_by: supervisorId,
-                ta_comment: row.SupervisorToApprove,
-                ta_ref_no: refNo,
-                ta_t0_code: null,
-                ta_t0_percent: null,
-              }, { transaction: t });
-              */
-            }
-            /*
-            for (let day = 1; day <= lastDay; day++) {
-              const date = new Date(year, month - 1, day);
-              if (isWeekend(date)) continue;
-              const isHoliday = publicHolidays.includes(date.toDateString());
-              await timesheetModel.create({
-                ts_emp_id: emp.emp_id,
-                ts_month: month,
-                ts_year: year,
-                ts_day: day,
-                ts_start: '08:00',
-                ts_end: '17:15',
-                ts_duration: 8.45,
-                ts_is_present: isHoliday ? 4 : 1,
-                ts_ref_no: refNo,
-                ts_status: 0,
-              }, { transaction: t });
-            }
-            console.log(`Successfully processed ${emp.emp_d7} (${month}/${year})`);
-            */
 
+        //authorization action
+        await authorizationModel.create({
+          auth_travelapp_id: refNo,
+          auth_officer_id: supervisorId,
+          auth_status: 0,
+          auth_type: 2,
+          auth_comment: 'Time allocation/time sheet initialized.',
+          //auth_role_id: 0,
+          auth_ts_month: month,
+          auth_ts_year: year,
+          //auth_ts_activity: 0,
+        }, { transaction: t });
+
+        for (let day = 1; day <= lastDay; day++) {
+          const date = new Date(year, month - 1, day);
+          if (isWeekend(date)) continue;
+          const isHoliday = publicHolidays.includes(date.toDateString());
+          await timesheetModel.create({
+            ts_emp_id: emp.emp_id,
+            ts_month: month,
+            ts_year: year,
+            ts_day: day,
+            ts_start: '08:00',
+            ts_end: '17:15',
+            ts_duration: 8.45,
+            ts_is_present: isHoliday ? 4 : 1,
+            ts_ref_no: refNo,
+            ts_status: 0,
+          }, { transaction: t });
+        }
+        console.log(`Processed ${emp.emp_unique_id} (${month}/${year}) with ${allocations.length} allocations`);
 
       });
-
-      fs.appendFileSync(successLog, `${row.T7}\n`);
-      counter++;
     }
     console.log(`${counter} employees processed successfully`);
   } catch (error) {
@@ -182,6 +173,33 @@ async function getPublicHolidays(year, month) {
 function getLastDayOfMonth(year, month) {
   return new Date(year, month, 0).getDate();
 }
+
+function extractAllocations(row) {
+  const pairs = [
+    ['D1', 'Charge'],
+    ['D1a', 'Charge2'],
+    ['D1b', 'Charge3'],
+    ['D1c', 'Charge4'],
+    ['D1d', 'Charge5'],
+  ];
+
+  const allocations = [];
+
+  for (const [dKey, cKey] of pairs) {
+    const tcode = row[dKey];
+    const charge = row[cKey];
+
+    if (tcode && charge && Number(charge) > 0) {
+      allocations.push({
+        tcode: String(tcode).trim(),
+        charge: Number(charge),
+      });
+    }
+  }
+
+  return allocations;
+}
+
 
 timesheetBulkUploadFix();
 

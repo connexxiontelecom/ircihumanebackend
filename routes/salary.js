@@ -36,6 +36,9 @@ const pauseSalaryService = require('../services/pauseSalaryService');
 const reconciliationService = require('../services/reconciliationService');
 const salaryCron = require('../services/salaryCronService');
 const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocation')(sequelize, Sequelize.DataTypes);
+const ReliefTypeModel = require('../models/relieftype')(sequelize, Sequelize.DataTypes);
+const ReliefSalaryModel = require('../models/reliefSalary')(sequelize, Sequelize.DataTypes);
+const Op = Sequelize.Op;
 
 /* run salary routine */
 router.get('/salary-routine', auth(), async function (req, res, next) {
@@ -3227,7 +3230,7 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
     }
 
     if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
-      return res.status(400).json(`Payroll Routine has not been run`);
+      return res.status(400).json(`Payroll Routine has not been run Month: ${payrollMonth} Year: ${payrollYear}`);
     } else {
       const emp = await employee.getEmployee(parseInt(req.params.empId));
 
@@ -3406,7 +3409,7 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
       return res.status(400).json(`No payments marked as pension`);
     }
 
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineCheck = await salary.getSalaryMonthYear(parseInt(payrollMonth), parseInt(payrollYear));
 
     if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
       return res.status(400).json(`Payroll Routine has not been run`);
@@ -3601,6 +3604,28 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
       if (_.isEmpty(employees) || _.isNull(employees)) {
         return res.status(400).json(`No Employees Selected Location`);
       }
+
+      const reliefTypes = await ReliefTypeModel.findAll({
+        attributes: ['id', 'relief_name'],
+        order: [['relief_name', 'ASC']]
+      });
+
+      const empIdsForRelief = employees.map((e) => e.emp_id).filter((id) => id != null);
+      const reliefSalaryMap = new Map();
+      if (empIdsForRelief.length) {
+        const reliefRows = await ReliefSalaryModel.findAll({
+          where: {
+            month: payrollMonth,
+            year: payrollYear,
+            emp_id: { [Op.in]: empIdsForRelief }
+          },
+          attributes: ['emp_id', 'relief_id', 'relief_amount']
+        });
+        for (const row of reliefRows) {
+          reliefSalaryMap.set(`${row.emp_id}:${row.relief_id}`, parseFloat(row.relief_amount));
+        }
+      }
+
       const authorized = await payrollMonthYearLocationModel.getActionedBy(pmylLocationId, payrollMonth, payrollYear, 'authorizedBy');
       const approvedBy = await payrollMonthYearLocationModel.getActionedBy(pmylLocationId, payrollMonth, payrollYear, 'approvedBy');
       const confirmedBy = await payrollMonthYearLocationModel.getActionedBy(pmylLocationId, payrollMonth, payrollYear, 'confirmedBy');
@@ -3708,6 +3733,12 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
 
           let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
+          const reliefAmounts = {};
+          for (const rt of reliefTypes) {
+            const mapKey = `${emp.emp_id}:${rt.id}`;
+            reliefAmounts[rt.id] = reliefSalaryMap.has(mapKey) ? reliefSalaryMap.get(mapKey) : 0;
+          }
+
           let salaryObject = {
             employeeId: emp.emp_id,
             employeeD7: employeeSalaries[0].salary_d7,
@@ -3728,13 +3759,18 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
             year: payrollYear,
             employeeStartDate: new Date(employeeSalaries[0].salary_emp_start_date).toISOString().split('T')[0],
             empEndDate: new Date(employeeSalaries[0].salary_emp_end_date).toISOString().split('T')[0],
-            salaryGrade: empSalaryStructureName
+            salaryGrade: empSalaryStructureName,
+            reliefAmounts
           };
 
           employeeSalary.push(salaryObject);
         }
       }
-      const resObj = { employeeSalary, otherDetails };
+      const reliefTypeColumns = reliefTypes.map((rt) => ({
+        id: rt.id,
+        relief_name: rt.relief_name
+      }));
+      const resObj = { employeeSalary, otherDetails, reliefTypeColumns };
       return res.status(200).json(resObj);
     }
   } catch (err) {
