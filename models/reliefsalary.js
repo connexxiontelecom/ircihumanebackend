@@ -1,7 +1,7 @@
 'use strict';
 const { sequelize, Sequelize } = require('../services/db');
 const { Model } = require('sequelize');
-const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
+const TaxRelief = require('../models/taxRelief')(sequelize, Sequelize.DataTypes);
 
 module.exports = (sequelize, DataTypes) => {
   class ReliefSalary extends Model {
