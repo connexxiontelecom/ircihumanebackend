@@ -1,12 +1,11 @@
 const Joi = require('joi');
 const { sequelize, Sequelize } = require('./db');
-
-const TaxRelief = require('../models/TaxRelief')(sequelize, Sequelize.DataTypes);
+const TaxRelief = require('../models/taxRelief')(sequelize, Sequelize.DataTypes);
 const Employee = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 const ReliefTypeModel = require('../models/relieftype')(sequelize, Sequelize.DataTypes);
 
 const AWS = require('aws-sdk');
-const path = require("path");
+const path = require('path');
 const XLSX = require('xlsx');
 const fs = require('fs');
 
@@ -25,7 +24,7 @@ const uploadFile = (fileRequest) => {
       Bucket: process.env.AWS_BUCKET_NAME,
       Key: fileName,
       Body: fileRequest.data,
-      ContentType: fileRequest.mimetype,
+      ContentType: fileRequest.mimetype
       //ACL: 'public-read',
     };
 
@@ -79,12 +78,7 @@ const getTaxReliefs = async (req, res) => {
         {
           model: Employee,
           as: 'employee',
-          attributes: [
-            'emp_id',
-            'emp_first_name',
-            'emp_last_name',
-            'emp_unique_id'
-          ]
+          attributes: ['emp_id', 'emp_first_name', 'emp_last_name', 'emp_unique_id']
         },
         {
           model: ReliefTypeModel,
@@ -103,7 +97,6 @@ const getTaxReliefs = async (req, res) => {
   }
 };
 
-
 const getTaxReliefById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -115,7 +108,6 @@ const getTaxReliefById = async (req, res) => {
     return res.status(500).json({ message: 'Something went wrong. Try again later.' });
   }
 };
-
 
 const createTaxRelief = async (req, res) => {
   try {
@@ -133,7 +125,7 @@ const createTaxRelief = async (req, res) => {
       if (['mortgage', 'rent'].includes(reliefName)) {
         const oppositeReliefName = reliefName === 'mortgage' ? 'rent' : 'mortgage';
         const oppositeReliefType = await ReliefTypeModel.findOne({
-          where: { relief_name: oppositeReliefName },
+          where: { relief_name: oppositeReliefName }
         });
 
         if (oppositeReliefType) {
@@ -141,13 +133,13 @@ const createTaxRelief = async (req, res) => {
             where: {
               emp_id,
               relief_type_id: oppositeReliefType.id,
-              status: 1,
-            },
+              status: 1
+            }
           });
 
           if (existingActiveOpposite) {
             return res.status(400).json({
-              message: `Employee already has an active ${oppositeReliefName} relief. Deactivate it before adding ${reliefName}.`,
+              message: `Employee already has an active ${oppositeReliefName} relief. Deactivate it before adding ${reliefName}.`
             });
           }
         }
@@ -161,20 +153,18 @@ const createTaxRelief = async (req, res) => {
 
     const newTaxRelief = await TaxRelief.create({
       ...value,
-      document: documentUrl,
+      document: documentUrl
     });
 
     return res.status(201).json({
       message: 'Tax relief created',
-      data: newTaxRelief,
+      data: newTaxRelief
     });
   } catch (error) {
     console.error('Error creating tax relief:', error);
     return res.status(500).json('Error while creating tax relief');
   }
 };
-
-
 
 const updateTaxRelief = async (req, res) => {
   const { id } = req.params;
@@ -235,15 +225,7 @@ const bulkCreateTaxRelief = async (req, res) => {
          * Expected Excel headers:
          * EmployeeUniqueId | ReliefType | AmountProvided | ReliefAmount | StartDate | EndDate | Status
          */
-        const {
-          EmployeeUniqueId,
-          ReliefType,
-          AmountProvided,
-          ReliefAmount,
-          StartDate,
-          EndDate,
-          Status,
-        } = row;
+        const { EmployeeUniqueId, ReliefType, AmountProvided, ReliefAmount, StartDate, EndDate, Status } = row;
 
         if (!EmployeeUniqueId || !ReliefType) {
           skippedRecords.push({ row: index + 2, reason: 'Missing EmployeeUniqueId or ReliefType' });
@@ -251,7 +233,7 @@ const bulkCreateTaxRelief = async (req, res) => {
         }
 
         const employee = await Employee.findOne({
-          where: { emp_unique_id: EmployeeUniqueId },
+          where: { emp_unique_id: EmployeeUniqueId }
         });
 
         if (!employee) {
@@ -260,7 +242,7 @@ const bulkCreateTaxRelief = async (req, res) => {
         }
 
         const reliefType = await ReliefTypeModel.findOne({
-          where: { relief_name: ReliefType },
+          where: { relief_name: ReliefType }
         });
 
         if (!reliefType) {
@@ -271,12 +253,11 @@ const bulkCreateTaxRelief = async (req, res) => {
         const status = Status !== undefined ? Number(Status) : 1;
         const reliefName = reliefType.relief_name.toLowerCase();
 
-
         if (status === 1 && ['mortgage', 'rent'].includes(reliefName)) {
           const oppositeReliefName = reliefName === 'mortgage' ? 'rent' : 'mortgage';
 
           const oppositeReliefType = await ReliefTypeModel.findOne({
-            where: { relief_name: oppositeReliefName },
+            where: { relief_name: oppositeReliefName }
           });
 
           if (oppositeReliefType) {
@@ -284,14 +265,14 @@ const bulkCreateTaxRelief = async (req, res) => {
               where: {
                 emp_id: employee.emp_id,
                 relief_type_id: oppositeReliefType.id,
-                status: 1,
-              },
+                status: 1
+              }
             });
 
             if (existingActiveOpposite) {
               skippedRecords.push({
                 row: index + 2,
-                reason: `Active ${oppositeReliefName} already exists for employee`,
+                reason: `Active ${oppositeReliefName} already exists for employee`
               });
               continue;
             }
@@ -305,7 +286,7 @@ const bulkCreateTaxRelief = async (req, res) => {
           relief_amount: ReliefAmount || 0,
           start_date: StartDate || null,
           end_date: EndDate || null,
-          status,
+          status
         };
 
         const newRecord = await TaxRelief.create(taxReliefData);
@@ -313,7 +294,7 @@ const bulkCreateTaxRelief = async (req, res) => {
       } catch (rowError) {
         skippedRecords.push({
           row: index + 2,
-          reason: rowError.message,
+          reason: rowError.message
         });
       }
     }
@@ -325,19 +306,16 @@ const bulkCreateTaxRelief = async (req, res) => {
       created: createdRecords.length,
       skipped: skippedRecords.length,
       skippedRecords,
-      data: createdRecords,
+      data: createdRecords
     });
   } catch (error) {
     console.error('Error in bulk tax relief upload:', error);
     return res.status(500).json({
       message: 'Error while uploading tax reliefs',
-      error: error.message,
+      error: error.message
     });
   }
 };
-
-
-
 
 module.exports = {
   getTaxReliefs,
@@ -346,5 +324,5 @@ module.exports = {
   updateTaxRelief,
   deleteTaxRelief,
   findTaxReliefById,
-  bulkCreateTaxRelief,
+  bulkCreateTaxRelief
 };

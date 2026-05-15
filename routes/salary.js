@@ -368,7 +368,7 @@ router.get('/salary-routine', auth(), async function (req, res, next) {
 
                   
                   const taxResult = await taxReliefService.computeTax(emp.emp_id, newTaxableIncome, taxRatesData);
-                  const { totalTaxAmount, taxRelief, taxObjects, tempTaxAmount: TtempTaxAmount } = taxResult;
+                  const { totalTaxAmount, taxRelief, activeTaxReliefs, taxObjects, tempTaxAmount: TtempTaxAmount } = taxResult;
 
                   let object = {
                     taxable: taxableIncome,
@@ -380,6 +380,8 @@ router.get('/salary-routine', auth(), async function (req, res, next) {
                     taxRelief: taxRelief,
                     taxObjects: taxObjects
                   };
+
+                  await taxReliefService.addReliefSalaryForEmployee(emp.emp_id, payrollMonth, payrollYear, activeTaxReliefs);
 
                   salaryObject = {
                     salary_empid: emp.emp_id,
@@ -1184,7 +1186,7 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
 
       
       const taxResult = await taxReliefService.computeTax(emp.emp_id, newTaxableIncome, taxRatesData);
-      const { totalTaxAmount, taxRelief, taxObjects, tempTaxAmount: TtempTaxAmount } = taxResult;
+      const { totalTaxAmount, taxRelief, activeTaxReliefs, taxObjects, tempTaxAmount: TtempTaxAmount } = taxResult;
 
       let object = {
         taxable: taxableIncome,
@@ -1196,6 +1198,8 @@ router.post('/salary-routine', auth(), async function (req, res, next) {
         taxRelief: taxRelief,
         taxObjects: taxObjects
       };
+
+      await taxReliefService.addReliefSalaryForEmployee(emp.emp_id, payrollMonth, payrollYear, activeTaxReliefs);
 
       salaryObject = {
         salary_empid: emp.emp_id,
