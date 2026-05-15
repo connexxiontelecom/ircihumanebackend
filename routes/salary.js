@@ -37,7 +37,8 @@ const reconciliationService = require('../services/reconciliationService');
 const salaryCron = require('../services/salaryCronService');
 const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocation')(sequelize, Sequelize.DataTypes);
 const ReliefTypeModel = require('../models/relieftype')(sequelize, Sequelize.DataTypes);
-const ReliefSalaryModel = require('../models/reliefSalary')(sequelize, Sequelize.DataTypes);
+const ReliefSalaryModel = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
+const TaxReliefModel = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
 const Op = Sequelize.Op;
 
 /* run salary routine */
@@ -3616,17 +3617,33 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
 
       const empIdsForRelief = employees.map((e) => e.emp_id).filter((id) => id != null);
       const reliefSalaryMap = new Map();
+      const payrollMonthStr = String(payrollMonth).padStart(2, '0');
+      const payrollYearStr = String(payrollYear);
+
       if (empIdsForRelief.length) {
-        const reliefRows = await ReliefSalaryModel.findAll({
-          where: {
-            month: payrollMonth,
-            year: payrollYear,
-            emp_id: { [Op.in]: empIdsForRelief }
-          },
-          attributes: ['emp_id', 'relief_id', 'relief_amount']
+        const taxReliefs = await TaxReliefModel.findAll({
+          where: { emp_id: { [Op.in]: empIdsForRelief } },
+          attributes: ['id', 'emp_id', 'relief_type_id']
         });
-        for (const row of reliefRows) {
-          reliefSalaryMap.set(`${row.emp_id}:${row.relief_id}`, parseFloat(row.relief_amount));
+        const taxReliefById = new Map(taxReliefs.map((tr) => [tr.id, tr]));
+        const taxReliefIds = taxReliefs.map((tr) => tr.id);
+
+        if (taxReliefIds.length) {
+          const reliefRows = await ReliefSalaryModel.findAll({
+            where: {
+              Month: payrollMonthStr,
+              Year: payrollYearStr,
+              relief_Id: { [Op.in]: taxReliefIds }
+            },
+            attributes: ['relief_Id', 'relief_Amount']
+          });
+          for (const row of reliefRows) {
+            const taxRelief = taxReliefById.get(row.relief_Id);
+            if (!taxRelief?.relief_type_id) continue;
+            const mapKey = `${taxRelief.emp_id}:${taxRelief.relief_type_id}`;
+            const amount = parseFloat(row.relief_Amount) || 0;
+            reliefSalaryMap.set(mapKey, (reliefSalaryMap.get(mapKey) || 0) + amount);
+          }
         }
       }
 

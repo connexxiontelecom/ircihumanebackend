@@ -9,7 +9,8 @@ module.exports = (sequelize, DataTypes) => {
         as: 'taxReliefs'
       });
       ReliefType.hasMany(models.ReliefSalary, {
-        foreignKey: 'relief_id',
+        foreignKey: 'relief_Id',
+        sourceKey: 'id',
         as: 'reliefSalaries'
       });
     }

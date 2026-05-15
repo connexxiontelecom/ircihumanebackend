@@ -71,34 +71,42 @@ async function sumActiveReliefsByEmployee(empId) {
 
 async function addReliefSalary(reliefSalaryData) {
   return await ReliefSalary.create({
+    emp_id: reliefSalaryData.emp_id,
     relief_Id: reliefSalaryData.relief_Id,
-    Month: reliefSalaryData.Month,
-    Year: reliefSalaryData.Year,
+    Month: String(reliefSalaryData.Month).padStart(2, '0'),
+    Year: String(reliefSalaryData.Year),
     relief_Amount: reliefSalaryData.relief_Amount
   });
 }
 
 async function addReliefSalaryForEmployee(empId, month, year, taxReliefs) {
   const activeReliefs = taxReliefs || (await findActiveTaxReliefsByEmployee(empId));
-  if (!activeReliefs?.length) return [];
+  const monthStr = String(month).padStart(2, '0');
+  const yearStr = String(year);
 
-  const reliefIds = activeReliefs.map((relief) => relief.id);
-
-  await ReliefSalary.destroy({
-    where: {
-      relief_Id: {
-        [Op.in]: reliefIds
-      },
-      Month: month,
-      Year: year
-    }
+  const empTaxReliefs = await TaxRelief.findAll({
+    where: { emp_id: empId },
+    attributes: ['id']
   });
+  const empTaxReliefIds = empTaxReliefs.map((relief) => relief.id);
+  if (empTaxReliefIds.length) {
+    await ReliefSalary.destroy({
+      where: {
+        relief_Id: { [Op.in]: empTaxReliefIds },
+        Month: monthStr,
+        Year: yearStr
+      }
+    });
+  }
+
+  if (!activeReliefs?.length) return [];
 
   return await ReliefSalary.bulkCreate(
     activeReliefs.map((relief) => ({
+      emp_id: empId,
       relief_Id: relief.id,
-      Month: month,
-      Year: year,
+      Month: monthStr,
+      Year: yearStr,
       relief_Amount: relief.relief_amount || 0
     }))
   );

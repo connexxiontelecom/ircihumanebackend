@@ -5,7 +5,6 @@ const PaymentDefinition = require('../models/paymentdefinition')(sequelize, Sequ
 const Employee = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 const VariationalPayment = require('../models/VariationalPayment')(sequelize, Sequelize.DataTypes);
 const SeverancePay = require('../models/severancePay')(sequelize, Sequelize.DataTypes);
-const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
 const ReliefSalary = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 
@@ -46,39 +45,18 @@ async function getSalaryMonthYear(month, year) {
 }
 
 async function undoReliefSalaryMonthYear(month, year, employees) {
-  if (!employees) {
-    return await ReliefSalary.destroy({
-      where: {
-        Month: month,
-        Year: year
-      }
-    });
+  const where = {
+    Month: String(month).padStart(2, '0'),
+    Year: String(year)
+  };
+
+  if (employees) {
+    const employeeIds = Array.isArray(employees) ? employees : [employees];
+    if (employeeIds.length === 0) return 0;
+    where.emp_id = { [Op.in]: employeeIds };
   }
 
-  const employeeIds = Array.isArray(employees) ? employees : [employees];
-  if (employeeIds.length === 0) return 0;
-
-  const taxReliefs = await TaxRelief.findAll({
-    attributes: ['id'],
-    where: {
-      emp_id: {
-        [Op.in]: employeeIds
-      }
-    }
-  });
-  const reliefIds = taxReliefs.map((relief) => relief.id);
-
-  if (reliefIds.length === 0) return 0;
-
-  return await ReliefSalary.destroy({
-    where: {
-      relief_Id: {
-        [Op.in]: reliefIds
-      },
-      Month: month,
-      Year: year
-    }
-  });
+  return await ReliefSalary.destroy({ where });
 }
 
 async function undoSalaryMonthYear(month, year, employees) {
