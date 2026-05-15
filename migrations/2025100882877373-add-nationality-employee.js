@@ -2,31 +2,21 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    /**
-     * Add altering commands here.
-     *
-     * Example:
-     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-     */
-    return Promise.all([
-      queryInterface.addColumn(
-        'employees',
-        'nationality',
-        {
-          type: Sequelize.TEXT,
-          allowNull:true,
-        }
-      ),
-
-    ]);
+    const table = await queryInterface.describeTable('employees');
+    if (table.nationality) {
+      return;
+    }
+    await queryInterface.addColumn('employees', 'nationality', {
+      type: Sequelize.TEXT,
+      allowNull: true
+    });
   },
 
-  down: async (queryInterface, Sequelize) => {
-    /**
-     * Add reverting commands here.
-     *
-     * Example:
-     * await queryInterface.dropTable('users');
-     */
+  down: async (queryInterface) => {
+    const table = await queryInterface.describeTable('employees');
+    if (!table.nationality) {
+      return;
+    }
+    await queryInterface.removeColumn('employees', 'nationality');
   }
 };

@@ -1,12 +1,17 @@
 'use strict';
-const { sequelize, Sequelize } = require('../services/db');
 const { Model } = require('sequelize');
-const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
 
 module.exports = (sequelize, DataTypes) => {
   class ReliefSalary extends Model {
     static associate(models) {
-      // define association here
+      ReliefSalary.belongsTo(models.TaxRelief, {
+        foreignKey: 'relief_Id',
+        as: 'taxRelief'
+      });
+      ReliefSalary.belongsTo(models.Employee, {
+        foreignKey: 'emp_id',
+        as: 'employee'
+      });
     }
   }
 
@@ -17,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
+      emp_id: DataTypes.INTEGER,
       relief_Id: DataTypes.INTEGER,
       Month: DataTypes.STRING,
       Year: DataTypes.STRING,
@@ -28,11 +34,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'relief_salary'
     }
   );
-
-  ReliefSalary.belongsTo(TaxRelief, {
-    foreignKey: 'relief_Id',
-    as: 'taxRelief'
-  });
 
   return ReliefSalary;
 };
