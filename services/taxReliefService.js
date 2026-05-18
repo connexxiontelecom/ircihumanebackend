@@ -80,6 +80,10 @@ async function addReliefSalary(reliefSalaryData) {
 }
 
 async function addReliefSalaryForEmployee(empId, month, year, taxReliefs) {
+  if (!empId) {
+    throw new Error('Employee ID is required to create relief salary records');
+  }
+
   const activeReliefs = taxReliefs || (await findActiveTaxReliefsByEmployee(empId));
   const monthStr = String(month).padStart(2, '0');
   const yearStr = String(year);
@@ -92,6 +96,7 @@ async function addReliefSalaryForEmployee(empId, month, year, taxReliefs) {
   if (empTaxReliefIds.length) {
     await ReliefSalary.destroy({
       where: {
+        emp_id: empId,
         relief_Id: { [Op.in]: empTaxReliefIds },
         Month: monthStr,
         Year: yearStr
@@ -103,7 +108,7 @@ async function addReliefSalaryForEmployee(empId, month, year, taxReliefs) {
 
   return await ReliefSalary.bulkCreate(
     activeReliefs.map((relief) => ({
-      emp_id: empId,
+      emp_id: relief.emp_id || empId,
       relief_Id: relief.id,
       Month: monthStr,
       Year: yearStr,

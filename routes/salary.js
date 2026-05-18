@@ -2519,7 +2519,7 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
           }
 
           let salaryObject = {
-            employeeId: emp.salary_empid,
+            employeeId: emp.emp_id,
             employeeName: employeeSalaries[0].salary_emp_name,
             employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
             location: locationName,
@@ -3217,8 +3217,8 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
     if (_.isNull(payrollMonthYearData) || _.isEmpty(payrollMonthYearData)) {
       return res.status(400).json(`No payroll month and year set`);
     }
-    const payrollMonth = payrollMonthYearData.pmy_month;
-    const payrollYear = payrollMonthYearData.pmy_year;
+    const payrollMonth = payrollMonthYearData.pym_month;
+    const payrollYear = payrollMonthYearData.pym_year;
     //check if payroll routine has been run
 
     const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
