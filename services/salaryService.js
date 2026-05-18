@@ -8,6 +8,14 @@ const SeverancePay = require('../models/severancePay')(sequelize, Sequelize.Data
 const ReliefSalary = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
 const Joi = require('joi');
 
+function normalizeMonth(month) {
+  return month == null ? month : String(month).padStart(2, '0');
+}
+
+function normalizeYear(year) {
+  return year == null ? year : String(year);
+}
+
 async function addSalary(salary) {
   return await Salary.create({
     salary_empid: salary.salary_empid,
@@ -38,8 +46,8 @@ async function addSalary(salary) {
 async function getSalaryMonthYear(month, year) {
   return await Salary.findAll({
     where: {
-      salary_paymonth: month,
-      salary_payyear: year
+      salary_paymonth: normalizeMonth(month),
+      salary_payyear: normalizeYear(year)
     }
   });
 }
