@@ -1,5 +1,7 @@
-const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config();
+
+const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
@@ -13,10 +15,42 @@ const salaryCronJobs = require('./routes/cronJobs/salary_cron');
 // Increment a counter.
 dogstatsd.increment('page.views');
 
+const allowedOrigins = (process.env.CORS_ORIGINS || 'https://ircng.org,https://www.ircng.org')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+/** Always send CORS headers for allowed origins (including on 4xx/5xx from Express). */
+function applyCorsHeaders(req, res, next) {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+  }
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Requested-With'
+    );
+    return res.sendStatus(204);
+  }
+  next();
+}
+
+const corsOptions = {
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
 const app = express();
-app.use(cors());
+app.use(applyCorsHeaders);
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
-dotenv.config();
 app.use(
   fileUpload({
     createParentPath: true

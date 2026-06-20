@@ -1,239 +1,173 @@
-const path = require('path')
+const path = require('path');
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-handlebars');
 const dotenv = require('dotenv');
+const payslipService = require('./payslipService');
+
 dotenv.config();
 
-// const transport = nodemailer.createTransport({
-//   host: "smtp.mailtrap.io",
-//   port: 2525,
-//   auth: {
-//     user: "90d95c7dda4a44",
-//     pass: "9554a813c869e7"
-//   }
-// });
+const smtpPort = Number(process.env.SMTP_PORT) || 587;
+// Port 465 requires implicit TLS unless explicitly disabled
+const smtpSecure =
+  process.env.SMTP_SECURE === 'true' ||
+  (process.env.SMTP_SECURE !== 'false' && smtpPort === 465);
 
-// const transport = nodemailer.createTransport({
-//     pool: true,
-//     host: "**",
-//     port: 465,
-//     secure: true, // use SSL
-//     auth: {
-//         user: "**",
-//         pass: "**"
-//     },
-//     tls: {
-//         // do not fail on invalid certs
-//         rejectUnauthorized: false,
-//     },
-// });
-
-// const transport = nodemailer.createTransport({
-//     host: "smtp.mailtrap.io",
-//     port: 2525,
-//     auth: {
-//         user: "d00b66bb7e3062",
-//         pass: "611de82767b826"
-//     }
-// });
+const MAIL_SEND_TIMEOUT_MS = Number(process.env.MAIL_SEND_TIMEOUT_MS) || 12000;
 
 const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
-    }
+  host: process.env.SMTP_HOST,
+  port: smtpPort,
+  secure: smtpSecure,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000
 });
 
 const handlebarOptions = {
-    viewEngine: {
-        extName: ".handlebars",
-        partialsDir: path.resolve("email_views"),
-        defaultLayout: false,
-    },
-    viewPath: path.resolve("email_views"),
-    extName: ".handlebars",
+  viewEngine: {
+    extName: '.handlebars',
+    partialsDir: path.resolve('email_views'),
+    defaultLayout: false
+  },
+  viewPath: path.resolve('email_views'),
+  extName: '.handlebars'
 };
 
-transport.use(
-    "compile",
-    hbs(handlebarOptions)
-);
+transport.use('compile', hbs(handlebarOptions));
 
-// transport.use('compile', hbs({
-//     viewEngine: {
-//         extName: ".html",
-//         partialsDir: path.resolve('/../email_views'),
-//         defaultLayout: false,
-//     },
-//   viewPath: path.resolve('/../email_views'),
-// }));
+function getDefaultFrom(from) {
+  return from || process.env.MAIL_FROM || 'noreply@ircng.org';
+}
 
-
-async function sendMail(from, to, subject, text){
-  try{
-    const message = {
-      from: from,
-      to: to,
-      subject: subject,
-      text: text,
-      template: 'notificationByEmail',
-    }
-    await transport.sendMail(message, function(err, res){
-      if (err) {
-        console.log(err)
-      }
-      else {
-        console.log(res);
-      }
-    })
-  }catch (e) {
-
+function assertRecipient(to) {
+  if (!to || typeof to !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim())) {
+    const err = new Error('Invalid or missing email recipient');
+    err.code = 'INVALID_RECIPIENT';
+    throw err;
   }
-
 }
 
-
-async function paySlipSendMail(from, to, subject, templateParams){
-    try{
-
-        const message = {
-            from: from, // TODO: email sender
-            to: to, // TODO: email receiver
-            subject: subject,
-            text: 'Wooohooo it works!!',
-            template: 'payslipnotification',
-            context: {
-                monthYear: templateParams.monthYear,
-                name: templateParams.name,
-                department: templateParams.department,
-                jobRole: templateParams.jobRole,
-                employeeId: templateParams.employeeId,
-                monthNumber: templateParams.monthNumber,
-                yearNumber: templateParams.yearNumber,
-                urlString: templateParams.urlString
-            }
-        };
-
-
-
-   return   await transport.sendMail(message, function(err, res){
-            if (err) {
-                return err
-            }
-            else {
-                return res
-            }
-        })
-    }catch (e) {
-
-    }
-
-}
-
-async function journalProcessedSendMail(from, to, subject, templateParams){
-    try{
-
-        const message = {
-            from: from, // TODO: email sender
-            to: to, // TODO: email receiver
-            subject: subject,
-            text: 'Wooohooo it works!!',
-            template: 'journalnotification',
-            context: {
-                monthYear: templateParams.monthYear,
-                name: templateParams.name,
-                monthNumber: templateParams.monthNumber,
-                yearNumber: templateParams.yearNumber,
-
-            }
-        };
-
-
-
-   return   await transport.sendMail(message, function(err, res){
-            if (err) {
-                return err
-            }
-            else {
-                return res
-            }
-        })
-    }catch (e) {
-
-    }
-
-}
-
-async function resetPasswordSendMail(from, to, subject, templateParams){
-    try{
-
-        const message = {
-            from: from,
-            to: to,
-            subject: subject,
-            text: 'Wooohooo it works!!',
-            template: 'resetpassword',
-            context: {
-                name: templateParams.name,
-                department: templateParams.department,
-                jobRole: templateParams.jobRole,
-                employeeId: templateParams.employeeId,
-                password: templateParams.password
-            }
-        };
-
-
-
-   return   await transport.sendMail(message, function(err, res){
-            if (err) {
-                return err
-            }
-            else {
-                return res
-            }
-        })
-    }catch (e) {
-
-    }
-
-}
-
-
-async function sendAnnouncementNotification(from, to, subject, templateParams){
-  try{
-
-    const message = {
-      from: from, // TODO: email sender
-      to: to, // TODO: email receiver
-      subject: subject,
-      text: 'Wooohooo it works!!',
-      template: 'notificationByEmail',
-      context: {
-        firstName: templateParams.firstName,
-        title: templateParams.title,
-      }
-    };
-    return   await transport.sendMail(message, function(err, res){
-      if (err) {
-        return err
-      }
-      else {
-        return res
-      }
+function sendWithTimeout(promise, ms = MAIL_SEND_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => {
+        const err = new Error(`Email send timed out after ${ms}ms`);
+        err.code = 'MAIL_TIMEOUT';
+        reject(err);
+      }, ms);
     })
-  }catch (e) {
-
-  }
-
+  ]);
 }
-//sendMail('trendingnow@gmail.com', 'you@me.com', 'Subject goes here...', 'Here goes the content..')
+
+async function sendTemplatedMail({ from, to, subject, template, context = {}, text }) {
+  assertRecipient(to);
+  const message = {
+    from: getDefaultFrom(from),
+    to: to.trim(),
+    subject,
+    template,
+    context
+  };
+  if (text) {
+    message.text = text;
+  }
+  return sendWithTimeout(transport.sendMail(message));
+}
+
+async function sendMail(from, to, subject, text, context = {}) {
+  return sendTemplatedMail({
+    from,
+    to,
+    subject,
+    template: 'notificationByEmail',
+    text: text || subject,
+    context: {
+      firstName: context.firstName || '',
+      title: context.title || subject
+    }
+  });
+}
+
+async function paySlipSendMail(from, to, subject, templateParams) {
+  const payslipLink = payslipService.buildPayslipViewUrl(templateParams.urlString);
+
+  return sendTemplatedMail({
+    from,
+    to,
+    subject,
+    template: 'payslipnotification',
+    context: {
+      monthYear: templateParams.monthYear,
+      name: templateParams.name,
+      department: templateParams.department,
+      jobRole: templateParams.jobRole,
+      employeeId: templateParams.employeeId,
+      monthNumber: templateParams.monthNumber,
+      yearNumber: templateParams.yearNumber,
+      urlString: templateParams.urlString,
+      payslipLink
+    }
+  });
+}
+
+async function journalProcessedSendMail(from, to, subject, templateParams) {
+  return sendTemplatedMail({
+    from,
+    to,
+    subject,
+    template: 'journalnotification',
+    context: {
+      monthYear: templateParams.monthYear,
+      name: templateParams.name,
+      monthNumber: templateParams.monthNumber,
+      yearNumber: templateParams.yearNumber,
+      department: templateParams.department,
+      jobRole: templateParams.jobRole,
+      employeeId: templateParams.employeeId
+    }
+  });
+}
+
+async function resetPasswordSendMail(from, to, subject, templateParams) {
+  return sendTemplatedMail({
+    from,
+    to,
+    subject,
+    template: 'resetpassword',
+    context: {
+      name: templateParams.name,
+      department: templateParams.department,
+      jobRole: templateParams.jobRole,
+      employeeId: templateParams.employeeId,
+      resetUrl: templateParams.resetUrl,
+      expiresInMinutes: templateParams.expiresInMinutes || 60
+    }
+  });
+}
+
+async function sendAnnouncementNotification(from, to, subject, templateParams) {
+  return sendTemplatedMail({
+    from,
+    to,
+    subject,
+    template: 'notificationByEmail',
+    context: {
+      firstName: templateParams.firstName,
+      title: templateParams.title
+    }
+  });
+}
 
 module.exports = {
   sendMail,
-    paySlipSendMail,
-    resetPasswordSendMail,
+  paySlipSendMail,
+  resetPasswordSendMail,
   sendAnnouncementNotification,
-    journalProcessedSendMail
-}
+  journalProcessedSendMail,
+  getDefaultFrom
+};

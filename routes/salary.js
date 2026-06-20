@@ -39,6 +39,7 @@ const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocatio
 const ReliefTypeModel = require('../models/relieftype')(sequelize, Sequelize.DataTypes);
 const ReliefSalaryModel = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
 const TaxReliefModel = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
+const payslipService = require('../services/payslipService');
 const Op = Sequelize.Op;
 
 /* run salary routine */
@@ -2975,12 +2976,11 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
         sectorName = `${tempEmp.sector.department_name} - ${tempEmp.sector.d_t3_code}`;
       }
 
-      let urlString = JSON.stringify({
-        employee: emp.salary_empid,
-        month: parseInt(payrollMonth),
-        year: parseInt(payrollYear)
-      });
-      urlString = btoa(urlString);
+      let urlString = payslipService.encodePayslipLinkData(
+        emp.salary_empid,
+        parseInt(payrollMonth, 10),
+        parseInt(payrollYear, 10)
+      );
 
       const templateParams = {
         monthYear: `${payrollMonth} ${payrollYear}`,
@@ -2995,7 +2995,13 @@ router.post('/approve-salary-routine', auth(), async function (req, res, next) {
 
       tempParamsArray.push(templateParams);
 
-      await mailer.paySlipSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Payslip Notification', templateParams);
+      if (tempEmp.emp_office_email) {
+        try {
+          await mailer.paySlipSendMail(null, tempEmp.emp_office_email, 'Payslip Notification', templateParams);
+        } catch (mailErr) {
+          console.error(`Payslip email failed for employee ${emp.salary_empid}:`, mailErr.message);
+        }
+      }
     }
 
     const logData = {
@@ -5715,8 +5721,45 @@ router.post('/salary-tes-routine', auth(), async function (req, res, next) {
 });
 /* run salary routine location */
 
-router.get('/payslipemail', auth(), async function (req, res, next) {
+router.get('/public-payslip-data', async function (req, res) {
   try {
+    const { empId, month, year } = payslipService.decodePayslipLinkData(req.query.data);
+    const payslipData = await payslipService.getEmployeePayslip(empId, month, year, {
+      requireApproved: true
+    });
+    return res.status(200).json(payslipData);
+  } catch (err) {
+    return res.status(400).json(err.message || 'Unable to load payslip');
+  }
+});
+
+router.get('/public-payslip', async function (req, res) {
+  try {
+    const { empId, month, year } = payslipService.decodePayslipLinkData(req.query.data);
+    const payslipData = await payslipService.getEmployeePayslip(empId, month, year, {
+      requireApproved: true
+    });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(payslipService.renderPublicPayslipHtml(payslipData));
+  } catch (err) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(400).send(
+      payslipService.renderPayslipErrorHtml(err.message || 'Unable to load payslip')
+    );
+  }
+});
+
+router.get('/payslipemail', auth(), async function (req, res) {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json('Not found');
+  }
+
+  try {
+    const to = req.query.to;
+    if (!to) {
+      return res.status(400).json('Query parameter "to" (email address) is required for test sends');
+    }
+
     const templateParams = {
       monthYear: 'April 2022',
       name: 'Jane Doe',
@@ -5724,14 +5767,14 @@ router.get('/payslipemail', auth(), async function (req, res, next) {
       jobRole: 'Full Stack Developer',
       employeeId: '3',
       monthNumber: '4',
-      yearNumber: '2022'
+      yearNumber: '2022',
+      urlString: req.query.urlString || ''
     };
 
-    const mailerRes = await mailer.paySlipSendMail('noreply@ircng.org', 'peterejiro96@gmail.com', 'Payslip Notification', templateParams);
-
+    const mailerRes = await mailer.paySlipSendMail(null, to, 'Payslip Notification', templateParams);
     return res.status(200).json(mailerRes);
   } catch (err) {
-    return res.status(400).json(err?.message);
+    return res.status(400).json(err?.message || 'Failed to send test email');
   }
 });
 

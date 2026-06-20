@@ -1062,7 +1062,11 @@ router.get('/process-salary-mapping/:masterId', auth(), async function (req, res
           jobRole: employee.jobrole.job_role,
           employeeId: employee.emp_unique_id
         };
-        await mailer.journalProcessedSendMail('noreply@ircng.org', email, 'TimeSheet Approved, Journal Processed', templateParams);
+        try {
+          await mailer.journalProcessedSendMail(null, email, 'TimeSheet Approved, Journal Processed', templateParams);
+        } catch (mailErr) {
+          console.error(`Journal processed email failed for ${empId}:`, mailErr.message);
+        }
       }
     }
 

@@ -510,6 +510,7 @@ router.post('/login', async function (req, res, next) {
       if (err) {
         return res.status(400).json(`${err} occurred while logging in`);
       }
+      //return res.status(400).json(checkUserExisting.user_password);
       if (response) {
         checkUserExisting = JSON.parse(JSON.stringify(checkUserExisting));
 
@@ -734,71 +735,135 @@ router.post('/default-password', auth(), async function (req, res) {
   }
 });
 
-/* Login User */
-router.post('/forgot-password', async function (req, res, next) {
-  try {
-    const user = req.body;
+const PASSWORD_RESET_EXPIRY = process.env.PASSWORD_RESET_EXPIRY || '1h';
 
-    let checkUserExisting = await users.findUserByEmail(user.user_username).then((data) => {
-      return data;
-    });
+function buildPasswordResetUrl(token) {
+  const base = (
+    process.env.FRONTEND_URL ||
+    process.env.PASSWORD_RESET_URL_BASE ||
+    'https://ircng.org'
+  ).replace(/\/$/, '');
+  return `${base}/reset-password?token=${encodeURIComponent(token)}`;
+}
+
+/* Request password reset link (does not change password until /reset-password) */
+router.post('/forgot-password', async function (req, res) {
+  const genericMessage =
+    'If an account exists for that username, a password reset link has been sent to the registered office email.';
+
+  try {
+    const identifier = req.body?.user_username;
+    if (!identifier) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+
+    let checkUserExisting = await users.findUserByUsername(identifier);
+    if (_.isEmpty(checkUserExisting) || _.isNull(checkUserExisting)) {
+      checkUserExisting = await users.findUserByEmail(identifier);
+    }
 
     if (_.isEmpty(checkUserExisting) || _.isNull(checkUserExisting)) {
-      return res.status(404).json('Invalid Username');
+      return res.status(200).json({ message: genericMessage });
     }
 
     if (parseInt(checkUserExisting.user_status) !== 1) {
-      return res.status(400).json('User Account Suspended');
+      return res.status(200).json({ message: genericMessage });
     }
 
-    let newPassword = generatePassword(10);
+    const tempEmp = await employee.getEmployeeById(checkUserExisting.user_username);
+    if (_.isEmpty(tempEmp) || _.isNull(tempEmp) || !tempEmp.emp_office_email) {
+      return res.status(200).json({ message: genericMessage });
+    }
 
-    let updatePassword = await users.updateUserPassword(checkUserExisting.user_id, newPassword).then((data) => {
-      return data;
-    });
+    if (!process.env.TOKEN_SECRET) {
+      console.error('TOKEN_SECRET is not configured');
+      return res.status(500).json({ message: 'Password reset is temporarily unavailable. Please contact support.' });
+    }
 
-    let tempEmp = await employee.getEmployeeById(checkUserExisting.user_username).then((data) => {
-      return data;
-    });
+    const resetToken = jwt.sign(
+      { userId: checkUserExisting.user_id, purpose: 'password_reset' },
+      process.env.TOKEN_SECRET,
+      { expiresIn: PASSWORD_RESET_EXPIRY }
+    );
 
     let empJobRole = 'N/A';
-    if (parseInt(tempEmp.emp_job_role_id) > 0) {
-      empJobRole = tempEmp.jobrole.job_role;
+    if (parseInt(tempEmp.emp_job_role_id) > 0 && tempEmp.jobrole) {
+      empJobRole = tempEmp.jobrole.job_role || 'N/A';
     }
 
     let sectorName = 'N/A';
-    if (parseInt(tempEmp.emp_department_id) > 0) {
+    if (parseInt(tempEmp.emp_department_id) > 0 && tempEmp.sector) {
       sectorName = `${tempEmp.sector.department_name} - ${tempEmp.sector.d_t3_code}`;
     }
+
+    const expiresInMinutes = PASSWORD_RESET_EXPIRY.endsWith('h')
+      ? parseInt(PASSWORD_RESET_EXPIRY, 10) * 60
+      : parseInt(PASSWORD_RESET_EXPIRY, 10) || 60;
 
     const templateParams = {
       name: `${tempEmp.emp_first_name} ${tempEmp.emp_last_name}`,
       department: sectorName,
       jobRole: empJobRole,
       employeeId: checkUserExisting.user_username,
-      password: newPassword
+      resetUrl: buildPasswordResetUrl(resetToken),
+      expiresInMinutes
     };
 
-    const mailerRes = await mailer
-      .resetPasswordSendMail('noreply@ircng.org', tempEmp.emp_office_email, 'Password Reset', templateParams)
-      .then((data) => {
-        return data;
+    try {
+      await mailer.resetPasswordSendMail(null, tempEmp.emp_office_email, 'Password Reset', templateParams);
+    } catch (mailErr) {
+      console.error('Forgot password email failed:', mailErr.message);
+      return res.status(500).json({
+        message: 'Unable to send password reset email. Please verify SMTP settings or try again later.'
       });
+    }
 
-    return res.status(200).json(`Password Reset Successful, Check your email for new password`);
+    return res.status(200).json({ message: genericMessage });
   } catch (err) {
-    return res.status(400).json(`Error while logging user ${err.message}`);
+    if (err.code === 'INVALID_RECIPIENT') {
+      return res.status(200).json({ message: genericMessage });
+    }
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ message: 'Unable to process password reset. Please try again later.' });
   }
 });
 
-function generatePassword(length) {
-  let result = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+/* Complete password reset using token from email */
+router.post('/reset-password', async function (req, res) {
+  const schema = Joi.object({
+    token: Joi.string().required(),
+    password: Joi.string().min(8).required()
+  });
+
+  try {
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json(error.details[0].message);
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(value.token, process.env.TOKEN_SECRET);
+    } catch (verifyErr) {
+      return res.status(400).json('Invalid or expired reset link. Please request a new one.');
+    }
+
+    if (decoded.purpose !== 'password_reset' || !decoded.userId) {
+      return res.status(400).json('Invalid or expired reset link. Please request a new one.');
+    }
+
+    const userRecord = await users.findUserByUserId(decoded.userId);
+    if (_.isEmpty(userRecord) || _.isNull(userRecord) || parseInt(userRecord.user_status) !== 1) {
+      return res.status(400).json('Invalid or expired reset link. Please request a new one.');
+    }
+
+    await users.updateUserPassword(decoded.userId, value.password);
+
+    return res.status(200).json('Password updated successfully. You can now log in with your new password.');
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json('Unable to reset password. Please try again later.');
   }
-  return result;
-}
+});
 
 module.exports = router;

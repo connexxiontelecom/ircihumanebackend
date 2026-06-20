@@ -21,6 +21,29 @@ const errHandler = (err) =>{
   console.log("Error: ", err);
 }
 
+async function notifyEmployeeOfAnnouncement(announceId, emp, subject, body, url, title) {
+  if (!emp || !emp.emp_id) {
+    return;
+  }
+
+  await announcementAudienceModel.createAudience(announceId, emp.emp_id);
+  await notificationModel.registerNotification(subject, body, emp.emp_id, 0, url);
+
+  const email = emp.emp_office_email;
+  if (!email) {
+    return;
+  }
+
+  try {
+    await mailer.sendAnnouncementNotification(null, email, 'New Announcement', {
+      firstName: `${emp.emp_first_name}`,
+      title: `${title}`
+    });
+  } catch (mailErr) {
+    console.error(`Announcement email failed for employee ${emp.emp_id}:`, mailErr.message);
+  }
+}
+
 const uploadFiles = async (req, res)=>{
   try{
     const announcementId = req.params.announcementId;
@@ -90,59 +113,30 @@ const publishAnnouncement = async (req, res, next)=>  {
       const body = "You have new announcement.";
       const url = req.body.viewUrl; //req.headers.referer;
           switch (parseInt(req.body.target)){
-            case 2:
+            case 2: {
               const persons = req.body.persons;
-              persons.map(async (person) => {
-                await announcementAudienceModel.createAudience(announce.a_id, person.value);
+              for (const person of persons) {
                 const empUser = await employeeModel.getEmployeeById(person.value);
-                const templateParams = {
-                  firstName: `${empUser.emp_first_name}`,
-                  title: `${req.body.title}`,
-                }
-                const notifyOfficer = await notificationModel.registerNotification(subject, body, person.value, 0, url);
-                const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', empUser.emp_office_email, 'New Announcement', templateParams).then((data)=>{
-                  return data
-                })
-              });
+                await notifyEmployeeOfAnnouncement(announce.a_id, empUser, subject, body, url, req.body.title);
+              }
               break;
-            case 3: //location
-              const locationIds = [];
-              const locations = req.body.persons;
-              locations.map((locate)=>{
-                locationIds.push(locate.value)
-              });
+            }
+            case 3: {
+              const locationIds = req.body.persons.map((locate) => locate.value);
               const employeesByLocation = await employeeModel.getEmployeesByLocationIds(locationIds);
-              employeesByLocation.map(async (emp) => {
-                const templateParams = {
-                  firstName: `${emp.emp_first_name}`,
-                  title: `${req.body.title}`,
-                }
-                await announcementAudienceModel.createAudience(announce.a_id, emp.emp_id);
-                const notifyOfficer = await notificationModel.registerNotification(subject, body, emp.emp_id, 0, url);
-                const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', emp.emp_office_email, 'New Announcement', templateParams).then((data)=>{
-                  return data
-                })
-              });
+              for (const emp of employeesByLocation) {
+                await notifyEmployeeOfAnnouncement(announce.a_id, emp, subject, body, url, req.body.title);
+              }
               break;
-            case 4: //sector
-              const departmentIds = [];
-              const departments = req.body.persons;
-              departments.map((depart)=>{
-                departmentIds.push(depart.value);
-              });
+            }
+            case 4: {
+              const departmentIds = req.body.persons.map((depart) => depart.value);
               const employeesBySector = await employeeModel.getEmployeesBySectorIds(departmentIds);
-              employeesBySector.map(async (empSec) => {
-                const templateParams = {
-                  firstName: `${empSec.emp_first_name}`,
-                  title: `${req.body.title}`,
-                }
-                await announcementAudienceModel.createAudience(announce.a_id, empSec.emp_id);
-                const notifyOfficer = await notificationModel.registerNotification(subject, body, empSec.emp_id, 0, url);
-                const mailerRes =  await mailer.sendAnnouncementNotification('noreply@ircng.org', empSec.emp_office_email, 'New Announcement', templateParams).then((data)=>{
-                  return data
-                })
-              });
+              for (const empSec of employeesBySector) {
+                await notifyEmployeeOfAnnouncement(announce.a_id, empSec, subject, body, url, req.body.title);
+              }
               break;
+            }
           }
       //Log
       const logData = {

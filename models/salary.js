@@ -23,14 +23,18 @@ module.exports = (sequelize, DataTypes) => {
       return await salary.findAll({
         group: ['salary_empid'],
         include: [
-          { model: Employee, as: 'employee' },
+          {
+            model: Employee,
+            as: 'employee',
+            include: [{ model: Sector, as: 'sector' }]
+          },
           { model: Location, as: 'location' },
           { model: Jobrole, as: 'jobrole' }
         ],
         where: {
           salary_empid: empIds,
           salary_location_id: locationId,
-          salary_paymonth: month,
+          salary_paymonth: String(month).padStart(2, '0'),
           salary_payyear: year
         }
       });

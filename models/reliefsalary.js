@@ -4,9 +4,10 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ReliefSalary extends Model {
     static associate(models) {
-      ReliefSalary.belongsTo(models.TaxRelief, {
+      ReliefSalary.belongsTo(models.ReliefType, {
         foreignKey: 'relief_Id',
-        as: 'taxRelief'
+        targetKey: 'id',
+        as: 'reliefType'
       });
       ReliefSalary.belongsTo(models.Employee, {
         foreignKey: 'emp_id',

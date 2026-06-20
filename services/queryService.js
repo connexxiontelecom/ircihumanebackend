@@ -47,9 +47,13 @@ const queryEmployee = async (req, res)=>  {
           title: `${req.body.title}`,
         }
 
-        const mailerRes = await mailer.sendAnnouncementNotification('noreply@ircng.org', empUser.emp_office_email, 'New Query', templateParams).then((data) => {
-          return data
-        })
+        if (empUser.emp_office_email) {
+          try {
+            await mailer.sendAnnouncementNotification(null, empUser.emp_office_email, 'New Query', templateParams);
+          } catch (mailErr) {
+            console.error(`Query notification email failed for employee ${employee.value}:`, mailErr.message);
+          }
+        }
 
         //notification
         const notifyEmp = notificationModel.registerNotification(
