@@ -293,7 +293,9 @@ const createNewEmployee = async (req, res, next) => {
                   req.body.office_email,
                   "Login credentials",
                   message
-                );
+                ).catch((mailErr) => {
+                  console.error("Employee welcome email failed:", mailErr.message);
+                });
               }
             });
             //}
@@ -312,6 +314,13 @@ const createNewEmployee = async (req, res, next) => {
     next(e);
   }
 };
+
+async function getEmployeeLocationId(employeeId) {
+  return await employee.findOne({
+    where: { emp_id: employeeId },
+    attributes: ["emp_id", "emp_location_id"],
+  });
+}
 
 async function getEmployee(employeeId) {
   return await employee.findOne({
@@ -1011,6 +1020,7 @@ module.exports = {
   setSupervisorStatus,
   getEmployeeById,
   getEmployee,
+  getEmployeeLocationId,
   getSupervisors,
   getNoneSupervisors,
   updateEmployee,

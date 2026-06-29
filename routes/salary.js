@@ -38,7 +38,7 @@ const salaryCron = require('../services/salaryCronService');
 const payrollMonthYearLocationModel = require('../models/payrollmonthyearlocation')(sequelize, Sequelize.DataTypes);
 const ReliefTypeModel = require('../models/relieftype')(sequelize, Sequelize.DataTypes);
 const ReliefSalaryModel = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
-const TaxReliefModel = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
+const TaxReliefModel = require('../models/taxRelief')(sequelize, Sequelize.DataTypes);
 const payslipService = require('../services/payslipService');
 const Op = Sequelize.Op;
 
@@ -3446,10 +3446,6 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
       let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
-        if (parseInt(employeeSalaries[0].salary_approved) === 0) {
-          return res.status(400).json(`Salary for this month has not been approved`);
-        }
-
         for (const empSalary of employeeSalaries) {
           if (parseInt(empSalary.payment.pd_employee) === 1) {
             if (parseInt(empSalary.payment.pd_payment_type) === 1) {

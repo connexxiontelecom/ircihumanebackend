@@ -783,6 +783,7 @@ module.exports = {
   fetchAllPublicHolidays,
   fetchPublicHolidayByYear,
   fetchSpecificPublicHoliday,
+  fetchPublicHolidayByMonthYear,
   updatePublicHoliday,
   getAllIndividualPublicHolidays,
   deletePublicHolidayByGroup,

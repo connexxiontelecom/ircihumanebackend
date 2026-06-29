@@ -209,32 +209,21 @@ router.get(
       let empId = req.params.emp_id;
       let month = req.params.month;
       let year = req.params.year;
-      const employeeData = await employee.getEmployee(empId).then((data) => {
+      const employeeData = await employee.getEmployeeLocationId(empId).then((data) => {
         return data;
       });
 
       if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
         return res.status(404).json(`Employee Does Not Exist`);
-      } else {
-        /* const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
-                return data
-            })
-            if (_.isEmpty(payrollMonthYearData) || _.isNull(payrollMonthYearData)) {
-                return res.status(404).json(`No Payroll Month and Year Set`)
-            } else {
-                let payrollMonth = parseInt(payrollMonthYearData.pym_month)
-                let payrollYear = payrollMonthYearData.pym_year*/
-
-        const timeSheetData = await timeSheet
-          .findTimeSheetMonth(empId, month, year)
-          .then((data) => {
-            return data;
-          });
-
-        return res.status(200).json(timeSheetData);
-
-        //}
       }
+
+      const timeSheetData = await timeSheet
+        .findTimeSheetMonth(empId, month, year)
+        .then((data) => {
+          return data;
+        });
+
+      return res.status(200).json(timeSheetData);
     } catch (err) {
       return res.status(400).json(`Error while fetching time sheet `);
     }
@@ -249,7 +238,7 @@ router.get(
       let empId = req.params.emp_id;
       let month = req.params.month;
       let year = req.params.year;
-      const employeeData = await employee.getEmployee(empId).then((data) => {
+      const employeeData = await employee.getEmployeeLocationId(empId).then((data) => {
         return data;
       });
 
@@ -276,31 +265,16 @@ router.get(
       const empId = req.params.emp_id;
       const randomString = Math.random().toString(36).slice(2);
 
-      const employeeData = await employee.getEmployee(empId).then((data) => {
+      const employeeData = await employee.getEmployeeLocationId(empId).then((data) => {
         return data;
       });
 
       if (_.isEmpty(employeeData) || _.isNull(employeeData)) {
         return res.status(404).json(`Employee Does Not Exist`);
       } else {
-        /* empSupervisor = employeeData.emp_supervisor_id;
-          if(empSupervisor === null || empSupervisor === ''){
-            return res.status(400).json("You currently have no supervisor to assess your submission.")
-          }*/
-
-        /*   const payrollMonthYearData = await payrollMonthYear.findPayrollMonthYear().then((data) => {
-                return data
-            })
-
-            if (_.isEmpty(payrollMonthYearData) || _.isNull(payrollMonthYearData)) {
-                return res.status(404).json(`No Payroll Month and Year Set`)
-            } else {*/
-        //let payrollMonth = parseInt(payrollMonthYearData.pym_month) - 1
-        let prevMonth = parseInt(req.params.month) - 1; //parseInt(payrollMonthYearData.pym_month) - 1
-        //let pm = parseInt(payrollMonthYearData.pym_month)
+        let prevMonth = parseInt(req.params.month) - 1;
         let pm = parseInt(req.params.month);
-        //let payrollYear = payrollMonthYearData.pym_year
-        let year = parseInt(req.params.year); //payrollMonthYearData.pym_year
+        let year = parseInt(req.params.year);
         let daysInMonth = getDaysInMonth(prevMonth, year);
         const weekday = [
           "Sunday",
@@ -311,11 +285,25 @@ router.get(
           "Friday",
           "Saturday",
         ];
+
+        const [monthHolidays, existingTimesheets] = await Promise.all([
+          publicHolidays.fetchPublicHolidayByMonthYear(pm, year),
+          timeSheet.findTimeSheetMonth(empId, pm, year),
+        ]);
+
+        const holidayDays = new Set(
+          (monthHolidays || []).map((holiday) => parseInt(holiday.ph_day, 10))
+        );
+        const existingByDay = new Map();
+        (existingTimesheets || []).forEach((row) => {
+          existingByDay.set(parseInt(row.ts_day, 10), row);
+        });
+
         let d;
         let dayNumber;
         let timeObject = {};
-        let checkSpecificPubHols;
         let tsData = {};
+        const empLocationId = employeeData.emp_location_id;
 
         for (const day of daysInMonth) {
           d = day;
@@ -336,66 +324,47 @@ router.get(
               ts_ref_no: randomString,
               ts_is_present: 3, //weekend
             };
-          } else {
-            checkSpecificPubHols = await getSpecificHoliday(
-              dayNumber,
-              pm,
-              year
-            );
-            if (
-              _.isEmpty(checkSpecificPubHols) ||
-              _.isNull(checkSpecificPubHols)
-            ) {
-              if (weekday[d.getDay()] !== "Friday") {
-                timeObject = {
-                  ts_emp_id: empId,
-                  ts_month: pm,
-                  ts_year: year,
-                  ts_day: dayNumber,
-                  ts_start:
-                    employeeData.emp_location_id === 7 ? "08:00" : "08:00",
-                  ts_end:
-                    employeeData.emp_location_id === 7 ? "17:15" : "17:15",
-                  ts_duration: "8.45",
-                  ts_is_present: 1,
-                  ts_ref_no: randomString,
-                };
-              } else {
-                timeObject = {
-                  ts_emp_id: empId,
-                  ts_month: pm,
-                  ts_year: year,
-                  ts_day: dayNumber,
-                  ts_start: "08:00",
-                  ts_end: "13:00",
-                  ts_duration: 5.0,
-                  ts_is_present: 1,
-                  ts_ref_no: randomString,
-                };
-              }
-
-              /*tsData = await findTimeSheet(empId, dayNumber, pm, payrollYear)
-
-                            if (_.isEmpty(tsData)) {
-                                await addTimeSheet(timeObject)
-                            } else {
-                                await updateTimeSheet(tsData.ts_id, timeObject)
-                            }*/
+          } else if (!holidayDays.has(dayNumber)) {
+            if (weekday[d.getDay()] !== "Friday") {
+              timeObject = {
+                ts_emp_id: empId,
+                ts_month: pm,
+                ts_year: year,
+                ts_day: dayNumber,
+                ts_start: empLocationId === 7 ? "08:00" : "08:00",
+                ts_end: empLocationId === 7 ? "17:15" : "17:15",
+                ts_duration: "8.45",
+                ts_is_present: 1,
+                ts_ref_no: randomString,
+              };
             } else {
               timeObject = {
                 ts_emp_id: empId,
                 ts_month: pm,
                 ts_year: year,
                 ts_day: dayNumber,
-                ts_start: "0",
-                ts_end: "0",
-                ts_duration: 0,
-                ts_is_present: 2,
+                ts_start: "08:00",
+                ts_end: "13:00",
+                ts_duration: 5.0,
+                ts_is_present: 1,
                 ts_ref_no: randomString,
               };
             }
+          } else {
+            timeObject = {
+              ts_emp_id: empId,
+              ts_month: pm,
+              ts_year: year,
+              ts_day: dayNumber,
+              ts_start: "0",
+              ts_end: "0",
+              ts_duration: 0,
+              ts_is_present: 2,
+              ts_ref_no: randomString,
+            };
           }
-          tsData = await findTimeSheet(empId, dayNumber, pm, year);
+
+          tsData = existingByDay.get(dayNumber);
 
           if (_.isEmpty(tsData)) {
             await addTimeSheet(timeObject);
@@ -403,73 +372,49 @@ router.get(
             await updateTimeSheet(tsData.ts_id, timeObject);
           }
         }
-        //Update timesheet
+
         const leaveApps =
           await leaveApplicationModel.getAllEmployeeValidLeaveApplications(
             empId
           );
-        if (!_.isNull(leaveApps) || !_.isEmpty(leaveApps)) {
+        if (!_.isNull(leaveApps) && !_.isEmpty(leaveApps)) {
+          const leaveUpdates = [];
+
           for (const leaf of leaveApps) {
             let startDate = new Date(leaf.leapp_start_date);
             let endDate = new Date(leaf.leapp_end_date);
-
-            let datesArray = []
-            let currentDate = startDate
+            let datesArray = [];
+            let currentDate = startDate;
 
             while (currentDate <= endDate) {
-              datesArray.push(currentDate)
-              currentDate = new Date(currentDate)
+              datesArray.push(new Date(currentDate));
+              currentDate = new Date(currentDate);
               currentDate.setDate(currentDate.getDate() + 1);
             }
 
             for (const date of datesArray) {
-              const day = date.getDate()
-              const month = date.getUTCMonth() + 1
-              const year = date.getUTCFullYear()
-            
-              const leaveData = {
+              const day = date.getDate();
+              const month = date.getUTCMonth() + 1;
+              const leaveYear = date.getUTCFullYear();
+
+              if (month !== pm || leaveYear !== year) {
+                continue;
+              }
+
+              leaveUpdates.push({
                 emp_id: leaf.leapp_empid,
                 day,
                 month,
-                year,
-              }
-
-              await timeSheetService.updateTimesheetByDateRange(leaveData);
+                year: leaveYear,
+              });
             }
-
-            // let numDays;
-            // if (startDate.getDay() === 6 || startDate.getDay() === 0) {
-            //   numDays =
-            //     (await differenceInBusinessDays(endDate, startDate)) + 2;
-            // } else {
-            //   numDays =
-            //     (await differenceInBusinessDays(endDate, startDate)) + 1;
-            // }
-            // let i = 0;
-            // if (numDays > 0) {
-            //   for (i = 0; i < numDays; i++) {
-            //     const day = i === 0
-            //     ? startDate.getDate()
-            //     : startDate.getDate() + i
-            //     const month = startDate.getUTCMonth() + 1
-            //     const year = startDate.getUTCFullYear()
-
-            //     const currentDay = new Date(`${year}-${month}-${day}`)
-
-            //     if (currentDay.getDay() === 6 || currentDay.getDay() === 0) {
-            //       numDays += 1;
-            //     } else {
-            //       const loopPeriod = {
-            //         emp_id: leaf.leapp_empid,
-            //         day,
-            //         month,
-            //         year,
-            //       };
-            //       await timeSheetService.updateTimesheetByDateRange(loopPeriod);
-            //     }
-            //   }
-            // }
           }
+
+          await Promise.all(
+            leaveUpdates.map((leaveData) =>
+              timeSheetService.updateTimesheetByDateRange(leaveData)
+            )
+          );
         }
         /* const subject = "Timesheet submission";
               const body = "Your timesheet was submitted";

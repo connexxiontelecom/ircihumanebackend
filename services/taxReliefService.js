@@ -1,6 +1,6 @@
 const { QueryTypes, Op } = require('sequelize');
 const { sequelize, Sequelize } = require('./db');
-const TaxRelief = require('../models/taxrelief')(sequelize, Sequelize.DataTypes);
+const TaxRelief = require('../models/taxRelief')(sequelize, Sequelize.DataTypes);
 const ReliefSalary = require('../models/reliefsalary')(sequelize, Sequelize.DataTypes);
 
 async function addTaxRelief(taxReliefData) {

@@ -124,7 +124,6 @@ async function findTimeAllocationDetailMonthYear(month, year) {
 async function findTimeAllocationsDetail(empId, month, year) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId, ta_month: month, ta_year: year},
-        include: [{model:Employee, as:'employee'}]
     })
 }
 
@@ -132,7 +131,17 @@ async function findTimeAllocationsEmployee(empId) {
     return await TimeAllocation.findAll({
         where: {ta_emp_id: empId},
         order: [['ta_id', 'DESC']],
-        include: [{model:Employee, as:'employee'}]
+        attributes: [
+            'ta_id',
+            'ta_ref_no',
+            'ta_month',
+            'ta_year',
+            'ta_tcode',
+            'ta_charge',
+            'ta_t0_code',
+            'ta_t0_percent',
+            'ta_status',
+        ],
     })
 }
 
@@ -165,7 +174,6 @@ async function timeAllocationStatus(empId, month, year) {
 async function sumTimeAllocation(empId, month, year) {
     return await TimeAllocation.sum('ta_charge', {
         where: {ta_emp_id: empId, ta_month: month, ta_year: year, ta_status: 0},
-        include: [{model:Employee, as:'employee'}]
     })
 }
 

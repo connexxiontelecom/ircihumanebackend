@@ -272,16 +272,12 @@ router.get('/get-time-allocation/:emp_id/:date', auth(), async function (req, re
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
 
-    const timeAllocationSum = await timeAllocation.sumTimeAllocation(empId, month, year).then((data) => {
-      return data;
-    });
-    const timeAllocationStatus = await timeAllocation.timeAllocationStatus(empId, month, year).then((data) => {
-      return data;
-    });
-
-    const timeAllocationBreakDown = await timeAllocation.findTimeAllocationsDetail(empId, month, year).then((data) => {
-      return data;
-    });
+    const [timeAllocationSum, timeAllocationStatus, timeAllocationBreakDown] =
+      await Promise.all([
+        timeAllocation.sumTimeAllocation(empId, month, year),
+        timeAllocation.timeAllocationStatus(empId, month, year),
+        timeAllocation.findTimeAllocationsDetail(empId, month, year),
+      ]);
     const responseData = {
       timeAllocationSum: timeAllocationSum,
       timeAllocationBreakDown: timeAllocationBreakDown,

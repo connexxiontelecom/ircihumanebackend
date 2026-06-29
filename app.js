@@ -15,10 +15,37 @@ const salaryCronJobs = require('./routes/cronJobs/salary_cron');
 // Increment a counter.
 dogstatsd.increment('page.views');
 
-const allowedOrigins = (process.env.CORS_ORIGINS || 'https://ircng.org,https://www.ircng.org')
+const defaultProductionOrigins = [
+  'https://ircng.org',
+  'https://www.ircng.org',
+];
+
+const envOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const allowedOrigins = [...new Set([...defaultProductionOrigins, ...envOrigins])];
+
+if (process.env.NODE_ENV !== 'production') {
+  [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+    'http://localhost:8081',
+    'http://127.0.0.1:8081',
+  ].forEach((origin) => {
+    if (!allowedOrigins.includes(origin)) {
+      allowedOrigins.push(origin);
+    }
+  });
+}
+
+const allowedCorsHeaders = [
+  'Content-Type',
+  'Authorization',
+  'X-Requested-With',
+  'x-auth-token',
+];
 
 /** Always send CORS headers for allowed origins (including on 4xx/5xx from Express). */
 function applyCorsHeaders(req, res, next) {
@@ -30,10 +57,7 @@ function applyCorsHeaders(req, res, next) {
   }
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Requested-With'
-    );
+    res.setHeader('Access-Control-Allow-Headers', allowedCorsHeaders.join(', '));
     return res.sendStatus(204);
   }
   next();
@@ -43,7 +67,7 @@ const corsOptions = {
   origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: allowedCorsHeaders
 };
 
 const app = express();
@@ -633,18 +657,22 @@ app.use((err, req, res, next) => {
   return res.status(statusCode).json({ message: err.message });
 });
 
-let port;
+const nodeEnv = (process.env.NODE_ENV || '').toLowerCase();
+let port = Number(process.env.PORT) || 4321;
 
-if (process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'PRODUCTION') {
-  port = process.env.PORT || 4321;
-}
-
-if (process.env.NODE_ENV === 'TEST') {
+if (nodeEnv === 'test') {
   port = 0;
 }
 
-const server = app.listen(port, () => {
-  console.log(`Listening on ${port}`);
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
 });
 
-module.exports = server;
+// Standalone only (npm start). Passenger/cPanel loads `app` without calling listen.
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Listening on ${port}`);
+  });
+}
+
+module.exports = app;

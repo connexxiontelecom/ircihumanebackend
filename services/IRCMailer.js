@@ -65,18 +65,27 @@ function sendWithTimeout(promise, ms = MAIL_SEND_TIMEOUT_MS) {
 }
 
 async function sendTemplatedMail({ from, to, subject, template, context = {}, text }) {
-  assertRecipient(to);
-  const message = {
-    from: getDefaultFrom(from),
-    to: to.trim(),
-    subject,
-    template,
-    context
-  };
-  if (text) {
-    message.text = text;
+  try {
+    assertRecipient(to);
+    const message = {
+      from: getDefaultFrom(from),
+      to: to.trim(),
+      subject,
+      template,
+      context
+    };
+    if (text) {
+      message.text = text;
+    }
+    const result = await sendWithTimeout(transport.sendMail(message));
+    return { sent: true, result };
+  } catch (err) {
+    console.error(
+      `[IRCMailer] Failed to send "${subject}" to ${to}:`,
+      err.message
+    );
+    return { sent: false, error: err.message, code: err.code };
   }
-  return sendWithTimeout(transport.sendMail(message));
 }
 
 async function sendMail(from, to, subject, text, context = {}) {
