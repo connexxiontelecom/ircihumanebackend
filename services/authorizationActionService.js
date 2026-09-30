@@ -22,6 +22,7 @@ const mailer = require("./IRCMailer");
 //const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const leaveApplicationService = require('../services/leaveApplicationService');
+const leaveAccrualService = require('../services/leaveAccrualService');
 
 
 const helper = require('../helper');
@@ -533,7 +534,12 @@ async function markLeaveApplicationAsFinal(status, comment, officer, appId){
   holidays.map((pub) => {
     holidaysArray.push(`${pub.ph_year}-${pub.ph_month}-${pub.ph_day}`);
   });
-  if(parseInt(status) === 1){
+  if (parseInt(status) === 2) {
+    const existingAccruals = await leaveAccrualService.getLeaveAccrualsByLeaveApplicationId(appId);
+    if (!_.isEmpty(existingAccruals)) {
+      await leaveAccrualService.removeLeaveAccrualByLeaveApplication(appId);
+    }
+  } else if(parseInt(status) === 1){
     //Insert individually
     for(let m = 1; m<= 12; m++){
       let number = parseInt(m);

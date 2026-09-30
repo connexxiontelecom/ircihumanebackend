@@ -57,12 +57,74 @@ async function addSalary(salary) {
 }
 
 async function getSalaryMonthYear(month, year) {
-  return await Salary.findAll({
+  const row = await Salary.findOne({
     where: {
       salary_paymonth: monthQuery(month),
       salary_payyear: yearQuery(year)
-    }
+    },
+    attributes: ['salary_id']
   });
+  return row ? [row] : [];
+}
+
+async function hasSalaryMonthYear(month, year) {
+  const rows = await getSalaryMonthYear(month, year);
+  return rows.length > 0;
+}
+
+async function getPayrollSalariesByEmployee(month, year, locationId) {
+  const where = {
+    salary_paymonth: monthQuery(month),
+    salary_payyear: yearQuery(year)
+  };
+  if (parseInt(locationId, 10) > 0) {
+    where.salary_location_id = parseInt(locationId, 10);
+  }
+
+  const rows = await Salary.findAll({
+    where,
+    include: [
+      {
+        association: 'employee',
+        attributes: [
+          'emp_id',
+          'emp_account_no',
+          'emp_pension_no',
+          'emp_nhf',
+          'emp_bank_id',
+          'emp_d7',
+          'emp_pension_id',
+          'emp_paye_no',
+          'emp_pension_no',
+          'emp_first_name',
+          'emp_last_name',
+          'emp_other_name',
+          'emp_vendor_account'
+        ],
+        include: [
+          { association: 'bank', attributes: ['bank_name', 'bank_code'] },
+          { association: 'pension', attributes: ['pension_provider_id', 'provider_name'] }
+        ]
+      },
+      { association: 'payment' },
+      { association: 'bank', attributes: ['bank_name', 'bank_code'] },
+      { association: 'location', attributes: ['location_id', 'location_name', 'l_t6_code'] },
+      { association: 'jobrole', attributes: ['job_role_id', 'job_role'] }
+    ]
+  });
+
+  const groups = [];
+  const byEmployee = new Map();
+  for (const row of rows) {
+    const empId = row.salary_empid;
+    if (!byEmployee.has(empId)) {
+      const entry = { empId, emp: row.employee, rows: [] };
+      byEmployee.set(empId, entry);
+      groups.push(entry);
+    }
+    byEmployee.get(empId).rows.push(row);
+  }
+  return groups;
 }
 
 async function undoReliefSalaryMonthYear(month, year, employees) {
@@ -188,6 +250,22 @@ async function getEmployeeSalaryByUniqueId(month, year, empId) {
     },
     include: ['employee', 'payment', 'bank']
   });
+}
+
+async function getSalaryUniqueIdsForMonthYear(month, year) {
+  const rows = await Salary.findAll({
+    where: {
+      salary_paymonth: monthQuery(month),
+      salary_payyear: yearQuery(year)
+    },
+    attributes: ['salary_emp_unique_id'],
+    raw: true
+  });
+  return new Set(
+    rows
+      .map((row) => String(row.salary_emp_unique_id || '').trim())
+      .filter(Boolean)
+  );
 }
 
 async function getEmployeeSalaryByD7(month, year, d7) {
@@ -370,6 +448,8 @@ async function getEmployeesByPfaLocation(pfa, location, month, year) {
 module.exports = {
   addSalary,
   getSalaryMonthYear,
+  hasSalaryMonthYear,
+  getPayrollSalariesByEmployee,
   undoSalaryMonthYear,
   getEmployeeSalary,
   approveSalary,
@@ -382,6 +462,7 @@ module.exports = {
   getSalaryPd,
   getDistinctEmployeesApprovedMonthYear,
   getEmployeeSalaryByUniqueId,
+  getSalaryUniqueIdsForMonthYear,
   getEmployeesByPfaLocation,
   getEmployeeSalaryByUniqueIdAndMonthYear,
   getEmployeeSalaryByD7,

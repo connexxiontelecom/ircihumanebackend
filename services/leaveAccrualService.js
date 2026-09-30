@@ -44,6 +44,14 @@ async function removeLeaveAccrualByLeaveApplication(leaveAppId) {
   });
 }
 
+async function getLeaveAccrualsByLeaveApplicationId(leaveAppId) {
+  return await LeaveAccrual.findAll({
+    where: {
+      lea_leaveapp_id: leaveAppId
+    }
+  });
+}
+
 async function archiveLeaveAccrualByLeaveApplication(empId, month, year, type) {
   return await LeaveAccrual.update(
     {
@@ -237,6 +245,32 @@ async function sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(year, month, 
   });
 }
 
+function fyMonthFilter(month) {
+  if (month > 9) {
+    return {
+      [Op.gt]: 9,
+      [Op.lt]: month + 1
+    };
+  }
+  const arr = [10, 11, 12];
+  for (let i = 1; i <= parseInt(month, 10); i++) {
+    arr.push(i);
+  }
+  return arr;
+}
+
+async function getLeaveAccrualsForTracker(year, month, leaveTypeIds) {
+  return await LeaveAccrual.findAll({
+    attributes: ['lea_emp_id', 'lea_leave_type', 'lea_rate'],
+    where: {
+      lea_fy: year,
+      lea_month: fyMonthFilter(month),
+      lea_leave_type: { [Op.in]: leaveTypeIds }
+    },
+    raw: true
+  });
+}
+
 async function getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(year, month, employee_id, leave_type) {
   let filter;
   if (month > 9) {
@@ -274,6 +308,19 @@ async function getPositiveLeaveAccrualForYearMonthEmployeeLeaveType(year, month,
       lea_leave_type: leave_type,
       lea_rate: { [Op.gt]: 0 }
     }
+  });
+}
+
+async function getPositiveLeaveAccrualsForMonth(year, month, leaveType) {
+  return await LeaveAccrual.findAll({
+    attributes: ['lea_emp_id', 'lea_rate'],
+    where: {
+      lea_fy: year,
+      lea_month: month,
+      lea_leave_type: leaveType,
+      lea_rate: { [Op.gt]: 0 }
+    },
+    raw: true
   });
 }
 
@@ -428,6 +475,7 @@ module.exports = {
   removeLeaveAccrual,
   removeLeaveAccrualEmployees,
   removeLeaveAccrualByLeaveApplication,
+  getLeaveAccrualsByLeaveApplicationId,
   sumAllLeaveByEmployeeYear,
   getArchivedLeaveAccrualByYearEmployeeLeaveType,
   getTotalTakenLeaveAccrualByYearEmployeeLeaveType,
@@ -445,8 +493,10 @@ module.exports = {
   getPositiveLeaveAccrualByYearMonthEmployeeLeaveType,
   getNegativeLeaveAccrualByYearMonthEmployeeLeaveType,
   sumLeaveAccrualByYearMonthEmployeeLeaveType,
+  getLeaveAccrualsForTracker,
   findLeaveAccrualsByLeaveTypeFYyearPositiveExcludeMonth,
-  getPositiveLeaveAccrualForYearMonthEmployeeLeaveType
+  getPositiveLeaveAccrualForYearMonthEmployeeLeaveType,
+  getPositiveLeaveAccrualsForMonth
   //getEmployeeMonthsAccrual,
   //getEmployeeMonthsUsed,
 };

@@ -12,6 +12,7 @@ const { fn, col, literal } = require('sequelize');
 const helper = require('../helper');
 const {getEmployeeByIdOnly} = require("./employeeService");
 const { isWeekend } = require('date-fns');
+const { calculateLeaveDays } = require('./holidayLeaveAdjustment');
 const errHandler = (err) => {
   console.log("Error: ", err);
 }
@@ -150,32 +151,7 @@ const setNewPublicHoliday = async (req, res) => {
 
         const locationId = parseInt(emp.emp_location_id);
         if (locations.includes(locationId) || locations.includes(0)) {
-          let numberOfHolidays = await countPublicHolidaysBetweenDatesExcludingWeekends(appLeave.leapp_start_date, appLeave.leapp_end_date);
-          let numberOfWeekends =  countWeekendsBetweenDates(appLeave.leapp_start_date, appLeave.leapp_end_date);
-          let numberOfDaysBetweenDates = numberOfDays(appLeave.leapp_start_date, appLeave.leapp_end_date)
-          const newDuration = numberOfDaysBetweenDates - (numberOfHolidays + numberOfWeekends);
-          await leaveApplicationModel.updateLeaveAppDurationLocationHoliday(
-            appLeave.leapp_id,
-            newDuration,
-            emp.emp_location_id,
-            holidayArray.toString()
-          );
-
-          const leaveExistAccrual = await leaveAccrualModel.getLeaveAccrualByLeaveId(appLeave.leapp_id);
-          if (leaveExistAccrual) {
-            if (newDuration <= 0) {
-              await leaveAccrualModel.deleteLeaveAccrualEntryByLeaveId(appLeave.leapp_id);
-            } else {
-              await leaveAccrualModel.deleteLeaveAccrualEntryByLeaveId(appLeave.leapp_id);
-              await markLeaveApplicationAsFinal(
-                appLeave.leapp_start_date,
-                appLeave.leapp_end_date,
-                appLeave.leapp_empid,
-                appLeave.leapp_leave_type,
-                appLeave.leapp_id
-              );
-            }
-          }
+          await refreshPublicHolidayLeaveChanges(appLeave);
         }
       }));
     }
@@ -426,6 +402,33 @@ function numberOfDays(start, end) {
   return Math.floor((leaveEndDate - leaveStartDate) / (1000 * 60 * 60 * 24)) + 1;
 }
 
+async function refreshPublicHolidayLeaveChanges(leaveRecord) {
+  if (!leaveRecord || !leaveRecord.leapp_id) {
+    return;
+  }
+
+  const currentPublicHolidays = await PublicHoliday.getThisYearsPublicHolidays();
+  const holidayDates = currentPublicHolidays.map((holiday) => `${holiday.ph_year}-${holiday.ph_month}-${holiday.ph_day}`);
+  const newDuration = calculateLeaveDays(new Date(leaveRecord.leapp_start_date), new Date(leaveRecord.leapp_end_date), holidayDates);
+
+  await leaveApplicationModel.updateLeaveAppDuration(leaveRecord.leapp_id, newDuration);
+
+  const leaveAccrual = await leaveAccrualModel.getLeaveAccrualByLeaveId(leaveRecord.leapp_id);
+  if (leaveAccrual) {
+    await leaveAccrualModel.deleteLeaveAccrualEntryByLeaveId(leaveRecord.leapp_id);
+  }
+
+  if (newDuration > 0 && parseInt(leaveRecord.leapp_status) === 1) {
+    await markLeaveApplicationAsFinal(
+      leaveRecord.leapp_start_date,
+      leaveRecord.leapp_end_date,
+      leaveRecord.leapp_empid,
+      leaveRecord.leapp_leave_type,
+      leaveRecord.leapp_id
+    );
+  }
+}
+
 const  deletePublicHolidayByGroup = async (req, res) =>{
   try{
     const groupId = req.params.id;
@@ -439,34 +442,26 @@ const  deletePublicHolidayByGroup = async (req, res) =>{
       return res.status(400).json("Whoops! No record found.")
     }
     const singlePh = await PublicHoliday.getOnePublicHolidayByGroup(groupId);
-    let numOfDays = pubHols.length;
-    const endDate = singlePh.ph_to_date;
-    const startDate = new Date(new Date().setDate(endDate.getDate() - numOfDays));
-    const appliedLeaves = await getAllAppliedLeaves();
-    //const appliedLeaves = await getAppliedLeaves(startDate, endDate);
-    //let total_period = 0;
-    appliedLeaves.map(async leave => {
-      if(!(_.isNull(leave.leapp_holidays)) || !(_.isEmpty(leave.leapp_holidays))){
-        let leaveHolidayString = leave.leapp_holidays.split(",");
-        let leaveHolidays = Array.from(leaveHolidayString, Number);
-        let check = holidayIds.some(item => leaveHolidays.includes(item));
-        if (check) {
-          //add back leave days
-          let total_period = leave.leapp_total_days + numOfDays;
-          if(total_period > 0){
-            const d = new Date(startDate);
-            const month = d.getUTCMonth() + 1;
-            const year = d.getUTCFullYear();
-
-            const leaveUpdate = await leaveApplicationModel.updateLeaveAppDuration(leave.leapp_id, total_period);
-            const accrual = await leaveAccrualModel.updateLeaveAccrualDuration(leave.leapp_id, total_period);
-            //const accrual = await leaveAccrualModel.addLeaveAccrual(leave.leapp_empid, month, year, leave.leapp_leave_type, total_period, null);
-          }
-        }
+    const affectedLeaves = await leaveApplicationModel.findAll({
+      where: {
+        leapp_status: 1,
+        leapp_holidays: {
+          [Op.not]: null,
+        },
       }
     });
 
+    const leaveRecordsToRefresh = affectedLeaves.filter((leave) => {
+      if (!leave.leapp_holidays) return false;
+      const leaveHolidayString = leave.leapp_holidays.split(',');
+      const leaveHolidayIds = Array.from(leaveHolidayString, Number);
+      return holidayIds.some((holidayId) => leaveHolidayIds.includes(holidayId));
+    });
+
     const deleteHols =  await PublicHoliday.destroyPublicHolidayByGroup(groupId);
+    if (deleteHols) {
+      await Promise.all(leaveRecordsToRefresh.map((leave) => refreshPublicHolidayLeaveChanges(leave)));
+    }
     if(deleteHols){
       //Log
       const logData = {

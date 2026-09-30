@@ -41,6 +41,51 @@ const ReliefSalaryModel = require('../models/reliefsalary')(sequelize, Sequelize
 const TaxReliefModel = require('../models/taxRelief')(sequelize, Sequelize.DataTypes);
 const payslipService = require('../services/payslipService');
 const Op = Sequelize.Op;
+const Department = require('../models/Department')(sequelize, Sequelize.DataTypes);
+const PensionProvider = require('../models/PensionProvider')(sequelize, Sequelize.DataTypes);
+
+async function departmentNameMap(groups) {
+  const ids = [
+    ...new Set(groups.map((group) => parseInt(group.rows[0]?.salary_department_id, 10)).filter((id) => id > 0))
+  ];
+  if (!ids.length) return new Map();
+  const departments = await Department.findAll({
+    where: { department_id: ids },
+    attributes: ['department_id', 'department_name', 'd_t3_code'],
+    raw: true
+  });
+  return new Map(departments.map((dept) => [dept.department_id, dept]));
+}
+
+async function pensionProviderNameMap(groups) {
+  const ids = [...new Set(groups.map((group) => parseInt(group.rows[0]?.salary_pfa, 10)).filter((id) => id > 0))];
+  if (!ids.length) return new Map();
+  const providers = await PensionProvider.findAll({
+    where: { pension_provider_id: ids },
+    attributes: ['pension_provider_id', 'provider_name'],
+    raw: true
+  });
+  return new Map(providers.map((provider) => [provider.pension_provider_id, provider.provider_name]));
+}
+
+function salaryAmountForPd(rows, pdId) {
+  const row = rows.find((item) => parseInt(item.salary_pd, 10) === parseInt(pdId, 10));
+  return row ? parseFloat(row.salary_amount) || 0 : 0;
+}
+
+function payrollOrgFromSalaryRows(employeeSalaries, departments) {
+  const first = employeeSalaries[0] || {};
+  const dept = departments.get(parseInt(first.salary_department_id, 10));
+  const loc = first.location || {};
+  return {
+    empJobRole: first.jobrole?.job_role || 'N/A',
+    sectorName: dept?.department_name || 'N/A',
+    sectorCode: dept?.d_t3_code || 'N/A',
+    locationName: loc.l_t6_code || 'N/A',
+    locationFullName: loc.location_name ? `${loc.location_name} - ${loc.l_t6_code}` : loc.l_t6_code || 'N/A',
+    locationCode: loc.l_t6_code || 'N/A'
+  };
+}
 
 /* run salary routine */
 router.get('/salary-routine', auth(), async function (req, res, next) {
@@ -2384,36 +2429,36 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
     }
     const payrollMonth = payrollMonthYearData.pym_month;
     const payrollYear = payrollMonthYearData.pym_year;
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     } else {
-      let employees = [];
-      if (pmylLocationId === 0) {
-        employees = await employee.getEmployees();
-      } else {
-        employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId);
-        employees = employees.map((emp) => {
-          return { emp_id: emp.salary_empid };
-        });
-      }
+      const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, pmylLocationId);
+      const departments = await departmentNameMap(groups);
 
-      if (_.isEmpty(employees) || _.isNull(employees)) {
+      if (_.isEmpty(groups)) {
         return res.status(400).json(`No Employees Selected Location`);
       }
 
-      for (const emp of employees) {
+      const userCache = new Map();
+      async function cachedUserName(userId) {
+        if (!userId) return 'N/A';
+        if (userCache.has(userId)) return userCache.get(userId);
+        const userData = await user.findUserByUserId(userId);
+        const name = !_.isEmpty(userData) ? userData.user_name : 'N/A';
+        userCache.set(userId, name);
+        return name;
+      }
+
+      for (const { empId, rows: employeeSalaries } of groups) {
         let grossSalary = 0;
         let netSalary = 0;
         let totalDeduction = 0;
 
         let deductions = [];
         let incomes = [];
-
-        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
           let empAdjustedGrossII = 0;
@@ -2466,32 +2511,7 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
           }
           netSalary = grossSalary - mainDeductions;
 
-          let empJobRole = 'N/A';
-          let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-          if (empJobRoleId > 0) {
-            let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-            if (!_.isEmpty(jobRoleData)) {
-              empJobRole = jobRoleData.job_role;
-            }
-          }
-
-          let sectorName = 'N/A';
-          let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-          if (sectorId > 0) {
-            let sectorData = await departmentService.findDepartmentById(sectorId);
-            if (!_.isEmpty(sectorData)) {
-              sectorName = sectorData.department_name;
-            }
-          }
-
-          let locationName = 'N/A';
-          let locationId = parseInt(employeeSalaries[0].salary_location_id);
-          if (locationId > 0) {
-            let locationData = await locationService.findLocationById(locationId);
-            if (!_.isEmpty(locationData)) {
-              locationName = `${locationData.l_t6_code}`;
-            }
-          }
+          const { empJobRole, sectorName, locationName } = payrollOrgFromSalaryRows(employeeSalaries, departments);
           let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
           let approvedBy = 'N/A';
@@ -2501,26 +2521,24 @@ router.get('/pull-emolument/:locationId', auth(), async function (req, res, next
           let confirmedBy = 'N/A';
           let confirmedDate = 'N/A';
 
-          const approvedByData = await user.findUserByUserId(employeeSalaries[0].salary_approved_by);
-          if (!_.isEmpty(approvedByData)) {
-            approvedBy = `${approvedByData.user_name}`;
-            approvedDate = new Date(employeeSalaries[0].salary_approved_date).toISOString().split('T')[0];
+          const firstSalary = employeeSalaries[0];
+          approvedBy = await cachedUserName(firstSalary.salary_approved_by);
+          if (approvedBy !== 'N/A' && firstSalary.salary_approved_date) {
+            approvedDate = new Date(firstSalary.salary_approved_date).toISOString().split('T')[0];
           }
 
-          const authorisedByData = await user.findUserByUserId(employeeSalaries[0].salary_authorised_by);
-          if (!_.isEmpty(authorisedByData)) {
-            authorisedBy = `${authorisedByData.user_name}`;
-            authorisedDate = new Date(employeeSalaries[0].salary_authorised_date).toISOString().split('T')[0];
+          authorisedBy = await cachedUserName(firstSalary.salary_authorised_by);
+          if (authorisedBy !== 'N/A' && firstSalary.salary_authorised_date) {
+            authorisedDate = new Date(firstSalary.salary_authorised_date).toISOString().split('T')[0];
           }
 
-          const confirmedByData = await user.findUserByUserId(employeeSalaries[0].salary_confirmed_by);
-          if (!_.isEmpty(confirmedByData)) {
-            confirmedBy = `${confirmedByData.user_name}`;
-            confirmedDate = new Date(employeeSalaries[0].salary_confirmed_date).toISOString().split('T')[0];
+          confirmedBy = await cachedUserName(firstSalary.salary_confirmed_by);
+          if (confirmedBy !== 'N/A' && firstSalary.salary_confirmed_date) {
+            confirmedDate = new Date(firstSalary.salary_confirmed_date).toISOString().split('T')[0];
           }
 
           let salaryObject = {
-            employeeId: emp.emp_id,
+            employeeId: empId,
             employeeName: employeeSalaries[0].salary_emp_name,
             employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
             location: locationName,
@@ -3349,12 +3367,7 @@ router.get('/pull-salary-routine/:empId/', auth(), async function (req, res, nex
         }
 
         for (const nsitfPayment of nsitfPayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nsitfPayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
+          const amount = salaryAmountForPd(employeeSalaries, nsitfPayment.pd_id);
 
           totalNsitf = totalNsitf + amount;
         }
@@ -3531,12 +3544,7 @@ router.post('/pull-salary-routine/:empId', auth(), async function (req, res, nex
         }
 
         for (const nsitfPayment of nsitfPayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nsitfPayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
+          const amount = salaryAmountForPd(employeeSalaries, nsitfPayment.pd_id);
 
           totalNsitf = totalNsitf + amount;
         }
@@ -3590,25 +3598,17 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
     }
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     } else {
       const pmylLocationId = payrollRequest.pmyl_location_id;
-      let employees = [];
-      if (pmylLocationId === 0) {
-        employees = await employee.getEmployees();
-      } else {
-        employees = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, pmylLocationId);
-        employees = employees.map((emp) => {
-          return { emp_id: emp.salary_empid };
-        });
-      }
+      const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, pmylLocationId);
+      const departments = await departmentNameMap(groups);
 
-      if (_.isEmpty(employees) || _.isNull(employees)) {
+      if (_.isEmpty(groups)) {
         return res.status(400).json(`No Employees Selected Location`);
       }
 
@@ -3617,7 +3617,7 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
         order: [['relief_name', 'ASC']]
       });
 
-      const empIdsForRelief = employees.map((e) => e.emp_id).filter((id) => id != null);
+      const empIdsForRelief = groups.map((group) => group.empId).filter((id) => id != null);
       const reliefSalaryMap = new Map();
       const payrollMonthStr = String(payrollMonth).padStart(2, '0');
       const payrollYearStr = String(payrollYear);
@@ -3667,14 +3667,12 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
         location
       };
 
-      for (const emp of employees) {
+      for (const { emp, empId, rows: employeeSalaries } of groups) {
         let grossSalary = 0;
         let netSalary = 0;
         let totalDeduction = 0;
         let deductions = [];
         let incomes = [];
-
-        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
           let empAdjustedGrossII = 0;
@@ -3727,43 +3725,17 @@ router.post('/pull-emolument', auth(), async function (req, res, next) {
           }
           netSalary = grossSalary - mainDeductions;
 
-          let empJobRole = 'N/A';
-          let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-          if (empJobRoleId > 0) {
-            let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-            if (!_.isEmpty(jobRoleData)) {
-              empJobRole = jobRoleData.job_role;
-            }
-          }
-
-          let sectorName = 'N/A';
-          let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-          if (sectorId > 0) {
-            let sectorData = await departmentService.findDepartmentById(sectorId);
-            if (!_.isEmpty(sectorData)) {
-              sectorName = sectorData.department_name;
-            }
-          }
-
-          let locationName = 'N/A';
-          let locationId = parseInt(employeeSalaries[0].salary_location_id);
-          if (locationId > 0) {
-            let locationData = await locationService.findLocationById(locationId);
-            if (!_.isEmpty(locationData)) {
-              locationName = `${locationData.l_t6_code}`;
-            }
-          }
-
+          const { empJobRole, sectorName, locationName } = payrollOrgFromSalaryRows(employeeSalaries, departments);
           let empSalaryStructureName = employeeSalaries[0]?.salary_grade;
 
           const reliefAmounts = {};
           for (const rt of reliefTypes) {
-            const mapKey = `${emp.emp_id}:${rt.id}`;
+            const mapKey = `${empId}:${rt.id}`;
             reliefAmounts[rt.id] = reliefSalaryMap.has(mapKey) ? reliefSalaryMap.get(mapKey) : 0;
           }
 
           let salaryObject = {
-            employeeId: emp.emp_id,
+            employeeId: empId,
             employeeD7: employeeSalaries[0].salary_d7,
             /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
@@ -3818,20 +3790,18 @@ router.post('/deduction-report', auth(), async function (req, res, next) {
     }
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     } else {
-      const employees = await employee.getActiveEmployees();
-      for (const emp of employees) {
+      const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, 0);
+      const departments = await departmentNameMap(groups);
+      for (const { emp, empId, rows: employeeSalaries } of groups) {
         let totalDeduction = 0;
 
         let deductions = [];
-
-        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
           for (const empSalary of employeeSalaries) {
@@ -3847,35 +3817,10 @@ router.post('/deduction-report', auth(), async function (req, res, next) {
             }
           }
 
-          let empJobRole = 'N/A';
-          let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-          if (empJobRoleId > 0) {
-            let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-            if (!_.isEmpty(jobRoleData)) {
-              empJobRole = jobRoleData.job_role;
-            }
-          }
-
-          let sectorName = 'N/A';
-          let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-          if (sectorId > 0) {
-            let sectorData = await departmentService.findDepartmentById(sectorId);
-            if (!_.isEmpty(sectorData)) {
-              sectorName = sectorData.department_name;
-            }
-          }
-
-          let locationName = 'N/A';
-          let locationId = parseInt(employeeSalaries[0].salary_location_id);
-          if (locationId > 0) {
-            let locationData = await locationService.findLocationById(locationId);
-            if (!_.isEmpty(locationData)) {
-              locationName = `${locationData.l_t6_code}`;
-            }
-          }
+          const { empJobRole, sectorName, locationName } = payrollOrgFromSalaryRows(employeeSalaries, departments);
 
           let salaryObject = {
-            employeeId: emp.emp_id,
+            employeeId: empId,
 
             employeeD7: employeeSalaries[0].salary_d7,
             /*employeeD4: emp.operationUnit.ou_name,
@@ -3920,24 +3865,22 @@ router.post('/variation-report', auth(), async function (req, res, next) {
     }
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     } else {
-      const employees = await employee.getActiveEmployees();
+      const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, 0);
+      const departments = await departmentNameMap(groups);
 
-      for (const emp of employees) {
+      for (const { emp, empId, rows: employeeSalaries } of groups) {
         let grossSalary = 0;
         let netSalary = 0;
         let totalDeduction = 0;
 
         let deductions = [];
         let incomes = [];
-
-        let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
         if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
           for (const empSalary of employeeSalaries) {
@@ -3962,37 +3905,12 @@ router.post('/variation-report', auth(), async function (req, res, next) {
             }
           }
 
-          let empJobRole = 'N/A';
-          let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-          if (empJobRoleId > 0) {
-            let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-            if (!_.isEmpty(jobRoleData)) {
-              empJobRole = jobRoleData.job_role;
-            }
-          }
-
-          let sectorName = 'N/A';
-          let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-          if (sectorId > 0) {
-            let sectorData = await departmentService.findDepartmentById(sectorId);
-            if (!_.isEmpty(sectorData)) {
-              sectorName = sectorData.department_name;
-            }
-          }
-
-          let locationName = 'N/A';
-          let locationId = parseInt(employeeSalaries[0].salary_location_id);
-          if (locationId > 0) {
-            let locationData = await locationService.findLocationById(locationId);
-            if (!_.isEmpty(locationData)) {
-              locationName = `${locationData.l_t6_code}`;
-            }
-          }
+          const { empJobRole, sectorName, locationName } = payrollOrgFromSalaryRows(employeeSalaries, departments);
 
           let salaryObject = {
-            employeeId: emp.emp_id,
+            employeeId: empId,
 
-            employeeD7: emp.emp_d7,
+            employeeD7: emp?.emp_d7 || employeeSalaries[0].salary_d7,
             /*employeeD4: emp.operationUnit.ou_name,
                         employeeD6: emp.functionalArea.fa_name,
                         employeeD5: emp.reportingEntity.re_name,*/
@@ -4037,11 +3955,10 @@ router.post('/deduction-report-type', auth(), async function (req, res, next) {
     }
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
 
@@ -4051,16 +3968,15 @@ router.post('/deduction-report-type', auth(), async function (req, res, next) {
       return res.status(400).json(`Payment Definition Does Not exist`);
     }
 
-    const employees = await employee.getActiveEmployees();
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, 0);
+    const departments = await departmentNameMap(groups);
 
-    for (const emp of employees) {
+    for (const { emp, empId, rows: employeeSalaries } of groups) {
       let totalDeduction = 0;
 
-      let deductions = [];
+        let deductions = [];
 
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
-
-      if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
+        if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         for (const empSalary of employeeSalaries) {
           if (parseInt(empSalary.payment.pd_id) === parseInt(payrollRequest.pd_id)) {
             const deductionDetails = {
@@ -4076,53 +3992,29 @@ router.post('/deduction-report-type', auth(), async function (req, res, next) {
         if (parseInt(paymentDefinitionData.pd_tie_number) > 0) {
           let tieNumber = parseInt(paymentDefinitionData.pd_tie_number);
           if (tieNumber === 1) {
-            paymentNumber = emp.emp_paye_no;
+            paymentNumber = emp?.emp_paye_no;
           }
 
           if (tieNumber === 2) {
-            paymentNumber = emp.emp_pension_no;
+            paymentNumber = emp?.emp_pension_no;
           }
 
           if (tieNumber === 3) {
-            paymentNumber = emp.emp_nhf;
+            paymentNumber = emp?.emp_nhf;
           }
         }
 
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
-
-        let sectorName = 'N/A';
-        let sectorCode = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = `${sectorData.department_name} - ${sectorData.d_t3_code}`;
-            sectorCode = sectorData.d_t3_code;
-          }
-        }
-
-        let locationName = 'N/A';
-        let locationCode = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`;
-            locationCode = locationData.l_t6_code;
-          }
-        }
+        const org = payrollOrgFromSalaryRows(employeeSalaries, departments);
+        const empJobRole = org.empJobRole;
+        const sectorName = org.sectorName !== 'N/A' && org.sectorCode !== 'N/A' ? `${org.sectorName} - ${org.sectorCode}` : org.sectorName;
+        const sectorCode = org.sectorCode;
+        const locationName = org.locationFullName;
+        const locationCode = org.locationCode;
 
         let salaryObject = {
-          employeeId: emp.emp_id,
+          employeeId: empId,
 
-          employeeD7: emp.emp_d7,
+          employeeD7: emp?.emp_d7 || employeeSalaries[0].salary_d7,
           /*employeeD4: emp.operationUnit.ou_name,
                     employeeD6: emp.functionalArea.fa_name,
                     employeeD5: emp.reportingEntity.re_name,*/
@@ -4228,30 +4120,23 @@ router.post('/pay-order', auth(), async function (req, res, next) {
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
     const location = payrollRequest.pym_location;
-    let employees = [];
-    if (parseInt(location) > 0) {
-      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
-      for (const emp of employeesFromSalary) {
-        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
-        employees.push(tempEmp);
-      }
-    } else {
-      employees = await employee.getEmployees();
-    }
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
 
-    for (const emp of employees) {
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, location);
+    const departments = await departmentNameMap(groups);
+
+    for (const { emp, rows: employeeSalaries } of groups) {
+      if (!emp || _.isEmpty(employeeSalaries)) {
+        continue;
+      }
       let grossSalary = 0;
       let netSalary = 0;
       let totalDeduction = 0;
-
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         for (const empSalary of employeeSalaries) {
@@ -4265,56 +4150,45 @@ router.post('/pay-order', auth(), async function (req, res, next) {
         }
         netSalary = grossSalary - totalDeduction;
 
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
+        let empJobRole = employeeSalaries[0].jobrole?.job_role || 'N/A';
 
         let sectorName = 'N/A';
         let sectorCode = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = `${sectorData.department_name} - ${sectorData.d_t3_code}`;
-            sectorCode = sectorData.d_t3_code;
-          }
+        const sectorId = parseInt(employeeSalaries[0].salary_department_id, 10);
+        const sectorData = departments.get(sectorId);
+        if (sectorData) {
+          sectorName = `${sectorData.department_name} - ${sectorData.d_t3_code}`;
+          sectorCode = sectorData.d_t3_code;
         }
 
         let locationName = 'N/A';
         let locationCode = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.location_name} - ${locationData.l_t6_code}`;
-            locationCode = locationData.l_t6_code;
-          }
+        if (employeeSalaries[0].location) {
+          locationName = `${employeeSalaries[0].location.location_name} - ${employeeSalaries[0].location.l_t6_code}`;
+          locationCode = employeeSalaries[0].location.l_t6_code;
         }
 
         let bankName = 'N/A';
         let bankSortCode = 'N/A';
 
         if (parseInt(employeeSalaries[0].salary_bank_id) > 0) {
-          bankName = `${employeeSalaries[0].bank.bank_name}`;
+          bankName = `${employeeSalaries[0].bank?.bank_name || 'N/A'}`;
           bankSortCode = `${employeeSalaries[0].salary_sort_code}`;
         }
+
+        const vendorCode =
+          employeeSalaries[0].salary_emp_vendor_account ||
+          emp.emp_vendor_account ||
+          'N/A';
 
         let salaryObject = {
           employeeId: emp.emp_id,
 
           employeeD7: emp.emp_d7,
-          /* employeeD4: emp.operationUnit.ou_name,
-                     employeeD6: emp.functionalArea.fa_name,
-                     employeeD5: emp.reportingEntity.re_name,*/
-
           employeeName: employeeSalaries[0].salary_emp_name,
           employeeUniqueId: employeeSalaries[0].salary_emp_unique_id,
           accountNumber: employeeSalaries[0].salary_account_number,
+          vendorCode: vendorCode,
           location: locationName,
           locationCode: locationCode,
           jobRole: empJobRole,
@@ -4358,33 +4232,27 @@ router.post('/pension-report', auth(), async function (req, res, next) {
     const payrollYear = payrollRequest.pym_year;
     const location = payrollRequest.pym_location;
 
-    let employees = [];
-    if (parseInt(location) > 0) {
-      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
-      for (const emp of employeesFromSalary) {
-        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
-        employees.push(tempEmp);
-      }
-    } else {
-      employees = await employee.getEmployees();
-    }
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
+
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, location);
+    const departments = await departmentNameMap(groups);
+    const pensionProviders = await pensionProviderNameMap(groups);
 
     let pensionPayments = await paymentDefinition.getPensionPayments();
     if (_.isNull(pensionPayments) || _.isEmpty(pensionPayments)) {
       return res.status(400).json(`No payments marked as pension`);
     }
 
-    for (const emp of employees) {
+    for (const { emp, rows: employeeSalaries } of groups) {
+      if (!emp || _.isEmpty(employeeSalaries)) {
+        continue;
+      }
       let pensionArray = [];
-
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         let totalPension = 0;
@@ -4393,91 +4261,58 @@ router.post('/pension-report', auth(), async function (req, res, next) {
         let fullGross = 0;
         let empAdjustedGross = 0;
 
-        let fullSalaryData = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
-
-        for (const salary of fullSalaryData) {
-          if (parseInt(salary.payment.pd_payment_type) === 1) {
-            fullGross = parseFloat(salary.salary_amount) + fullGross;
+        for (const salaryRow of employeeSalaries) {
+          if (parseInt(salaryRow.payment.pd_payment_type) === 1) {
+            fullGross = parseFloat(salaryRow.salary_amount) + fullGross;
           }
 
-          if (parseInt(salary.payment.pd_total_gross) === 1) {
-            if (parseInt(salary.payment.pd_payment_type) === 1) {
-              empAdjustedGross = empAdjustedGross + parseFloat(salary.salary_amount);
+          if (parseInt(salaryRow.payment.pd_total_gross) === 1) {
+            if (parseInt(salaryRow.payment.pd_payment_type) === 1) {
+              empAdjustedGross = empAdjustedGross + parseFloat(salaryRow.salary_amount);
             }
 
-            if (parseInt(salary.payment.pd_payment_type) === 2) {
-              empAdjustedGross = empAdjustedGross - parseFloat(salary.salary_amount);
+            if (parseInt(salaryRow.payment.pd_payment_type) === 2) {
+              empAdjustedGross = empAdjustedGross - parseFloat(salaryRow.salary_amount);
             }
           }
 
-          if (parseInt(salary.payment.pd_total_gross_ii) === 1) {
-            if (parseInt(salary.payment.pd_payment_type) === 1) {
-              empAdjustedGrossII = empAdjustedGrossII + parseFloat(salary.salary_amount);
+          if (parseInt(salaryRow.payment.pd_total_gross_ii) === 1) {
+            if (parseInt(salaryRow.payment.pd_payment_type) === 1) {
+              empAdjustedGrossII = empAdjustedGrossII + parseFloat(salaryRow.salary_amount);
             }
 
-            if (parseInt(salary.payment.pd_payment_type) === 2) {
-              empAdjustedGrossII = empAdjustedGrossII - parseFloat(salary.salary_amount);
+            if (parseInt(salaryRow.payment.pd_payment_type) === 2) {
+              empAdjustedGrossII = empAdjustedGrossII - parseFloat(salaryRow.salary_amount);
             }
           }
         }
 
         for (const pensionPayment of pensionPayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, pensionPayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
-          let empPensionObject = {
+          const amount = salaryAmountForPd(employeeSalaries, pensionPayment.pd_id);
+          pensionArray.push({
             'Payment Name': pensionPayment.pd_payment_name,
             Amount: amount
-          };
-
+          });
           totalPension = totalPension + amount;
-
-          pensionArray.push(empPensionObject);
         }
 
         let pfa = 'N/A';
-        if (!_.isNull(employeeSalaries[0].salary_pfa) || parseInt(employeeSalaries[0].salary_pfa) > 0) {
-          const pensionProvider = await pensionService.getPensionServiceById(employeeSalaries[0].salary_pfa);
-          if (!_.isEmpty(pensionProvider)) {
-            pfa = pensionProvider.provider_name;
-          }
+        const pfaId = parseInt(employeeSalaries[0].salary_pfa, 10);
+        if (pfaId > 0 && pensionProviders.has(pfaId)) {
+          pfa = pensionProviders.get(pfaId);
         }
 
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
-
-        let sectorName = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = sectorData.department_name;
-          }
-        }
-        let locationName = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.l_t6_code}`;
-          }
-        }
+        const empJobRole = employeeSalaries[0].jobrole?.job_role || 'N/A';
+        const sectorData = departments.get(parseInt(employeeSalaries[0].salary_department_id, 10));
+        const sectorName = sectorData?.department_name || 'N/A';
+        const locationName = employeeSalaries[0].location?.l_t6_code || 'N/A';
 
         let bankName = 'N/A';
         let bankSortCode = 'N/A';
 
         if (parseInt(emp.emp_bank_id) > 0) {
-          bankName = `${emp.bank.bank_name}`;
-          bankSortCode = `${emp.bank.bank_code}`;
+          bankName = `${emp.bank?.bank_name || 'N/A'}`;
+          bankSortCode = `${emp.bank?.bank_code || 'N/A'}`;
         }
 
         let salaryObject = {
@@ -4531,33 +4366,28 @@ router.post('/nhf-report', auth(), async function (req, res, next) {
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
     const location = payrollRequest.pym_location;
-    let employees = [];
-    if (parseInt(location) > 0) {
-      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
-      for (const emp of employeesFromSalary) {
-        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
-        employees.push(tempEmp);
-      }
-    } else {
-      employees = await employee.getEmployees();
-    }
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
+
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, location);
+    const departments = await departmentNameMap(groups);
+    const pensionProviders = await pensionProviderNameMap(groups);
 
     let nhfPayments = await paymentDefinition.getNhfPayments();
     if (_.isNull(nhfPayments) || _.isEmpty(nhfPayments)) {
       return res.status(400).json(`No payments marked as nhf`);
     }
 
-    for (const emp of employees) {
+    for (const { emp, rows: employeeSalaries } of groups) {
+      if (!emp || _.isEmpty(employeeSalaries)) {
+        continue;
+      }
       let nhfArray = [];
 
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         let totalNhf = 0;
@@ -4593,12 +4423,7 @@ router.post('/nhf-report', auth(), async function (req, res, next) {
         }
 
         for (const nhfPayment of nhfPayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nhfPayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
+          const amount = salaryAmountForPd(employeeSalaries, nhfPayment.pd_id);
           let empNhfObject = {
             'Payment Name': nhfPayment.pd_payment_name,
             Amount: amount
@@ -4614,32 +4439,10 @@ router.post('/nhf-report', auth(), async function (req, res, next) {
           pfa = emp.pension.provider_name;
         }
 
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
-
-        let sectorName = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = sectorData.department_name;
-          }
-        }
-
-        let locationName = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.l_t6_code}`;
-          }
-        }
+        const empJobRole = employeeSalaries[0].jobrole?.job_role || 'N/A';
+        const sectorData = departments.get(parseInt(employeeSalaries[0].salary_department_id, 10));
+        const sectorName = sectorData?.department_name || 'N/A';
+        const locationName = employeeSalaries[0].location?.l_t6_code || 'N/A';
 
         let bankName = 'N/A';
         let bankSortCode = 'N/A';
@@ -4700,33 +4503,28 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
     const location = payrollRequest.pym_location;
-    let employees = [];
-    if (parseInt(location) > 0) {
-      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
-      for (const emp of employeesFromSalary) {
-        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
-        employees.push(tempEmp);
-      }
-    } else {
-      employees = await employee.getEmployees();
-    }
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
+
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, location);
+    const departments = await departmentNameMap(groups);
+    const pensionProviders = await pensionProviderNameMap(groups);
 
     let nsitfPayments = await paymentDefinition.getNsitfPayments();
     if (_.isNull(nsitfPayments) || _.isEmpty(nsitfPayments)) {
       return res.status(400).json(`No payments marked as nsift`);
     }
 
-    for (const emp of employees) {
+    for (const { emp, rows: employeeSalaries } of groups) {
+      if (!emp || _.isEmpty(employeeSalaries)) {
+        continue;
+      }
       let nsitfArray = [];
 
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         let totalNsitf = 0;
@@ -4762,12 +4560,7 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
         }
 
         for (const nsitfPayment of nsitfPayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, nsitfPayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
+          const amount = salaryAmountForPd(employeeSalaries, nsitfPayment.pd_id);
           let empNsitfObject = {
             'Payment Name': nsitfPayment.pd_payment_name,
             Amount: amount
@@ -4775,31 +4568,10 @@ router.post('/nsitf-report', auth(), async function (req, res, next) {
           totalNsitf = totalNsitf + amount;
           nsitfArray.push(empNsitfObject);
         }
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
-
-        let sectorName = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = sectorData.department_name;
-          }
-        }
-        let locationName = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.l_t6_code}`;
-          }
-        }
+        const empJobRole = employeeSalaries[0].jobrole?.job_role || 'N/A';
+        const sectorData = departments.get(parseInt(employeeSalaries[0].salary_department_id, 10));
+        const sectorName = sectorData?.department_name || 'N/A';
+        const locationName = employeeSalaries[0].location?.l_t6_code || 'N/A';
 
         let salaryObject = {
           employeeId: emp.emp_id,
@@ -4849,33 +4621,28 @@ router.post('/severance-report', auth(), async function (req, res, next) {
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
     const location = payrollRequest.pym_location;
-    let employees = [];
-    if (parseInt(location) > 0) {
-      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
-      for (const emp of employeesFromSalary) {
-        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
-        employees.push(tempEmp);
-      }
-    } else {
-      employees = await employee.getEmployees();
-    }
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
 
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
+
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, location);
+    const departments = await departmentNameMap(groups);
+    const pensionProviders = await pensionProviderNameMap(groups);
 
     let severancePayments = await paymentDefinition.getSeverancePayments();
     if (_.isNull(severancePayments) || _.isEmpty(severancePayments)) {
       return res.status(400).json(`No payments marked as nsift`);
     }
 
-    for (const emp of employees) {
+    for (const { emp, rows: employeeSalaries } of groups) {
+      if (!emp || _.isEmpty(employeeSalaries)) {
+        continue;
+      }
       let severanceArray = [];
 
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         let totalSeverance = 0;
@@ -4911,12 +4678,7 @@ router.post('/severance-report', auth(), async function (req, res, next) {
         }
 
         for (const severancePayment of severancePayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, severancePayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
+          const amount = salaryAmountForPd(employeeSalaries, severancePayment.pd_id);
           let empSeveranceObject = {
             'Payment Name': severancePayment.pd_payment_name,
             Amount: amount
@@ -4924,31 +4686,10 @@ router.post('/severance-report', auth(), async function (req, res, next) {
           totalSeverance = totalSeverance + amount;
           severanceArray.push(empSeveranceObject);
         }
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
-
-        let sectorName = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = sectorData.department_name;
-          }
-        }
-        let locationName = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.l_t6_code}`;
-          }
-        }
+        const empJobRole = employeeSalaries[0].jobrole?.job_role || 'N/A';
+        const sectorData = departments.get(parseInt(employeeSalaries[0].salary_department_id, 10));
+        const sectorName = sectorData?.department_name || 'N/A';
+        const locationName = employeeSalaries[0].location?.l_t6_code || 'N/A';
 
         let salaryObject = {
           employeeId: emp.emp_id,
@@ -5000,32 +4741,27 @@ router.post('/tax-report', auth(), async function (req, res, next) {
     const payrollMonth = payrollRequest.pym_month;
     const payrollYear = payrollRequest.pym_year;
     const location = payrollRequest.pym_location;
-    let employees = [];
-    if (parseInt(location) > 0) {
-      const employeesFromSalary = await salary.getDistinctEmployeesLocationMonthYear(payrollMonth, payrollYear, location);
-      for (const emp of employeesFromSalary) {
-        const tempEmp = await employee.getEmployeeByIdOnly(emp.salary_empid);
-        employees.push(tempEmp);
-      }
-    } else {
-      employees = await employee.getEmployees();
-    }
-    //check if payroll routine has been run
     let employeeSalary = [];
-    const salaryRoutineCheck = await salary.getSalaryMonthYear(payrollMonth, payrollYear);
-    if (_.isNull(salaryRoutineCheck) || _.isEmpty(salaryRoutineCheck)) {
+    const salaryRoutineExists = await salary.hasSalaryMonthYear(payrollMonth, payrollYear);
+    if (!salaryRoutineExists) {
       return res.status(400).json(`Payroll Routine has not been run`);
     }
+
+    const groups = await salary.getPayrollSalariesByEmployee(payrollMonth, payrollYear, location);
+    const departments = await departmentNameMap(groups);
+    const pensionProviders = await pensionProviderNameMap(groups);
 
     let taxPayments = await paymentDefinition.getTaxPayments();
     if (_.isNull(taxPayments) || _.isEmpty(taxPayments)) {
       return res.status(400).json(`No payments marked as Tax`);
     }
 
-    for (const emp of employees) {
+    for (const { emp, rows: employeeSalaries } of groups) {
+      if (!emp || _.isEmpty(employeeSalaries)) {
+        continue;
+      }
       let taxArray = [];
 
-      let employeeSalaries = await salary.getEmployeeSalary(payrollMonth, payrollYear, emp.emp_id);
 
       if (!(_.isNull(employeeSalaries) || _.isEmpty(employeeSalaries))) {
         let totalTax = 0;
@@ -5061,12 +4797,7 @@ router.post('/tax-report', auth(), async function (req, res, next) {
         }
 
         for (const taxPayment of taxPayments) {
-          let amount = 0;
-
-          let checkSalary = await salary.getEmployeeSalaryMonthYearPd(payrollMonth, payrollYear, emp.emp_id, taxPayment.pd_id);
-          if (!(_.isNull(checkSalary) || _.isEmpty(checkSalary))) {
-            amount = parseFloat(checkSalary.salary_amount);
-          }
+          const amount = salaryAmountForPd(employeeSalaries, taxPayment.pd_id);
           let empTaxObject = {
             'Payment Name': taxPayment.pd_payment_name,
             Amount: amount
@@ -5074,31 +4805,10 @@ router.post('/tax-report', auth(), async function (req, res, next) {
           totalTax = totalTax + amount;
           taxArray.push(empTaxObject);
         }
-        let empJobRole = 'N/A';
-        let empJobRoleId = parseInt(employeeSalaries[0].salary_jobrole_id);
-        if (empJobRoleId > 0) {
-          let jobRoleData = await jobRoleService.findJobRoleById(empJobRoleId);
-          if (!_.isEmpty(jobRoleData)) {
-            empJobRole = jobRoleData.job_role;
-          }
-        }
-
-        let sectorName = 'N/A';
-        let sectorId = parseInt(employeeSalaries[0].salary_department_id);
-        if (sectorId > 0) {
-          let sectorData = await departmentService.findDepartmentById(sectorId);
-          if (!_.isEmpty(sectorData)) {
-            sectorName = sectorData.department_name;
-          }
-        }
-        let locationName = 'N/A';
-        let locationId = parseInt(employeeSalaries[0].salary_location_id);
-        if (locationId > 0) {
-          let locationData = await locationService.findLocationById(locationId);
-          if (!_.isEmpty(locationData)) {
-            locationName = `${locationData.l_t6_code}`;
-          }
-        }
+        const empJobRole = employeeSalaries[0].jobrole?.job_role || 'N/A';
+        const sectorData = departments.get(parseInt(employeeSalaries[0].salary_department_id, 10));
+        const sectorName = sectorData?.department_name || 'N/A';
+        const locationName = employeeSalaries[0].location?.l_t6_code || 'N/A';
 
         let salaryObject = {
           employeeId: emp.emp_id,
@@ -5716,6 +5426,31 @@ router.post('/salary-tes-routine', auth(), async function (req, res, next) {
   }
 });
 /* run salary routine location */
+
+router.post('/employee-payslip/:empId', auth(), async function (req, res) {
+  try {
+    const schema = Joi.object({
+      pym_month: Joi.number().required(),
+      pym_year: Joi.number().required()
+    });
+
+    const validationResult = schema.validate(req.body);
+    if (validationResult.error) {
+      return res.status(400).json(validationResult.error.details[0].message);
+    }
+
+    const empId = parseInt(req.params.empId, 10);
+    const { pym_month, pym_year } = req.body;
+
+    const payslipData = await payslipService.getEmployeePayslip(empId, pym_month, pym_year, {
+      requireApproved: true
+    });
+
+    return res.status(200).json(payslipData);
+  } catch (err) {
+    return res.status(400).json(err.message || 'Unable to load payslip');
+  }
+});
 
 router.get('/public-payslip-data', async function (req, res) {
   try {

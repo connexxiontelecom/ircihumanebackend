@@ -1222,20 +1222,22 @@ router.post('/self-assessment-tracking-report', auth(), async function(req, res)
     const fy = req.body.fy;
     const location = parseInt(req.body.location);
     const gs_id = parseInt(req.body.gs_id);
-    let employees;
-    const empIds = [];
-    const timesheetEmpIds = [];
-    if(location === 0){
-      employees = await employee.getEmployees();
-    }else{
-      employees = await employee.getAllEmployeesByLocation(location);
-    }
+    const empIds = await employees.getEmployeeIdsForReport(location);
     const loc = await locationModel.getLocationById(location);
-    employees.map((emp)=>{
-      empIds.push(emp.emp_id);
-    });
 
     let goalSetting = await goalSettingService.getGoalSetting(gs_id)
+    if (!empIds.length) {
+      return res.status(200).json({
+        assessments: [],
+        stage: parseInt(goalSetting?.gs_activity) || 0,
+        gs_id,
+        checkingQuestions: undefined,
+        location: loc?.location_id || location,
+        locationName: location === 0 ? 'All Locations ' : loc?.location_name,
+        counter: 0,
+        fy
+      });
+    }
 
     //self-assessment
     let assessments;

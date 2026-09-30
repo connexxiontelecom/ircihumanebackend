@@ -524,18 +524,12 @@ router.post('/timesheet-application-tracking-report', auth(), async function (re
     const month = req.body.month;
     const year = req.body.year;
     const location = req.body.location;
-    let employees;
-    const empIds = [];
     const timesheetEmpIds = [];
-    if (location === 0) {
-      employees = await employee.getEmployees();
-    } else {
-      employees = await employee.getAllEmployeesByLocation(parseInt(location));
-    }
+    const empIds = await employee.getEmployeeIdsForReport(location);
     const loc = await locationModel.getLocationById(location);
-    employees.map((emp) => {
-      empIds.push(emp.emp_id);
-    });
+    if (!empIds.length) {
+      return res.status(200).json({ salaryEmployees: [], timesheetEmpIds: [], loc });
+    }
     //Salary table
     const salaryEmployees =
       location === 0

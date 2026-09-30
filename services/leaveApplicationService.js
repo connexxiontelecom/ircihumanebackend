@@ -53,6 +53,88 @@ async function findAllLeaveApplication() {
     })
 }
 
+const LIST_EMPLOYEE_ATTRIBUTES = [
+  'emp_id',
+  'emp_first_name',
+  'emp_last_name',
+  'emp_unique_id',
+];
+
+function parseLeaveTypeIds(leaveTypes) {
+  if (Array.isArray(leaveTypes)) {
+    return leaveTypes
+      .map((id) => parseInt(id, 10))
+      .filter((id) => Number.isInteger(id) && id > 0);
+  }
+  if (leaveTypes === undefined || leaveTypes === null || leaveTypes === '') {
+    return [];
+  }
+  return String(leaveTypes)
+    .split(',')
+    .map((id) => parseInt(id.trim(), 10))
+    .filter((id) => Number.isInteger(id) && id > 0);
+}
+
+async function findLeaveApplicationsPaged({ page = 1, perPage = 10, empId, leaveTypes }) {
+  const safePage = Math.max(parseInt(page, 10) || 1, 1);
+  const safePerPage = Math.min(Math.max(parseInt(perPage, 10) || 10, 1), 100);
+  const where = {};
+  const employeeId = parseInt(empId, 10);
+  const leaveTypeIds = parseLeaveTypeIds(leaveTypes);
+
+  if (Number.isInteger(employeeId) && employeeId > 0) {
+    where.leapp_empid = employeeId;
+  }
+  if (leaveTypeIds.length) {
+    where.leapp_leave_type = { [Op.in]: leaveTypeIds };
+  }
+
+  const { count, rows } = await LeaveApplication.findAndCountAll({
+    where,
+    attributes: [
+      'leapp_id',
+      'leapp_empid',
+      'leapp_leave_type',
+      'leapp_start_date',
+      'leapp_end_date',
+      'leapp_total_days',
+      'leapp_status',
+    ],
+    include: [
+      { model: Leave, attributes: ['leave_type_id', 'leave_name'] },
+      { association: 'employee', attributes: LIST_EMPLOYEE_ATTRIBUTES },
+    ],
+    order: [['leapp_id', 'DESC']],
+    limit: safePerPage,
+    offset: (safePage - 1) * safePerPage,
+  });
+
+  return {
+    count,
+    rows,
+    page: safePage,
+    perPage: safePerPage,
+  };
+}
+
+async function getLeaveApplicationListOptions() {
+  const [employees, leaveTypes] = await Promise.all([
+    Employee.findAll({
+      attributes: LIST_EMPLOYEE_ATTRIBUTES,
+      order: [
+        ['emp_first_name', 'ASC'],
+        ['emp_last_name', 'ASC'],
+      ],
+    }),
+    LeaveType.findAll({
+      attributes: ['leave_type_id', 'leave_name'],
+      order: [['leave_name', 'ASC']],
+    }),
+  ]);
+
+  return { employees, leaveTypes };
+}
+
 async function findAllApprovedLeaveApplications() {
 
   return await LeaveApplication.findAll({
@@ -184,6 +266,8 @@ module.exports = {
     addLeaveApplication,
     sumLeaveUsedByYearEmployeeLeaveType,
     findAllLeaveApplication,
+    findLeaveApplicationsPaged,
+    getLeaveApplicationListOptions,
     findEmployeeLeaveApplication,
     getLeaveApplicationsForAuthorization,
     getLeaveApplicationsById,

@@ -1,6 +1,7 @@
 const _ = require('lodash');
+const { sequelize, Sequelize } = require('./db');
+const Employee = require('../models/Employee')(sequelize, Sequelize.DataTypes);
 const paymentDefinition = require('./paymentDefinitionService');
-const employee = require('./employeeService');
 const locationService = require('./locationService');
 const salary = require('./salaryService');
 const departmentService = require('./departmentService');
@@ -70,6 +71,13 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
+async function loadEmployee(empId) {
+  return Employee.findOne({
+    where: { emp_id: parseInt(empId, 10) },
+    attributes: ['emp_id', 'emp_first_name', 'emp_last_name', 'emp_unique_id']
+  });
+}
+
 async function getEmployeePayslip(empId, payrollMonth, payrollYear, options = {}) {
   const { requireApproved = true } = options;
 
@@ -92,7 +100,7 @@ async function getEmployeePayslip(empId, payrollMonth, payrollYear, options = {}
     throw new Error('Payroll routine has not been run for this period');
   }
 
-  const emp = await employee.getEmployee(parseInt(empId, 10));
+  const emp = await loadEmployee(empId);
   if (_.isEmpty(emp) || _.isNull(emp)) {
     throw new Error('Employee not found');
   }

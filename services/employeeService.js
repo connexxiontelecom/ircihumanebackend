@@ -366,6 +366,45 @@ async function getEmployees() {
     ],
   });
 }
+
+async function getEmployeesForLeaveTracker(locationId) {
+  const where = {};
+  if (parseInt(locationId, 10) > 0) {
+    where.emp_location_id = parseInt(locationId, 10);
+  }
+
+  return await employee.findAll({
+    where,
+    attributes: [
+      "emp_id",
+      "emp_unique_id",
+      "emp_d7",
+      "emp_first_name",
+      "emp_last_name",
+      "emp_other_name",
+      "emp_hire_date",
+      "emp_contract_end_date",
+    ],
+    include: [
+      { association: "jobrole", attributes: ["job_role"] },
+      { association: "sector", attributes: ["d_t3_code"] },
+      { association: "location", attributes: ["l_t6_code"] },
+    ],
+  });
+}
+
+async function getEmployeeIdsForReport(locationId) {
+  const where = {};
+  if (parseInt(locationId, 10) > 0) {
+    where.emp_location_id = parseInt(locationId, 10);
+  }
+  const rows = await employee.findAll({
+    where,
+    attributes: ["emp_id"],
+    raw: true,
+  });
+  return rows.map((row) => row.emp_id).filter((id) => id != null);
+}
 async function getActiveEmployees(status = null) {
   return await employee.findAll({
     where: { emp_status: [1, 2] },
@@ -1035,6 +1074,8 @@ module.exports = {
   getActiveEmployeesByLocation,
   changePassword,
   getEmployees,
+  getEmployeesForLeaveTracker,
+  getEmployeeIdsForReport,
   getInactiveEmployees,
   getAllEmployeesByLocation,
   getEmployeesByPfaLocation,

@@ -36,6 +36,18 @@ const salaryService = require('../services/salaryService');
 const fs = require('fs');
 const path = require('path');
 
+function attachAuthorizingOfficer(applications, officers) {
+  const officerByAppId = new Map();
+  (officers || []).forEach((officer) => {
+    officerByAppId.set(String(officer.auth_travelapp_id), officer.officers || null);
+  });
+  return (applications || []).map((application) => {
+    const row = application.toJSON ? application.toJSON() : application;
+    row.Officer = officerByAppId.get(String(row.leapp_id)) || null;
+    return row;
+  });
+}
+
 /* Get leave application */
 router.get('/', auth(), async function (req, res, next) {
   try {
@@ -55,6 +67,42 @@ router.get('/', auth(), async function (req, res, next) {
     });
   } catch (err) {
     return res.status(400).json(`Error while fetching leaves ${err.message}`);
+  }
+});
+
+/* Paginated leave list for All Leave Applications. Must stay above /:id. */
+router.get('/list', auth(), async function (req, res) {
+  try {
+    const { page, perPage, empId, leaveTypes } = req.query;
+    const result = await leaveApplication.findLeaveApplicationsPaged({
+      page,
+      perPage,
+      empId,
+      leaveTypes,
+    });
+    const appIds = result.rows.map((row) => row.leapp_id);
+    const officers = appIds.length
+      ? await authorizationAction.getAuthorizationLog(appIds, 1)
+      : [];
+    const data = attachAuthorizingOfficer(result.rows, officers);
+
+    return res.status(200).json({
+      data,
+      total: result.count,
+      page: result.page,
+      perPage: result.perPage,
+    });
+  } catch (err) {
+    return res.status(400).json(`Error while fetching leaves ${err.message}`);
+  }
+});
+
+router.get('/list-options', auth(), async function (req, res) {
+  try {
+    const options = await leaveApplication.getLeaveApplicationListOptions();
+    return res.status(200).json(options);
+  } catch (err) {
+    return res.status(400).json(`Error while fetching leave list options ${err.message}`);
   }
 });
 
@@ -861,7 +909,7 @@ router.post('/leave-application-tracking-report', async function (req, res) {
     const month = parseInt(req.body.month);
     const year = parseInt(req.body.year);
     let fyYear = `FY${year}`;
-    const location = req.body.location;
+    const location = parseInt(req.body.location, 10) || 0;
 
     if (month > 9) {
       const newYear = year + 1;
@@ -883,143 +931,73 @@ router.post('/leave-application-tracking-report', async function (req, res) {
       9: 12
     };
 
-    let lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0);
-    const lastDayOfMonthDD = String(lastDayOfMonth.getDate()).padStart(2, '0');
-    const lastDayOfMonthMM = String(lastDayOfMonth.getMonth() + 1).padStart(2, '0'); //January is 0!
-    const lastDayOfMonthYYYY = lastDayOfMonth.getFullYear();
+    const lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0);
 
-    const formatLastDayOfMonth = lastDayOfMonthDD + '-' + lastDayOfMonthMM + '-' + lastDayOfMonthYYYY;
+    const [employees, paidUniqueIds, annualLeaveDetails, sickLeaveDetails] = await Promise.all([
+      employee.getEmployeesForLeaveTracker(location),
+      salaryService.getSalaryUniqueIdsForMonthYear(month, year),
+      leaveTypeService.getLeaveTypeByName('Annual Leave'),
+      leaveTypeService.getLeaveTypeByName('Sick Leave')
+    ]);
 
-    let employees = [];
-
-    if (location === 0) {
-      employees = await employee.getEmployees();
-    } else {
-      employees = await employee.getAllEmployeesByLocation(location);
+    if (_.isEmpty(annualLeaveDetails) || _.isEmpty(sickLeaveDetails)) {
+      return res.status(400).json('Annual Leave or Sick Leave type is not configured.');
     }
 
+    const accrualRows = await leaveAccrualService.getLeaveAccrualsForTracker(fyYear, month, [
+      annualLeaveDetails.leave_type_id,
+      sickLeaveDetails.leave_type_id
+    ]);
+
+    const accrualTotals = new Map();
+    for (const row of accrualRows) {
+      const key = `${row.lea_emp_id}:${row.lea_leave_type}`;
+      if (!accrualTotals.has(key)) {
+        accrualTotals.set(key, { accrued: 0, used: 0, ending: 0 });
+      }
+      const bucket = accrualTotals.get(key);
+      const rate = parseFloat(row.lea_rate) || 0;
+      bucket.ending += rate;
+      if (rate > 0) bucket.accrued += rate;
+      if (rate < 0) bucket.used += rate;
+    }
+
+    const remainingAccrued = 12 - yearObject[month];
     const responseArray = [];
 
-    for (emp of employees) {
-      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
-
-      if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck) || salaryCheck.length === 0) {
+    for (const emp of employees) {
+      if (!paidUniqueIds.has(String(emp.emp_unique_id || '').trim())) {
         continue;
       }
 
       const contractHireDate = new Date(emp.emp_hire_date);
-      const formatLastDayOfMonthDate = new Date(formatLastDayOfMonth);
-      const monthDiff = await differenceInMonths(formatLastDayOfMonthDate, contractHireDate);
+      const monthDiff = differenceInMonths(lastDayOfMonth, contractHireDate);
 
       let typeOfHire = null;
-
       if (monthDiff <= 6) {
         typeOfHire = 'Short term';
-      }
-
-      if (monthDiff > 6 && monthDiff < 36) {
+      } else if (monthDiff > 6 && monthDiff < 36) {
         typeOfHire = 'Limited';
-      }
-
-      if (monthDiff >= 36) {
+      } else if (monthDiff >= 36) {
         typeOfHire = 'Regular';
       }
 
-      const annualLeaveDetails = await leaveTypeService.getLeaveTypeByName('Annual Leave');
+      const annual = accrualTotals.get(`${emp.emp_id}:${annualLeaveDetails.leave_type_id}`) || {
+        accrued: 0,
+        used: 0,
+        ending: 0
+      };
+      const sick = accrualTotals.get(`${emp.emp_id}:${sickLeaveDetails.leave_type_id}`) || {
+        accrued: 0,
+        used: 0,
+        ending: 0
+      };
 
-      const sickLeaveDetails = await leaveTypeService.getLeaveTypeByName('Sick Leave');
-
-      //let annualLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
-
-      let annualLeaveAccrued = 0;
-
-      // let annualLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, annualLeaveDetails.leave_type_id)
-
-      let annualLeaveUsed = 0;
-
-      const annualTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
-        fyYear,
-        month,
-        emp.emp_id,
-        annualLeaveDetails.leave_type_id
-      );
-      let countAnnualTotalAccrued = 0;
-
-      if (annualTotalAccrued) {
-        countAnnualTotalAccrued = annualTotalAccrued.length;
-      }
-      for (const accrued of annualTotalAccrued) {
-        annualLeaveAccrued = annualLeaveAccrued + accrued.lea_rate;
-      }
-
-      const annualTotalUsed = await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(
-        fyYear,
-        month,
-        emp.emp_id,
-        annualLeaveDetails.leave_type_id
-      );
-
-      for (const used of annualTotalUsed) {
-        annualLeaveUsed += used.lea_rate;
-      }
-
-      const annualLeaveBalance = annualLeaveAccrued + annualLeaveUsed;
-
-      const annualLeaveBalEnding = await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(
-        fyYear,
-        month,
-        emp.emp_id,
-        annualLeaveDetails.leave_type_id
-      );
-
-      const remainingAnnualAccrued = 12 - yearObject[month];
-
-      const annualLeaveBalEndingFy = annualLeaveAccrued + remainingAnnualAccrued * annualLeaveDetails.lt_rate + annualLeaveUsed;
-
-      // let sickLeaveAccrued = await leaveAccrualService.sumPositiveLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
-      //
-      // let sickLeaveUsed = await leaveAccrualService.sumNegativeLeaveAccrualByYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, sickLeaveDetails.leave_type_id)
-
-      let sickLeaveAccrued = 0;
-      let sickLeaveUsed = 0;
-      const sickTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualByYearMonthEmployeeLeaveType(
-        fyYear,
-        month,
-        emp.emp_id,
-        sickLeaveDetails.leave_type_id
-      );
-
-      for (const accrued of sickTotalAccrued) {
-        sickLeaveAccrued = sickLeaveAccrued + accrued.lea_rate;
-      }
-
-      const sickTotalUsed = await leaveAccrualService.getNegativeLeaveAccrualByYearMonthEmployeeLeaveType(
-        fyYear,
-        month,
-        emp.emp_id,
-        sickLeaveDetails.leave_type_id
-      );
-
-      for (const used of sickTotalUsed) {
-        sickLeaveUsed = sickLeaveUsed + used.lea_rate;
-      }
-
-      const sickLeaveBalance = sickLeaveAccrued + sickLeaveUsed;
-
-      const sickLeaveBalEnding = await leaveAccrualService.sumLeaveAccrualByYearMonthEmployeeLeaveType(
-        fyYear,
-        month,
-        emp.emp_id,
-        sickLeaveDetails.leave_type_id
-      );
-      let countSickTotalAccrued = 0;
-      if (sickTotalAccrued) {
-        countSickTotalAccrued = sickTotalAccrued.length;
-      }
-
-      const remainingSickAccrued = 12 - yearObject[month];
-
-      const sickLeaveBalEndingFy = sickLeaveAccrued + remainingSickAccrued * sickLeaveDetails.lt_rate + sickLeaveUsed;
+      const annualLeaveBalance = annual.accrued + annual.used;
+      const annualLeaveBalEndingFy =
+        annual.accrued + remainingAccrued * annualLeaveDetails.lt_rate + annual.used;
+      const sickLeaveBalance = sick.accrued + sick.used;
+      const sickLeaveBalEndingFy = sick.accrued + remainingAccrued * sickLeaveDetails.lt_rate + sick.used;
 
       responseArray.push({
         d7: emp.emp_d7,
@@ -1027,7 +1005,7 @@ router.post('/leave-application-tracking-report', async function (req, res) {
         first_name: emp?.emp_first_name,
         last_name: emp?.emp_last_name,
         other_name: emp?.emp_other_name,
-        jobTitle: emp.jobrole.job_role,
+        jobTitle: emp.jobrole?.job_role,
         t3: emp.sector?.d_t3_code,
         t6: emp.location?.l_t6_code,
         contractType: typeOfHire,
@@ -1035,18 +1013,22 @@ router.post('/leave-application-tracking-report', async function (req, res) {
         contractEndDate: emp?.emp_contract_end_date,
         annualLeaveRate: annualLeaveDetails.lt_rate,
         sickLeaveRate: sickLeaveDetails.lt_rate,
-        annualLeaveAccrued: annualLeaveAccrued,
-        annualLeaveUsed: annualLeaveUsed,
+        annualLeaveAccrued: annual.accrued,
+        annualLeaveUsed: annual.used,
         annualLeaveBalance: annualLeaveBalance,
         annualLeaveBalEndingFy: annualLeaveBalEndingFy,
-        annualLeaveBalEnding: annualLeaveBalEnding,
-        percentageAnnualLeaveUsed: Math.abs((annualLeaveUsed / annualLeaveAccrued) * 100).toFixed(2),
-        sickLeaveAccrued: sickLeaveAccrued,
-        sickLeaveUsed: sickLeaveUsed,
+        annualLeaveBalEnding: annual.ending,
+        percentageAnnualLeaveUsed: annual.accrued
+          ? Math.abs((annual.used / annual.accrued) * 100).toFixed(2)
+          : '0.00',
+        sickLeaveAccrued: sick.accrued,
+        sickLeaveUsed: sick.used,
         sickLeaveBalance: sickLeaveBalance,
         sickLeaveBalEndingFy: sickLeaveBalEndingFy,
-        sickLeaveBalEnding: sickLeaveBalEnding,
-        percentageSickLeaveUsed: Math.abs((sickLeaveUsed / sickLeaveAccrued) * 100).toFixed(2),
+        sickLeaveBalEnding: sick.ending,
+        percentageSickLeaveUsed: sick.accrued
+          ? Math.abs((sick.used / sick.accrued) * 100).toFixed(2)
+          : '0.00',
         fyYear: fyYear,
         month: month,
         year: year
@@ -1055,6 +1037,7 @@ router.post('/leave-application-tracking-report', async function (req, res) {
 
     return res.status(200).json(responseArray);
   } catch (e) {
+    console.error('Leave tracker report failed:', e);
     return res.status(400).json(e.message);
   }
 });
@@ -1077,38 +1060,30 @@ router.post('/leave-accrual-report', async function (req, res) {
     const month = parseInt(req.body.month);
     const year = parseInt(req.body.year);
     let fyYear = `FY${year}`;
-    const location = req.body.location;
-    const leaveType = req.body.leaveType;
+    const location = parseInt(req.body.location, 10) || 0;
+    const leaveType = parseInt(req.body.leaveType, 10);
 
     if (month > 9) {
-      const newYear = year + 1;
-      fyYear = `FY${newYear}`;
+      fyYear = `FY${year + 1}`;
     }
 
-    let employees = [];
+    const [employees, paidUniqueIds, leaveTypeDetails, accrualRows] = await Promise.all([
+      employee.getEmployeesForLeaveTracker(location),
+      salaryService.getSalaryUniqueIdsForMonthYear(month, year),
+      leaveTypeService.getLeaveType(leaveType),
+      leaveAccrualService.getPositiveLeaveAccrualsForMonth(fyYear, month, leaveType)
+    ]);
 
-    if (location === 0) {
-      employees = await employee.getEmployees();
-    } else {
-      employees = await employee.getAllEmployeesByLocation(location);
+    const accruedByEmployee = new Map();
+    for (const row of accrualRows) {
+      const empId = row.lea_emp_id;
+      accruedByEmployee.set(empId, (accruedByEmployee.get(empId) || 0) + (parseFloat(row.lea_rate) || 0));
     }
-    const leaveTypeDetails = leaveTypeService.getLeaveType(leaveType);
 
     const responseArray = [];
-
-    for (emp of employees) {
-      const salaryCheck = await salaryService.getEmployeeSalaryByUniqueId(month, year, emp.emp_unique_id);
-
-      if (_.isEmpty(salaryCheck) || _.isNull(salaryCheck)) {
+    for (const emp of employees) {
+      if (!paidUniqueIds.has(String(emp.emp_unique_id || '').trim())) {
         continue;
-      }
-
-      let leaveAccrued = 0;
-
-      const leaveTotalAccrued = await leaveAccrualService.getPositiveLeaveAccrualForYearMonthEmployeeLeaveType(fyYear, month, emp.emp_id, leaveType);
-
-      for (const accrued of leaveTotalAccrued) {
-        leaveAccrued = leaveAccrued + accrued.lea_rate;
       }
 
       responseArray.push({
@@ -1117,11 +1092,11 @@ router.post('/leave-accrual-report', async function (req, res) {
         first_name: emp?.emp_first_name,
         last_name: emp?.emp_last_name,
         other_name: emp?.emp_other_name,
-        jobTitle: emp.jobrole.job_role,
+        jobTitle: emp.jobrole?.job_role,
         t3: emp.sector?.d_t3_code,
         t6: emp.location?.l_t6_code,
         contractEndDate: emp?.emp_contract_end_date,
-        leaveAccrued: leaveAccrued,
+        leaveAccrued: accruedByEmployee.get(emp.emp_id) || 0,
         fyYear: fyYear,
         month: month,
         year: year,
@@ -1131,6 +1106,7 @@ router.post('/leave-accrual-report', async function (req, res) {
 
     return res.status(200).json(responseArray);
   } catch (e) {
+    console.error('Leave accrual report failed:', e);
     return res.status(400).json(e.message);
   }
 });
